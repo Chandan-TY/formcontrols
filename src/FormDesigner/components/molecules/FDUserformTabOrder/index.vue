@@ -1,0 +1,403 @@
+<template>
+  <div
+    id="popup1"
+    class="overlay"
+    :style="tabOrderStyleObj"
+    >
+    <div class="outer-taborder-div popup"
+    :style="tabOrderDialogInitialStyle">
+      <div class="taborder-header-div" @mousedown.stop="dragTabOrderDialog">
+        <div class="taborder-header-innerdiv">
+          <a>Tab Order</a>
+        </div>
+        <button class="ui-btn close" @click="closeDialog">
+          <svg viewBox="0 0 10 10">
+            <polygon
+              points="10.2,0.7 9.5,0 5.1,4.4 0.7,0 0,0.7 4.4,5.1 0,9.5 0.7,10.2 5.1,5.8 9.5,10.2 10.2,9.5 5.8,5.1"
+            />
+          </svg>
+        </button>
+      </div>
+      <div class="wrapper">
+        <div class="wrapper1">
+          <span class="inner-header">Tab Order</span>
+          <div class="frame">
+            <div  v-for="(value, index) in tabOrderList" :key="value.controlId">
+            <button
+              class="inside-frame"
+              :class="{'active-item':currentIndex === index}"
+              @click="selectedTab(index)"
+            >{{value.name }}</button>
+            </div>
+          </div>
+        </div>
+        <div class="wrapper2">
+          <div style="height:3px"></div>
+          <div class="wrapper21">
+            <button class="taborder-buttons" @click="updateControlData">OK</button>
+            <button class="taborder-buttons" @click="closeDialog">Cancel</button>
+          </div>
+          <div style="height:35px"></div>
+          <div class="wrapper21">
+            <button class="taborder-buttons" @click="moveControlUp()">Move Up</button>
+            <button class="taborder-buttons" @click="moveControlDown()">Move Down</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script lang="ts">
+import { Component, Prop, Vue, Ref } from 'vue-property-decorator'
+import { EventBus } from '@/FormDesigner/event-bus'
+import { State, Action } from 'vuex-class'
+import { IupdateControl } from '@/storeModules/fd/actions'
+import { controlProperties } from '@/FormDesigner/controls-properties'
+
+export interface ImousePosition {
+  clientX: number;
+  clientY: number;
+  movementX: number;
+  movementY: number;
+}
+export interface ITabOrderDialogInitialStyle {
+  left: string;
+  top: string;
+}
+
+interface localTabOrderItem {
+  controlId: string;
+  name: string;
+}
+@Component({
+  name: 'FDUserformTabOrder'
+})
+export default class FDUserformTabOrder extends Vue {
+  @State(state => state.fd.userformData) userformData!: userformData
+  @Action('fd/updateControl') updateControl!: (payload: IupdateControl) => void;
+  positions: ImousePosition = {
+    clientX: 0,
+    clientY: 0,
+    movementX: 0,
+    movementY: 0
+  };
+  tabOrderDialogInitialStyle: ITabOrderDialogInitialStyle = {
+    left: '0px',
+    top: '50px'
+  };
+  isTabOrderOpen: boolean = false
+  userFormId : string = ''
+  currentIndex: number = -1
+  tabOrderList: localTabOrderItem[] = []
+
+  updateControlData () {
+    const controlNum = this.tabOrderList.length
+    for (let tabIndex = 0; controlNum > tabIndex; tabIndex++) {
+      this.updateControl({
+        userFormId: this.userFormId,
+        controlId: this.tabOrderList[tabIndex].controlId,
+        propertyName: 'TabIndex',
+        value: tabIndex
+      })
+    }
+    this.closeDialog()
+  }
+  closeDialog () {
+    this.isTabOrderOpen = false
+  }
+  selectedTab (data: number) {
+    this.currentIndex = data
+  }
+  swapTabOrderList (aIndex: number, bIndex: number) {
+    const temp = this.tabOrderList[aIndex]
+    this.tabOrderList[aIndex] = this.tabOrderList[bIndex]
+    this.tabOrderList[bIndex] = temp
+  }
+  moveControlUp () {
+    const currentIndex = this.currentIndex
+    const currentControl = this.tabOrderList[currentIndex]
+    if (currentIndex !== 0) {
+      this.swapTabOrderList(currentIndex, currentIndex - 1)
+      this.selectedTab(currentIndex - 1)
+    }
+  }
+
+  moveControlDown () {
+    const lastIndex = this.tabOrderList.length - 1
+    const currentIndex = this.currentIndex
+    const currentControl = this.tabOrderList[currentIndex]
+    if (currentIndex !== lastIndex) {
+      this.swapTabOrderList(currentIndex, currentIndex + 1)
+      this.selectedTab(currentIndex + 1)
+    }
+  }
+  dragTabOrderDialog (event: MouseEvent) {
+    this.positions.clientX = event.clientX
+    this.positions.clientY = event.clientY
+    document.onmousemove = this.elementDrag
+    document.onmouseup = this.closeDragElement
+  }
+  elementDrag (event: MouseEvent): void {
+    event.preventDefault()
+    this.positions.movementX = this.positions.clientX - event.clientX
+    this.positions.movementY = this.positions.clientY - event.clientY
+    this.positions.clientX = event.clientX
+    this.positions.clientY = event.clientY
+    this.tabOrderDialogInitialStyle.top =
+      parseInt(this.tabOrderDialogInitialStyle.top) -
+      this.positions.movementY +
+      'px'
+    this.tabOrderDialogInitialStyle.left =
+      parseInt(this.tabOrderDialogInitialStyle.left) -
+      this.positions.movementX +
+      'px'
+  }
+  closeDragElement (): void {
+    document.onmouseup = null
+    document.onmousemove = null
+  }
+  created () {
+    EventBus.$on('userFormTabOrder', (userFormId: string, controlId: string) => {
+      const tabOrderControlData = this.userformData[userFormId][controlId]
+      this.tabOrderList = Array(tabOrderControlData.controls.length)
+      if (tabOrderControlData.controls.length > 0) {
+        for (let control of tabOrderControlData.controls) {
+          const targetData = this.userformData[userFormId][control]
+          if (targetData) {
+            const targetTabIndex = targetData.properties.TabIndex
+            const targetTabName = targetData.properties.Name
+            if (targetTabIndex !== undefined && targetTabName !== undefined) {
+              this.tabOrderList[targetTabIndex] = {
+                controlId: control,
+                name: targetTabName
+              }
+            }
+          }
+        }
+      }
+      this.isTabOrderOpen = true
+      this.userFormId = userFormId
+      this.currentIndex = 0
+    })
+  }
+  destroyed () {
+    EventBus.$off('userFormTabOrder')
+  }
+  get tabOrderStyleObj () {
+    return {
+      visibility: this.isTabOrderOpen === true ? 'visible' : 'hidden',
+      opacity: this.isTabOrderOpen === true ? '1' : '0'
+    }
+  }
+}
+</script>
+
+<style scoped>
+body {
+  font-family: Arial, sans-serif;
+  /*   background: url(http://www.shukatsu-note.com/wp-content/uploads/2014/12/computer-564136_1280.jpg) no-repeat; */
+  background-size: cover;
+  height: 100vh;
+}
+
+h1 {
+  text-align: center;
+  font-family: Tahoma, Arial, sans-serif;
+  color: #06d85f;
+  margin: 80px 0;
+}
+
+.span-style {
+  position: absolute;
+  left: 6px;
+  top: 6px;
+}
+
+.box {
+  background: rgba(255, 255, 255, 0.2);
+  text-align: right;
+}
+
+.button {
+  font-size: 1em;
+  padding: 10px;
+  color: #fff;
+  border: 2px solid #06d85f;
+  border-radius: 20px/50px;
+  text-decoration: none;
+  cursor: pointer;
+}
+.button:hover {
+  background: #06d85f;
+}
+
+.overlay {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.7);
+  visibility: hidden;
+  opacity: 0;
+  z-index: 110;
+}
+.overlay:target {
+  visibility: visible;
+  opacity: 1;
+}
+
+.popup {
+  margin: 70px auto;
+  /* padding: 20px; */
+  background: #fff;
+  border-radius: 5px;
+  width: 30%;
+  position: relative;
+}
+
+.popup h2 {
+  margin-top: 0;
+  color: #333;
+  font-family: Tahoma, Arial, sans-serif;
+}
+.popup .close {
+  position: absolute;
+  right: 0px;
+  font-weight: bold;
+  text-decoration: none;
+  color: #333;
+}
+.popup .close:hover {
+  color: #06d85f;
+}
+.popup .content {
+  max-height: 30%;
+  overflow: auto;
+}
+
+@media screen and (max-width: 700px) {
+  .box {
+    width: 70%;
+  }
+  .popup {
+    width: 70%;
+  }
+}
+.wrapper {
+  display: grid;
+  grid-template-columns: 65% 35%;
+  padding-left: 10px;
+  padding-top: 22px;
+  grid-row-gap: 1em;
+  grid-column-gap: 1em;
+  margin-bottom: 2em;
+}
+.wrapper1 {
+  grid-gap: 1em;
+}
+.wrapper2 {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-gap: 1em;
+  grid-column-gap: 3em;
+  height: 16px;
+}
+.wrapper21 {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-gap: 0.5em;
+  height: 16px;
+}
+.frame {
+  width: 200px;
+  height: 150px;
+  background-color: white;
+  box-shadow: -1px -1px gray;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+.inside-frame {
+  /* border: 1px solid black; */
+  border: none;
+  background-color: white;
+  text-align: left;
+  outline: none;
+  width: 100%;
+  height: auto;
+  font-family: "SESimplex";
+  font-weight: 500;
+  font-size: 11px;
+  padding-left: 2px;
+}
+.active-item {
+  background-color: rgb(2, 84, 207);
+  color: white;
+}
+.taborder-header-div {
+  display: grid;
+  grid-template-columns: 90% 10%;
+  height: 25px;
+  background-color: white;
+  font-size: 13px;
+}
+.taborder-header-innerdiv {
+  padding-left: 7px;
+  padding-top: 6px;
+}
+.outer-taborder-div {
+  border: 0.3px solid gray;
+  height: 235px;
+  width: 330px;
+  background-color: rgb(238, 238, 238);
+}
+.inner-header {
+  font-family: "SESimplex";
+  font-weight: 500;
+  font-size: 12px;
+}
+.taborder-buttons {
+  width: 83px;
+  height: 23px;
+  font-family: "Candara";
+  font-weight: lighter;
+  font-size: 13px;
+  box-shadow: 1px 1px;
+  outline: none;
+}
+.ui-btn {
+  /* margin: 2px; */
+  margin: 0;
+  width: 33px;
+  height: 25px;
+  border: 0;
+  outline: 0;
+  background: transparent;
+}
+.ui-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+.ui-btn.close {
+  background: white;
+}
+.ui-btn:hover {
+  background: #e81123;
+  color: white;
+}
+.ui-btn svg path,
+.ui-btn svg rect,
+.ui-btn svg polygon {
+  fill: white;
+}
+.ui-btn svg {
+  width: 10px;
+  height: 10px;
+  stroke: gray;
+}
+.ui-btn svg:hover {
+  width: 10px;
+  height: 10px;
+  stroke: white;
+}
+</style>

@@ -1,0 +1,423 @@
+<template>
+    <div class="resp-textbox"  @click="selectedItem">
+      <textarea
+        ref="textareaRef"
+        :style="cssStyleProperty"
+        :tabindex="properties.TabIndex"
+        :maxlength="
+          properties.MaxLength > 0
+            ? properties.MaxLength
+            : null
+        "
+        :title="properties.ControlTipText"
+        :readonly="properties.Locked"
+        v-cursorDirective="{
+          start: data.properties.CursorStartPosition,
+          end: data.properties.CursorEndPosition,
+          pwdCharType: properties.PasswordChar,
+        }"
+         @keydown.tab="tabKeyBehavior"
+         @keydown.enter="enterKeyBehavior"
+        @input="
+          properties.PasswordChar === ''
+            ? textAndValueUpdate($event)
+            : handlePasswordChar($event)
+        "
+        @keydown="properties.PasswordChar !== ''? handleDelete($event): null"
+        @blur="handleBlur($event, textareaRef, hideSelectionDiv)"
+        @click="handleClick(hideSelectionDiv)"
+        class="text-box-design"
+        :value="
+          properties.Value
+            | passwordFilter(
+              properties.PasswordChar,
+              properties.Value
+            )
+        "
+        @dragstart="dragBehavior"
+      />
+      <div
+        ref="hideSelectionDiv"
+        @click="divHide($event, textareaRef)"
+        :style="divcssStyleProperty"
+        :title="properties.ControlTipText"
+        class="text-box-design"
+      >
+        {{
+          properties.Value
+            | passwordFilter(
+              properties.PasswordChar,
+              properties.Value
+            )
+        }}
+      </div>
+    <label ref="autoSizeTextarea"></label>
+  </div>
+</template>
+
+<script lang="ts">
+import { Component, Vue, Prop, Ref, Watch, Emit, Mixins } from 'vue-property-decorator'
+import FdControlVue from '@/api/abstract/FormDesigner/FdControlVue'
+import { DirectiveBinding } from 'vue/types/options'
+
+@Component({
+  name: 'FDTextBox',
+  filters: {
+    /**
+     * @description filter to show passwordChar instead of original text
+     * @function passwordFilter
+     * @param value text to be filtered
+     * @param password passwordChar value to filter the text
+     * @param text  TextBox properties Text Value
+     */
+    passwordFilter (value: string, password: string, text: string) {
+      if (password !== '' && text !== '') {
+        let filteredValue: string = ''
+        for (let index = 0; index < text.length; index++) {
+          filteredValue = filteredValue + password[0]
+        }
+        return filteredValue
+      }
+      return value
+    }
+  },
+  directives: {
+    cursorDirective: {
+      /**
+     * @description  called after the containing component’s VNode has updated
+     * updates selection start and end cursor positon when data model value changes
+     * to maintain cursor position
+     * @function update Hook Functions i.e, (bind, inserted, update, componentUpdated, unbind)
+     * @param event The element the directive is bound to. This can be used to directly manipulate the DOM.
+     * @param vnode The virtual node produced by Vue’s compiler
+     */
+      update (event: HTMLElement, vnode: DirectiveBinding) {
+        if (vnode.value.pwdCharType !== '') {
+          (event as HTMLFormElement).selectionStart = vnode.value.start;
+          (event as HTMLFormElement).selectionEnd = vnode.value.end
+        }
+      }
+    }
+  }
+})
+export default class FDTextBox extends Mixins(FdControlVue) {
+  @Ref('hideSelectionDiv') readonly hideSelectionDiv! : HTMLDivElement
+  @Ref('autoSizeTextarea') readonly autoSizeTextarea! : HTMLLabelElement
+  @Ref('textareaRef') textareaRef: HTMLTextAreaElement
+
+  /**
+  * @description style object is passed to :style attribute in Textarea tag
+  * dynamically changing the styles of the component based on properties
+  * @function cssStyleProperty
+  *
+  */
+  get cssStyleProperty () {
+    const controlProp = this.properties
+    const font: font = controlProp.Font ? controlProp.Font : {
+      FontName: 'Arial',
+      FontSize: 10
+    }
+    return {
+      left: `${controlProp.Left}px`,
+      width: `${controlProp.Width}px`,
+      height: `${controlProp.Height}px`,
+      top: `${controlProp.Top}px`,
+      backgroundColor: controlProp.BackColor,
+      borderColor: controlProp.BorderColor,
+      textAlign:
+        controlProp.TextAlign === 0
+          ? 'left'
+          : controlProp.TextAlign === 1
+            ? 'center'
+            : 'right',
+      border: this.getBorderStyle,
+      background: controlProp.BackStyle ? controlProp.BackColor : 'transparent',
+      boxShadow:
+        controlProp.SpecialEffect ? this.getSpecialEffectData : 'none',
+      whiteSpace:
+        controlProp.WordWrap && controlProp.MultiLine ? 'normal' : 'nowrap',
+      wordBreak:
+        controlProp.WordWrap && controlProp.MultiLine ? 'break-word' : 'normal',
+      color:
+        controlProp.Enabled === true ? controlProp.ForeColor : this.getEnabled,
+      cursor:
+        controlProp.MousePointer !== 0 || controlProp.MouseIcon !== ''
+          ? this.getMouseCursorData
+          : 'default',
+      fontSize: `${font.FontSize}px`,
+      fontStyle: font.FontItalic ? 'italic' : '',
+      textDecoration:
+        font.FontStrikethrough === true &&
+        font.FontUnderline === true
+          ? 'underline line-through'
+          : font.FontUnderline
+            ? 'underline'
+            : font.FontStrikethrough
+              ? 'line-through'
+              : '',
+      fontWeight: font.FontBold ? 'bold' : '',
+      fontFamily: font.FontStyle ? font.FontStyle : font.FontName,
+      display: controlProp.Visible ? 'block' : 'none',
+      overflowX: this.getScrollBarX,
+      overflowY: this.getScrollBarY
+      // position: 'relative'
+    }
+  }
+
+  /**
+  * @description updates the dataModel textBox object properties when user insert/delete text
+  * inside textBox when passwordChar is set, updates text and values properties of textBox with entered character
+  * @function handlePasswordChar
+  * @param event its of type TextEvent
+  * @event input
+  *
+  */
+  handlePasswordChar (event: TextEvent) {
+    let newData
+    let text = this.properties.Text!
+    let selectionDiff =
+    (this.data.properties!.CursorStartPosition as number) !==
+    (this.data.properties!.CursorEndPosition as number)
+    if (selectionDiff) {
+    // selection
+      newData =
+      text.substring(
+        0,
+        this.data.properties!.CursorStartPosition as number
+      ) +
+      text.substring(
+        this.data.properties!.CursorEndPosition as number
+      )
+      this.updateDataModel({ propertyName: 'Text', value: newData })
+      this.updateDataModel({ propertyName: 'Value', value: newData })
+    } else if (text.length < (event.target as HTMLFormElement).value.length) {
+    // insertion
+      newData = [
+        text.slice(0, (event.target as HTMLFormElement).selectionStart - 1),
+        event.data,
+        text.slice((event.target as HTMLFormElement).selectionStart - 1)
+      ].join('')
+      this.updateDataModel({ propertyName: 'Text', value: newData })
+      this.updateDataModel({ propertyName: 'Value', value: newData })
+    } else if (text.length > (event.target as HTMLFormElement).value.length) {
+    // deletion
+      newData = [
+        text.slice(0, (event.target as HTMLFormElement).selectionStart),
+        text.slice((event.target as HTMLFormElement).selectionStart + 1)
+      ].join('')
+      this.updateDataModel({ propertyName: 'Text', value: newData })
+      this.updateDataModel({ propertyName: 'Value', value: newData })
+    }
+    this.updateDataModel({ propertyName: 'CursorStartPosition', value: (event.target as HTMLFormElement).selectionStart })
+    this.updateDataModel({ propertyName: 'CursorEndPosition', value: (event.target as HTMLFormElement).selectionEnd })
+  }
+  /**
+  * @description style object is passed to :style attribute in div tag
+  * dynamically changing the styles of the component based on cssStyleProperty of
+  * textarea
+  * @function divcssStyleProperty
+  *
+  */
+  get divcssStyleProperty () {
+    const styleObject = this.cssStyleProperty
+    return { ...styleObject, display: 'none', paddingTop: '2px', paddingLeft: '2px' }
+  }
+  /**
+  * @description EnterKeyBehavior - if true when enter is pressed while editing the cursor moves to next line
+  *  if false the cursor remains in same place
+  * @function enterKeyBehavior
+  * @param event its of type KeyboardEvent
+  * @event keydown.enter
+  */
+  enterKeyBehavior (event : KeyboardEvent): boolean {
+    if (this.properties.EnterKeyBehavior) {
+      return true
+    } else {
+      event.preventDefault()
+      return false
+    }
+  }
+
+  /**
+  * @description  specifies how the control responds to the TAB key
+  * when  TabKeyBehavior true in textBox tab spaces are added on press of tab Key
+  * when TabKeyBehavior false in textBox pressing tab moves focus to next controls
+  * @function tabKeyBehavior
+  * @param event its of type MouseEvent
+  * @event keydown.tab
+  */
+  tabKeyBehavior (event : KeyboardEvent): boolean {
+    if (this.properties.TabKeyBehavior) {
+      const TABKEY = 9
+      const eventTaget = event.target as HTMLTextAreaElement
+      const selectionStart = eventTaget.selectionStart
+      const selectionEnd = eventTaget.selectionEnd
+      const value = eventTaget.value
+      if (event.keyCode === TABKEY) {
+        (event.target as HTMLTextAreaElement).value = value.substring(0, selectionStart) + '\t' + value.substring(selectionEnd)
+        event.preventDefault()
+      }
+      (event.target as HTMLTextAreaElement).selectionStart = selectionStart + 1;
+      (event.target as HTMLTextAreaElement).selectionEnd = (event.target as HTMLTextAreaElement).selectionStart
+      return false
+    } else {
+      return true
+    }
+  }
+  /**
+  * @description updates the dataModel textBox object properties when user insert/delete text
+  * inside textBox, updates text and values properties of textBox
+  * @function textAndValueUpdate
+  * @param event its of type InputEvent
+  * @event input
+  *
+  */
+  textAndValueUpdate (event: InputEvent) {
+    const propData = this.properties
+    this.updateDataModel({ propertyName: 'Value', value: (event.target as HTMLInputElement).value })
+    this.updateDataModel({ propertyName: 'Text', value: (event.target as HTMLInputElement).value })
+    if (this.properties.ControlSource !== '') {
+      this.updateDataModelExtraData({ propertyName: 'ControlSourceValue', value: (event.target as HTMLInputElement).value })
+    }
+  }
+
+  /**
+  * @description dragBehavior - if true when dragging
+  *  if false the cursor remains in same place
+  * @function dragBehavior
+  * @param event its of type KeyboardEvent
+  * @event dragStart
+  */
+  dragBehavior (e:Event) {
+    if (this.properties.DragBehavior) {
+      return true
+    }
+    e.preventDefault()
+  }
+
+  /**
+   * @override
+   */
+  @Watch('properties.AutoSize', { deep: true })
+  updateAutoSize (newVal:boolean, oldVal:boolean) {
+    if (this.data.type!.includes('TextBox')) {
+      if (this.properties.AutoSize === true) {
+        this.$nextTick(() => {
+          const textareaRef: HTMLTextAreaElement = this.textareaRef
+          // replication of stype attribute to Label tag for autoSize property to work
+          let tempLabel: HTMLLabelElement = this.autoSizeTextarea
+          tempLabel.style.display = 'inline'
+          tempLabel.style.fontStyle = textareaRef.style.fontStyle
+          tempLabel.style.fontSize = parseInt(textareaRef.style.fontSize) + 'px'
+          tempLabel.style.whiteSpace = textareaRef.style.whiteSpace
+          tempLabel.style.wordBreak = textareaRef.style.wordBreak
+          tempLabel.style.fontWeight = textareaRef.style.fontWeight
+          tempLabel.style.width = textareaRef.style.width
+          tempLabel.style.height = textareaRef.style.height
+          tempLabel.innerText = textareaRef.value
+          this.updateDataModel({ propertyName: 'Width', value: tempLabel.offsetWidth + 5 })
+          this.updateDataModel({ propertyName: 'Height', value: tempLabel.offsetHeight + 5 })
+          tempLabel.innerText = ''
+          tempLabel.style.display = 'none'
+        })
+      }
+    }
+  }
+
+  created () {
+    const propData: controlData = this.data
+    if (propData.properties.ControlSource !== '') {
+      const controlSourceValue = propData.extraDatas!.ControlSourceValue
+      this.updateDataModel({ propertyName: 'Value', value: controlSourceValue })
+      this.updateDataModel({ propertyName: 'Text', value: controlSourceValue })
+    }
+  }
+  /**
+   * @description keep tracks of key press and selectionStart and selectionEnd
+   * updates extra property CursorStartPosition and CursorEndPosition which is required
+   * when user insert, update or delete text in textBox
+   * @function handleDelete
+   * @param event it is of type KeyboardEvent
+   * @event keydown
+   */
+  handleDelete (event: KeyboardEvent) {
+    if (event.keyCode === 8) {
+      this.updateDataModel({ propertyName: 'CursorStartPosition', value: (event.target as HTMLInputElement).selectionStart! })
+      this.updateDataModel({ propertyName: 'CursorEndPosition', value: (event.target as HTMLInputElement).selectionEnd! })
+    }
+  }
+  /**
+  * @description  show selection when TextBox loses focus
+  * when HideSelection is false selection is show if user selects any text
+  * @function handleBlur
+  * @event blur
+  *
+  */
+  handleBlur (event: TextEvent, textareaRef: HTMLTextAreaElement, hideSelectionDiv: HTMLDivElement) {
+    if (!this.properties.HideSelection) {
+      const eventTarget = event.target as HTMLTextAreaElement
+      hideSelectionDiv.style.display = 'block'
+      hideSelectionDiv.style.height = this.properties.Height! + 2 + 'px'
+      hideSelectionDiv.style.width = this.properties.Width! + 2 + 'px'
+      textareaRef.style.display = 'none'
+      let textarea = eventTarget.value
+      let firstPart =
+    textarea.slice(0, eventTarget.selectionEnd) +
+    '</span>' +
+    textarea.slice(eventTarget.selectionEnd + Math.abs(0))
+      let text =
+    firstPart.slice(0, eventTarget.selectionStart) +
+    "<span style='background-color:lightblue'>" +
+    firstPart.slice(eventTarget.selectionStart + Math.abs(0))
+      hideSelectionDiv.innerHTML = text
+    }
+  }
+  /**
+  *@description hides the div when focus comes to textarea when hideSelection
+  * properties is false
+  * @function handleClick
+  * @param event its of FocusEvent
+  * @event click
+ */
+  handleClick (hideSelectionDiv:HTMLDivElement) {
+    if (!this.properties.HideSelection) {
+      hideSelectionDiv.style.display = 'none'
+    }
+  }
+  /**
+  * @description hides div instead of textarea when hideSelection is false
+  * when hideSelection properties is true textarea is shown
+  * when hideSelection properties is false div is shown
+  * @function divHide
+  * @param event its of type MouseEvent
+  * @event click
+  */
+  divHide (event: MouseEvent, textareaRef: HTMLTextAreaElement) {
+    (event.target as HTMLDivElement).style.display = 'none'
+    textareaRef.style.display = 'block'
+    if ((event.target as HTMLDivElement).tagName === 'SPAN' && (event.target as HTMLDivElement).parentNode!.nodeName === 'DIV') {
+      ((event.target as HTMLDivElement).parentNode as HTMLElement).style.display = 'none'
+    }
+    textareaRef.focus()
+    textareaRef.selectionStart = textareaRef.selectionEnd
+  }
+}
+</script>
+
+<style scoped>
+/* For default values */
+.text-box-design {
+  border: 0.2px solid gray;
+  box-shadow: -1px -1px gray;
+  width: 100px;
+  height: 20px;
+  resize: none;
+  overflow: hidden;
+}
+.text-box-design:focus {
+  outline: none;
+}
+.text-box-design::selection {
+  background: lightblue;
+}
+</style>

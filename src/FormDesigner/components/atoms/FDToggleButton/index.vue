@@ -1,0 +1,153 @@
+<template>
+    <button
+    class="toggle-button"
+    :contenteditable=isContentEditable
+    :style="styleObj"
+    :name="properties.Name"
+    :tabindex="properties.TabIndex"
+    :title="properties.ControlTipText"
+    :disabled="properties.Enabled === false"
+    @input="updateCaption"
+    @click="toggleButtonClick"
+    @keydown.enter="setContentEditable($event,true)"
+    @blur="setContentEditable($event,false)"
+    >
+    <span v-if="properties.Accelerator ===''">
+      {{properties.Caption}}
+    </span>
+    <span v-else v-html="getAccelerator">
+      {{properties.Caption}}
+    </span>
+    </button>
+</template>
+
+<script lang="ts">
+import { Component, Mixins, Watch } from 'vue-property-decorator'
+import FdControlVue from '@/api/abstract/FormDesigner/FdControlVue'
+@Component({
+  name: 'FDToggleButton'
+})
+export default class FDToggleButton extends Mixins(FdControlVue) {
+  $el!: HTMLButtonElement
+  isClicked: boolean = true
+  isFocus: boolean = false
+  clickCount: number = 0
+  isContentEditable : boolean = false
+
+  /**
+  * @description toggleButtonClick is a method to check the check the clicked functionality of the button tag. Also It sets the variables isClicked and isFocus based on the Locked property
+  * @function toggleButtonClick
+  *
+  */
+  toggleButtonClick (e: MouseEvent) {
+    this.clickCount = this.clickCount + 1
+    if (this.properties.Locked === false) {
+      this.isFocus = true
+      this.isClicked = !this.isClicked
+      if (this.properties.TripleState) {
+        if (this.clickCount % 3 === 0) {
+          this.updateDataModel({ propertyName: 'Value', value: '' })
+        } else if (this.isClicked) {
+          this.updateDataModel({ propertyName: 'Value', value: 'True' })
+        } else {
+          this.updateDataModel({ propertyName: 'Value', value: 'False' })
+        }
+      } else if (this.isClicked) {
+        this.updateDataModel({ propertyName: 'Value', value: 'True' })
+      } else {
+        this.updateDataModel({ propertyName: 'Value', value: 'False' })
+      }
+    } else {
+      this.isClicked = false
+    }
+    this.selectedItem(e)
+  }
+
+  /**
+  * @description watches changes in properties to set autoset when true
+  * @function autoSize
+  * @param oldVal previous properties data
+  * @param newVal  new/changed properties data
+  */
+  @Watch('properties.AutoSize', { deep: true })
+  autoSize (newVal:boolean, oldVal:boolean) {
+    // if autoSize is true then height and width value will not get updated
+    this.updateAutoSize()
+  }
+
+  /**
+  * @description changes width and height when autoSize is true by getting content offsetWidth
+  *  and offsetHeight with the help of Ref attribute
+  * @function updateAutoSize
+  * @override
+  */
+  updateAutoSize () {
+    if (this.properties.AutoSize === true) {
+      this.$nextTick(() => {
+        this.updateDataModel({ propertyName: 'Height', value: (this.$el.childNodes[0] as HTMLSpanElement).offsetHeight + 5 })
+        this.updateDataModel({ propertyName: 'Width', value: (this.$el.childNodes[0] as HTMLSpanElement).offsetWidth + 5 })
+      })
+    }
+  }
+  mounted () {
+    this.updateAutoSize()
+  }
+  /**
+  * @description style object is passed to :style attribute in button tag
+  * dynamically changing the styles of the component based on properties
+  * @function styleObj
+  *
+  */
+  protected get styleObj () :Partial<CSSStyleDeclaration> {
+    const controlProp = this.properties
+    const font: font = controlProp.Font ? controlProp.Font : {
+      FontName: 'Arial',
+      FontSize: 10
+    }
+    return {
+      // returns the styles to the main button element
+      // position: 'relative',
+      left: `${controlProp.Left}px`,
+      width: `${controlProp.Width}px`,
+      height: `${controlProp.Height}px`,
+      top: `${controlProp.Top}px`,
+      backgroundColor: controlProp.BackColor,
+      borderColor: controlProp.BorderColor,
+      boxShadow: controlProp.Enabled ? (controlProp.Value === 'False' || controlProp.Value === 'false' ? '1px 1px gray' : controlProp.Value === 'True' || controlProp.Value === 'true' ? '-1px -1px black' : '1px 1px gray') : '1px 1px gray',
+      background: controlProp.BackStyle ? controlProp.BackColor : 'transparent',
+      outline: controlProp.Enabled ? (this.isFocus ? '1px dotted black' : 'none') : 'none',
+      outlineOffset: this.isClicked ? '-5px' : '-5px',
+      display: controlProp.Visible ? 'inline-block' : 'none',
+      color: ((controlProp.Enabled === true) && (controlProp.Value === 'False' || controlProp.Value === 'false' || controlProp.Value === 'True' || controlProp.Value === 'true')) ? controlProp.ForeColor : this.getEnabled,
+      cursor: (controlProp.MousePointer !== 0 || controlProp.MouseIcon !== '') ? this.getMouseCursorData : 'default',
+      fontFamily: font.FontStyle ? font.FontStyle : font.FontName,
+      fontSize: `${font.FontSize}px`,
+      fontStyle: font.FontItalic ? 'italic' : '',
+      textDecoration: (font.FontStrikethrough === true && font.FontUnderline === true) ? 'underline line-through' : font.FontUnderline ? 'underline' : font.FontStrikethrough ? 'line-through' : '',
+      fontWeight: font.FontBold ? 'bold' : '',
+      whiteSpace: (controlProp.WordWrap ? 'normal' : 'nowrap'),
+      wordBreak: (controlProp.WordWrap ? 'break-word' : 'normal'),
+      paddingLeft: controlProp.AutoSize ? '0px' : '0px',
+      paddingRight: controlProp.WordWrap ? '0px' : '6px',
+      textAlign: controlProp.TextAlign === 0 ? 'left' : controlProp.TextAlign === 1 ? 'center' : 'right',
+      backgroundImage: `url(${controlProp.Picture})`,
+      backgroundRepeat: this.getRepeat,
+      backgroundPosition: this.getPosition,
+      backgroundPositionX: this.getPositionX,
+      backgroundPositionY: this.getPositionY
+    }
+  }
+}
+
+</script>
+
+<style scoped>
+.toggle-button {
+  height: 60px;
+  width: 55px;
+  box-shadow: 1px 1px gray;
+  border: none;
+  overflow: hidden;
+  outline: none;
+}
+</style>
