@@ -15,8 +15,10 @@
     <span v-if="properties.Accelerator ===''">
       {{properties.Caption}}
     </span>
-    <span v-else v-html="getAccelerator" >
-      {{properties.Caption}}
+    <span v-else>
+    <span>{{computedCaption.afterbeginCaption}}</span>
+    <span style="text-decoration:underline;">{{computedCaption.acceleratorCaption}}</span>
+    <span>{{computedCaption.beforeendCaption}}</span>
     </span>
     </button>
 </template>

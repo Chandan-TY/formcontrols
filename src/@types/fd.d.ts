@@ -256,3 +256,7 @@ interface IDragResizeGroup{
   event: MouseEvent
   handler: string
 }
+interface ITabOrderDialogInitialStyle {
+  left: string;
+  top: string;
+}

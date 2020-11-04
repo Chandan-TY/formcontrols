@@ -53,39 +53,14 @@ import { Component, Prop, Vue, Ref } from 'vue-property-decorator'
 import { EventBus } from '@/FormDesigner/event-bus'
 import { State, Action } from 'vuex-class'
 import { IupdateControl } from '@/storeModules/fd/actions'
-import { controlProperties } from '@/FormDesigner/controls-properties'
+import FdDialogDragVue, { localTabOrderItem } from '@/api/abstract/FormDesigner/FdDialogDragVue'
 
-export interface ImousePosition {
-  clientX: number;
-  clientY: number;
-  movementX: number;
-  movementY: number;
-}
-export interface ITabOrderDialogInitialStyle {
-  left: string;
-  top: string;
-}
-
-interface localTabOrderItem {
-  controlId: string;
-  name: string;
-}
 @Component({
   name: 'FDUserformTabOrder'
 })
-export default class FDUserformTabOrder extends Vue {
+export default class FDUserformTabOrder extends FdDialogDragVue {
   @State(state => state.fd.userformData) userformData!: userformData
   @Action('fd/updateControl') updateControl!: (payload: IupdateControl) => void;
-  positions: ImousePosition = {
-    clientX: 0,
-    clientY: 0,
-    movementX: 0,
-    movementY: 0
-  };
-  tabOrderDialogInitialStyle: ITabOrderDialogInitialStyle = {
-    left: '0px',
-    top: '50px'
-  };
   isTabOrderOpen: boolean = false
   userFormId : string = ''
   currentIndex: number = -1
@@ -102,60 +77,6 @@ export default class FDUserformTabOrder extends Vue {
       })
     }
     this.closeDialog()
-  }
-  closeDialog () {
-    this.isTabOrderOpen = false
-  }
-  selectedTab (data: number) {
-    this.currentIndex = data
-  }
-  swapTabOrderList (aIndex: number, bIndex: number) {
-    const temp = this.tabOrderList[aIndex]
-    this.tabOrderList[aIndex] = this.tabOrderList[bIndex]
-    this.tabOrderList[bIndex] = temp
-  }
-  moveControlUp () {
-    const currentIndex = this.currentIndex
-    const currentControl = this.tabOrderList[currentIndex]
-    if (currentIndex !== 0) {
-      this.swapTabOrderList(currentIndex, currentIndex - 1)
-      this.selectedTab(currentIndex - 1)
-    }
-  }
-
-  moveControlDown () {
-    const lastIndex = this.tabOrderList.length - 1
-    const currentIndex = this.currentIndex
-    const currentControl = this.tabOrderList[currentIndex]
-    if (currentIndex !== lastIndex) {
-      this.swapTabOrderList(currentIndex, currentIndex + 1)
-      this.selectedTab(currentIndex + 1)
-    }
-  }
-  dragTabOrderDialog (event: MouseEvent) {
-    this.positions.clientX = event.clientX
-    this.positions.clientY = event.clientY
-    document.onmousemove = this.elementDrag
-    document.onmouseup = this.closeDragElement
-  }
-  elementDrag (event: MouseEvent): void {
-    event.preventDefault()
-    this.positions.movementX = this.positions.clientX - event.clientX
-    this.positions.movementY = this.positions.clientY - event.clientY
-    this.positions.clientX = event.clientX
-    this.positions.clientY = event.clientY
-    this.tabOrderDialogInitialStyle.top =
-      parseInt(this.tabOrderDialogInitialStyle.top) -
-      this.positions.movementY +
-      'px'
-    this.tabOrderDialogInitialStyle.left =
-      parseInt(this.tabOrderDialogInitialStyle.left) -
-      this.positions.movementX +
-      'px'
-  }
-  closeDragElement (): void {
-    document.onmouseup = null
-    document.onmousemove = null
   }
   created () {
     EventBus.$on('userFormTabOrder', (userFormId: string, controlId: string) => {
@@ -183,12 +104,6 @@ export default class FDUserformTabOrder extends Vue {
   }
   destroyed () {
     EventBus.$off('userFormTabOrder')
-  }
-  get tabOrderStyleObj () {
-    return {
-      visibility: this.isTabOrderOpen === true ? 'visible' : 'hidden',
-      opacity: this.isTabOrderOpen === true ? '1' : '0'
-    }
   }
 }
 </script>

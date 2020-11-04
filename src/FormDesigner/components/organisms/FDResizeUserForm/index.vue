@@ -48,7 +48,7 @@ import FdContainerVue from '@/api/abstract/FormDesigner/FdContainerVue'
 })
 export default class ResizeUserForm extends FdSelectVue {
   @Prop({ required: true, type: String }) public containerId!: string
-  @Ref('userFormRef') readonly userFormRef!: FdContainerVue
+  @Ref('userFormRef') readonly userFormRef!: Userform
 
   tabCounter = 0
   /**
@@ -58,8 +58,7 @@ export default class ResizeUserForm extends FdSelectVue {
    * @event keydown
    */
   handleKeyDown (event: KeyboardEvent) {
-    // Getting static error  so i kept it as any
-    (this as any).userFormRef.$refs.containerRef.$refs.refContextMenu.updateAction(event)
+    this.userFormRef.containerRef.refContextMenu.updateAction(event)
   }
 
   /**

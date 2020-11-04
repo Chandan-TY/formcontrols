@@ -25,7 +25,13 @@
         >
          {{properties.Caption}}
         </span>
-        <span :style="spancssStyleProperty" v-else v-html="getAccelerator"> </span>
+
+        <!-- <span :style="spancssStyleProperty" v-else v-html="getAccelerator"> </span> -->
+            <span v-else :style="spancssStyleProperty">
+    <span>{{computedCaption.afterbeginCaption}}</span>
+    <span style="text-decoration:underline;">{{computedCaption.acceleratorCaption}}</span>
+    <span>{{computedCaption.beforeendCaption}}</span>
+    </span>
       </div>
     </div>
   </div>

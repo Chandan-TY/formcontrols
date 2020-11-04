@@ -140,26 +140,6 @@ export const controlProperties = {
     return positionProp[7]
   },
   /**
-* @description acceleratorProp returns underlinedCaption value
-* @function acceleratorProp
-* @param controlData propControlData passed as input
-* @returns string value
-*/
-  acceleratorProp: (controlData: controlData): string => {
-  // non-null assertion operator for type fix for null
-    let caption:string = controlData.properties.Caption!
-    // non-null assertion operator for type fix for null || undefined
-    const accelerator:string = controlData.properties.Accelerator!.charAt(0)
-    // '&#818;' unicode character for underline
-    const underline:string = '&#818;'
-    const isPresent:boolean = caption.includes(accelerator)
-    if (isPresent && accelerator !== '') {
-      const postion:number = caption.indexOf(accelerator)
-      caption = caption.substring(0, postion) + caption[postion] + underline + caption.substring(postion + 1, caption.length)
-    }
-    return caption
-  },
-  /**
 * @description pictureAlignmentProp returns background-position-x and
 *  background-position-y css style value
 * @function pictureAlignmentProp

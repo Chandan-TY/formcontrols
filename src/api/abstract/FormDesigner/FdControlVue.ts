@@ -5,12 +5,6 @@ import {
   ScrollBarData
 } from '@/FormDesigner/controls-properties-types'
 import { PropType } from 'vue'
-export interface ITabs {
-  Accelerator: string,
-  Caption: string,
-  Name: string,
-  ToolTip: string
-}
 
 @Component({
   name: 'FdControlVue'
@@ -174,15 +168,6 @@ export default class FdControlVue extends Vue {
       this.data
     )
     return posY.backgroundPositionY
-  }
-  /**
-   * @description getAccelerator returns string value from
-   * controlProperties.acceleratorProp
-   * @function getAccelerator
-   * @returns string value
-   */
-  protected get getAccelerator (): string {
-    return controlProperties.acceleratorProp(this.data)
   }
   /**
    * @description getSizeMode returns string value from
@@ -482,6 +467,44 @@ export default class FdControlVue extends Vue {
      return controlProperties.extraDataRepeatProp(this.data)
    } else {
      return controlProperties.pictureTilingProp(this.data)
+   }
+ }
+ /**
+   * @description computedCaption returns object value from
+   * with acceleratorCaption, afterbeginCaption, beforeendCaption values
+   * @function computedCaption
+   * @returns object value
+   */
+ protected get computedCaption () {
+   let afterbeginCaption:string = ''
+   let acceleratorCaption:string = ''
+   let beforeendCaption:string = ''
+
+   let caption = this.properties.Caption
+   let accelerator = this.properties.Accelerator!.charAt(0)
+   let isPresent:boolean = false
+   if (caption && accelerator) {
+     for (var i = 0; i < caption.length; i++) {
+       if (caption[i] === accelerator) {
+         isPresent = true
+         break
+       }
+     }
+     if (isPresent && accelerator !== '') {
+       const postion:number = caption.indexOf(accelerator)
+       acceleratorCaption = accelerator
+       afterbeginCaption = caption.substring(0, postion)
+       beforeendCaption = caption.substring(postion + 1, caption.length)
+     } else {
+       afterbeginCaption = caption
+     }
+   } else {
+     afterbeginCaption = caption!
+   }
+   return {
+     afterbeginCaption: afterbeginCaption,
+     acceleratorCaption: acceleratorCaption,
+     beforeendCaption: beforeendCaption
    }
  }
 }

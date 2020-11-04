@@ -2,14 +2,15 @@
   <div
     id="popup1"
     class="overlay"
-    :style="{visibility:(isOpen===true)?'visible':'hidden',opacity:(isOpen===true)?'1':'0'}"
+    :style="tabOrderStyleObj"
   >
-    <div class="outer-taborder-div popup">
-      <div class="taborder-header-div">
+    <div class="outer-taborder-div popup"
+     :style="tabOrderDialogInitialStyle">
+      <div class="taborder-header-div" @mousedown.stop="dragTabOrderDialog">
         <div class="taborder-header-innerdiv">
-          <a>Tab Order</a>
+          <a>Page Order</a>
         </div>
-        <button class="ui-btn close" @click="isOpen=false">
+        <button class="ui-btn close" @click="closeDialog">
           <svg viewBox="0 0 10 10">
             <polygon
               points="10.2,0.7 9.5,0 5.1,4.4 0.7,0 0,0.7 4.4,5.1 0,9.5 0.7,10.2 5.1,5.8 9.5,10.2 10.2,9.5 5.8,5.1"
@@ -19,25 +20,23 @@
       </div>
       <div class="wrapper">
         <div class="wrapper1">
-          <span class="inner-header">Tab Order</span>
+          <span class="inner-header">Page Order</span>
           <div class="frame">
+             <div  v-for="(value, index) in tabOrderList" :key="value.Name">
             <button
               class="inside-frame"
-              ref="value.key"
-              v-for="value in tabOrderArray"
-              :key="value.key"
-              @click="selectedTab(value)"
-            >{{value.Caption | acceleratorFilter}}</button>
-
-               <!-- :class="{'active-item': currentControl.index === value.index}"   -->
-
+              :class="{'active-item':currentIndex === index}"
+              @click="selectedTab(index)"
+            >{{value.Caption}}</button>
+            </div>
+          </div>
           </div>
         </div>
         <div class="wrapper2">
           <div style="height:3px"></div>
           <div class="wrapper21">
-            <button class="taborder-buttons" @click="closemeok">OK</button>
-            <button class="taborder-buttons" @click="isOpen=false">Cancel</button>
+            <button class="taborder-buttons" @click="updateControlData">OK</button>
+            <button class="taborder-buttons" @click="closeDialog">Cancel</button>
           </div>
           <div style="height:35px"></div>
           <div class="wrapper21">
@@ -46,120 +45,56 @@
           </div>
         </div>
       </div>
-    </div>
   </div>
 </template>
 
 <script lang="ts">
-// import { EventBus } from '../../components/event-bus'
 import { Component, Prop, Vue } from 'vue-property-decorator'
-export interface ITabs {
-  Accelerator: string,
-  Caption: string,
-  Name: string,
-  ToolTip: string
-}
+import { EventBus } from '@/FormDesigner/event-bus'
+import { State, Action } from 'vuex-class'
+import { IupdateControlExtraData } from '@/storeModules/fd/actions'
+import FdDialogDragVue from '@/api/abstract/FormDesigner/FdDialogDragVue'
+
 @Component({
-  filters: {
-    acceleratorFilter (value: any) {
-      const filteredValue = value
-      if (filteredValue !== null) {
-        if (filteredValue.includes('&#818;')) {
-          const newVal = filteredValue.replace(/&#818;/g, '')
-          console.log('filter', newVal)
-          return newVal
-        }
-      }
-      return value
-    }
-  },
+  name: 'TabStripTabOrderModal',
   components: {}
 })
-export default class TabStripTabOrderModal extends Vue {
-  @Prop() isOpen: boolean
-  @Prop() tabArray: Array<ITabs>
-  @Prop() selectedTabValue: ITabs
-  @Prop() userFormId: string
-  @Prop() controlId: string
-  tabOrderData: Array<ITabs>
-  openDialog () {
-    this.isOpen = true
-  }
-  closemeok () {
-    // EventBus.$emit('Okayed', this.tabOrderArray)
-    // update model
-    this.isOpen = false
-  }
-  tabOrderArray: any= [];
-  currentControl: any = {};
-  mounted () {
-    this.tabOrderArray = []
-    this.tabOrderData = this.tabArray
-    const arrayData = []
-    for (let i = 0; i < this.tabOrderData.length; i++) {
-      arrayData.push(Object.assign({}, this.tabOrderData[i]))
-    }
-    this.tabOrderArray = arrayData
-    console.log('Inside Tab Order', arrayData)
-    this.sortObject(this.tabOrderArray)
-  }
-  // mounted () {
-  //   this.tabOrderArray = []
+export default class TabStripTabOrderModal extends FdDialogDragVue {
+   @State(state => state.fd.userformData) userformData!: userformData
+  @Action('fd/updateControlExtraData') updateControlExtraData!: (payload: IupdateControlExtraData) => void;
 
-  //   EventBus.$on('tabOrderData', (data: any) => {
-  //     const arrayData = []
-  //     for (let i = 0; i < data.length; i++) {
-  //       arrayData.push(Object.assign({}, data[i]))
-  //     }
-  //     this.tabOrderArray = arrayData
-  //     console.log('Inside Tab Order', arrayData)
-  //   })
-  //   EventBus.$on('callTabOrder', () => {
-  //     this.isOpen = true
-  //   })
-  //   this.sortObject(this.tabOrderArray)
-  // }
-  selectedTab (data: any) {
-    console.log(data)
-    this.currentControl = data
-  }
-  sortObject (obj: any) {
-    this.tabOrderArray = obj
-    let arr = []
-    arr = this.tabOrderArray
+ isTabOrderOpen: boolean = false
+  userFormId : string = ''
+  controlId : string = ''
+  currentIndex: number = -1
+  tabOrderList: tabsItems[] = []
 
-    arr.sort(function (a: { index: number }, b: { index: number }) {
-      return a.index - b.index
+  updateControlData () {
+    this.updateControlExtraData({
+      userFormId: this.userFormId,
+      controlId: this.controlId,
+      propertyName: 'Tabs',
+      value: this.tabOrderList
     })
-    this.tabOrderArray = arr
-    this.currentControl = this.tabOrderArray[0]
-    // console.log(this.tabOrderArray);
+    this.closeDialog()
   }
-  moveControlUp () {
-    let temp: any
-    const i = this.currentControl.index
-    if (this.currentControl.index === 0) {
-      return
-    } else {
-      this.tabOrderArray[i].index = i - 1
-      this.tabOrderArray[i - 1].index = i
-      this.sortObject(this.tabOrderArray)
-      this.currentControl = this.tabOrderArray[i - 1]
-    }
-    console.log('UPped', this.currentControl.index)
+  closeDialog () {
+    this.isTabOrderOpen = false
   }
-
-  moveControlDown () {
-    let temp: any
-    const i = this.currentControl.index
-    if (this.currentControl.index === this.tabOrderArray.length - 1) {
-
-    } else {
-      this.tabOrderArray[i].index = i + 1
-      this.tabOrderArray[i + 1].index = i
-      this.sortObject(this.tabOrderArray)
-      this.currentControl = this.tabOrderArray[i + 1]
-    }
+  created () {
+    EventBus.$on('tabStripTabOrder', (userFormId: string, controlId: string) => {
+      const tabOrderControlData = this.userformData[userFormId][controlId].extraDatas!.Tabs!
+      if (tabOrderControlData.length > 0) {
+        this.tabOrderList = JSON.parse(JSON.stringify(tabOrderControlData))
+      }
+      this.isTabOrderOpen = true
+      this.userFormId = userFormId
+      this.controlId = controlId
+      this.currentIndex = 0
+    })
+  }
+  destroyed () {
+    EventBus.$off('tabStripTabOrder')
   }
 }
 </script>
@@ -198,7 +133,6 @@ h1 {
   border-radius: 20px/50px;
   text-decoration: none;
   cursor: pointer;
-  transition: all 0.3s ease-out;
 }
 .button:hover {
   background: #06d85f;
@@ -211,7 +145,6 @@ h1 {
   left: 0;
   right: 0;
   background: rgba(0, 0, 0, 0.7);
-  transition: opacity 500ms;
   visibility: hidden;
   opacity: 0;
   z-index: 110;
@@ -228,7 +161,6 @@ h1 {
   border-radius: 5px;
   width: 30%;
   position: relative;
-  transition: all 5s ease-in-out;
 }
 
 .popup h2 {
@@ -240,7 +172,6 @@ h1 {
   position: absolute;
   /* top: 20px; */
   right: 0px;
-  transition: all 200ms;
   /* font-size: 30px; */
   font-weight: bold;
   text-decoration: none;
@@ -342,7 +273,7 @@ h1 {
   font-size: 13px;
   box-shadow: 1px 1px;
   border: 0.5px solid gray;
-  /* outline: 1px; */
+  outline: none;
 }
 .ui-btn {
   /* margin: 2px; */

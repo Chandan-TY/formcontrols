@@ -2,7 +2,8 @@
   <div class="custom-select" :tabindex="tabindex" :style="customSelectObj"
    :title="properties.ControlTipText">
     <div class="combobox" :style="boxStyleObj">
-      <div>
+      <div :class="properties.SelectionMargin?'selectionDiv':''">
+        <span v-if="properties.SelectionMargin" :style="[selectionSpan,{backgroundColor:properties.BackColor}]" @click="setSelection"></span>
         <textarea
         ref="textareaRef"
         :style="cssStyleProperty"
@@ -12,6 +13,7 @@
         @keydown.enter="enterFieldBehavior"
         @blur="handleBlur($event, textareaRef, hideSelectionDiv)"
         @click="handleClick(hideSelectionDiv)"
+        @input="handleTextInput($event)"
         :maxlength="properties.MaxLength!==0?properties.MaxLength:''"
         class="text-box-design"
         :value="
@@ -71,7 +73,7 @@
         >
           <td :style="tdStyleObj"
             style="width:10px"
-            v-if="properties.ListStyle === 1 && properties.ColumnCount>0"
+            v-if="(properties.ListStyle === 1 && properties.ColumnCount>0)"
           >
             <input
               name="radio"
@@ -107,6 +109,7 @@ import { Mutation, Action, Getter } from 'vuex-class'
 export default class FDComboBox extends Mixins(FdControlVue) {
   $el!: HTMLDivElement
   @Ref('textareaRef') textareaRef: HTMLTextAreaElement
+  @Ref('autoSizeTextarea') readonly autoSizeTextarea! : HTMLLabelElement
   @Ref('hideSelectionDiv') readonly hideSelectionDiv! : HTMLDivElement
 
    private options = ['hello'];
@@ -119,12 +122,22 @@ export default class FDComboBox extends Mixins(FdControlVue) {
   matchIndex: number = 0;
    multiselect = [];
   // textColumn
-  selectionData = [];
+  selectionData: Array<string> = [];
 
   // MatchFirstCharacter
   matchEntry: any = [];
   // matchIndex = -1;
+  tempInputValue: string = ''
 
+  handleTextInput (e: any) {
+    this.tempInputValue = e.target!.value
+  }
+
+  setSelection () {
+    console.log('Im selecting all the text');
+    (this as any).$refs['textareaRef'].focus();
+    (this as any).$refs['textareaRef'].select()
+  }
   enterFieldBehavior (e: any) {
     if (this.properties.EnterFieldBehavior === 0) {
       e.preventDefault();
@@ -154,7 +167,7 @@ export default class FDComboBox extends Mixins(FdControlVue) {
   *
   */
   handleBlur (event: TextEvent, textareaRef: HTMLTextAreaElement, hideSelectionDiv: HTMLDivElement) {
-    if (!this.properties.HideSelection) {
+    if (!this.properties.HideSelection && textareaRef) {
       const eventTarget = event.target as HTMLTextAreaElement
       hideSelectionDiv.style.display = 'block'
       hideSelectionDiv.style.height = this.properties.Height! + 2 + 'px'
@@ -170,6 +183,12 @@ export default class FDComboBox extends Mixins(FdControlVue) {
     "<span style='background-color:lightblue'>" +
     firstPart.slice(eventTarget.selectionStart + Math.abs(0))
       hideSelectionDiv.innerHTML = text
+    }
+    if (this.properties.MatchRequired && textareaRef) {
+      const arrayCheck = this.extraDatas.RowSourceData!.findIndex(element => element[0] === this.tempInputValue)
+      if (arrayCheck === -1) {
+        (this as any).$refs['textareaRef'].focus()
+      }
     }
   }
   /**
@@ -230,29 +249,31 @@ export default class FDComboBox extends Mixins(FdControlVue) {
   // }
 
   /**
-  * @description watches changes in propControlData to set autoset when true
-  * @function autoSize
-  * @param oldVal previous propControlData data
-  * @param newVal  new/changed propControlData data
-  */
-  @Watch('properties.AutoSize', { deep: true })
-  autoSize (newVal:boolean, oldVal:boolean) {
-    // if autoSize is true then height and width value will not get updated
-    this.updateAutoSize()
-  }
-  /**
-   * @description updateAutoSize calls Vuex Actions to update object
-   * @function updateAutoSize
    * @override
    */
-  updateAutoSize () {
+  @Watch('properties.AutoSize', { deep: true })
+  updateAutoSize (newVal:boolean, oldVal:boolean) {
     if (this.properties.AutoSize === true) {
+      debugger
       this.$nextTick(() => {
-        this.updateDataModel({ propertyName: 'Height', value: (this.$el.childNodes[0] as HTMLInputElement).offsetHeight })
-        this.updateDataModel({ propertyName: 'Width', value: (this.$el.childNodes[0] as HTMLInputElement).offsetWidth })
+        const textareaRef: HTMLTextAreaElement = this.textareaRef
+        // replication of stype attribute to Label tag for autoSize property to work
+        let tempLabel: HTMLLabelElement = this.autoSizeTextarea
+        tempLabel.style.display = 'inline'
+        tempLabel.style.fontStyle = textareaRef.style.fontStyle
+        tempLabel.style.fontSize = parseInt(textareaRef.style.fontSize) + 'px'
+        tempLabel.style.whiteSpace = textareaRef.style.whiteSpace
+        tempLabel.style.wordBreak = textareaRef.style.wordBreak
+        tempLabel.style.fontWeight = textareaRef.style.fontWeight
+        tempLabel.style.width = textareaRef.style.width
+        tempLabel.style.height = textareaRef.style.height
+        tempLabel.innerText = textareaRef.value
+        this.updateDataModel({ propertyName: 'Width', value: tempLabel.offsetWidth + 5 })
+        this.updateDataModel({ propertyName: 'Height', value: tempLabel.offsetHeight + 5 })
+        tempLabel.innerText = ''
+        tempLabel.style.display = 'none'
+        this.selectionData[0] = this.tempInputValue
       })
-      console.log('Height Auto', (this.$el.childNodes[0] as HTMLInputElement).offsetHeight)
-      console.log('Width Auto', (this.$el.childNodes[0] as HTMLInputElement).offsetWidth)
     }
   }
 
@@ -347,6 +368,10 @@ export default class FDComboBox extends Mixins(FdControlVue) {
       // this.updateDataModel({ propertyName: 'Value', value: '' })
       this.updateDataModel({ propertyName: 'Text', value: '' })
     }
+  }
+  @Watch('properties.SelectionMargin', { deep: true })
+  checkSelectionMargin (newVal:boolean, oldVal:boolean) {
+    this.selectionData[0] = this.tempInputValue
   }
   // @Watch('properties.Text', { deep: true })
   // textChange (newVal:Text, oldVal:Text) {
@@ -916,6 +941,13 @@ export default class FDComboBox extends Mixins(FdControlVue) {
   outline: none;
   height: 47px;
   /* line-height: 10px; specify the drop down height */
+}
+.selectionSpan{
+  width: 5px;
+}
+.selectionDiv{
+  display: grid;
+  grid-template-columns: 5px auto;
 }
 .selected {
   background-color: lightgray;

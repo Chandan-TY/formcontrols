@@ -19,8 +19,11 @@
       @mousedown="deActiveControl(this)"
       @contextmenu.stop="openMenu($event, userFormId, controlId)"
       @mouseup="calSelectedAreaStyle($event)"
+      ref="innerUserForm"
+      @scroll="updateScrollingLeftTop"
     >
       <Container
+        class="container"
         :contextMenuType="contextMenuType"
         :viewMenu="viewMenu"
         :userFormId="userFormId"
@@ -38,12 +41,13 @@
 </template>
 
 <script lang="ts">
-import { Component, Emit, Prop, Vue, Ref } from 'vue-property-decorator'
+import { Component, Emit, Prop, Vue, Ref, Watch } from 'vue-property-decorator'
 import Container from '@/FormDesigner/components/organisms/FDContainer/index.vue'
 import { State, Action } from 'vuex-class'
 import FDSVGImage from '@/FormDesigner/components/atoms/FDSVGImage/index.vue'
 import { controlProperties } from '@/FormDesigner/controls-properties'
 import FdContainerVue from '@/api/abstract/FormDesigner/FdContainerVue'
+import { IupdateControl } from '@/storeModules/fd/actions'
 @Component({
   name: 'UserForm',
   components: {
@@ -53,6 +57,8 @@ import FdContainerVue from '@/api/abstract/FormDesigner/FdContainerVue'
 })
 export default class UserForm extends FdContainerVue {
   @Ref('containerRef') readonly containerRef!: Container;
+  @Action('fd/updateControl') updateControl!: (payload: IupdateControl) => void;
+
   innerWindowFocused: boolean = false;
   innerWindowFocus (value: boolean) {
     this.innerWindowFocused = value
@@ -63,6 +69,15 @@ export default class UserForm extends FdContainerVue {
   }
 
   mounted () {
+    this.scrollLeftTop(this.data)
+  }
+  @Watch('properties.ScrollLeft', { deep: true })
+  updateScrollLeft () {
+    this.scrollLeftTop(this.data)
+  }
+
+  @Watch('properties.ScrollTop', { deep: true })
+  updateScrollTop () {
     this.scrollLeftTop(this.data)
   }
 
@@ -83,18 +98,7 @@ export default class UserForm extends FdContainerVue {
   protected get getSampleDotPattern (): any {
     const dotSize = 1
     const dotSpace = 10
-    // background:
-    // linear-gradient(90deg, $bg-color ($dot-space - $dot-size), transparent 1%) center,
-    // linear-gradient($bg-color ($dot-space - $dot-size), transparent 1%) center,
-    // $dot-color;
-    const dotpatternString = `${this.properties.BackColor} 0 ${
-      dotSpace - dotSize
-    }px, transparent ${dotSpace - dotSize}px 100%`
     return {
-      // background: `linear-gradient(90deg, ${dotpatternString}),
-      //             linear-gradient(${dotpatternString}),
-      //             ${this.properties.ForeColor}`,
-      // backgroundSize: `${dotSpace}px ${dotSpace}px`,
       backgroundPosition: `7px 7px`,
       backgroundImage: `radial-gradient(${this.properties.ForeColor} 11%, transparent 10%)`,
       backgroundSize: `${dotSpace}px ${dotSpace}px`
@@ -107,14 +111,14 @@ export default class UserForm extends FdContainerVue {
    * @param controlData propControlData passed as input
    */
   scrollLeftTop (controlData: controlData) {
-    const refName: string = 'dragSelector'.concat(this.userFormId)
+    const refName: any = this.$refs.innerUserForm
     const scrollLeft: number = this.properties.ScrollLeft!
     const scrollTop: number = this.properties.ScrollTop!
     if (scrollLeft > 0) {
-      (this.$refs[refName] as dragselector).$el.parentElement!.scrollLeft = scrollLeft
+      refName.scrollLeft = scrollLeft
     }
     if (scrollTop > 0) {
-      (this.$refs[refName] as dragselector).$el.parentElement!.scrollTop = scrollTop
+      refName.scrollTop = scrollTop
     }
   }
 
@@ -187,6 +191,22 @@ export default class UserForm extends FdContainerVue {
     return { float: this.properties.RightToLeft === true ? 'right' : 'left' }
   }
 
+  updateScrollingLeftTop (e: MouseEvent) {
+    const refName: any = this.$refs.innerUserForm
+    this.updateControl({
+      userFormId: this.userFormId,
+      controlId: this.controlId,
+      propertyName: 'ScrollLeft',
+      value: refName.scrollLeft
+    })
+    this.updateControl({
+      userFormId: this.userFormId,
+      controlId: this.controlId,
+      propertyName: 'ScrollTop',
+      value: refName.scrollTop
+    })
+    console.log('scroll', this.userformData[this.userFormId][this.userFormId].properties)
+  }
   /**
    * @description to drag and select  the contol in container
    * @function calSelectedAreaStyle
@@ -278,7 +298,7 @@ export default class UserForm extends FdContainerVue {
     }
     const controlLeft: number | undefined = this.userformData[parentID][controlID].properties.Left
     const controlTop: number | undefined = this.userformData[parentID][controlID].properties.Top
-    this.top = `${e.offsetY + controlTop!}px`
+    this.top = `${e.offsetY + controlTop! + 30}px`
     this.left = `${e.offsetX + controlLeft!}px`
     this.viewMenu = true
     const controlLength = this.userformData[this.userFormId][parentID].controls
@@ -316,7 +336,7 @@ export default class UserForm extends FdContainerVue {
         }
       }
     }
-    Vue.nextTick(() => (this as any).containerRef.$refs.contextmenu.focus())
+    Vue.nextTick(() => (this.containerRef.$refs.contextmenu as HTMLElement).focus())
   }
 }
 </script>
@@ -328,7 +348,7 @@ export default class UserForm extends FdContainerVue {
   outline: 1px solid lightslategray;
   outline-style: auto;
   position: relative;
-  border: 5px solid rgb(180, 211, 252);
+  border: 5px solid rgba(153,180,209);
   border-radius: 5px;
   overflow: hidden;
   top: -5px !important;
@@ -354,7 +374,7 @@ export default class UserForm extends FdContainerVue {
   grid-template-columns: 9fr 1fr;
   width: 100%;
   height: 30px;
-  background-color: rgb(180, 211, 252);
+  background-color: rgba(153,180,209);
 }
 .inner-window-content {
   flex: 1;
@@ -421,5 +441,9 @@ export default class UserForm extends FdContainerVue {
 
 :focus {
   outline: none;
+}
+.container{
+  width:100%;
+  height: 100%;
 }
 </style>

@@ -1,25 +1,26 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import { storiesOf } from '@storybook/vue'
 import { text, withKnobs } from '@storybook/addon-knobs'
-import { mapState } from 'vuex'
 
 import { sampleStore, updateVuexCallback, initUpdate } from '@/api/storybook/utilReactivity.js'
 
 import FdResizeControl from '@/FormDesigner/components/organisms/FDResizeControl/index.vue'
 import SpecNote from './index.spec.md'
 
-const tabStripObj = {
+const comboBoxObj = {
   store: sampleStore,
   components: { FdResizeControl },
-  props: {},
+  props: {
+  },
   template: `
-  <div :style="styled">
-  <fd-resize-control
-    :controlId="ControlId"
-    :userFormId="UserFormId"
-    :containerId="UserFormId"
-    />
-</div>
+      <div :style="styled">
+      <fd-resize-control
+        :controlId="ControlId"
+        :userFormId="UserFormId"
+        :containerId="UserFormId"
+        />
+    </div>
+      </div>
     `,
   methods: {
   },
@@ -29,12 +30,10 @@ const tabStripObj = {
   data () {
     return {
       UserFormId: text('UserFormId', 'ID_USERFORM1'),
-      ControlId: text('ControlId', 'ID_TabStrip1')
+      ControlId: text('ControlId', 'ID_ComboBox1')
     }
   },
   computed: {
-    ...mapState({
-    }),
     styled () {
       return {
         width: `400px`,
@@ -45,12 +44,12 @@ const tabStripObj = {
   }
 }
 
-storiesOf('atoms|FdControl/FDTabStrip', module).addDecorator(withKnobs({
+storiesOf('atoms|FdControl/FDComboBox', module).addDecorator(withKnobs({
   callback: updateVuexCallback(sampleStore)
 })).add(
-  'tabStrip',
+  'comboBox',
   () => {
-    return { ...tabStripObj }
+    return { ...comboBoxObj }
   },
   {
     notes: { markdown: SpecNote },

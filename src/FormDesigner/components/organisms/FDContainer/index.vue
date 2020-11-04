@@ -77,6 +77,7 @@ export default class Container extends Vue {
   @Prop({ required: true, type: String }) left: string;
 
   @Ref('groupRef') readonly groupRef!: GroupControl;
+  @Ref('refContextMenu') readonly refContextMenu!: ContextMenu
 
   controlContextMenu: Array<IcontextMenu> = controlContextMenu;
   userformContextMenu: Array<IcontextMenu> = userformContextMenu;

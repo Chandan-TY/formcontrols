@@ -8,7 +8,6 @@
     @keydown.delete.exact="deleteItem"
     @keydown.enter="setContentEditable($event,true)"
     @click.stop="selectedItem"
-    @dblclick="dragGroup"
   >
     <!-- ToDo: :accelerator="properties.Accelerator" -->
     <FDEditableText

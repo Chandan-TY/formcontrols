@@ -330,7 +330,6 @@ export default class GroupControl extends Vue {
     this.groupStyle('group1')
   }
   getGroupEditStyle (groupName: string) {
-    debugger
     const selected = this.selectedControls[this.userFormId].selected
     return selected.length === 1 && !selected[0].startsWith('group') && this.userformData[this.userFormId][selected[0]].properties.GroupID === groupName
   }

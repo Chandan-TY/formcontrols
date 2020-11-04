@@ -1,13 +1,13 @@
 <template>
   <div>
     <div
-      v-if="isEditMode"
-      :class="mainSelected && !isRunMode ? 'mainDiv2' : 'mainDiv1'"
+      :class="mainSelected  && isEditMode && !isRunMode ? 'mainDiv2' :(mainSelected  && !isEditMode && !isRunMode)? 'mainDiv' : 'mainDiv1'"
       :style="resizeControlStyle"
        :ref="'draRef'.concat(controlId)"
-      @mousedown.stop
-      @mousedown.self="mainSelected ? handleDrag($event) : dragGroupControl($event)"
+      @mousedown.stop="mainSelected && !isEditMode? handleDrag($event) : !isEditMode ? dragGroupControl($event): ''"
+      @mousedown.self.stop="mainSelected && isEditMode ? handleDrag($event) : isEditMode? dragGroupControl($event):''"
       @contextmenu.stop="openContextMenu($event, userFormId, controlId)"
+      @click.stop
     >
       <ResizeHandler
         v-if="!isRunMode"
@@ -22,41 +22,7 @@
       <component
         :is="propControlData.type"
         :controlId="propControlData.properties.ID"
-        :data="propControlData"
-        :isActivated="this.selectedControls[this.userFormId].selected.includes(this.controlId)"
-        :isRunMode="isRunMode"
-        :isEditMode="isEditMode"
-        @setEditMode="setEditMode"
-        @selectedItem="selectedItem"
-        @dragGroup="dragGroup"
-        @deleteItem="deleteItem"
-        @updateModel="updateModelHandle"
-        @updateModelExtraData="updateModelExtraDataHandle"
-      >
-        {{ propControlData.properties.Caption }}
-      </component>
-    </div>
-     <div
-       v-else
-      :class="mainSelected && !isRunMode ? 'mainDiv' : 'mainDiv1'"
-      :style="resizeControlStyle"
-       :ref="'draRef'.concat(controlId)"
-      @mousedown.stop="mainSelected ? handleDrag($event) : dragGroupControl($event)"
-      @contextmenu.stop="openContextMenu($event, userFormId, controlId)"
-    >
-      <ResizeHandler
-        ref="resize"
-        v-if="!isRunMode"
-        @updateResize="updateResize"
-        :controlId="controlId"
-        :userFormId="userFormId"
-        controlType="control"
-        @createGroup="createGroup"
-        @muldragControl="muldragControl"
-      />
-      <component
-        :is="propControlData.type"
-        :controlId="propControlData.properties.ID"
+        :userFormId="getUserFormId"
         :data="propControlData"
         :isActivated="this.selectedControls[this.userFormId].selected.includes(this.controlId)"
         :isRunMode="isRunMode"
@@ -86,10 +52,11 @@ import SpinButton from '@/FormDesigner/components/atoms/FDSpinButton/index.vue'
 import ScrollBar from '@/FormDesigner/components/atoms/FDScrollBar/index.vue'
 import OptionButton from '@/FormDesigner/components/atoms/FDOptionButton/index.vue'
 import CheckBox from '@/FormDesigner/components/atoms/FDCheckBox/index.vue'
-import ComboBox from '@/FormDesigner/components/molecules/FDComboBox/index.vue'
-import ListBox from '@/FormDesigner/components/molecules/FDListBox/index.vue'
+import ComboBox from '@/FormDesigner/components/atoms/FDComboBox/index.vue'
+import ListBox from '@/FormDesigner/components/atoms/FDListBox/index.vue'
 import FDImage from '@/FormDesigner/components/atoms/FDImage/index.vue'
 import Frame from '@/FormDesigner/components/atoms/FDFrame/index.vue'
+import TabStrip from '@/FormDesigner/components/atoms/FDTabStrip/index.vue'
 import ResizeHandler from '@/FormDesigner/components/molecules/FDResizeHandler/index.vue'
 import FdSelectVue from '@/api/abstract/FormDesigner/FdSelectVue'
 @Component({
@@ -107,7 +74,8 @@ import FdSelectVue from '@/api/abstract/FormDesigner/FdSelectVue'
     FDImage,
     Frame,
     ComboBox,
-    ListBox
+    ListBox,
+    TabStrip
   }
 })
 export default class ResizeControl extends FdSelectVue {
@@ -199,39 +167,32 @@ export default class ResizeControl extends FdSelectVue {
     }
   }
   selectedItem () {
+    debugger
     const groupId = this.propControlData.properties.GroupID ? this.propControlData.properties.GroupID : ''
     const currentSelect = this.selectedControls[this.userFormId].selected
-    if (groupId === '') {
-      if (currentSelect.length === 1 && currentSelect[0] === this.controlId) {
-      } else {
-        if (currentSelect.length > 1) {
-          this.exchangeSelect()
-        } else {
-          let selectTarget = null
-          let currentGroup = ''
-          if (groupId !== '') {
-            if (this.syncCurrentSelectedGroup === groupId || currentSelect[0] === groupId) {
-              selectTarget = this.controlId
-            } else {
-              selectTarget = groupId
-            }
-            currentGroup = groupId
-          } else {
-            selectTarget = this.controlId
-          }
-          this.selectControl({
-            userFormId: this.userFormId,
-            select: { container: [this.containerId], selected: [selectTarget] }
-          })
-          this.syncCurrentSelectedGroup = currentGroup
-        }
-      }
+    if (currentSelect.length === 1 && currentSelect[0] === this.controlId) {
+      this.isEditMode = true
     } else {
-      if (!currentSelect.includes(this.propControlData.properties.ID) && currentSelect.length === 1) {
+      if (currentSelect.length > 1) {
+        this.exchangeSelect()
+      } else {
+        let selectTarget = null
+        let currentGroup = ''
+        if (groupId !== '') {
+          if (this.syncCurrentSelectedGroup === groupId && currentSelect[0] === groupId) {
+            selectTarget = this.controlId
+          } else {
+            selectTarget = groupId
+          }
+          currentGroup = groupId
+        } else {
+          selectTarget = this.controlId
+        }
         this.selectControl({
           userFormId: this.userFormId,
-          select: { container: [this.containerId], selected: [groupId] }
+          select: { container: [this.containerId], selected: [selectTarget] }
         })
+        this.syncCurrentSelectedGroup = currentGroup
       }
     }
   }
@@ -252,6 +213,12 @@ export default class ResizeControl extends FdSelectVue {
   @Watch('selectedControls', { deep: true })
   updateSelectedControls () {
     this.isEditMode = false
+  }
+  get getUserFormId () {
+    if (this.propControlData.type === 'Frame' || this.propControlData.type === 'MultiPage') {
+      return this.userFormId
+    }
+    return ''
   }
 }
 </script>

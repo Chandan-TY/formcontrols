@@ -63,13 +63,6 @@
   @setIsDialogVisible='setIsDialogVisible' />
 </div>
 <div>
-  <FDTabStripTabOrderModal v-if="isTabOrderVisible"
-  :tabArray="data.extraDatas.Tabs"
-  :selectedTabValue="data.extraDatas.Tabs[selectedTab]"
-  :userFormId="userFormId"
-  :controlId="controlId"
-  :isOpen="isTabOrderVisible"
-  />
 </div>
 </div>
 </template>
@@ -80,15 +73,13 @@ import FDSVGImage from '@/FormDesigner/components/atoms/FDSVGImage/index.vue'
 import { Action, State } from 'vuex-class'
 import { IaddControl, IdeleteControl, IselectControl, IupdateControl, IupdateControlExtraData, IupdateCopyControlList, IupdateGroup } from '@/storeModules/fd/actions'
 import FDRenameMultiPageDialog, { ITabs } from '@/FormDesigner/components/organisms/FDRenameMultiPageDialog/index.vue'
-import FDTabStripTabOrderModal from '@/FormDesigner/components/organisms/FDTabStripTabOrderModal.vue/index.vue'
 import { EventBus } from '@/FormDesigner/event-bus'
 
 @Component({
   name: 'ContextMenu',
   components: {
     FDSVGImage,
-    FDRenameMultiPageDialog,
-    FDTabStripTabOrderModal
+    FDRenameMultiPageDialog
   }
 })
 export default class ContextMenu extends Vue {
@@ -138,8 +129,10 @@ export default class ContextMenu extends Vue {
     } else if (controlActionName === 'ID_RENAME') {
       this.isRenameDialogVisible = true
     } else if (controlActionName === 'ID_MOVE') {
-      this.isTabOrderVisible = true
+      // Instead of 'ID_USERFORM1' this.userFormId should be passed
+      EventBus.$emit('tabStripTabOrder', 'ID_USERFORM1', this.controlId)
     } else if (controlActionName === 'ID_TABORDER') {
+      // second parameter should be this.controlId
       EventBus.$emit('userFormTabOrder', this.userFormId, this.userFormId)
     }
     this.closeMenu()
