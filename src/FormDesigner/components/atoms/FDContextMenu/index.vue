@@ -54,13 +54,6 @@
     </div>
   </div>
   <div>
-  <FDRenameMultiPageDialog v-if="isRenameDialogVisible"
-  :renameData="data.extraDatas.Tabs"
-  :selectedTab="data.extraDatas.Tabs[selectedTab]"
-  :userFormId="userFormId"
-  :controlId="controlId"
-  :isOpen="isRenameDialogVisible"
-  @setIsDialogVisible='setIsDialogVisible' />
 </div>
 <div>
 </div>
@@ -72,14 +65,12 @@ import { Component, Vue, Prop, Emit } from 'vue-property-decorator'
 import FDSVGImage from '@/FormDesigner/components/atoms/FDSVGImage/index.vue'
 import { Action, State } from 'vuex-class'
 import { IaddControl, IdeleteControl, IselectControl, IupdateControl, IupdateControlExtraData, IupdateCopyControlList, IupdateGroup } from '@/storeModules/fd/actions'
-import FDRenameMultiPageDialog, { ITabs } from '@/FormDesigner/components/organisms/FDRenameMultiPageDialog/index.vue'
 import { EventBus } from '@/FormDesigner/event-bus'
 
 @Component({
   name: 'ContextMenu',
   components: {
-    FDSVGImage,
-    FDRenameMultiPageDialog
+    FDSVGImage
   }
 })
 export default class ContextMenu extends Vue {
@@ -104,9 +95,6 @@ export default class ContextMenu extends Vue {
   @Action('fd/updateControlExtraData') updateControlExtraData!: (payload: IupdateControlExtraData) => void;
   @Action('fd/updateControl') updateControl!: (payload: IupdateControl) => void;
 
-  isRenameDialogVisible: boolean = false
-  isTabOrderVisible: boolean = false
-
   controlAction (controlActionName: string) {
     if (controlActionName === 'ID_COPY') {
       this.copyControl()
@@ -127,13 +115,16 @@ export default class ContextMenu extends Vue {
     } else if (controlActionName === 'ID_DELETEPAGE') {
       this.deleteCurrentPage(this.selectedTab)
     } else if (controlActionName === 'ID_RENAME') {
-      this.isRenameDialogVisible = true
+      // Instead of 'ID_USERFORM1' this.userFormId should be passed
+      EventBus.$emit('renamePage', 'ID_USERFORM1', this.controlId, this.selectedTab)
     } else if (controlActionName === 'ID_MOVE') {
       // Instead of 'ID_USERFORM1' this.userFormId should be passed
       EventBus.$emit('tabStripTabOrder', 'ID_USERFORM1', this.controlId)
     } else if (controlActionName === 'ID_TABORDER') {
+      // console.log('containerId', this.containerId)
+      // EventBus.$emit('userFormTabOrder', this.userFormId, this.containerId)
       // second parameter should be this.controlId
-      EventBus.$emit('userFormTabOrder', this.userFormId, this.userFormId)
+      EventBus.$emit('userFormTabOrder', this.userFormId, this.containerId)
     }
     this.closeMenu()
   }
@@ -148,9 +139,6 @@ export default class ContextMenu extends Vue {
   @Emit('deleteCurrentPage')
   deleteCurrentPage (selectedTab: number) {
     return selectedTab
-  }
-  setIsDialogVisible (isRenameDialogOpen : boolean) {
-    this.isRenameDialogVisible = isRenameDialogOpen
   }
   updateControlProperty (propertyName: keyof controlProperties, propertyValue: number|string, controlId: string) {
     this.updateControl({

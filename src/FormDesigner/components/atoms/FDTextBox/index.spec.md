@@ -50,7 +50,7 @@
 <h4>Enabled</h4>
 <span>Indicates enable/disable of control</span>
 
-<h4>EnterFieldBehavior<span style="color:red;">(1)</span></h4>
+<h4>EnterFieldBehavior <span style="color:red;">(1)</span></h4>
 <span>Property about whether to select the entire text or apply the previous selection when focus comes with EnterKey or tab</span>
 
 
@@ -66,16 +66,16 @@
 <h4>Height</h4>
 <span>Set height of label control </span>
 
-<h4>HelpContextID<span style="color:red;">(3)</span></h4>
+<h4>HelpContextID <span style="color:red;">(3)</span></h4>
 <span> Opens the file designated as HelpFile and shows the item set as HelpContextID</span>
 
 <h4>HideSelection</h4>
 <span>Whether to keep the selection even when focus goes out</span>
 
-<h4>IMEMode<span style="color:red;">(3)</span></h4>
+<h4>IMEMode <span style="color:red;">(4)</span></h4>
 <span>IMEMode (input method editor) change</span>
 
-<h4>IntegralHeight<span style="color:red;">(1)</span></h4>
+<h4>IntegralHeight <span style="color:red;">(4)</span></h4>
 <span>Indicates whether the ListBox or TextBox displays
 the entire line of text in a list or partial line.</span>
 
@@ -94,12 +94,6 @@ the entire line of text in a list or partial line.</span>
 <h4>MousePointer</h4>
 <span>Changes the shape of the mouse cursor when the mouse is over the control </span>
 
-<h4>Picture</h4>
-<span>Insert an image into the label control</span>
-
-<h4>PicturePosition</h4>
-<span>Set the position of the image inserted in the label control</span>
-
 <h4>MultiLine</h4>
 <span>Whether to show multiple lines</span>
 
@@ -111,7 +105,7 @@ the entire line of text in a list or partial line.</span>
 <h4>ScrollBars</h4>
 <span>Scroll bar information, setting for vertical/horizontal scroll bar</span>
 
-<h4>SelectionMargin<span style="color:red;">(1)</span></h4>
+<h4>SelectionMargin <span style="color:red;">(1)</span></h4>
 <span>Whether or not to give a margin to the left of the text,
 Clicking on the margin selects the entire text</span>
 
@@ -124,7 +118,7 @@ Clicking on the margin selects the entire text</span>
 <h4>TabStop <span style="color:red;">(2)</span></h4>
 <span>Decide whether to bring focus to the control with the tab key </span>
 
-<h4>Tag </h4>
+<h4>Tag</h4>
 <span>User-defined value, user-defined value stored in the control and used in code </span>
 
 <h4>TextAlign</h4>
@@ -144,3 +138,12 @@ Clicking on the margin selects the entire text</span>
 
 <h4>WordWrap</h4>
 <span>Whether to wrap text in the label control</span>
+
+<h4>ControlSourceValue <span style="color:red;">(5)</span></h4>
+<span>Determines the value of the cell specified in the ControlSource</span>
+
+<h4>CursorStartPosition</h4>
+<span>Keep tracks of key press and selectionStart</span>
+
+<h4>CursorEndPosition</h4>
+<span>Keep tracks of key press and selectionEnd</span>

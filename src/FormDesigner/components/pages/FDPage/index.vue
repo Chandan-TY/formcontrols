@@ -65,6 +65,7 @@
       <div>
       <UserformTabOrder />
       <TabStripTabOrder />
+      <RenameMultiPageDialog />
       </div>
     </div>
   </div>
@@ -79,6 +80,7 @@ import TreeBrowser from '@/FormDesigner/components/organisms/FDTreeBrowser/index
 import Header from '@/FormDesigner/components/organisms/FDHeader/index.vue'
 import UserformTabOrder from '@/FormDesigner/components/molecules/FDUserformTabOrder/index.vue'
 import TabStripTabOrder from '@/FormDesigner/components/organisms/FDTabStripTabOrderModal/index.vue'
+import RenameMultiPageDialog from '@/FormDesigner/components/organisms/FDRenameMultiPageDialog/index.vue'
 
 import ViewCodeLogo from '../../../../assets/view-code.svg'
 import ViewObject from '../../../../assets/view-object.svg'
@@ -100,7 +102,8 @@ import { EventBus } from '@/FormDesigner/event-bus'
     ViewObject,
     CloseFolderLogo,
     UserformTabOrder,
-    TabStripTabOrder
+    TabStripTabOrder,
+    RenameMultiPageDialog
   }
 })
 export default class FDPage extends Vue {

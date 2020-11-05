@@ -49,7 +49,7 @@ export const userDataNew = {
         WhatsThisHelp: false,
         Zoom: 100
       },
-      controls: ['ID_Label1', 'ID_Label2', 'ID_Label3', 'ID_Label4', 'ID_TabStrip1'],
+      controls: ['ID_Label1', 'ID_Label2', 'ID_Label3', 'ID_Label4'],
       extraDatas: {
         display: 'block'
       },

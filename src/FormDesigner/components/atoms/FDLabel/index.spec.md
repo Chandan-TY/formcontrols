@@ -72,7 +72,7 @@ The default property for a Label is the Caption property. The default event for 
 <h4>Picture</h4>
 <span>Insert an image into the label control</span>
 
-<h4>PicturePosition</h4>
+<h4>PicturePosition<span style='color:red'>(3)</span></h4>
 <span>Set the position of the image inserted in the label control</span>
 
 <h4>SpecilalEffect</h4>
@@ -84,7 +84,7 @@ The default property for a Label is the Caption property. The default event for 
 <h4>TabStop <span style='color:red'>(2)</span></h4>
 <span>Decide whether to bring focus to the control with the tab key </span>
 
-<h4>Tag </h4>
+<h4>Tag</h4>
 <span>User-defined value, user-defined value stored in the control and used in code </span>
 
 <h4>TextAlign</h4>

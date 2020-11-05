@@ -31,7 +31,7 @@
 <h4>Caption </h4>
 <span>Text information that appears in the control</span>
 
-<h4>Control Source</h4>
+<h4>ControlSource</h4>
 <span>You can use the ControlSource property to specify what data appears in a control.You can display and edit data bound to a field in a table, query, or SQL statement.You can also display the result of an expression. Read/write String.</span>
 
 <h4>ControlTipText </h4>
@@ -40,7 +40,7 @@
 <h4>Enabled </h4>
 <span>Indicates enable/disable of control</span>
 
-<h4>Font <span style="color:red;">(3)</span></h4>
+<h4>Font</h4>
 <span>1. Supports Fonts (Arial, Algerian, Banschrift)
 2. Supports Font styles (Bold, Itallic,...)
 3. Supports Font size
@@ -52,7 +52,7 @@
 <h4>Height </h4>
 <span>Set height of toggle button control </span>
 
-<h4>HelpContextID<span style="color:red;">(3)</span></h4>
+<h4>HelpContextID <span style="color:red;">(3)</span></h4>
 <span> Opens the file designated as HelpFile and shows the item set as HelpContextID</span>
 
 <h4>Left </h4>
@@ -67,19 +67,19 @@
 <h4>MousePointer </h4>
 <span>Changes the shape of the mouse cursor when the mouse is over the control </span>
 
-<h4>Picture<span style="color:red;">(3)</span></h4>
+<h4>Picture</h4>
 <span>Insert an image into the toggle button control</span>
 
-<h4>PicturePosition<span style="color:red;">(3)</span></h4>
+<h4>PicturePosition <span style="color:red;">(3)</span></h4>
 <span>Set the position of the image inserted in the toggle button control</span>
 
-<h4>TabIndex <span style="color:green;">(2)</span></h4>
+<h4>TabIndex <span style="color:red;">(2)</span></h4>
 <span>Tab order of the control, focus order of the control when changing focus with the tab key</span>
 
-<h4>TabStop <span style="color:green;">(2)</span></h4>
+<h4>TabStop <span style="color:red;">(2)</span></h4>
 <span>Decide whether to bring focus to the control with the tab key </span>
 
-<h4>Tag <span style="color:blue;">(4)</span></h4>
+<h4>Tag</h4>
 <span>User-defined value, user-defined value stored in the control and used in code </span>
 
 <h4>TextAlign </h4>
@@ -102,4 +102,7 @@
 
 <h4>WordWrap</h4>
 <span>Whether to wrap text in the toggle button control</span>
+
+<h4>ControlSourceValue <span style="color:red;">(5)</span></h4>
+<span>Determines the value of the cell specified in the ControlSource</span>
 

@@ -20,13 +20,13 @@ Provides a graphical tool for quickly navigating through a long list of items or
 <h4>BackColor</h4>
 <span>Control's background color - Color table appears when the button is clicked sets the selected color to ScrollBar</span>
 
-<h4>Control Source</h4>
+<h4>ControlSource</h4>
 <span>You can use the ControlSource property to specify what data appears in a control.You can display and edit data bound to a field in a table, query, or SQL statement.You can also display the result of an expression. Read/write String.</span>
 
 <h4>ControlTipText</h4>
 <span>Control tooltip text, text that appears when the mouse is hovered over the control</span>
 
-<h4>Delay<span style="color:red;">(1)</span></h4>
+<h4>Delay <span style="color:red;">(1)</span></h4>
 <span>Specifies the delay in milliseconds, between events on a ScrollBar. </span>
 
 <h4>Enabled</h4>
@@ -38,7 +38,7 @@ Provides a graphical tool for quickly navigating through a long list of items or
 <h4>Height</h4>
 <span>Set height of label control </span>
 
-<h4>HelpContextID<span style="color:red;">(3)</span></h4>
+<h4>HelpContextID <span style="color:red;">(3)</span></h4>
 <span> Opens the file designated as HelpFile and shows the item set as HelpContextID</span>
 
 <h4>LargeChange</h4>
@@ -75,9 +75,8 @@ Provides a graphical tool for quickly navigating through a long list of items or
 <h4>TabStop <span style="color:red;">(2)</span></h4>
 <span>Decide whether to bring focus to the control with the tab key </span>
 
-<h4>Tag<span style="color:red;">(4)</span></h4>
+<h4>Tag</h4>
 <span>User-defined value, user-defined value stored in the control and used in code </span>
-
 
 <h4>Top</h4>
 <span>Move's away from the top of the UserForm (Y coordinate)</span>
@@ -90,3 +89,6 @@ Provides a graphical tool for quickly navigating through a long list of items or
 
 <h4>Width</h4>
 <span>The width of the control</span>
+
+<h4>ControlSourceValue <span style="color:red;">(5)</span></h4>
+<span>Determines the value of the cell specified in the ControlSource</span>

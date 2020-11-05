@@ -66,7 +66,7 @@
 <h4>SpecilalEffect</h4>
 <span>Control showing effect on image control</span>
 
-<h4>Tag </h4>
+<h4>Tag</h4>
 <span>User-defined value, user-defined value stored in the control and used in code </span>
 
 <h4>Top</h4>

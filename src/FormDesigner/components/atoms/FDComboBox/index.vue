@@ -3,13 +3,13 @@
    :title="properties.ControlTipText">
     <div class="combobox" :style="boxStyleObj">
       <div :class="properties.SelectionMargin?'selectionDiv':''">
-        <span v-if="properties.SelectionMargin" :style="[selectionSpan,{backgroundColor:properties.BackColor}]" @click="setSelection"></span>
+        <span v-if="properties.SelectionMargin" class="selectionSpan" :style="[{backgroundColor:properties.BackColor}]" @click="setSelection"></span>
         <textarea
         ref="textareaRef"
         :style="cssStyleProperty"
         wrap="off"
         :tabindex="properties.TabIndex"
-        :readonly="properties.Locked"
+        :readonly="properties.Locked || properties.Style === 2"
         @keydown.enter="enterFieldBehavior"
         @blur="handleBlur($event, textareaRef, hideSelectionDiv)"
         @click="handleClick(hideSelectionDiv)"
@@ -21,6 +21,7 @@
         "
         @dragstart="dragBehavior"
       />
+
       <div
         ref="hideSelectionDiv"
         @click="divHide($event, textareaRef)"
@@ -32,7 +33,7 @@
           selectionData[0]
         }}
       </div>
-    <label ref="autoSizeTextarea"></label>
+    <label ref="autoSizeTextarea" class="labelStyle" :class="[labelStyleObj]"></label>
     </div>
       <div class="selected" @click="enabledCheck" :style="selectedStyleObj"></div>
       <div class="items" :class="{ selectHide: !open }" v-if="open">
@@ -64,7 +65,7 @@
         <tr
           :tabindex="index"
           class="tr"
-          v-for="(item,index) of extraDatas.RowSourceData"
+          v-for="(item,index) of tempArray"
           :key="index"
           @mouseenter="handleDrag"
           @keydown="handleExtendArrowKeySelect"
@@ -114,6 +115,7 @@ export default class FDComboBox extends Mixins(FdControlVue) {
 
    private options = ['hello'];
    private tabindex = 0;
+   tempArray: Array<Array<string>> = []
   open: boolean = false;
   isVisible: boolean = false
   selected = this.options.length > 0 ? '' : null;
@@ -255,6 +257,7 @@ export default class FDComboBox extends Mixins(FdControlVue) {
   updateAutoSize (newVal:boolean, oldVal:boolean) {
     if (this.properties.AutoSize === true) {
       debugger
+      this.updateDataModel({ propertyName: 'SelectionMargin', value: false })
       this.$nextTick(() => {
         const textareaRef: HTMLTextAreaElement = this.textareaRef
         // replication of stype attribute to Label tag for autoSize property to work
@@ -301,7 +304,9 @@ export default class FDComboBox extends Mixins(FdControlVue) {
     const controlProp = this.properties
     return {
       height: `${controlProp.Height}px`,
-      width: `${controlProp.Width}px`
+      width: `${controlProp.Width}px`,
+      fontFamily: controlProp.Font!.FontStyle,
+      fontSize: `${controlProp.Font!.FontSize}px`
     }
   }
   /**
@@ -313,7 +318,7 @@ export default class FDComboBox extends Mixins(FdControlVue) {
   */
   get divcssStyleProperty () {
     const styleObject = this.cssStyleProperty
-    return { ...styleObject, display: 'none', paddingTop: '2px', paddingLeft: '2px' }
+    return { ...styleObject, display: 'none', paddingTop: '2px', paddingLeft: '2px', whiteSpace: 'break-spaces' }
   }
 
   protected get customSelectObj () :Partial<CSSStyleDeclaration> {
@@ -355,6 +360,14 @@ export default class FDComboBox extends Mixins(FdControlVue) {
     }
   }
 
+  @Watch('properties.ListRows', { deep: true })
+  ListRowsValue (newVal:number, oldVal:number) {
+    this.tempArray = []
+    for (let i = 0; i < newVal; i++) {
+      this.tempArray[i] = this.extraDatas.RowSourceData![i]
+    }
+  }
+
   @Watch('properties.TextColumn', { deep: true })
   textColumnChange (newVal:number, oldVal:number) {
     if (newVal > 0 && newVal < this.extraDatas.RowSourceData!.length) {
@@ -384,6 +397,9 @@ export default class FDComboBox extends Mixins(FdControlVue) {
   //   console.log('NewText', this.properties.Text)
   // }
   mounted () {
+    for (let i = 0; i < this.properties.ListRows!; i++) {
+      this.tempArray[i] = this.extraDatas.RowSourceData![i]
+    }
     this.updateDataModel({ propertyName: 'ControlSource', value: '' })
     if (this.extraDatas.RowSourceData!.length === 0) {
       this.updateDataModel({ propertyName: 'TopIndex', value: -1 })
@@ -873,6 +889,14 @@ export default class FDComboBox extends Mixins(FdControlVue) {
       return `url('https://img.icons8.com/android/24/000000/minus.png')`
     }
   }
+
+  protected get labelStyleObj () :Partial<CSSStyleDeclaration> {
+    const controlProp = this.properties
+    return {
+      fontFamily: controlProp.Font!.FontStyle,
+      fontSize: `${controlProp.Font!.FontSize}px`
+    }
+  }
   protected get inputStyleObj () :Partial<CSSStyleDeclaration> {
     const controlProp = this.properties
     const font: font = controlProp.Font ? controlProp.Font : {
@@ -1052,6 +1076,9 @@ export default class FDComboBox extends Mixins(FdControlVue) {
   margin-top: 0px;
   font-family: Arial, Helvetica, sans-serif;
 }
+.labelStyle {
+  white-space: nowrap;
+}
 .div {
   display: grid;
   grid-template-columns: 1fr;
@@ -1082,6 +1109,7 @@ export default class FDComboBox extends Mixins(FdControlVue) {
   resize: none;
   overflow: hidden;
   border: none;
+  font-family: monospace;
 }
 .text-box-design:focus {
   outline: none;

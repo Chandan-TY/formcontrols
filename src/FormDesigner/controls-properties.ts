@@ -303,5 +303,41 @@ export const controlProperties = {
     } else {
       return ''
     }
+  },
+  /**
+  * @description acceleratorProp returns update Caption value with accelerator
+  * @function acceleratorProp
+  * @param caption
+  * @param accelerator
+  * @returns object with afterbeginCaption, acceleratorCaption, beforeendCaption values
+  */
+  acceleratorProp: (caption: string, accelerator: string) => {
+    let afterbeginCaption:string = ''
+    let acceleratorCaption:string = ''
+    let beforeendCaption:string = ''
+    let isPresent:boolean = false
+    if (caption && accelerator) {
+      for (var i = 0; i < caption.length; i++) {
+        if (caption[i] === accelerator) {
+          isPresent = true
+          break
+        }
+      }
+      if (isPresent && accelerator !== '') {
+        const postion:number = caption.indexOf(accelerator)
+        acceleratorCaption = accelerator
+        afterbeginCaption = caption.substring(0, postion)
+        beforeendCaption = caption.substring(postion + 1, caption.length)
+      } else {
+        afterbeginCaption = caption
+      }
+    } else {
+      afterbeginCaption = caption!
+    }
+    return {
+      afterbeginCaption: afterbeginCaption,
+      acceleratorCaption: acceleratorCaption,
+      beforeendCaption: beforeendCaption
+    }
   }
 }

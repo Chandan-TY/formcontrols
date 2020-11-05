@@ -1,6 +1,6 @@
 <template>
 <div>
-  <div class="outer" :style="styleOuterObj" @contextmenu="contextMenuVisible">
+  <div class="outer" :style="styleOuterObj" @contextmenu="contextMenuVisible" @click.stop="selectedItem">
       <div class="tabs" :style="styleTabsObj">
         <div id="container" class="move" ref="scrolling" :style="styleMoveObj">
           <div class="tab" v-for="(value,key) in extraDatas.Tabs" :key="key" :style="getTabStyle" >
@@ -13,9 +13,16 @@
               :disabled="properties.Enabled === false ? true : false"
               @click.right="rightClickSelect(key)"
             />
-            <label @click="isChecked(key)"  :class="[properties.Style===1 ? (properties.TabOrientation === 2 ? 'forLeft forButton' : 'forButton') : properties.Style===0 ? (properties.TabOrientation === 2 ? 'forLeft' : 'forTab'): '']" :v-model="value.title" :for="value.Name" :title="extraDatas.Tabs[key].ToolTip" v-html="value.Caption" :style="styleLabelObj"></label>
+            <label @click="isChecked(key)"
+            :class="[properties.Style===1 ? (properties.TabOrientation === 2 ? 'forLeft forButton' : 'forButton') : properties.Style===0 ? (properties.TabOrientation === 2 ? 'forLeft' : 'forTab'): '']"
+            :for="value.Name" :title="extraDatas.Tabs[key].ToolTip"
+            :style="styleLabelObj">
+            <span v-if="value.Accelerator===''">{{value.Caption}}</span>
+            <span v-else><span>{{value.Caption | afterbeginCaption(value.Accelerator)}}</span>
+            <span style="text-decoration:underline;">{{value.Caption | acceleratorCaption(value.Accelerator)}}</span>
+            <span>{{value.Caption | beforeendCaption(value.Accelerator)}}</span></span>
+            </label>
             <div class="content" :style="styleContentObj" :title="properties.ControlTipText">
-              {{updatedValue}}
             </div>
           </div>
         </div>
@@ -43,14 +50,10 @@
 <script lang="ts">
 import { Component, Emit, Watch } from 'vue-property-decorator'
 import FdControlVue from '@/api/abstract/FormDesigner/FdControlVue'
-import {
-  IupdateControl,
-  IselectControl,
-  IupdateUserform
-} from '@/storeModules/fd/actions'
 import { State, Action } from 'vuex-class'
 import ContextMenu from '../FDContextMenu/index.vue'
 import { tabsContextMenu } from '../../../models/tabsContextMenu'
+import { controlProperties } from '@/FormDesigner/controls-properties'
 interface IcontextMenu {
   id: string;
   icon: string;
@@ -70,13 +73,32 @@ interface Iscrolling {
   name: 'FDTabStrip',
   components: {
     ContextMenu
+  },
+  filters: {
+    afterbeginCaption: (value : string, acc: string = '') => {
+      if (acc !== '') {
+        acc = acc[0]
+      }
+      const data = controlProperties.acceleratorProp(value, acc)
+      return data.afterbeginCaption
+    },
+    acceleratorCaption: (value : string, acc: string = '') => {
+      if (acc !== '') {
+        acc = acc[0]
+      }
+      const data = controlProperties.acceleratorProp(value, acc)
+      return data.acceleratorCaption
+    },
+    beforeendCaption: (value : string, acc: string = '') => {
+      if (acc !== '') {
+        acc = acc[0]
+      }
+      const data = controlProperties.acceleratorProp(value, acc)
+      return data.beforeendCaption
+    }
   }
 })
 export default class FDTabStrip extends FdControlVue {
-  @Action('fd/updateControl') updateControl!: (payload: IupdateControl) => void;
-  @Action('fd/updateUserform') updateUserform!: (
-    payload: IupdateUserform
-  ) => void;
   @State(state => state.fd.userformData) userformData!: userformData
   isScroll = true;
   // values: Array<tabsItems> = []
@@ -89,12 +111,6 @@ export default class FDTabStrip extends FdControlVue {
   updatedValue: number = 0
   rightClickSelect (value: number) {
     this.updateDataModel({ propertyName: 'Value', value: value })
-    // this.updateControl({
-    //   userFormId: this.userFormId,
-    //   controlId: this.controlId,
-    //   propertyName: 'Value',
-    //   value: value
-    // })
   }
   contextMenuVisible (e: MouseEvent) {
     e.preventDefault()
@@ -108,21 +124,12 @@ export default class FDTabStrip extends FdControlVue {
   setValue (value: number) {
     this.updatedValue = value
     this.updateDataModel({ propertyName: 'Value', value: value })
-
-    // this.updateControl({
-    //   userFormId: this.userFormId,
-    //   controlId: this.controlId,
-    //   propertyName: 'Value',
-    //   value: value
-    // })
     return true
   }
 
   leftmove () {
     const scrollRef = (this.$refs as Iscrolling).scrolling
-    // console.log(scrollRef.scrollWidth + 30)
     scrollRef.scrollLeft! -= 20
-    // if (scrollRef.scrollWidth! + 30 <= parseInt(this.outerArea.width)) {
     if (scrollRef.scrollWidth! + 30 <= 300) {
       this.isScroll = false
     }
@@ -136,12 +143,6 @@ export default class FDTabStrip extends FdControlVue {
   isChecked (value: number) {
     this.updatedValue = value
     this.updateDataModel({ propertyName: 'Value', value: value })
-    // this.updateControl({
-    //   userFormId: this.userFormId,
-    //   controlId: this.controlId,
-    //   propertyName: 'Value',
-    //   value: value
-    // })
   }
   /**
   * @description style object is passed to :style attribute in div tag
@@ -152,7 +153,7 @@ export default class FDTabStrip extends FdControlVue {
   protected get styleOuterObj () :Partial<CSSStyleDeclaration> {
     const controlProp = this.properties
     return {
-      position: 'relative',
+      // position: 'relative',
       top: `${controlProp.Top}px`,
       left: `${controlProp.Left}px`,
       height: `${controlProp.Height}px`,
@@ -292,7 +293,6 @@ export default class FDTabStrip extends FdControlVue {
     this.scrollCheck()
   }
   mounted () {
-    // this.values = this.extraDatas.Tabs!
     this.tempScrollWidth = (this.$refs as Iscrolling).scrolling.offsetWidth!
     // this.tempScrollHeight = (this.$refs as Iscrolling).scrolling.offsetHeight!
     this.scrollCheck()
@@ -312,7 +312,7 @@ export default class FDTabStrip extends FdControlVue {
 }
 .tabs {
     display: grid;
-    position: relative;
+    /* position: relative; */
     margin: 0;
     width: calc(100%);
     height: calc(100%);

@@ -1,6 +1,6 @@
 <template>
   <div>
-        <div
+    <div
       id="right-click-menu"
       :style="contextMenuStyle"
       tabindex="0"
@@ -11,12 +11,16 @@
         ref="refContextMenu"
         :userFormId="userFormId"
         :containerId="containerId"
+        :controlId="controlId"
         :values="contextMenuType ? userformContextMenu : controlContextMenu"
         @createGroup="createGroup"
         @closeMenu="closeMenu"
       />
     </div>
-    <drag-selector ref="dragSelector" :style="dragSelectorStyle">
+    <drag-selector
+      :ref="'dragSelector'.concat(containerId)"
+      :style="dragSelectorStyle"
+    >
       <GroupControl
         :containerId="controlId"
         :userFormId="userFormId"
@@ -28,7 +32,9 @@
         <ResizeControl
           ref="resizeControl"
           :name="control"
-          @openMenu="(e, parentID, controlID) => openContextMenu(e, parentID, controlID)"
+          @openMenu="
+            (e, parentID, controlID) => openContextMenu(e, parentID, controlID)
+          "
           :controlId="control"
           :containerId="controlId"
           :userFormId="userFormId"
@@ -77,7 +83,7 @@ export default class Container extends Vue {
   @Prop({ required: true, type: String }) left: string;
 
   @Ref('groupRef') readonly groupRef!: GroupControl;
-  @Ref('refContextMenu') readonly refContextMenu!: ContextMenu
+  @Ref('refContextMenu') readonly refContextMenu!: ContextMenu;
 
   controlContextMenu: Array<IcontextMenu> = controlContextMenu;
   userformContextMenu: Array<IcontextMenu> = userformContextMenu;
@@ -128,7 +134,12 @@ export default class Container extends Vue {
     const sw = this.propControlData.properties.ScrollWidth!
     return {
       height: ph > sh ? `${ph - 50}px` : `${sh! - 50}px`,
-      width: pw > sw ? `${pw - 20}px` : `${sw! - 20}px`
+      width: pw > sw ? `${pw - 20}px` : `${sw! - 20}px`,
+      cursor:
+        this.propControlData.properties.MousePointer !== 0 ||
+        this.propControlData.properties.MouseIcon !== ''
+          ? `${(this as any).$parent.getMouseCursorData} !important`
+          : 'default !important'
     }
   }
 

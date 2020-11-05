@@ -20,7 +20,7 @@ A spinner control you can use with another control to increment and decrement nu
 <h4>BackColor</h4>
 <span>Control's background color - Color table appears when the button is clicked sets the selected color to SpinButton</span>
 
-<h4>Control Source</h4>
+<h4>ControlSource</h4>
 <span>You can use the ControlSource property to specify what data appears in a control.You can display and edit data bound to a field in a table, query, or SQL statement.You can also display the result of an expression. Read/write String.</span>
 
 <h4>ControlTipText</h4>
@@ -38,7 +38,7 @@ A spinner control you can use with another control to increment and decrement nu
 <h4>Height</h4>
 <span>Set height of label control </span>
 
-<h4>HelpContextID<span style="color:red;">(3)</span></h4>
+<h4>HelpContextID <span style="color:red;">(3)</span></h4>
 <span> Opens the file designated as HelpFile and shows the item set as HelpContextID</span>
 
 <h4>Left</h4>
@@ -65,10 +65,10 @@ A spinner control you can use with another control to increment and decrement nu
 <h4>TabIndex <span style="color:red;">(2)</span></h4>
 <span>Tab order of the control, focus order of the control when changing focus with the tab key</span>
 
-<h4>TabStop<span style="color:red;">(2)</span></h4>
+<h4>TabStop <span style="color:red;">(2)</span></h4>
 <span>Decide whether to bring focus to the control with the tab key </span>
 
-<h4>Tag<span style="color:red;">(4)</span></h4>
+<h4>Tag</h4>
 <span>User-defined value, user-defined value stored in the control and used in code </span>
 
 
@@ -83,3 +83,6 @@ A spinner control you can use with another control to increment and decrement nu
 
 <h4>Width</h4>
 <span>The width of the control</span>
+
+<h4>ControlSourceValue <span style="color:red;">(5)</span></h4>
+<span>Determines the value of the cell specified in the ControlSource</span>

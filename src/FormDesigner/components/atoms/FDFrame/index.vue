@@ -1,23 +1,35 @@
 <template>
-  <fieldset class="fieldset" :style="cssStyleProperty"  :title="properties.ControlTipText" :tabindex="properties.TabIndex" @keydown.delete="deleteItem">
+  <fieldset
+    class="fieldset"
+    :style="cssStyleProperty"
+    :title="properties.ControlTipText"
+    :tabindex="properties.TabIndex"
+    @keydown.delete="deleteItem"
+    @keydown.enter="setContentEditable($event, true)"
+    @click.stop="selectedItem"
+    @contextmenu.stop="showContextMenu($event, userFormId, controlId)"
+    @mousedown="deActiveControl(this)"
+    @mouseup="dragSelectorControl($event)"
+    ref="frame"
+  >
     <legend :style="legendCssStyleProperty">{{ properties.Caption }}</legend>
-     <Container
-        :contextMenuType="contextMenuType"
-        :viewMenu="viewMenu"
-        :userFormId="userFormId"
-        :controlId="controlId"
-        :containerId="controlId"
-        :left="left"
-        :top="top"
-        ref="containerRef">
-      </Container>
-      <!--  @closeMenu="closeMenu"
-        @openMenu="(e, parentID, controlID)=>openMenu(e, parentID, controlID)"> -->
+    <Container
+      :contextMenuType="contextMenuType"
+      :viewMenu="viewMenu"
+      :userFormId="userFormId"
+      :controlId="controlId"
+      :containerId="controlId"
+      :left="left"
+      :top="top"
+      ref="containerRef"
+      @closeMenu="closeMenu"
+      @openMenu="(e, parentID, controlID)=>openMenu(e, parentID, controlID)"
+    />
   </fieldset>
 </template>
 
 <script lang="ts">
-import { Component, Prop, Model, Emit } from 'vue-property-decorator'
+import { Component, Prop, Model, Emit, Ref, Watch } from 'vue-property-decorator'
 import FdControlVue from '@/api/abstract/FormDesigner/FdControlVue'
 import {
   IupdateControl,
@@ -27,19 +39,18 @@ import {
 import { State, Action } from 'vuex-class'
 import Vue from 'vue'
 import FdContainerVue from '@/api/abstract/FormDesigner/FdContainerVue'
-// import Container from '@/FormDesigner/components/organisms/FDContainer/index.vue'
+import Container from '@/FormDesigner/components/organisms/FDContainer/index.vue'
 import { controlProperties } from '@/FormDesigner/controls-properties'
 
 @Component({
   name: 'FDFrame',
   components: {
-    Container: () => import('@/FormDesigner/components/organisms/FDContainer/index.vue')
+    Container: () =>
+      import('@/FormDesigner/components/organisms/FDContainer/index.vue')
   }
 })
 export default class FDFrame extends FdContainerVue {
-  // @Prop() userFormId: string
-  // @Prop() controlId: string
-  // @Prop() containerId: string
+  @Ref('containerRef') readonly containerRef!: Container;
   get dragSelectorStyle () {
     return {
       height: `${this.data.properties.Height}px`,
@@ -71,15 +82,44 @@ export default class FDFrame extends FdContainerVue {
     }
   }
 
+  mounted () {
+    this.scrollLeftTop(this.data)
+  }
+  @Watch('properties.ScrollLeft', { deep: true })
+  updateScrollLeft () {
+    this.scrollLeftTop(this.data)
+  }
+
+  @Watch('properties.ScrollTop', { deep: true })
+  updateScrollTop () {
+    this.scrollLeftTop(this.data)
+  }
   /**
-  * @description style object is passed to :style attribute in fieldset tag
-  * dynamically changing the styles of the component based on propControlData
-  * @function cssStyleProperty
-  *
-  */
-  protected get cssStyleProperty () :Partial<CSSStyleDeclaration> {
+   * @description sets scrollbar left and top position
+   * @function scrollLeftTop
+   * @param controlData propControlData passed as input
+   */
+  scrollLeftTop (controlData: controlData) {
+    const refName: any = this.$refs.frame
+    const scrollLeft: number = this.properties.ScrollLeft!
+    const scrollTop: number = this.properties.ScrollTop!
+    if (scrollLeft > 0) {
+      refName.scrollLeft = scrollLeft
+    }
+    if (scrollTop > 0) {
+      refName.scrollTop = scrollTop
+    }
+  }
+  /**
+   * @description style object is passed to :style attribute in fieldset tag
+   * dynamically changing the styles of the component based on propControlData
+   * @function cssStyleProperty
+   *
+   */
+  protected get cssStyleProperty (): Partial<CSSStyleDeclaration> {
     const controlProp = this.data.properties
-    const font: font = this.properties.Font ? this.properties.Font
+    const font: font = this.properties.Font
+      ? this.properties.Font
       : {
         FontName: 'Arial',
         FontSize: 10
@@ -88,16 +128,25 @@ export default class FDFrame extends FdContainerVue {
       left: `${controlProp.Left}px`,
       width: `${controlProp!.Width!}px`,
       height: `${controlProp.Height}px`,
-      cursor: controlProp.MousePointer !== 0 ||
-        controlProp.MouseIcon !== '' ? `${this.getMouseCursorData} !important` : 'default !important',
+      cursor:
+        controlProp.MousePointer !== 0 || controlProp.MouseIcon !== ''
+          ? `${this.getMouseCursorData} !important`
+          : 'default !important',
       fontFamily: font.FontStyle ? font.FontStyle : font.FontName,
       fontSize: `${font.FontSize}px`,
       fontStyle: font.FontItalic ? 'italic' : '',
-      textDecoration: font.FontStrikethrough === true && font.FontUnderline === true
-        ? 'underline line-through' : font.FontUnderline ? 'underline'
-          : font.FontStrikethrough ? 'line-through' : '',
+      textDecoration:
+        font.FontStrikethrough === true && font.FontUnderline === true
+          ? 'underline line-through'
+          : font.FontUnderline
+            ? 'underline'
+            : font.FontStrikethrough
+              ? 'line-through'
+              : '',
       fontWeight: font.FontBold ? 'bold' : '',
-      border: controlProp.BorderStyle ? `1px solid ${controlProp.BorderColor}` : '2px solid gray',
+      border: controlProp.BorderStyle
+        ? `1px solid ${controlProp.BorderColor}`
+        : '2px solid gray',
       backgroundImage:
         controlProp.Picture === ''
           ? this.getSampleDotPattern.backgroundImage
@@ -120,29 +169,61 @@ export default class FDFrame extends FdContainerVue {
       zoom: `${controlProp.Zoom}%`
     }
   }
+  get containerStyle () {
+    const controlProp = this.data.properties
+    const ph = controlProp.Height!
+    const pw = controlProp.Width!
+    const sh = controlProp.ScrollHeight!
+    const sw = controlProp.ScrollWidth!
+    const scrollpropWidth = (this as any).$parent.getScrollBarX
+    const scrollpropHeight = (this as any).$parent.getScrollBarY
+    return {
+      height: ph > sh ? `100%` : `${sh!}px`,
+      width: pw > sw ? `100%` : `${sw!}px`
+    }
+  }
   /**
-  * @description style object is passed to :style attribute in legend tag
-  * dynamically changing the styles of the component based on propControlData
-  * @function legendCssStyleProperty
-  *
-  */
-  protected get legendCssStyleProperty () :Partial<CSSStyleDeclaration> {
+   * @description style object is passed to :style attribute in legend tag
+   * dynamically changing the styles of the component based on propControlData
+   * @function legendCssStyleProperty
+   *
+   */
+  protected get legendCssStyleProperty (): Partial<CSSStyleDeclaration> {
     const controlProp = this.data.properties
     return {
-      color: (controlProp.Enabled === true) ? controlProp.ForeColor : this.getEnabled
+      color:
+        controlProp.Enabled === true ? controlProp.ForeColor : this.getEnabled
     }
+  }
+
+  showContextMenu (e: MouseEvent, parentID: string, controlID: string) {
+    debugger
+    this.openMenu(e, parentID, controlID)
+    console.log(this.$refs)
+    Vue.nextTick(() => (this as any).containerRef.$refs.contextmenu.focus())
+  }
+  closeMenu () {
+    this.viewMenu = false
+  }
+
+  dragSelectorControl (event: MouseEvent) {
+    debugger
+    this.selectedControlArray = []
+    const refName = 'dragSelector'.concat(this.controlId)
+    this.selectedAreaStyle = (this as any).containerRef.$refs[refName].selectAreaStyle
+    this.calSelectedAreaStyle(event)
   }
 }
 </script>
 
 <style scoped>
 .fieldset {
-  background-size: 9px 10px;
+  /* background-size: 9px 10px;
   background-image: radial-gradient(
     circle,
     rgb(0, 0, 0) 0.5px,
     rgba(0, 0, 0, 0) 0.2px
-  );
+  ); */
   user-select: none;
 }
 </style>

@@ -1,10 +1,10 @@
 <template>
-<div id="popup1" class="overlay" :style="{visibility:(isDialogVisible===true)?'visible':'hidden',opacity:(isDialogVisible===true)?'1':'0'}">
+<div id="popup1" class="overlay" :style="tabOrderStyleObj">
   <div class="rename-div-1 popup">
-    <div class="remane-header-div">
+    <div class="remane-header-div" @mousedown.stop="dragTabOrderDialog">
       Rename
       <a class="close" href="#">
-        <button class="ui-btn close" @click="updateChanges(false,'cancel')">
+        <button class="ui-btn close" @click="closeDialog">
           <svg viewBox="0 0 10 10">
             <polygon
               points="10.2,0.7 9.5,0 5.1,4.4 0.7,0 0,0.7 4.4,5.1 0,9.5 0.7,10.2 5.1,5.8 9.5,10.2 10.2,9.5 5.8,5.1"
@@ -18,30 +18,37 @@
     <div class="wrapper">
       <span>Caption:</span>
       <div>
-        <input type="text" @change="handleRename" :value="renameValue | acceleratorFilter"/>
+        <input type="text"
+          class="btn-outline"
+         @input="handleRename" :value="selectedTabData.Caption"/>
 
       </div>
       <span>Accelerator Key:</span>
       <div>
-        <input type="text" style="width:10%" @input="acceleratorCheck"/>
+        <input class="btn-outline"
+        type="text" style="width:10%" @input="updateAccelerator" :value="selectedTabData.Accelerator"/>
       </div>
       <span>Control Tip Text:</span>
       <div>
-        <input type="text" @input="handleTip"/>
+        <input
+          class="btn-outline"
+         type="text" @input="handleTip" :value="selectedTabData.ToolTip"/>
       </div>
       <div></div>
       <div>
         <input
           type="Button"
           value="OK"
+          class="btn-outline"
           style="width:60px; box-shadow: 1px 1px; border: 0.5px solid gray ;"
-          @click="updateChanges(false,'update')"
+          @click="updateChanges()"
         />
         <input
           type="Button"
           value="Cancel"
-          style="width:60px; box-shadow: 1px 1px; border: 0.5px solid gray ;"
-          @click="updateChanges(false,'cancel')"
+          class="btn-outline"
+          style="width:60px; box-shadow: 1px 1px; border: 0.5px solid gray"
+          @click="closeDialog"
         />
       </div>
     </div>
@@ -50,104 +57,65 @@
 </template>
 
 <script lang="ts">
+import FdDialogDragVue from '@/api/abstract/FormDesigner/FdDialogDragVue'
 import { IupdateControlExtraData } from '@/storeModules/fd/actions'
-import { Component, Prop, Model, Emit, Watch, Vue } from 'vue-property-decorator'
-import { Action } from 'vuex-class'
-export interface ITabs {
-  Accelerator: string,
-  Caption: string,
-  Name: string,
-  ToolTip: string
-}
+import { Component, Prop, Emit, Watch, Vue } from 'vue-property-decorator'
+import { State, Action } from 'vuex-class'
+import { EventBus } from '@/FormDesigner/event-bus'
+
 @Component({
-  name: 'FDRenameMultiPageDialog',
-  components: {
-  },
-  filters: {
-    acceleratorFilter (value: any) {
-      const filteredValue = value
-      if (filteredValue !== null) {
-        if (filteredValue.includes('&#818;')) {
-          const newVal = filteredValue.replace(/&#818;/g, '')
-          console.log('filter', newVal)
-          return newVal
-        }
-      }
-      return value
-    }
-  }
+  name: 'FDRenameMultiPageDialog'
 })
-export default class FDRenameMultiPageDialog extends Vue {
-  @Prop() isOpen: boolean
-  @Prop() renameData: Array<ITabs>
-  @Prop() selectedTab: ITabs
-  @Prop() userFormId: string
-  @Prop() controlId: string
+export default class FDRenameMultiPageDialog extends FdDialogDragVue {
+  userFormId: string
+  controlId: string
   @Action('fd/updateControlExtraData') updateControlExtraData!: (payload: IupdateControlExtraData) => void;
+  @State(state => state.fd.userformData) userformData!: userformData
+    tabOrderList : tabsItems[]
+    selectedTabData : tabsItems = {
+      Name: '',
+      Caption: '',
+      ToolTip: '',
+      Accelerator: ''
+    };
 
-   renameValue: string = ''
-    tempRename: string = ''
-    tempRenameData: Array<ITabs>
-    tempSelectedTab: ITabs
-    isDialogVisible: boolean
-    tempToolTip: string = ''
-    openDialog () {
-      this.isDialogVisible = true
-    }
-    handleRename (e: any) {
-      this.tempRename = e.target.value
+    handleRename (e: KeyboardEvent) {
+      this.selectedTabData.Caption = (e.target as HTMLInputElement).value
     }
 
-    acceleratorCheck (e: any) {
-      console.log('acc', e.target.value[0])
-      const underline = '&#818;'
-      const tab = this.tempRename
-      const replaceUnderline = tab.replace(/&#818;/g, '')
-      const pos = replaceUnderline.indexOf(e.target.value[0])
-      if (pos !== -1) {
-        const acctab = replaceUnderline.substring(0, pos) + replaceUnderline[pos] + underline + replaceUnderline.substring(pos + 1, replaceUnderline.length)
-        this.tempRename = acctab
-      } else {
-        this.tempRename = replaceUnderline
-        // return false;
+    updateAccelerator (e: KeyboardEvent) {
+      this.selectedTabData.Accelerator = (e.target as HTMLInputElement).value
+    }
+    handleTip (e: KeyboardEvent) {
+      this.selectedTabData.ToolTip = (e.target as HTMLInputElement).value
+    }
+    updateChanges () {
+      if (this.selectedTabData.Accelerator) {
+        this.selectedTabData.Accelerator = this.selectedTabData.Accelerator[0]
       }
+      this.updateControlExtraData({
+        userFormId: this.userFormId,
+        controlId: this.controlId,
+        propertyName: 'Tabs',
+        value: this.tabOrderList
+      })
+      this.isTabOrderOpen = false
     }
-    handleTip (e: any) {
-      console.log(e.target.value)
-      this.tempToolTip = e.target.value
-    }
-    updateChanges (isRenameDialogOpen : boolean, value : string) {
-      console.log('Yam', this.renameData)
-      if (value === 'update') {
-        this.renameValue = this.tempRename
-        const tempRenameData = []
-        for (const key in this.renameData) {
-          const element = this.renameData[key]
-          const assigned = Object.assign({}, element)
-          tempRenameData.push(assigned)
+    created () {
+      EventBus.$on('renamePage', (userFormId: string, controlId: string, selectedTab : number) => {
+        debugger
+        const tabOrderControlData = this.userformData[userFormId][controlId].extraDatas!.Tabs!
+        if (tabOrderControlData.length > 0) {
+          this.tabOrderList = JSON.parse(JSON.stringify(tabOrderControlData))
+          this.selectedTabData = this.tabOrderList[selectedTab]
         }
-        tempRenameData[parseInt(this.selectedTab.Accelerator) - 1].Caption = this.renameValue
-        tempRenameData[parseInt(this.selectedTab.Accelerator) - 1].ToolTip = this.tempToolTip
-        this.updateControlExtraData({
-          userFormId: this.userFormId,
-          controlId: this.controlId,
-          propertyName: 'Tabs',
-          value: tempRenameData
-        })
-      }
-      this.setIsDialogVisible(isRenameDialogOpen)
+        this.isTabOrderOpen = true
+        this.userFormId = userFormId
+        this.controlId = controlId
+      })
     }
-
-    mounted () {
-      this.tempRenameData = this.renameData
-      this.tempSelectedTab = this.selectedTab
-      this.renameValue = this.selectedTab.Caption
-      this.tempRename = this.renameValue
-      this.isDialogVisible = this.isOpen
-    }
-    @Emit('setIsDialogVisible')
-    setIsDialogVisible (isRenameDialogOpen : boolean) {
-      return isRenameDialogOpen
+    destroyed () {
+      EventBus.$off('renamePage')
     }
 }
 </script>
@@ -185,7 +153,6 @@ h1 {
   border-radius: 20px/50px;
   text-decoration: none;
   cursor: pointer;
-  transition: all 0.3s ease-out;
 }
 .button:hover {
   background: #06d85f;
@@ -198,7 +165,6 @@ h1 {
   left: 0;
   right: 0;
   background: rgba(0, 0, 0, 0.7);
-  transition: opacity 500ms;
   visibility: hidden;
   opacity: 0;
   z-index: 110;
@@ -215,7 +181,6 @@ h1 {
   border-radius: 5px;
   width: 30%;
   position: relative;
-  transition: all 5s ease-in-out;
 }
 
 .popup h2 {
@@ -227,7 +192,6 @@ h1 {
   position: absolute;
   /* top: 20px; */
   right: 0px;
-  transition: all 200ms;
   /* font-size: 30px; */
   font-weight: bold;
   text-decoration: none;
@@ -314,5 +278,8 @@ h1 {
   width: 10px;
   height: 10px;
   stroke: white;
+}
+.btn-outline {
+  outline: none;
 }
 </style>

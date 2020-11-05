@@ -138,8 +138,8 @@ export default function getStoryFunction (propName, ControlId) {
     case 'ListStyle':
       result = (value) => { select('ListStyle', listStyle, value, GROUPID_4) }
       break
-    case 'ListWidths':
-      result = (value) => { number('ListWidths', value, textDefaultValue, GROUPID_8) }
+    case 'ListWidth':
+      result = (value) => { number('ListWidth', value, textDefaultValue, GROUPID_8) }
       break
     case 'Locked':
       result = (value) => { boolean('Locked', value, GROUPID_2) }

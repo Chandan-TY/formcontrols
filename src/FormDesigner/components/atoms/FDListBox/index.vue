@@ -1,5 +1,5 @@
 <template>
-    <div class="listStyle" :style="listStyleObj" :title="properties.ControlTipText" ref="listBoxRef">
+    <div class="listStyle" :style="listStyleObj" :title="properties.ControlTipText" ref="listBoxRef"  @click.stop="selectedItem">
     <table
       :style="tableStyleObj"
       @click="tableClick"

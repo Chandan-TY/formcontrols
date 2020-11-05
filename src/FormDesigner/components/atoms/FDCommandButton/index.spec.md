@@ -29,7 +29,7 @@ Creates a button the user can choose to carry out a command</h4>
 <h4>BackStyle</h4>
 <span>When set to True, the size of the control is changed to fit the contents</span>
 
-<h4>Cancel</h4>
+<h4>Cancel <span style="color:red;">(2)</span></h4>
 <span>When set to True,You can use the Cancel property to specify whether a command button is also the Cancel button on a form.</span>
 
 <h4>Caption</h4>
@@ -38,10 +38,13 @@ Creates a button the user can choose to carry out a command</h4>
 <h4>ControlTipText</h4>
 <span>Control tooltip text, text that appears when the mouse is hovered over the control</span>
 
+<h4>Default <span style="color:red;">(2)</span></h4>
+<span>You can use the Default property to specify whether a command button is the default button on a form.</span>
+
 <h4>Enabled</h4>
 <span>Indicates enable/disable of control</span>
 
-<h4>Font <span style="color:red;">(3)</span></h4>
+<h4>Font</h4>
 <span>1. Supports Fonts (Arial, Algerian, Banschrift)
 2. Supports Font styles (Bold, Itallic,...)
 3. Supports Font size
@@ -53,7 +56,7 @@ Creates a button the user can choose to carry out a command</h4>
 <h4>Height</h4>
 <span>Set height of command button control </span>
 
-<h4>HelpContextID<span style="color:red;">(3)</span></h4>
+<h4>HelpContextID <span style="color:red;">(3)</span></h4>
 <span> Opens the file designated as HelpFile and shows the item set as HelpContextID</span>
 
 <h4>Left</h4>
@@ -68,10 +71,10 @@ Creates a button the user can choose to carry out a command</h4>
 <h4>MousePointer</h4>
 <span>Changes the shape of the mouse cursor when the mouse is over the control </span>
 
-<h4>Picture<span style="color:red;">(3)</span></h4>
+<h4>Picture</h4>
 <span>Insert an image into the command button control</span>
 
-<h4>PicturePosition<span style="color:red;">(3)</span></h4>
+<h4>PicturePosition <span style="color:red;">(3)</span></h4>
 <span>Set the position of the image inserted in the command button control</span>
 
 <h4>TabIndex <span style="color:red;">(2)</span></h4>
@@ -80,15 +83,16 @@ Creates a button the user can choose to carry out a command</h4>
 <h4>TabStop <span style="color:red;">(2)</span></h4>
 <span>Decide whether to bring focus to the control with the tab key </span>
 
-<h4>Tag <span style="color:red;">(4)</span></h4>
+<h4>Tag</h4>
 <span>User-defined value, user-defined value stored in the control and used in code </span>
+
+<h4>TakeFocusOnClick</h4>
+<span>The TakeFocusOnClick property to control whether a CommandButton receives the focus when the user clicks it.
+</span>
 
 <h4>Top</h4>
 <span>Move's away from the top of the UserForm (Y coordinate)</span>
 
-<h4>TakeFocusOnClick</h4>
-<span>the TakeFocusOnClick property to control whether a CommandButton receives the focus when the user clicks it.
-</span>
 
 <h4>Visible</h4>
 <span>Whether it is visible or invisible when running UserForm</span>

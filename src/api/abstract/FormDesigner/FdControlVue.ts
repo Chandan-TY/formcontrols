@@ -476,35 +476,10 @@ export default class FdControlVue extends Vue {
    * @returns object value
    */
  protected get computedCaption () {
-   let afterbeginCaption:string = ''
-   let acceleratorCaption:string = ''
-   let beforeendCaption:string = ''
-
-   let caption = this.properties.Caption
-   let accelerator = this.properties.Accelerator!.charAt(0)
-   let isPresent:boolean = false
-   if (caption && accelerator) {
-     for (var i = 0; i < caption.length; i++) {
-       if (caption[i] === accelerator) {
-         isPresent = true
-         break
-       }
-     }
-     if (isPresent && accelerator !== '') {
-       const postion:number = caption.indexOf(accelerator)
-       acceleratorCaption = accelerator
-       afterbeginCaption = caption.substring(0, postion)
-       beforeendCaption = caption.substring(postion + 1, caption.length)
-     } else {
-       afterbeginCaption = caption
-     }
-   } else {
-     afterbeginCaption = caption!
+   let accelerator = ''
+   if (this.properties.Accelerator !== '') {
+     accelerator = this.properties.Accelerator!.charAt(0)
    }
-   return {
-     afterbeginCaption: afterbeginCaption,
-     acceleratorCaption: acceleratorCaption,
-     beforeendCaption: beforeendCaption
-   }
+   return controlProperties.acceleratorProp(this.properties.Caption!, accelerator)
  }
 }

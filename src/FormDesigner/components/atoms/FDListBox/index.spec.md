@@ -38,7 +38,7 @@
 <h4>ColumnWidths</h4>
 <span>Specifies the width of each column in a multicolumn List box</span>
 
-<h4>Control Source</h4>
+<h4>ControlSource</h4>
 <span>You can use the ControlSource property to specify what data appears in a control.You can display and edit data bound to a field in a table, query, or SQL statement.You can also display the result of an expression. Read/write String.</span>
 
 <h4>ControlTipText</h4>
@@ -47,7 +47,7 @@
 <h4>Enabled</h4>
 <span>Indicates enable/disable of control</span>
 
-<h4>Font <span style="color:red;">(3)</span></h4>
+<h4>Font</h4>
 <span>1. Supports Fonts (Arial, Algerian, Banschrift)
 2. Supports Font styles (Bold, Itallic,...)
 3. Supports Font size
@@ -59,13 +59,13 @@
 <h4>Height</h4>
 <span>Set height of ListBox control </span>
 
-<h4>HelpContextID<span style="color:red;">(3)</span></h4>
+<h4>HelpContextID <span style="color:red;">(3)</span></h4>
 <span> Opens the file designated as HelpFile and shows the item set as HelpContextID</span>
 
-<h4>IMEMode<span style="color:red;">(3)</span></h4>
+<h4>IMEMode <span style="color:red;">(4)</span></h4>
 <span>IMEMode (input method editor) change</span>
 
-<h4>Integral Height</h4>
+<h4>IntegralHeight <span style="color:red;">(4)</span></h4>
 <span>Indicates whether a ListBox or TextBox displays full lines of text in a list or partial lines.</span>
 
 <h4>Left</h4>
@@ -89,7 +89,7 @@
 <h4>MultiSelect</h4>
 <span>You can use the MultiSelect property to specify whether a user can make multiple selections in a list box on a form and how the multiple selections can be made.</span>
 
-<h4>RowSource<span style="color:red;">(3)</span></h4>
+<h4>RowSource</h4>
 <span>Insert an image into the control</span>
 
 <h4>SpecialEffect</h4>
@@ -101,7 +101,7 @@
 <h4>TabStop <span style="color:red;">(2)</span></h4>
 <span>Decide whether to bring focus to the control with the tab key </span>
 
-<h4>Tag <span style="color:red;">(4)</span></h4>
+<h4>Tag</h4>
 <span>User-defined value, user-defined value stored in the control and used in code </span>
 
 <h4>Text</h4>
@@ -129,3 +129,14 @@
 <h4>Width</h4>
 <span>The width of the control</span>
 
+<h4>ControlSourceValue <span style="color:red;">(5)</span></h4>
+<span>Determines the value of the cell specified in the ControlSource</span>
+
+<h4>ColumnHeadsValues <span style="color:red;">(5)</span></h4>
+<span>Determines the header values of the cells specified in the RowSource</span>
+
+<h4>RowSourceData <span style="color:red;">(5)</span></h4>
+<span>Determines the values of the cells specified in the RowSource</span>
+
+<h4>MatchData <span style="color:red;">(5)</span></h4>
+<span>Determines the selected values and also stores the selected values.</span>

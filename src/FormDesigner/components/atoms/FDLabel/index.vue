@@ -1,5 +1,5 @@
 <template>
- <label
+<label
     class="label"
     :style="cssStyleProperty"
     :name="properties.Name"
@@ -9,8 +9,12 @@
     @keydown.enter="setContentEditable($event,true)"
     @click.stop="selectedItem"
   >
-    <!-- ToDo: :accelerator="properties.Accelerator" -->
-    <FDEditableText
+    <span v-if="!syncIsEditMode">
+    <span>{{computedCaption.afterbeginCaption}}</span>
+    <span style="text-decoration:underline;">{{computedCaption.acceleratorCaption}}</span>
+    <span>{{computedCaption.beforeendCaption}}</span>
+    </span>
+    <FDEditableText v-else
       :editable="isRunMode === false && syncIsEditMode"
       :caption="properties.Caption"
       @updateCaption="updateCaption"
@@ -74,6 +78,7 @@ export default class FDLabel extends Mixins(FdControlVue) {
       backgroundPosition: this.getPosition,
       backgroundPositionX: this.getPositionX,
       backgroundPositionY: this.getPositionY
+      // display: controlProp.Visible ? 'inline-block' : 'none'
     }
   }
 
@@ -88,6 +93,13 @@ export default class FDLabel extends Mixins(FdControlVue) {
     // if autoSize is true then height and width value will not get updated
     this.updateAutoSize()
   }
+
+  // @Watch('properties.Visible', { deep: true })
+  // visible (newVal:boolean, oldVal:boolean) {
+  //   checkVisible () {
+
+  //   }
+  // }
   /**
    * @description updateAutoSize calls Vuex Actions to update object
    * @function updateAutoSize

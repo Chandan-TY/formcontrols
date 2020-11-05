@@ -10,7 +10,7 @@ import { ControlPropertyData } from '@/FormDesigner/models/ControlsTableProperti
 
 export default abstract class FdContainerVue extends FdControlVue {
     @Prop({ required: true, type: String }) public readonly userFormId! : string
-    @Prop({ required: true, type: String }) public readonly containerId! : string
+    @Prop({ type: String }) public readonly containerId! : string
 
     @State((state: rootState) => state.fd.toolBoxSelect) toolBoxSelect!: fdState['toolBoxSelect'];
     @State((state) => state.fd.copyControlList) copyControl!: copyControl;
@@ -101,5 +101,134 @@ export default abstract class FdContainerVue extends FdControlVue {
         userFormId: this.userFormId,
         select: { container: [this.controlId], selected: [this.controlId] }
       })
+    }
+
+    /**
+   * @description  open the contextMenu
+   * @function openMenu
+   * @param  e -> it is of type MouseEvent
+   * @param  parentID -> ContainerId
+   * @param  parentID -> controlId
+   * @event contextmenu
+   */
+    openMenu (e: MouseEvent, parentID: string, controlID: string) {
+      e.preventDefault()
+      if (!this.selectedControls[this.userFormId].selected.includes(controlID)) {
+        let groupId = controlID
+        if (
+          this.userformData[this.userFormId][controlID].properties.GroupID !== ''
+        ) {
+          groupId = this.userformData[this.userFormId][controlID].properties
+            .GroupID!
+        }
+        if (!this.selectedControls[this.userFormId].selected.includes(groupId)) {
+          this.selectControl({
+            userFormId: this.userFormId,
+            select: { container: [parentID], selected: [groupId] }
+          })
+        }
+      }
+      const controlType = this.userformData[this.userFormId][controlID].type
+      if (
+        controlType === 'Userform' ||
+        controlType === 'Frame'
+      ) {
+        this.contextMenuType = true
+      } else {
+        this.contextMenuType = false
+      }
+      const controlLeft: number | undefined = this.userformData[parentID][controlID].properties.Left
+      const controlTop: number | undefined = this.userformData[parentID][controlID].properties.Top
+      this.top = `${e.offsetY + controlTop!}px`
+      this.left = `${e.offsetX + controlLeft!}px`
+      this.viewMenu = true
+      const controlLength = this.userformData[this.userFormId][parentID].controls
+        .length
+      const contextMenuData = this.contextMenuType
+        ? this.userformContextMenu
+        : this.controlContextMenu
+      for (const val of contextMenuData) {
+        if (val.id === 'ID_SELECTALL') {
+          val.disabled = controlLength === 0
+        }
+        if (val.id === 'ID_PASTE') {
+          val.disabled = this.copyControl.targetId.length === 0
+        }
+        if (val.id === 'ID_GROUP' || val.id === 'ID_UNGROUP') {
+          const selected = this.selectedControls[this.userFormId].selected
+          let groupId: boolean = false
+          for (const key of selected) {
+            if (!key.startsWith('group') && !key.startsWith('ID_USERFORM')) {
+              groupId =
+              this.userformData[this.userFormId][key].properties.GroupID === ''
+            }
+          }
+          const selectedGroupArray = selected.filter(
+            (val: string) => val.startsWith('group') && val
+          )
+          if (!groupId && selectedGroupArray.length <= 1) {
+            val.text = '<u>U</u>ngroup'
+            val.id = 'ID_UNGROUP'
+          } else {
+            val.text = '<u>G</u>roup'
+            val.id = 'ID_GROUP'
+            val.disabled =
+            this.selectedControls[this.userFormId].selected.length <= 1
+          }
+        }
+      }
+    }
+
+    /**
+   * @description to drag and select  the contol in container
+   * @function calSelectedAreaStyle
+   * @param event  - it is of type MouseEvent
+   * @event mouseup
+   */
+    calSelectedAreaStyle (event: MouseEvent) {
+      debugger
+      const left = parseInt(this.selectedAreaStyle!.left)
+      const right =
+      parseInt(this.selectedAreaStyle!.left) +
+      parseInt(this.selectedAreaStyle!.width)
+      const top = parseInt(this.selectedAreaStyle!.top)
+      const bottom =
+      parseInt(this.selectedAreaStyle!.top) +
+      parseInt(this.selectedAreaStyle!.height)
+      const leftArray: Array<number> = []
+      for (let i in this.data.controls) {
+        const key: string = this.data.controls[i]
+        const controlProp: controlProperties = this.userformData[this.userFormId][key].properties
+        if (
+          left <= controlProp!.Left! + controlProp!.Width! &&
+        right >= controlProp!.Left! &&
+        top <= controlProp!.Top! + controlProp!.Height! &&
+        bottom >= controlProp!.Top!
+        ) {
+          this.selectedControlArray.push(key)
+        }
+        // leftArray.push(controlProp!.Left!)
+      }
+      const selecedGroup = []
+      for (const val of this.selectedControlArray) {
+        const controlGroupId: string = this.userformData[this.userFormId][val]
+          .properties.GroupID!
+        if (controlGroupId && controlGroupId !== '') {
+          !selecedGroup.includes(controlGroupId)! &&
+          selecedGroup.push(controlGroupId)
+        } else {
+          selecedGroup.push(val)
+        }
+      }
+      console.log('gggggggg', this.selectedControlArray)
+      if (this.selectedControlArray.length !== 0) {
+        this.selectControl({
+          userFormId: this.userFormId,
+          select: {
+            container: [this.userFormId],
+            selected: [...selecedGroup]
+          }
+        })
+      }
     }
 }

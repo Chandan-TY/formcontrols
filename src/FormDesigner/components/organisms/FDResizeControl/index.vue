@@ -1,11 +1,29 @@
 <template>
   <div>
     <div
-      :class="mainSelected  && isEditMode && !isRunMode ? 'mainDiv2' :(mainSelected  && !isEditMode && !isRunMode)? 'mainDiv' : 'mainDiv1'"
+      :class="
+        mainSelected && isEditMode && !isRunMode
+          ? 'mainDiv2'
+          : mainSelected && !isEditMode && !isRunMode
+          ? 'mainDiv'
+          : 'mainDiv1'
+      "
       :style="resizeControlStyle"
-       :ref="'draRef'.concat(controlId)"
-      @mousedown.stop="mainSelected && !isEditMode? handleDrag($event) : !isEditMode ? dragGroupControl($event): ''"
-      @mousedown.self.stop="mainSelected && isEditMode ? handleDrag($event) : isEditMode? dragGroupControl($event):''"
+      :ref="'draRef'.concat(controlId)"
+      @mousedown.stop="
+        mainSelected && !isEditMode
+          ? handleDrag($event)
+          : !isEditMode
+          ? dragGroupControl($event)
+          : ''
+      "
+      @mousedown.self.stop="
+        mainSelected && isEditMode
+          ? handleDrag($event)
+          : isEditMode
+          ? dragGroupControl($event)
+          : ''
+      "
       @contextmenu.stop="openContextMenu($event, userFormId, controlId)"
       @click.stop
     >
@@ -24,7 +42,11 @@
         :controlId="propControlData.properties.ID"
         :userFormId="getUserFormId"
         :data="propControlData"
-        :isActivated="this.selectedControls[this.userFormId].selected.includes(this.controlId)"
+        :isActivated="
+          this.selectedControls[this.userFormId].selected.includes(
+            this.controlId
+          )
+        "
         :isRunMode="isRunMode"
         :isEditMode="isEditMode"
         @setEditMode="setEditMode"
@@ -41,7 +63,15 @@
 </template>
 
 <script lang="ts">
-import { Component, Emit, Prop, Vue, Ref, PropSync, Watch } from 'vue-property-decorator'
+import {
+  Component,
+  Emit,
+  Prop,
+  Vue,
+  Ref,
+  PropSync,
+  Watch
+} from 'vue-property-decorator'
 import { State, Action } from 'vuex-class'
 
 import Label from '@/FormDesigner/components/atoms/FDLabel/index.vue'
@@ -80,8 +110,8 @@ import FdSelectVue from '@/api/abstract/FormDesigner/FdSelectVue'
 })
 export default class ResizeControl extends FdSelectVue {
   // @Prop({ required: true, type: Array }) public currentSelectedGroup!: string[]
-  @PropSync('currentSelectedGroup') public syncCurrentSelectedGroup!: string
-  @Prop({ required: true, type: String }) public containerId!: string
+  @PropSync('currentSelectedGroup') public syncCurrentSelectedGroup!: string;
+  @Prop({ required: true, type: String }) public containerId!: string;
   @Ref('resize') readonly resize!: ResizeHandler;
 
   handleDrag (event: MouseEvent) {
@@ -118,30 +148,49 @@ export default class ResizeControl extends FdSelectVue {
     this.$emit('openMenu', e, parentID, controlID)
   }
   get resizeControlStyle () {
+    debugger
     const currentProperties = this.propControlData.properties
     const bs = currentProperties.BorderStyle!
     const type = this.propControlData.type
     return {
-      paddingRight: (type === 'Label' && (bs ? '4px' : '2px')) || (type === 'TextBox' && (bs ? '6px' : '4px')) || (type === 'FDImage' && (bs ? '2px' : '1px')),
-      paddingBottom: (type === 'Label' && (bs ? '2px' : '0px')) || (type === 'TextBox' && (bs ? '6px' : '4px')) || (type === 'FDImage' && (bs ? '2px' : '1px')),
+      paddingRight:
+        (type === 'Label' && (bs ? '4px' : '2px')) ||
+        (type === 'TextBox' && (bs ? '6px' : '4px')) ||
+        (type === 'FDImage' && (bs ? '2px' : '1px')) ||
+        (type === 'Frame' && (bs ? '20px' : '18px')),
+      paddingBottom:
+        (type === 'Label' && (bs ? '2px' : '0px')) ||
+        (type === 'TextBox' && (bs ? '6px' : '4px')) ||
+        (type === 'FDImage' && (bs ? '2px' : '1px')) ||
+        (type === 'Frame' && (bs ? '13px' : '18px')),
       left: `${currentProperties.Left}px`,
       top: `${currentProperties.Top}px`,
       width: `${currentProperties.Width!}px`,
       height: `${currentProperties.Height!}px`,
-      display: this.isRunMode && currentProperties.Visible === false ? 'none' : 'block'
+      display:
+        this.isRunMode && currentProperties.Visible === false
+          ? 'none'
+          : 'block'
     }
   }
   get mainSelected () {
-    return this.selectedControls[this.userFormId].selected.includes(this.controlId)
+    return this.selectedControls[this.userFormId].selected.includes(
+      this.controlId
+    )
   }
   dragGroup () {
-    const groupId = this.propControlData.properties.GroupID ? this.propControlData.properties.GroupID : ''
+    const groupId = this.propControlData.properties.GroupID
+      ? this.propControlData.properties.GroupID
+      : ''
     const currentSelect = this.selectedControls[this.userFormId].selected
     if (groupId !== '') {
       let selectTarget = null
       let currentGroup = ''
       if (groupId !== '') {
-        if (this.syncCurrentSelectedGroup === groupId || currentSelect.includes(groupId)) {
+        if (
+          this.syncCurrentSelectedGroup === groupId ||
+          currentSelect.includes(groupId)
+        ) {
           selectTarget = this.controlId
         } else {
           selectTarget = groupId
@@ -198,7 +247,7 @@ export default class ResizeControl extends FdSelectVue {
   }
   exchangeSelect () {
     const sel = [...this.selectedControls[this.userFormId].selected]
-    const controlIndex = this.selectedControls[this.userFormId].selected.findIndex(val => val === this.controlId)
+    const controlIndex = this.selectedControls[this.userFormId].selected.findIndex((val) => val === this.controlId)
     sel.splice(controlIndex, 1)
     sel.unshift(this.controlId)
     this.selectControl({
@@ -215,10 +264,12 @@ export default class ResizeControl extends FdSelectVue {
     this.isEditMode = false
   }
   get getUserFormId () {
-    if (this.propControlData.type === 'Frame' || this.propControlData.type === 'MultiPage') {
+    if (
+      this.propControlData.type === 'Frame' || this.propControlData.type === 'MultiPage') {
       return this.userFormId
+    } else {
+      return null
     }
-    return ''
   }
 }
 </script>
