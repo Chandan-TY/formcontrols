@@ -10,22 +10,8 @@
       "
       :style="resizeControlStyle"
       :ref="'draRef'.concat(controlId)"
-      @mousedown.stop="
-        mainSelected && !isEditMode
-          ? handleDrag($event)
-          : !isEditMode
-          ? dragGroupControl($event)
-          : ''
-      "
-      @mousedown.self.stop="
-        mainSelected && isEditMode
-          ? handleDrag($event)
-          : isEditMode
-          ? dragGroupControl($event)
-          : ''
-      "
+      @mousedown.stop="mainSelected ? handleDrag($event):dragGroupControl($event)"
       @contextmenu.stop="openContextMenu($event, userFormId, controlId)"
-      @click.stop
     >
       <ResizeHandler
         v-if="!isRunMode"
@@ -89,6 +75,7 @@ import Frame from '@/FormDesigner/components/atoms/FDFrame/index.vue'
 import TabStrip from '@/FormDesigner/components/atoms/FDTabStrip/index.vue'
 import ResizeHandler from '@/FormDesigner/components/molecules/FDResizeHandler/index.vue'
 import FdSelectVue from '@/api/abstract/FormDesigner/FdSelectVue'
+import Container from '../FDContainer/index.vue'
 @Component({
   name: 'ResizeControl',
   components: {
@@ -115,9 +102,11 @@ export default class ResizeControl extends FdSelectVue {
   @Ref('resize') readonly resize!: ResizeHandler;
 
   handleDrag (event: MouseEvent) {
+    debugger
     if (this.selectedControls[this.userFormId].selected.length > 1) {
       this.exchangeSelect()
     }
+    this.isMoveWhenMouseDown = false
     this.resize.handleMouseDown(event, 'drag', 'control')
   }
   @Emit('muldragControl')
@@ -148,9 +137,9 @@ export default class ResizeControl extends FdSelectVue {
     this.$emit('openMenu', e, parentID, controlID)
   }
   get resizeControlStyle () {
-    debugger
     const currentProperties = this.propControlData.properties
     const bs = currentProperties.BorderStyle!
+    const isRotate = currentProperties.Width! > currentProperties.Height!
     const type = this.propControlData.type
     return {
       paddingRight:
@@ -163,6 +152,7 @@ export default class ResizeControl extends FdSelectVue {
         (type === 'TextBox' && (bs ? '6px' : '4px')) ||
         (type === 'FDImage' && (bs ? '2px' : '1px')) ||
         (type === 'Frame' && (bs ? '13px' : '18px')),
+
       left: `${currentProperties.Left}px`,
       top: `${currentProperties.Top}px`,
       width: `${currentProperties.Width!}px`,
@@ -174,8 +164,16 @@ export default class ResizeControl extends FdSelectVue {
     }
   }
   get mainSelected () {
-    return this.selectedControls[this.userFormId].selected.includes(
-      this.controlId
+    if (
+      this.controlId === this.selectedControls[this.userFormId].container[0]
+    ) {
+      this.isEditMode = true
+    }
+    return (
+      this.selectedControls[this.userFormId].selected.includes(
+        this.controlId
+      ) ||
+      this.controlId === this.selectedControls[this.userFormId].container[0]
     )
   }
   dragGroup () {
@@ -216,11 +214,13 @@ export default class ResizeControl extends FdSelectVue {
     }
   }
   selectedItem () {
-    debugger
     const groupId = this.propControlData.properties.GroupID ? this.propControlData.properties.GroupID : ''
     const currentSelect = this.selectedControls[this.userFormId].selected
     if (currentSelect.length === 1 && currentSelect[0] === this.controlId) {
-      this.isEditMode = true
+      if (this.isMoveWhenMouseDown !== true) {
+        this.isEditMode = true
+        this.isMoveWhenMouseDown = false
+      }
     } else {
       if (currentSelect.length > 1) {
         this.exchangeSelect()
@@ -263,9 +263,12 @@ export default class ResizeControl extends FdSelectVue {
   updateSelectedControls () {
     this.isEditMode = false
   }
+
   get getUserFormId () {
     if (
-      this.propControlData.type === 'Frame' || this.propControlData.type === 'MultiPage') {
+      this.propControlData.type === 'Frame' ||
+      this.propControlData.type === 'MultiPage'
+    ) {
       return this.userFormId
     } else {
       return null

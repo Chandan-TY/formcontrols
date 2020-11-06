@@ -79,9 +79,19 @@ export default class FDCommandButton extends Mixins(FdControlVue) {
     // if autoSize is true then height and width value will not get updated
     this.updateAutoSize()
   }
+
+  /**
+   * @description mounted initializes the values which are required for the component
+   */
   mounted () {
     this.updateAutoSize()
   }
+
+  /**
+  * @description style object is passed to :style attribute in button tag
+  * dynamically changing the styles of the component based on properties
+  * @function styleObj
+  */
   protected get styleObj () :Partial<CSSStyleDeclaration> {
     const controlProp = this.properties
     const font: font = controlProp.Font ? controlProp.Font : {

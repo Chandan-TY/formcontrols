@@ -10,9 +10,8 @@
         wrap="off"
         :tabindex="properties.TabIndex"
         :readonly="properties.Locked || properties.Style === 2"
-        @keydown.enter="enterFieldBehavior"
         @blur="handleBlur($event, textareaRef, hideSelectionDiv)"
-        @click="handleClick(hideSelectionDiv)"
+        @click="handleClick($event, textareaRef,hideSelectionDiv)"
         @input="handleTextInput($event)"
         :maxlength="properties.MaxLength!==0?properties.MaxLength:''"
         class="text-box-design"
@@ -36,8 +35,8 @@
     <label ref="autoSizeTextarea" class="labelStyle" :class="[labelStyleObj]"></label>
     </div>
       <div class="selected" @click="enabledCheck" :style="selectedStyleObj"></div>
-      <div class="items" :class="{ selectHide: !open }" v-if="open">
-        <div class="listStyle" :title="properties.ControlTipText">
+      <div class="items" :class="{ selectHide: !open }" v-if="open" :style="itemsStyleObj">
+        <div class="listStyle" :title="properties.ControlTipText" >
     <table
       :style="tableStyleObj"
     >
@@ -55,7 +54,7 @@
             <td
               v-if="(columnIndex<properties.ColumnCount)"
               :key="columnIndex"
-              :style="[tdStyleObj,{borderRight: (columnIndex<properties.ColumnCount-1)?'1px solid':'',width:(columnIndex==0 && properties.ColumnWidths!=='')?properties.ColumnWidths+'px':'auto',overflow:'hidden'}]"
+              :style="[tdStyleObj,{borderRight: (columnIndex<properties.ColumnCount-1)?'1px solid':'',width:(columnIndex==0 && properties.ColumnWidths!=='')?parseInt(properties.ColumnWidths)+'px':'auto',overflow:'hidden'}]"
             >{{a}}</td>
           </template>
         </tr>
@@ -86,7 +85,7 @@
             class="column-item"
             v-for="(i,index) in item"
             :key="index"
-            :style="[tdStyleObj,{width:(index==0 && properties.ColumnWidths!=='')?properties.ColumnWidths+'px':'100%',overflow:'hidden'}]"
+            :style="[tdStyleObj,{width:(index==0 && properties.ColumnWidths!=='')?parseInt(properties.ColumnWidths)+'px':'100%',overflow:'hidden'}]"
           >
             <template v-if="(index<properties.ColumnCount)">{{i}}</template>
           </td>
@@ -125,7 +124,8 @@ export default class FDComboBox extends Mixins(FdControlVue) {
    multiselect = [];
   // textColumn
   selectionData: Array<string> = [];
-
+  selectionStart: number = 0;
+  selectionEnd: number = 0;
   // MatchFirstCharacter
   matchEntry: any = [];
   // matchIndex = -1;
@@ -139,15 +139,6 @@ export default class FDComboBox extends Mixins(FdControlVue) {
     console.log('Im selecting all the text');
     (this as any).$refs['textareaRef'].focus();
     (this as any).$refs['textareaRef'].select()
-  }
-  enterFieldBehavior (e: any) {
-    if (this.properties.EnterFieldBehavior === 0) {
-      e.preventDefault();
-      (this as any).$refs['textareaRef'].focus();
-      (this as any).$refs['textareaRef'].select()
-    } else {
-
-    }
   }
   // MatchEntryComplete
   clearMatchEntry (e: any) {
@@ -169,8 +160,17 @@ export default class FDComboBox extends Mixins(FdControlVue) {
   *
   */
   handleBlur (event: TextEvent, textareaRef: HTMLTextAreaElement, hideSelectionDiv: HTMLDivElement) {
+    if (this.properties.EnterFieldBehavior === 1) {
+      debugger
+      const eventTarget = event.target as HTMLTextAreaElement
+      let tempField = this.tempInputValue.slice(eventTarget.selectionStart - eventTarget.selectionEnd)
+      this.selectionStart = eventTarget.selectionStart
+      this.selectionEnd = eventTarget.selectionEnd
+      console.log('Temp Fiels', tempField)
+    }
     if (!this.properties.HideSelection && textareaRef) {
       const eventTarget = event.target as HTMLTextAreaElement
+      console.log('event Targer', event)
       hideSelectionDiv.style.display = 'block'
       hideSelectionDiv.style.height = this.properties.Height! + 2 + 'px'
       hideSelectionDiv.style.width = this.properties.Width! + 2 + 'px'
@@ -185,6 +185,7 @@ export default class FDComboBox extends Mixins(FdControlVue) {
     "<span style='background-color:lightblue'>" +
     firstPart.slice(eventTarget.selectionStart + Math.abs(0))
       hideSelectionDiv.innerHTML = text
+      console.log('Fi9rst Part', firstPart)
     }
     if (this.properties.MatchRequired && textareaRef) {
       const arrayCheck = this.extraDatas.RowSourceData!.findIndex(element => element[0] === this.tempInputValue)
@@ -200,9 +201,28 @@ export default class FDComboBox extends Mixins(FdControlVue) {
   * @param event its of FocusEvent
   * @event click
  */
-  handleClick (hideSelectionDiv:HTMLDivElement) {
+  handleClick (event: TextEvent, textareaRef: HTMLTextAreaElement, hideSelectionDiv:HTMLDivElement) {
     if (!this.properties.HideSelection) {
       hideSelectionDiv.style.display = 'none'
+    }
+    if (this.properties.EnterFieldBehavior === 0) {
+      (this as any).$refs['textareaRef'].focus();
+      (this as any).$refs['textareaRef'].select()
+    } else if (this.properties.EnterFieldBehavior === 1) {
+    //   this.handleBlur(event, textareaRef, hideSelectionDiv)
+    //   debugger
+    //   const eventTarget = event.target as HTMLTextAreaElement
+    //   textareaRef.style.display = 'none'
+    //   let textarea = eventTarget.value
+    //   let firstPart =
+    // textarea.slice(0, this.selectionEnd) +
+    // '</span>' +
+    // textarea.slice(this.selectionEnd + Math.abs(0))
+    //   let text =
+    // firstPart.slice(0, this.selectionStart) +
+    // "<span style='background-color:red'>" +
+    // firstPart.slice(this.selectionStart + Math.abs(0))
+    //   hideSelectionDiv.innerHTML = text
     }
   }
   /**
@@ -235,20 +255,6 @@ export default class FDComboBox extends Mixins(FdControlVue) {
     }
     e.preventDefault()
   }
-  // protected get listStyleObj () :Partial<CSSStyleDeclaration> {
-  //   const controlProp = this.properties
-  //   return {
-  //     backgroundColor: controlProp.BackColor,
-  //     borderColor: controlProp.BorderColor,
-  //     border: this.properties.BorderStyle ? `1px solid ${this.properties.BorderColor}` : 'none',
-  //     cursor: (controlProp.MousePointer !== 0 || controlProp.MouseIcon !== '') ? this.getMouseCursorData : 'default',
-  //     boxShadow: controlProp.SpecialEffect ? this.getSpecialEffectData : 'none',
-  //     height: `${controlProp.Height}px`,
-  //     width: `${controlProp.Width}px`,
-  //     display: controlProp.Visible ? 'inline-block' : 'none'
-
-  //   }
-  // }
 
   /**
    * @override
@@ -386,16 +392,6 @@ export default class FDComboBox extends Mixins(FdControlVue) {
   checkSelectionMargin (newVal:boolean, oldVal:boolean) {
     this.selectionData[0] = this.tempInputValue
   }
-  // @Watch('properties.Text', { deep: true })
-  // textChange (newVal:Text, oldVal:Text) {
-  //   this.updateDataModel({ propertyName: 'Value', value: newVal })
-  //   console.log('NewVal', this.properties.Value)
-  // }
-  // @Watch('properties.Value', { deep: true })
-  // valueChange (newVal:Text, oldVal:Text) {
-  //   this.updateDataModel({ propertyName: 'Text', value: newVal })
-  //   console.log('NewText', this.properties.Text)
-  // }
   mounted () {
     for (let i = 0; i < this.properties.ListRows!; i++) {
       this.tempArray[i] = this.extraDatas.RowSourceData![i]
@@ -423,102 +419,6 @@ export default class FDComboBox extends Mixins(FdControlVue) {
       this.updateDataModel({ propertyName: 'Value', value: this.selectionData[0] })
       this.updateDataModelExtraData({ propertyName: 'ControlSourceValue', value: this.selectionData[0] })
     }
-    // this.open = false
-    // if (this.properties.Enabled && this.properties.Locked === false) {
-    //   if (this.properties.MultiSelect === 0) {
-    //     if (this.properties.ControlSource !== '') {
-    //       console.log('selection DATA', this.selectionData[0])
-    //       this.updateDataModel({ propertyName: 'Text', value: this.selectionData[0] })
-    //       this.updateDataModel({ propertyName: 'Value', value: this.selectionData[0] })
-    //       this.updateDataModelExtraData({ propertyName: 'ControlSourceValue', value: this.selectionData[0] })
-    //     }
-    //     this.clearOptionBGColorAndChecked(e)
-    //     this.setOptionBGColorAndChecked(e)
-    //     let isListStyle = 0
-    //     if (this.properties.TextColumn === -1 || this.properties.TextColumn === 1) {
-    //     // 0th index is empty string
-    //       if (this.properties.ListStyle === 0) {
-    //         isListStyle = -1
-    //       }
-    //       // this.properties.Text = splitData[1 - isListStyle]
-    //       this.updateDataModel({ propertyName: 'Text', value: splitData[1 - isListStyle] })
-    //       this.updateDataModel({ propertyName: 'Value', value: splitData[1 - isListStyle] })
-    //     // this.properties.Value = splitData[1 - isListStyle]
-    //     } else if (this.properties.TextColumn === 0) {
-    //     // this.properties.Text = splitData[2 - isListStyle]
-    //       this.updateDataModel({ propertyName: 'Text', value: splitData[2 - isListStyle] })
-    //       this.updateDataModel({ propertyName: 'Value', value: splitData[1 - isListStyle] })
-    //     // this.properties.Value = splitData[1 - isListStyle]
-    //     } else {
-    //     // this.properties.Text = splitData[this.properties.TextColumn!]
-    //     // this.properties.Value = splitData[1 - isListStyle]
-    //       this.updateDataModel({ propertyName: 'Text', value: splitData[this.properties.TextColumn!] })
-    //       this.updateDataModel({ propertyName: 'Value', value: splitData[1 - isListStyle] })
-    //     }
-
-    //   // this.properties.value = e.currentTarget.innerText;
-    //   } else if (this.properties.MultiSelect === 1) {
-    //     if (e.target.tagName === 'INPUT') {
-    //       this.setOptionBGColorAndChecked(e)
-    //     // this.multiSelectOptions(e);
-    //     } else {
-    //       this.setOptionBGColorAndChecked(e)
-    //     // this.multiSelectOptions(e);
-    //     }
-    //   } else if (this.properties.MultiSelect === 2) {
-    //     if (e.ctrlKey === true) {
-    //       if (e.target.tagName === 'INPUT') {
-    //         this.setOptionBGColorAndChecked(e)
-    //       // this.multiSelectOptions(e);
-    //       } else {
-    //         this.setOptionBGColorAndChecked(e)
-    //       // this.multiSelectOptions(e);
-    //       }
-    //     } else if (e.shiftKey === true && this.properties.Value !== '') {
-    //       let startPoint = 0
-    //       let endPoint = 0
-    //       for (let i = 0; i < e.path.length; i++) {
-    //         const ele = e.path[i]
-    //         if (ele.className === 'table-body') {
-    //         // extend points start and end
-    //           for (let j = 0; j < ele.childNodes.length; j++) {
-    //             const cd = ele.childNodes[j]
-    //             if (cd.innerText === this.properties.Value) {
-    //               startPoint = j + 1
-    //             }
-    //             if (cd.innerText === e.currentTarget.innerText) {
-    //               endPoint = j
-    //             }
-    //           }
-    //           // upward selection start and end swap
-    //           if (startPoint > endPoint) {
-    //             let temp = startPoint
-    //             startPoint = endPoint
-    //             endPoint = temp
-    //           }
-    //           // setting selection
-    //           for (let k = startPoint; k <= endPoint; k++) {
-    //             const node = ele.childNodes[k]
-    //             node.style.backgroundColor = 'rgb(59, 122, 231)'
-    //             if (
-    //               this.properties.ListStyle === 1 &&
-    //             !node.childNodes[0].childNodes[0].checked
-    //             ) {
-    //               node.childNodes[0].childNodes[0].checked = !node.childNodes[0]
-    //                 .childNodes[0].checked
-    //             }
-    //           }
-    //           break
-    //         }
-    //       }
-    //     } else {
-    //       this.clearOptionBGColorAndChecked(e)
-    //       this.setOptionBGColorAndChecked(e)
-    //       // this.properties.Value = e.currentTarget.innerText
-    //       this.updateDataModel({ propertyName: 'Value', value: e.currentTarget.innerText })
-    //     }
-    //   }
-    // }
   }
 
   // 2 - fmMultiSelectExtend
@@ -926,8 +826,17 @@ export default class FDComboBox extends Mixins(FdControlVue) {
       border: controlProp.BorderStyle === 0 ? 'none' : '1px solid ' + controlProp.BorderColor,
       width: `${controlProp.Width! + 25}px`,
       cursor: (controlProp.MousePointer !== 0 || controlProp.MouseIcon !== '') ? this.getMouseCursorData : 'default',
-      boxShadow: controlProp.SpecialEffect ? this.getSpecialEffectData : '-1px -1px lightgray'
+      boxShadow: controlProp.SpecialEffect ? this.getSpecialEffectData : '-1px -1px lightgray',
+      display: 'grid',
+      gridTemplateColumns: `${controlProp.Width! + 5}px` + ' 20px'
 
+    }
+  }
+
+  protected get itemsStyleObj () :Partial<CSSStyleDeclaration> {
+    const controlProp = this.properties
+    return {
+      width: `${controlProp.ListWidth}px`
     }
   }
   protected get selectedStyleObj () :Partial<CSSStyleDeclaration> {

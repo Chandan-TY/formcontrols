@@ -1,6 +1,6 @@
 <template>
 <div>
-  <div class="outer" :style="styleOuterObj" @contextmenu="contextMenuVisible" @click.stop="selectedItem">
+  <div class="outer" :style="styleOuterObj" @contextmenu="contextMenuVisible" @click.stop="selectedItem" @mousedown="editModeTabStrip">
       <div class="tabs" :style="styleTabsObj">
         <div id="container" class="move" ref="scrolling" :style="styleMoveObj">
           <div class="tab" v-for="(value,key) in extraDatas.Tabs" :key="key" :style="getTabStyle" >
@@ -48,7 +48,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Emit, Watch } from 'vue-property-decorator'
+import { Component, Emit, Prop, Watch } from 'vue-property-decorator'
 import FdControlVue from '@/api/abstract/FormDesigner/FdControlVue'
 import { State, Action } from 'vuex-class'
 import ContextMenu from '../FDContextMenu/index.vue'
@@ -100,6 +100,7 @@ interface Iscrolling {
 })
 export default class FDTabStrip extends FdControlVue {
   @State(state => state.fd.userformData) userformData!: userformData
+  @Prop() isEditMode: boolean
   isScroll = true;
   // values: Array<tabsItems> = []
   viewMenu?: boolean = false
@@ -263,12 +264,13 @@ export default class FDTabStrip extends FdControlVue {
     const controlProp = this.properties
     return {
       zIndex: controlProp.MultiRow === true ? '-1' : '',
-      display: controlProp.Style === 1 ? 'none' : 'inline-block',
+      display: controlProp.Style === 1 ? 'none' : (controlProp.Width! < 30 || controlProp.Height! < 30) ? 'none' : 'inline-block',
       top: controlProp.TabOrientation === 0 ? '23px' : '0px',
-      height: controlProp.TabOrientation === 0 || controlProp.TabOrientation === 1 ? 'calc(100% - 69px)' : 'calc(100% - 43px)',
-      width: controlProp.TabOrientation === 0 || controlProp.TabOrientation === 1 ? 'calc(100% - 33px)' : 'calc(100% - 75px)',
+      height: controlProp.TabOrientation === 0 || controlProp.TabOrientation === 1 ? 'calc(100% - 25px)' : 'calc(100% - 43px)',
+      width: controlProp.TabOrientation === 0 || controlProp.TabOrientation === 1 ? '100%' : 'calc(100% - 75px)',
       left: controlProp.TabOrientation === 2 ? '40px' : '0px',
-      cursor: (controlProp.MousePointer !== 0 || controlProp.MouseIcon !== '') ? this.getMouseCursorData : 'default'
+      cursor: (controlProp.MousePointer !== 0 || controlProp.MouseIcon !== '') ? this.getMouseCursorData : 'default',
+      padding: '0px'
     }
   }
 
@@ -300,6 +302,11 @@ export default class FDTabStrip extends FdControlVue {
   @Emit('updateModel')
   updateDataModel (updateData: IupdateDataModel) {
     return updateData
+  }
+  editModeTabStrip (e: MouseEvent) {
+    if (this.isEditMode) {
+      e.stopPropagation()
+    }
   }
 }
 </script>

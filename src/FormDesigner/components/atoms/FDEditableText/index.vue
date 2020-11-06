@@ -20,7 +20,7 @@ export default class FDEditableText extends Vue {
   // @Prop() private accelerator! : string
 
   eventStoppers () {
-    const eventStop = (event: Event) => event.stopPropagation
+    const eventStop = (event: Event) => event.stopPropagation()
     return this.editable === false ? null : {
       mousedown: eventStop,
       keydown: this.keydownHandle,

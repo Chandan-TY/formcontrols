@@ -70,7 +70,7 @@ export default function getStoryFunction (propName, ControlId) {
       result = (value) => { boolean('ColumnHeads', value, GROUPID_8) }
       break
     case 'ColumnWidths':
-      result = (value) => { number('ColumnWidths', value, GROUPID_8) }
+      result = (value) => { text('ColumnWidths', value, GROUPID_8) }
       break
     case 'ControlSource':
       result = (value) => { text('ControlSource', value, GROUPID_8) }

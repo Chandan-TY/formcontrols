@@ -7,6 +7,7 @@ import { IdeleteControl, IselectControl, IupdateControl, IupdateControlExtraData
   name: 'FdSelectVue'
 })
 export default class FdSelectVue extends Vue {
+  isMoveWhenMouseDown = false
   /**
    * select mode : false / edit mode : true
    */
@@ -81,6 +82,9 @@ export default class FdSelectVue extends Vue {
         incHeight = controlType === 'OptionButton' && incHeight < 15 ? 15 : incHeight
         incWidth = controlType === 'OptionButton' && incWidth < 14 ? 14 : incWidth
         if (value.handler === 'drag') {
+          if (value.x !== 0 || value.y !== 0) {
+            this.isMoveWhenMouseDown = true
+          }
           this.updateControlAction('Top', top, i)
           this.updateControlAction('Left', left, i)
         } else {

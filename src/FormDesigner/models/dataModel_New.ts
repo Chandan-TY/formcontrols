@@ -49,7 +49,7 @@ export const userDataNew = {
         WhatsThisHelp: false,
         Zoom: 100
       },
-      controls: ['ID_Label1', 'ID_Label2', 'ID_Label3', 'ID_Label4'],
+      controls: ['ID_Label1', 'ID_Label2', 'ID_Label3', 'ID_Label4', 'ID_TabStrip1'],
       extraDatas: {
         display: 'block'
       },
@@ -197,7 +197,7 @@ export const userDataNew = {
         BoundColumn: 3,
         ColumnCount: 1,
         ColumnHeads: false,
-        ColumnWidths: '90',
+        ColumnWidths: '90pt',
         ControlSource: 'd8',
         ControlTipText: 'ComboBox',
         DragBehavior: 0,
@@ -275,7 +275,7 @@ export const userDataNew = {
         ColumnCount: 5,
         ColumnHeads: false,
         // ColumnWidths: '30pt;50pt;100pt',
-        ColumnWidths: 70,
+        ColumnWidths: '70pt',
         ControlSource: 'd7',
         ControlTipText: 'ListBox',
         Enabled: true,

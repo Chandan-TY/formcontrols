@@ -3,7 +3,7 @@
     <div v-for="handlerName in handlers" :key="handlerName">
       <div
         v-if="controlType === 'control'"
-        :class="[selectedControl.includes(controlId) ? `handle handle-${handlerName}`: null]"
+        :class="[selectedControl.includes(controlId) || controlId === selectedControls[userFormId].container[0] ? `handle handle-${handlerName}`: null]"
         :style="handlerStyle"
         @mousedown.stop="handleMouseDown($event, handlerName, controlType)"
       ></div>

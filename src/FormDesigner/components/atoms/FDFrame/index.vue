@@ -6,7 +6,7 @@
     :tabindex="properties.TabIndex"
     @keydown.delete="deleteItem"
     @keydown.enter="setContentEditable($event, true)"
-    @click.stop="selectedItem"
+    @click.stop="!isEditMode ? selectedItem : addControlObj($event)"
     @contextmenu.stop="showContextMenu($event, userFormId, controlId)"
     @mousedown="deActiveControl(this)"
     @mouseup="dragSelectorControl($event)"
@@ -19,6 +19,7 @@
       :userFormId="userFormId"
       :controlId="controlId"
       :containerId="controlId"
+      :isEditMode="isEditMode"
       :left="left"
       :top="top"
       ref="containerRef"
@@ -51,6 +52,7 @@ import { controlProperties } from '@/FormDesigner/controls-properties'
 })
 export default class FDFrame extends FdContainerVue {
   @Ref('containerRef') readonly containerRef!: Container;
+  @Prop({ required: true, type: Boolean }) public readonly isEditMode : boolean
   get dragSelectorStyle () {
     return {
       height: `${this.data.properties.Height}px`,
@@ -191,8 +193,8 @@ export default class FDFrame extends FdContainerVue {
   protected get legendCssStyleProperty (): Partial<CSSStyleDeclaration> {
     const controlProp = this.data.properties
     return {
-      color:
-        controlProp.Enabled === true ? controlProp.ForeColor : this.getEnabled
+      color: controlProp.Enabled === true ? controlProp.ForeColor : this.getEnabled,
+      background: controlProp.BackColor
     }
   }
 

@@ -10,8 +10,7 @@ import { ControlPropertyData } from '@/FormDesigner/models/ControlsTableProperti
 
 export default abstract class FdContainerVue extends FdControlVue {
     @Prop({ required: true, type: String }) public readonly userFormId! : string
-    @Prop({ type: String }) public readonly containerId! : string
-
+    // @Prop({ required: true, type: String }) public readonly containerId! : string
     @State((state: rootState) => state.fd.toolBoxSelect) toolBoxSelect!: fdState['toolBoxSelect'];
     @State((state) => state.fd.copyControlList) copyControl!: copyControl;
     @State((state) => state.fd.userformData) userformData!: userformData;
@@ -25,6 +24,7 @@ export default abstract class FdContainerVue extends FdControlVue {
     @Action('fd/deleteControl') deleteControl!: (payload: IdeleteControl) => void
     @Action('fd/updateGroup') updateGroup!: (payload: IupdateGroup) => void
 
+    containerId: string = this.controlId
     contextMenuType: boolean = false;
     viewMenu?: boolean = false
     top: string= '0px'
@@ -34,7 +34,6 @@ export default abstract class FdContainerVue extends FdControlVue {
     userformContextMenu: Array<IcontextMenu> = userformContextMenu;
     selectedControlArray: Array<string> = [];
     selectedAreaStyle: ISelectedArea | undefined
-
     /**
    * @description  close the contextMenu
    * @function closeMenu
@@ -187,6 +186,7 @@ export default abstract class FdContainerVue extends FdControlVue {
    */
     calSelectedAreaStyle (event: MouseEvent) {
       debugger
+      console.log('containerId', this.containerId)
       const left = parseInt(this.selectedAreaStyle!.left)
       const right =
       parseInt(this.selectedAreaStyle!.left) +
@@ -220,12 +220,11 @@ export default abstract class FdContainerVue extends FdControlVue {
           selecedGroup.push(val)
         }
       }
-      console.log('gggggggg', this.selectedControlArray)
       if (this.selectedControlArray.length !== 0) {
         this.selectControl({
           userFormId: this.userFormId,
           select: {
-            container: [this.userFormId],
+            container: [this.containerId],
             selected: [...selecedGroup]
           }
         })

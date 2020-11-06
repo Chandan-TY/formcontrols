@@ -31,7 +31,6 @@
             </div>
           </div>
           </div>
-        </div>
         <div class="wrapper2">
           <div style="height:3px"></div>
           <div class="wrapper21">
@@ -43,6 +42,7 @@
             <button class="taborder-buttons" @click="moveControlUp()">Move Up</button>
             <button class="taborder-buttons" @click="moveControlDown()">Move Down</button>
           </div>
+        </div>
         </div>
       </div>
   </div>

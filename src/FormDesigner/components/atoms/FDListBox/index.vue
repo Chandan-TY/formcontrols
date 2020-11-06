@@ -1,6 +1,7 @@
 <template>
-    <div class="listStyle" :style="listStyleObj" :title="properties.ControlTipText" ref="listBoxRef"  @click.stop="selectedItem">
+    <div class="listStyle" :style="listStyleObj" :title="properties.ControlTipText">
     <table
+    class="table-style"
       :style="tableStyleObj"
       @click="tableClick"
     >
@@ -17,13 +18,13 @@
             <td
               v-if="(columnIndex<properties.ColumnCount)"
               :key="columnIndex"
-              :style="[tdStyleObj,{borderRight: (columnIndex<properties.ColumnCount-1)?'1px solid':'',width:(columnIndex==0 && properties.ColumnWidths!=='')?properties.ColumnWidths+'px':'auto',overflow:'hidden'}]"
+              :style="[tdStyleObj,{borderRight: (columnIndex<properties.ColumnCount-1)?'1px solid':'',width:(columnIndex==0 && properties.ColumnWidths!=='')?parseInt(properties.ColumnWidths)+'px':'auto',overflow:'hidden'}]"
             >{{a}}</td>
           </template>
         </tr>
       </thead>
       <thead v-else></thead>
-      <tbody ref="style" class="table-body">
+      <tbody ref="style" class="table-body" :style="tableBodyObj">
         <tr
           :tabindex="index"
           class="tr"
@@ -50,7 +51,7 @@
             class="column-item"
             v-for="(i,index) in item"
             :key="index"
-            :style="[tdStyleObj,{width:(index==0 && properties.ColumnWidths!=='')?properties.ColumnWidths+'px':'100%',overflow:'hidden'}]"
+            :style="[tdStyleObj,{width:(index==0 && properties.ColumnWidths!=='')?parseInt(properties.ColumnWidths)+'px':'100px',overflow:'hidden'}]"
           >
             <template v-if="(index<properties.ColumnCount)">{{i}}</template>
           </td>
@@ -68,27 +69,27 @@ import FdControlVue from '@/api/abstract/FormDesigner/FdControlVue'
   name: 'FDListBox'
 })
 export default class FDListBox extends Mixins(FdControlVue) {
-  @Ref('listBoxRef') listBoxRef: HTMLDivElement
-
-  multiselect = [];
-  // textColumn
   selectionData :Array<string> = [];
 
   // MatchFirstCharacter
   matchEntry: Array<number> = [];
   matchIndex = -1;
-  tempEvent: any = {};
+  tempEvent: Event;
 
   // MatchEntryComplete
   clearMatchEntry () {
-    debugger
     this.updateDataModelExtraData({ propertyName: 'MatchData', value: '' })
   }
-  tableClick (e: any) {
-    console.log('table event', e)
+
+  tableClick (e: Event) {
     this.tempEvent = e
   }
 
+  /**
+  * @description style object is passed to :style attribute in div tag
+  * dynamically changing the styles of the component based on properties
+  * @function listStyleObj
+  */
   protected get listStyleObj () :Partial<CSSStyleDeclaration> {
     const controlProp = this.properties
     return {
@@ -100,10 +101,14 @@ export default class FDListBox extends Mixins(FdControlVue) {
       height: `${controlProp.Height}px`,
       width: `${controlProp.Width}px`,
       display: controlProp.Visible ? 'inline-block' : 'none'
-
     }
   }
 
+  /**
+  * @description style object is passed to :style attribute in table tag
+  * dynamically changing the styles of the component based on properties
+  * @function tableStyleObj
+  */
   protected get tableStyleObj () :Partial<CSSStyleDeclaration> {
     const controlProp = this.properties
     const font: font = controlProp.Font ? controlProp.Font : {
@@ -119,10 +124,21 @@ export default class FDListBox extends Mixins(FdControlVue) {
       fontStyle: font.FontItalic ? 'italic' : '',
       textDecoration: (font.FontStrikethrough === true && font.FontUnderline === true) ? 'underline line-through' : font.FontUnderline ? 'underline' : font.FontStrikethrough ? 'line-through' : '',
       fontWeight: font.FontBold ? 'bold' : '',
-      width: (controlProp.ColumnWidths === '') ? `${controlProp.Width}` : (`${controlProp.Width}` + parseInt(controlProp.ColumnWidths!)) + 'px'
+      width: (controlProp.ColumnWidths === '') ? `${controlProp.Width}px` : (`${controlProp.Width}px` + parseInt(controlProp.ColumnWidths!)) + 'px'
     }
   }
 
+  protected get tableBodyObj () :Partial<CSSStyleDeclaration> {
+    const controlProp = this.properties
+    return {
+      width: `${controlProp.Width}px !important`
+    }
+  }
+  /**
+  * @description style object is passed to :style attribute in td tag
+  * dynamically changing the styles of the component based on properties
+  * @function tdStyleObj
+  */
   protected get tdStyleObj () :Partial<CSSStyleDeclaration> {
     const controlProp = this.properties
     return {
@@ -130,6 +146,12 @@ export default class FDListBox extends Mixins(FdControlVue) {
     }
   }
 
+  /**
+  * @description watches changes in properties for BoundColumn
+  * @function boundColumnValue
+  * @param oldVal previous properties data
+  * @param newVal  new/changed properties data
+  */
   @Watch('properties.BoundColumn', { deep: true })
   boundColumnValue (newVal:number, oldVal:number) {
     if (this.properties.BoundColumn! > 0 && this.properties.BoundColumn! < this.extraDatas.RowSourceData!.length) {
@@ -138,48 +160,47 @@ export default class FDListBox extends Mixins(FdControlVue) {
       let tempValue = tempData![0][newVal - 1]
       this.updateDataModelExtraData({ propertyName: 'RowSourceData', value: tempData })
       this.updateDataModel({ propertyName: 'Value', value: tempValue })
-      console.log('New Val', this.extraDatas.RowSourceData)
-      console.log('tempValue', this.properties.Value)
     }
   }
+
+  /**
+  * @description watches changes in properties for Value
+  * @function ValueData
+  * @param oldVal previous properties data
+  * @param newVal  new/changed properties data
+  */
   @Watch('properties.Value', { deep: true })
   ValueData (newVal:string, oldVal:string) {
     if (this.properties.BoundColumn! > 0 && this.properties.BoundColumn! < this.extraDatas.RowSourceData!.length) {
       let tempData = [...this.extraDatas.RowSourceData!]
       if (tempData![0][this.properties.BoundColumn! - 1] === newVal) {
         this.updateDataModel({ propertyName: 'Value', value: newVal })
-        console.log('tempValue', this.properties.Value)
       } else {
         this.updateDataModel({ propertyName: 'Value', value: '' })
-        console.log('tempValueSpace', this.properties.Value)
       }
     }
   }
 
+  /**
+  * @description watches changes in properties for TextColumn
+  * @function textColumnChange
+  * @param oldVal previous properties data
+  * @param newVal  new/changed properties data
+  */
   @Watch('properties.TextColumn', { deep: true })
   textColumnChange (newVal:number, oldVal:number) {
     if (newVal > 0 && newVal < this.extraDatas.RowSourceData!.length) {
       let tempData = [...this.extraDatas.RowSourceData!]
       let tempValue = tempData![0][newVal - 1]
-      // this.updateDataModel({ propertyName: 'Value', value: tempValue })
       this.updateDataModel({ propertyName: 'Text', value: tempValue })
-      // console.log('NewVal', this.properties.Value)
-      console.log('NewText', this.properties.Text)
     } else {
-      // this.updateDataModel({ propertyName: 'Value', value: '' })
       this.updateDataModel({ propertyName: 'Text', value: '' })
     }
   }
-  // @Watch('properties.Text', { deep: true })
-  // textChange (newVal:Text, oldVal:Text) {
-  //   this.updateDataModel({ propertyName: 'Value', value: newVal })
-  //   console.log('NewVal', this.properties.Value)
-  // }
-  // @Watch('properties.Value', { deep: true })
-  // valueChange (newVal:Text, oldVal:Text) {
-  //   this.updateDataModel({ propertyName: 'Text', value: newVal })
-  //   console.log('NewText', this.properties.Text)
-  // }
+
+  /**
+   * @description mounted initializes the values which are required for the component
+   */
   mounted () {
     this.updateDataModel({ propertyName: 'ControlSource', value: '' })
     if (this.extraDatas.RowSourceData!.length === 0) {
@@ -187,19 +208,36 @@ export default class FDListBox extends Mixins(FdControlVue) {
     } else {
       this.updateDataModel({ propertyName: 'TopIndex', value: 0 })
     }
-    console.log('TopIndexValue', this.properties.TopIndex)
   }
 
+  /**
+  * @description watches changes in properties for MultiSelect
+  * @function multiSelectCheck
+  * @param oldVal previous properties data
+  * @param newVal  new/changed properties data
+  */
   @Watch('properties.MultiSelect', { deep: true })
   multiSelectCheck (newVal:number, oldVal:number) {
     this.clearOptionBGColorAndChecked(this.tempEvent)
   }
 
+  /**
+  * @description watches changes in properties for ListStyle
+  * @function listCheck
+  * @param oldVal previous properties data
+  * @param newVal  new/changed properties data
+  */
   @Watch('properties.ListStyle', { deep: true })
   listCheck (newVal:number, oldVal:number) {
     this.clearOptionBGColorAndChecked(this.tempEvent)
   }
 
+  /**
+  * @description watches changes in properties for TopIndex
+  * @function topIndexCheck
+  * @param oldVal previous properties data
+  * @param newVal  new/changed properties data
+  */
   @Watch('properties.TopIndex', { deep: true })
   topIndexCheck (newVal:number, oldVal:number) {
     if (this.extraDatas.RowSourceData!.length === 0) {
@@ -207,9 +245,15 @@ export default class FDListBox extends Mixins(FdControlVue) {
     } else {
       this.updateDataModel({ propertyName: 'TopIndex', value: 0 })
     }
-    console.log('TopIndexValue after change', this.properties.TopIndex)
   }
 
+  /**
+  * @description updates the dataModel listBox object properties when user clicks
+  * @function handleMultiSelect
+  * @param event its of type MouseEvent
+  * @event click
+  *
+  */
   handleMultiSelect (e: MouseEvent) {
     const targetElement = (e.target as HTMLTableElement)
     const tempPath = e.composedPath()
@@ -232,40 +276,27 @@ export default class FDListBox extends Mixins(FdControlVue) {
           if (this.properties.ListStyle === 0) {
             isListStyle = -1
           }
-          // this.properties.Text = splitData[1 - isListStyle]
           this.updateDataModel({ propertyName: 'Text', value: splitData[1 - isListStyle] })
           this.updateDataModel({ propertyName: 'Value', value: splitData[1 - isListStyle] })
-        // this.properties.Value = splitData[1 - isListStyle]
         } else if (this.properties.TextColumn === 0) {
-        // this.properties.Text = splitData[2 - isListStyle]
           this.updateDataModel({ propertyName: 'Text', value: splitData[2 - isListStyle] })
           this.updateDataModel({ propertyName: 'Value', value: splitData[1 - isListStyle] })
-        // this.properties.Value = splitData[1 - isListStyle]
         } else {
-        // this.properties.Text = splitData[this.properties.TextColumn!]
-        // this.properties.Value = splitData[1 - isListStyle]
           this.updateDataModel({ propertyName: 'Text', value: splitData[this.properties.TextColumn!] })
           this.updateDataModel({ propertyName: 'Value', value: splitData[1 - isListStyle] })
         }
-
-      // this.properties.value = e.currentTarget.innerText;
       } else if (this.properties.MultiSelect === 1) {
         if (targetElement.tagName === 'INPUT') {
           this.setOptionBGColorAndChecked(e)
-        // this.multiSelectOptions(e);
         } else {
           this.setOptionBGColorAndChecked(e)
-        // this.multiSelectOptions(e);
         }
       } else if (this.properties.MultiSelect === 2) {
-        debugger
         if (e.ctrlKey === true) {
           if (targetElement.tagName === 'INPUT') {
             this.setOptionBGColorAndChecked(e)
-          // this.multiSelectOptions(e);
           } else {
             this.setOptionBGColorAndChecked(e)
-          // this.multiSelectOptions(e);
           }
         } else if (e.shiftKey === true && this.properties.Value !== '') {
           let startPoint = 0
@@ -307,16 +338,20 @@ export default class FDListBox extends Mixins(FdControlVue) {
         } else {
           this.clearOptionBGColorAndChecked(e)
           this.setOptionBGColorAndChecked(e)
-          // this.properties.Value = e.currentTarget.innerText
           this.updateDataModel({ propertyName: 'Value', value: targetElement.innerText })
         }
       }
     }
   }
 
-  // 2 - fmMultiSelectExtend
+  /**
+  * @description updates the dataModel listBox object properties when keydown
+  * @function handleExtendArrowKeySelect
+  * @param event its of type KeyboardEvent
+  * @event keydown
+  *
+  */
   handleExtendArrowKeySelect (e: KeyboardEvent) {
-    debugger
     const tempPath = e.composedPath()
     const eventTarget = e.target as HTMLTableElement
     const nextSiblingEvent = eventTarget.nextSibling as HTMLTableElement
@@ -329,10 +364,8 @@ export default class FDListBox extends Mixins(FdControlVue) {
       this.matchEntry = []
       const prevMatchData =
       this.extraDatas.MatchData === '' ? e.key : this.extraDatas.MatchData
-      // this.extraDatas.MatchData = prevMatchData !== e.key ? e.key : prevMatchData
       this.updateDataModelExtraData({ propertyName: 'MatchData', value: prevMatchData !== e.key ? e.key : prevMatchData })
 
-      console.log('Match Entry value', this.matchEntry)
       for (let index = 0; index < tempPath.length; index++) {
         const element = tempPath[index] as HTMLTableElement
         if (element.className === 'table-body') {
@@ -392,9 +425,7 @@ export default class FDListBox extends Mixins(FdControlVue) {
       e.keyCode >= 48 && e.keyCode <= 90
     ) {
       let temp = this.extraDatas.MatchData + e.key
-      // this.extraDatas.MatchData += e.key
       this.updateDataModelExtraData({ propertyName: 'MatchData', value: temp })
-      console.log(this.extraDatas.MatchData)
 
       for (let point = 0; point < tempPath.length; point++) {
         const tbody = tempPath[point] as HTMLTableElement
@@ -421,7 +452,6 @@ export default class FDListBox extends Mixins(FdControlVue) {
               this.matchEntry.push(p)
             }
           }
-          console.log(this.matchEntry)
 
           if (this.extraDatas.MatchData!.length <= 1) {
             let singleMatch = tbody.childNodes[this.matchEntry[0]] as HTMLTableElement
@@ -485,6 +515,13 @@ export default class FDListBox extends Mixins(FdControlVue) {
     }
   }
 
+  /**
+  * @description updates the dataModel listBox object properties when mouseenter
+  * @function handleDrag
+  * @param event its of type MouseEvent
+  * @event mouseenter
+  *
+  */
   handleDrag (e: MouseEvent) {
     if (this.properties.MultiSelect === 2) {
       if (e.which === 1) {
@@ -494,7 +531,11 @@ export default class FDListBox extends Mixins(FdControlVue) {
     }
   }
 
-  // set BGColor for Nextsibilings
+  /**
+  * @description set Background Color foe next siblings
+  * @function setBGColorForNextSibling
+  * @param event its of type MouseEvent or KeyboardEvent
+  */
   setBGColorForNextSibling (e: MouseEvent | KeyboardEvent) {
     const targetEvent = e.target as HTMLTableElement
     const nextSiblingEvent = targetEvent.nextSibling as HTMLTableElement
@@ -510,7 +551,12 @@ export default class FDListBox extends Mixins(FdControlVue) {
       nextSiblingCheckedEvent.checked = !nextSiblingCheckedEvent.checked
     }
   }
-  // set BGColor for PreviousSiblings
+
+  /**
+  * @description set Background Color foe previous siblings
+  * @function setBGColorForNextSibling
+  * @param event its of type MouseEvent or KeyboardEvent
+  */
   setBGColorForPreviousSibling (e: KeyboardEvent) {
     const targetEvent = e.target as HTMLTableElement
     const prevSiblingEvent = targetEvent.previousSibling as HTMLTableElement
@@ -527,11 +573,13 @@ export default class FDListBox extends Mixins(FdControlVue) {
     }
   }
 
-  // clear selected option for SingleSelection
+  /**
+  * @description clear selected option for SingleSelection
+  * @function clearOptionBGColorAndChecked
+  * @param event
+  */
   clearOptionBGColorAndChecked (e: any) {
-    debugger
     const tempPath = e.path
-    console.log('this tempPath', tempPath)
     if (tempPath && tempPath.length > 0) {
       for (let index = 0; index < tempPath.length; index++) {
         const element = tempPath[index] as HTMLTableElement
@@ -554,7 +602,11 @@ export default class FDListBox extends Mixins(FdControlVue) {
     }
   }
 
-  // handle setting backgroundColor and option checked/not
+  /**
+  * @description handle setting backgroundColor and option checked/not
+  * @function setOptionBGColorAndChecked
+  * @param event KeyboardEvent or MouseEvent
+  */
   setOptionBGColorAndChecked (e: KeyboardEvent | MouseEvent) {
     const currentTargetElement = e.currentTarget as HTMLTableElement
     const targetEvent = e.target as HTMLTableElement
@@ -579,9 +631,12 @@ export default class FDListBox extends Mixins(FdControlVue) {
     }
   }
 
-  // set BGColor and Checked matchEntry
+  /**
+  * @description set BGColor and Checked matchEntry
+  * @function setBGandCheckedForMatch
+  * @param singleMatch which is an HTMLTableElement
+  */
   setBGandCheckedForMatch (singleMatch: HTMLTableElement) {
-    console.log('SingleMatch', singleMatch)
     if (singleMatch !== undefined) {
       singleMatch.style.backgroundColor = 'rgb(59, 122, 231)'
       if ((this.properties.ListStyle === 1)) {
@@ -669,5 +724,8 @@ export default class FDListBox extends Mixins(FdControlVue) {
 .optionsItems {
   display: grid;
   grid-template-columns: 100%;
+}
+.table-style {
+  width: 100px;
 }
 </style>

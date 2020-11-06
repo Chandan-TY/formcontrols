@@ -31,6 +31,7 @@
         :containerId="controlId"
         :left="left"
         :top="top"
+        :isEditMode="true"
         ref="containerRef"
         @closeMenu="closeMenu"
         @openMenu="(e, parentID, controlID) => showContextMenu(e, parentID, controlID)"

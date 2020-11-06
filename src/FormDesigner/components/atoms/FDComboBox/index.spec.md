@@ -50,7 +50,7 @@
 <h4>ColumnWidths</h4>
 <span>Specifies the width of each column in a multicolumn combo box</span>
 
-<h4>Control Source</h4>
+<h4>ControlSource</h4>
 <span>You can use the ControlSource property to specify what data appears in a control.You can display and edit data bound to a field in a table, query, or SQL statement.You can also display the result of an expression. Read/write String.</span>
 
 <h4>ControlTipText</h4>
@@ -69,7 +69,7 @@
 <h4>EnterFieldBehavior<span style="color:red;">(1)</span></h4>
 <span>Property about whether to select the entire text or apply the previous selection when focus comes with EnterKey or tab</span>
 
-<h4>Font <span style="color:red;">(3)</span></h4>
+<h4>Font</h4>
 <span>1. Supports Fonts (Arial, Algerian, Banschrift)
 2. Supports Font styles (Bold, Itallic,...)
 3. Supports Font size
@@ -81,13 +81,13 @@
 <h4>Height</h4>
 <span>Set height of CombopBoxcontrol </span>
 
-<h4>HelpContextID<span style="color:red;">(3)</span></h4>
+<h4>HelpContextID <span style="color:red;">(3)</span></h4>
 <span> Opens the file designated as HelpFile and shows the item set as HelpContextID</span>
 
 <h4>HideSelection</h4>
 <span>Whether to keep the selection even when focus goes out</span>
 
-<h4>IMEMode<span style="color:red;">(3)</span></h4>
+<h4>IMEMode <span style="color:red;">(3)</span></h4>
 <span>IMEMode (input method editor) change</span>
 
 <h4>Left</h4>
@@ -120,13 +120,13 @@
 <h4>MousePointer</h4>
 <span>Changes the shape of the mouse cursor when the mouse is over the control </span>
 
-<h4>RowSource<span style="color:red;">(3)</span></h4>
+<h4>RowSource</h4>
 <span>Insert an image into the control</span>
 
-<h4>SelectionMargin<span style="color:red;">(3)</span></h4>
+<h4>SelectionMargin</h4>
 <span>Set the position of the image inserted in the control</span>
 
-<h4>ShowDropButtonWhen <span style="color:red;">(2)</span></h4>
+<h4>ShowDropButtonWhen</h4>
 <span>Specifies when to show the drop-down button for a ComboBox</span>
 
 <h4>SpecialEffect</h4>
@@ -141,7 +141,7 @@
 <h4>TabStop <span style="color:red;">(2)</span></h4>
 <span>Decide whether to bring focus to the control with the tab key </span>
 
-<h4>Tag <span style="color:red;">(4)</span></h4>
+<h4>Tag</h4>
 <span>User-defined value, user-defined value stored in the control and used in code </span>
 
 <h4>Text</h4>
@@ -169,3 +169,11 @@
 <h4>Width</h4>
 <span>The width of the control</span>
 
+<h4>ControlSourceValue <span style="color:red;">(5)</span></h4>
+<span>Determines the value of the cell specified in the ControlSource</span>
+
+<h4>ColumnHeadsValues <span style="color:red;">(5)</span></h4>
+<span>Determines the header values of the cells specified in the RowSource</span>
+
+<h4>RowSourceData <span style="color:red;">(5)</span></h4>
+<span>Determines the values of the cells specified in the RowSource</span>

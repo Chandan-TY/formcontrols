@@ -18,17 +18,20 @@
       />
     </div>
     <drag-selector
+      :class="[!isEditMode?'dragSelector':'']"
       :ref="'dragSelector'.concat(containerId)"
       :style="dragSelectorStyle"
+      @mousedown.stop.self="handleMouseDown"
     >
       <GroupControl
         :containerId="controlId"
         :userFormId="userFormId"
         ref="groupRef"
+        class="group"
         :controlRef="$refs"
         :currentSelectedGroup="filterSelected"
       />
-      <div v-for="control in propControlData.controls" :key="control">
+      <div v-for="control in propControlData.controls" :key="control" class="resize">
         <ResizeControl
           ref="resizeControl"
           :name="control"
@@ -81,6 +84,7 @@ export default class Container extends Vue {
   @Prop({ required: true, type: Boolean }) contextMenuType: boolean;
   @Prop({ required: true, type: String }) top: string;
   @Prop({ required: true, type: String }) left: string;
+  @Prop() isEditMode: boolean
 
   @Ref('groupRef') readonly groupRef!: GroupControl;
   @Ref('refContextMenu') readonly refContextMenu!: ContextMenu;
@@ -128,6 +132,7 @@ export default class Container extends Vue {
    *
    */
   get dragSelectorStyle () {
+    console.log()
     const ph = this.propControlData.properties.Height!
     const pw = this.propControlData.properties.Width!
     const sh = this.propControlData.properties.ScrollHeight!
@@ -163,6 +168,10 @@ export default class Container extends Vue {
   openContextMenu (e: MouseEvent, parentID: string, controlID: string) {
     this.$emit('openMenu', e, parentID, controlID)
   }
+
+  handleMouseDown () {
+    console.log('hhhhhhh')
+  }
 }
 </script>
 
@@ -197,5 +206,16 @@ export default class Container extends Vue {
 }
 :focus {
   outline: none;
+}
+.dragSelector{
+  visibility: hidden;
+}
+.dragSelector>.resize
+{
+  visibility: visible;
+}
+.dragSelector>.group
+{
+  visibility: visible;
 }
 </style>

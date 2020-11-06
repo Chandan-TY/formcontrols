@@ -113,7 +113,7 @@ export default class ContextMenu extends Vue {
     } else if (controlActionName === 'ID_NEWPAGE') {
       this.addNewPage()
     } else if (controlActionName === 'ID_DELETEPAGE') {
-      this.deleteCurrentPage(this.selectedTab)
+      this.deleteCurrentPage()
     } else if (controlActionName === 'ID_RENAME') {
       // Instead of 'ID_USERFORM1' this.userFormId should be passed
       EventBus.$emit('renamePage', 'ID_USERFORM1', this.controlId, this.selectedTab)
@@ -121,7 +121,6 @@ export default class ContextMenu extends Vue {
       // Instead of 'ID_USERFORM1' this.userFormId should be passed
       EventBus.$emit('tabStripTabOrder', 'ID_USERFORM1', this.controlId)
     } else if (controlActionName === 'ID_TABORDER') {
-      // console.log('containerId', this.containerId)
       // EventBus.$emit('userFormTabOrder', this.userFormId, this.containerId)
       // second parameter should be this.controlId
       EventBus.$emit('userFormTabOrder', this.userFormId, this.containerId)
@@ -132,13 +131,51 @@ export default class ContextMenu extends Vue {
   closeMenu () {
     return 0
   }
-  @Emit('addNewPage')
   addNewPage () {
-    return 0
+    // Instead of 'ID_USERFORM1' this.userFormId should be passed
+    const tabControlData = JSON.parse(JSON.stringify(this.userformData['ID_USERFORM1'][this.controlId])).extraDatas.Tabs
+    let prevTabId = -1
+    const initialTabData :tabsItems = {
+      Name: '',
+      Caption: '',
+      ToolTip: '',
+      Accelerator: ''
+    }
+    if (tabControlData.length > 0) {
+      for (let i = 0; i < tabControlData.length; i++) {
+        const id = tabControlData[i].Name.split('Tab').pop() || '-1'
+        const parseId = parseInt(id, 10)
+        if (!isNaN(parseId) && prevTabId < parseId) {
+          prevTabId = parseId
+        }
+      }
+      prevTabId += 1
+      initialTabData.Name = `Tab${prevTabId}`
+      initialTabData.Caption = `Tab${prevTabId}`
+    } else {
+      initialTabData.Name = `Tab${1}`
+      initialTabData.Caption = `Tab${1}`
+    }
+    tabControlData.push(initialTabData)
+    this.updateControlExtraData({
+      userFormId: 'ID_USERFORM1',
+      controlId: this.controlId,
+      propertyName: 'Tabs',
+      value: tabControlData
+    })
   }
-  @Emit('deleteCurrentPage')
-  deleteCurrentPage (selectedTab: number) {
-    return selectedTab
+  deleteCurrentPage () {
+    // Instead of 'ID_USERFORM1' this.userFormId should be passed
+    const tabControlData = JSON.parse(JSON.stringify(this.userformData['ID_USERFORM1'][this.controlId])).extraDatas.Tabs
+    if (tabControlData && tabControlData.length > 0) {
+      tabControlData.splice(this.selectedTab, 1)
+      this.updateControlExtraData({
+        userFormId: 'ID_USERFORM1',
+        controlId: this.controlId,
+        propertyName: 'Tabs',
+        value: tabControlData
+      })
+    }
   }
   updateControlProperty (propertyName: keyof controlProperties, propertyValue: number|string, controlId: string) {
     this.updateControl({
@@ -241,7 +278,7 @@ export default class ContextMenu extends Vue {
     }
     this.selectControl({
       userFormId: this.userFormId,
-      select: { container: [this.userFormId], selected: [updateGroupId] }
+      select: { container: [this.containerId], selected: [updateGroupId] }
     })
     this.createGroup(updateGroupId)
   }
@@ -266,7 +303,7 @@ export default class ContextMenu extends Vue {
       this.selectControl({
         userFormId: this.userFormId,
         select: {
-          container: [this.userFormId],
+          container: [this.containerId],
           selected: [...selecedGroup]
         }
       })
@@ -403,8 +440,6 @@ export default class ContextMenu extends Vue {
         }
       }
     }
-    console.log(selControl)
-
     for (let i = 0; i < selControl.length; i++) {
       this.deleteControl({
         userFormId: this.userFormId,
