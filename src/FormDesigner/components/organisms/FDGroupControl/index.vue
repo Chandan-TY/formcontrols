@@ -36,6 +36,7 @@ export default class GroupControl extends Vue {
 
   @Prop({ required: true, type: Array }) public currentSelectedGroup!: string[]
   @Prop({ required: true, type: String }) public userFormId! : string
+  @Prop({ required: true, type: String }) public containerId! : string
   @Prop() controlRef: any
 
   @Action('fd/updateControl') updateControl!: (payload: IupdateControl) => void;
@@ -53,7 +54,7 @@ export default class GroupControl extends Vue {
   };
   groupName: string=''
   count: number= 0
-
+  currentMouseDownEvent: CustomMouseEvent | null = null
   createGroup (groupName: string) {
     this.groupStyle(groupName)
   }
@@ -103,7 +104,7 @@ export default class GroupControl extends Vue {
     const styleWidth: number[] = []
     const styleTop: number[] = []
     const styleHeight: number[] = []
-    for (const control of this.userformData[this.userFormId][this.userFormId].controls) {
+    for (const control of this.userformData[this.userFormId][this.containerId].controls) {
       if (this.userformData[this.userFormId][control].properties.GroupID === groupName) {
         const controlprop = this.userformData[this.userFormId][control].properties
         styleLeft.push(controlprop.Left!)
@@ -124,7 +125,7 @@ export default class GroupControl extends Vue {
     this.percwidthArray = []
     this.percheightArray = []
 
-    for (const control of this.userformData[this.userFormId][this.userFormId].controls) {
+    for (const control of this.userformData[this.userFormId][this.containerId].controls) {
       const controlProp = this.userformData[this.userFormId][control].properties
       if (controlProp.GroupID !== '') {
         for (const divStyle of this.divStyleArray) {
@@ -166,11 +167,12 @@ export default class GroupControl extends Vue {
       }
     }
   }
-  handleMouseDown (event: MouseEvent, handler: string) {
+  handleMouseDown (event: CustomMouseEvent, handler: string) {
     this.deActGroupControl()
     this.resizeDiv = handler
     this.positions.clientX = event.clientX
     this.positions.clientY = event.clientY
+    this.currentMouseDownEvent = event
     document.onmousemove = this.elementDrag
     document.onmouseup = this.closeDragElement
   }
@@ -184,6 +186,9 @@ export default class GroupControl extends Vue {
     const x: number = Math.round((this.positions.movementX / scale) / grid[0]) * grid[0]
     const y: number = Math.round((this.positions.movementY / scale) / grid[1]) * grid[1]
 
+    if (this.currentMouseDownEvent && (x !== 0 || y !== 0)) {
+      this.currentMouseDownEvent.customCallBack && this.currentMouseDownEvent.customCallBack()
+    }
     const diffGridX: number = x - this.positions.movementX
     const diffGridY: number = y - this.positions.movementY
 
@@ -234,8 +239,8 @@ export default class GroupControl extends Vue {
             dragResizeControl.width = `${decWidth}px`
           }
         }
-        for (const j in this.userformData[this.userFormId][this.userFormId].controls) {
-          const index = this.userformData[this.userFormId][this.userFormId].controls[j]
+        for (const j in this.userformData[this.userFormId][this.containerId].controls) {
+          const index = this.userformData[this.userFormId][this.containerId].controls[j]
           const controlProp = this.userformData[this.userFormId][index].properties
 
           let top: number = (parseInt(dragResizeControl.height!) * this.topArray[j]) /
@@ -291,7 +296,6 @@ export default class GroupControl extends Vue {
             dragResizeReffer = this.controlRef.resizeControl[key].$refs['draRef'.concat(control.ID)]
           }
         }
-        console.log(dragResizeReffer)
         const top = (dragResizeReffer.offsetTop!) - y
         const left = (dragResizeReffer.offsetLeft!) - x
         const incWidth = (control.Width! + x) > 0 ? (control.Width! + x) : 0
@@ -339,26 +343,28 @@ export default class GroupControl extends Vue {
 
   @Watch('selectedControls', { deep: true })
   updateGroupStyle () {
-    for (const index in this.divStyleArray) {
-      this.divStyleArray[index].display = 'none'
-    }
-    const selected = this.currentSelectedGroup
-    const selControl = this.selectedControls[this.userFormId].selected
-    if (selControl.length > 1) {
-      for (const val of selControl) {
-        if (val.startsWith('group') && selControl.includes(val)) {
-          const index = this.divStyleArray.findIndex(p => p.groupName === val)
-          this.divStyleArray[index].display = 'block'
-        }
+    if (this.divStyleArray.length > 0) {
+      for (const index in this.divStyleArray) {
+        this.divStyleArray[index].display = 'none'
       }
-    } else {
-      if (selControl[0].startsWith('group') || (!selControl[0].startsWith('group') && selected.includes(this.userformData[this.userFormId][selControl[0]].properties.GroupID!))) {
-        if (selControl[0].startsWith('group')) {
-          const index = this.divStyleArray.findIndex(p => p.groupName === selControl[0])
-          this.divStyleArray[index].display = 'block'
-        } else {
-          const index = this.divStyleArray.findIndex(p => p.groupName === this.userformData[this.userFormId][selControl[0]].properties.GroupID!)
-          this.divStyleArray[index].display = 'block'
+      const selected = this.currentSelectedGroup
+      const selControl = this.selectedControls[this.userFormId].selected
+      if (selControl.length > 1) {
+        for (const val of selControl) {
+          if (val.startsWith('group') && selControl.includes(val)) {
+            const index = this.divStyleArray.findIndex(p => p.groupName === val)
+            this.divStyleArray[index].display = 'block'
+          }
+        }
+      } else {
+        if (selControl[0].startsWith('group') || (!selControl[0].startsWith('group') && selected.includes(this.userformData[this.userFormId][selControl[0]].properties.GroupID!))) {
+          if (selControl[0].startsWith('group')) {
+            const index = this.divStyleArray.findIndex(p => p.groupName === selControl[0])
+            this.divStyleArray[index].display = 'block'
+          } else {
+            const index = this.divStyleArray.findIndex(p => p.groupName === this.userformData[this.userFormId][selControl[0]].properties.GroupID!)
+            this.divStyleArray[index].display = 'block'
+          }
         }
       }
     }

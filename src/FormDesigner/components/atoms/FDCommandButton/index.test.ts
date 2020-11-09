@@ -108,7 +108,9 @@ describe('FDCommandButton.vue', () => {
     it('isClicked', () => {
       const testWrapper = factory({ data: commandButton1 })
       const otherCommandButton = { ...commandButton1 }
-      otherCommandButton.properties.Locked = !otherCommandButton.properties.Locked
+      testWrapper.vm.isRunMode = false
+      testWrapper.vm.isActivated = true
+      otherCommandButton.properties.Locked = true
       testWrapper.setProps({ data: otherCommandButton })
       expect(testWrapper.vm.isClicked).toBe(false)
     })

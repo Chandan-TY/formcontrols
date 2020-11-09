@@ -103,7 +103,7 @@ export default class FDRenameMultiPageDialog extends FdDialogDragVue {
     }
     created () {
       EventBus.$on('renamePage', (userFormId: string, controlId: string, selectedTab : number) => {
-        debugger
+        console.log('==========>', controlId)
         const tabOrderControlData = this.userformData[userFormId][controlId].extraDatas!.Tabs!
         if (tabOrderControlData.length > 0) {
           this.tabOrderList = JSON.parse(JSON.stringify(tabOrderControlData))

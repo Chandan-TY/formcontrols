@@ -18,8 +18,9 @@
             <td
               v-if="(columnIndex<properties.ColumnCount)"
               :key="columnIndex"
-              :style="[tdStyleObj,{borderRight: (columnIndex<properties.ColumnCount-1)?'1px solid':'',width:(columnIndex==0 && properties.ColumnWidths!=='')?parseInt(properties.ColumnWidths)+'px':'auto',overflow:'hidden'}]"
+              :style="updateColHeads(columnIndex)"
             >{{a}}</td>
+              <!-- :style="[tdStyleObj,{borderRight: (columnIndex<properties.ColumnCount-1)?'1px solid':'',width:(columnIndex==0 && properties.ColumnWidths!=='')?parseInt(properties.ColumnWidths)+'px':'auto',overflow:'hidden'}]" -->
           </template>
         </tr>
       </thead>
@@ -51,7 +52,7 @@
             class="column-item"
             v-for="(i,index) in item"
             :key="index"
-            :style="[tdStyleObj,{width:(index==0 && properties.ColumnWidths!=='')?parseInt(properties.ColumnWidths)+'px':'100px',overflow:'hidden'}]"
+            :style="updateColumnWidths(index)"
           >
             <template v-if="(index<properties.ColumnCount)">{{i}}</template>
           </td>
@@ -69,19 +70,17 @@ import FdControlVue from '@/api/abstract/FormDesigner/FdControlVue'
   name: 'FDListBox'
 })
 export default class FDListBox extends Mixins(FdControlVue) {
-  selectionData :Array<string> = [];
-
-  // MatchFirstCharacter
-  matchEntry: Array<number> = [];
-  matchIndex = -1;
+  // selectionData :Array<string> = [];
+  // matchEntry: Array<number> = [];
+  // matchIndex = -1;
   tempEvent: Event;
 
-  // MatchEntryComplete
   clearMatchEntry () {
     this.updateDataModelExtraData({ propertyName: 'MatchData', value: '' })
   }
 
   tableClick (e: Event) {
+    console.log('EVENT', e)
     this.tempEvent = e
   }
 
@@ -147,23 +146,6 @@ export default class FDListBox extends Mixins(FdControlVue) {
   }
 
   /**
-  * @description watches changes in properties for BoundColumn
-  * @function boundColumnValue
-  * @param oldVal previous properties data
-  * @param newVal  new/changed properties data
-  */
-  @Watch('properties.BoundColumn', { deep: true })
-  boundColumnValue (newVal:number, oldVal:number) {
-    if (this.properties.BoundColumn! > 0 && this.properties.BoundColumn! < this.extraDatas.RowSourceData!.length) {
-      let tempData = [...this.extraDatas.RowSourceData!]
-      tempData![0][0] = tempData![0][newVal - 1]
-      let tempValue = tempData![0][newVal - 1]
-      this.updateDataModelExtraData({ propertyName: 'RowSourceData', value: tempData })
-      this.updateDataModel({ propertyName: 'Value', value: tempValue })
-    }
-  }
-
-  /**
   * @description watches changes in properties for Value
   * @function ValueData
   * @param oldVal previous properties data
@@ -182,28 +164,12 @@ export default class FDListBox extends Mixins(FdControlVue) {
   }
 
   /**
-  * @description watches changes in properties for TextColumn
-  * @function textColumnChange
-  * @param oldVal previous properties data
-  * @param newVal  new/changed properties data
-  */
-  @Watch('properties.TextColumn', { deep: true })
-  textColumnChange (newVal:number, oldVal:number) {
-    if (newVal > 0 && newVal < this.extraDatas.RowSourceData!.length) {
-      let tempData = [...this.extraDatas.RowSourceData!]
-      let tempValue = tempData![0][newVal - 1]
-      this.updateDataModel({ propertyName: 'Text', value: tempValue })
-    } else {
-      this.updateDataModel({ propertyName: 'Text', value: '' })
-    }
-  }
-
-  /**
    * @description mounted initializes the values which are required for the component
    */
   mounted () {
+    const initialRowSourceData = this.extraDatas.RowSourceData!
     this.updateDataModel({ propertyName: 'ControlSource', value: '' })
-    if (this.extraDatas.RowSourceData!.length === 0) {
+    if (initialRowSourceData && initialRowSourceData.length === 0) {
       this.updateDataModel({ propertyName: 'TopIndex', value: -1 })
     } else {
       this.updateDataModel({ propertyName: 'TopIndex', value: 0 })
@@ -230,420 +196,6 @@ export default class FDListBox extends Mixins(FdControlVue) {
   @Watch('properties.ListStyle', { deep: true })
   listCheck (newVal:number, oldVal:number) {
     this.clearOptionBGColorAndChecked(this.tempEvent)
-  }
-
-  /**
-  * @description watches changes in properties for TopIndex
-  * @function topIndexCheck
-  * @param oldVal previous properties data
-  * @param newVal  new/changed properties data
-  */
-  @Watch('properties.TopIndex', { deep: true })
-  topIndexCheck (newVal:number, oldVal:number) {
-    if (this.extraDatas.RowSourceData!.length === 0) {
-      this.updateDataModel({ propertyName: 'TopIndex', value: -1 })
-    } else {
-      this.updateDataModel({ propertyName: 'TopIndex', value: 0 })
-    }
-  }
-
-  /**
-  * @description updates the dataModel listBox object properties when user clicks
-  * @function handleMultiSelect
-  * @param event its of type MouseEvent
-  * @event click
-  *
-  */
-  handleMultiSelect (e: MouseEvent) {
-    const targetElement = (e.target as HTMLTableElement)
-    const tempPath = e.composedPath()
-    targetElement.focus()
-    let data = targetElement.innerText
-    let splitData = data.replace(/\t/g, ' ').split(' ')
-    this.selectionData = splitData
-    if (this.properties.Enabled && this.properties.Locked === false) {
-      if (this.properties.MultiSelect === 0) {
-        if (this.properties.ControlSource !== '') {
-          this.updateDataModel({ propertyName: 'Text', value: this.selectionData[0] })
-          this.updateDataModel({ propertyName: 'Value', value: this.selectionData[0] })
-          this.updateDataModelExtraData({ propertyName: 'ControlSourceValue', value: this.selectionData[0] })
-        }
-        this.clearOptionBGColorAndChecked(e)
-        this.setOptionBGColorAndChecked(e)
-        let isListStyle = 0
-        if (this.properties.TextColumn === -1 || this.properties.TextColumn === 1) {
-        // 0th index is empty string
-          if (this.properties.ListStyle === 0) {
-            isListStyle = -1
-          }
-          this.updateDataModel({ propertyName: 'Text', value: splitData[1 - isListStyle] })
-          this.updateDataModel({ propertyName: 'Value', value: splitData[1 - isListStyle] })
-        } else if (this.properties.TextColumn === 0) {
-          this.updateDataModel({ propertyName: 'Text', value: splitData[2 - isListStyle] })
-          this.updateDataModel({ propertyName: 'Value', value: splitData[1 - isListStyle] })
-        } else {
-          this.updateDataModel({ propertyName: 'Text', value: splitData[this.properties.TextColumn!] })
-          this.updateDataModel({ propertyName: 'Value', value: splitData[1 - isListStyle] })
-        }
-      } else if (this.properties.MultiSelect === 1) {
-        if (targetElement.tagName === 'INPUT') {
-          this.setOptionBGColorAndChecked(e)
-        } else {
-          this.setOptionBGColorAndChecked(e)
-        }
-      } else if (this.properties.MultiSelect === 2) {
-        if (e.ctrlKey === true) {
-          if (targetElement.tagName === 'INPUT') {
-            this.setOptionBGColorAndChecked(e)
-          } else {
-            this.setOptionBGColorAndChecked(e)
-          }
-        } else if (e.shiftKey === true && this.properties.Value !== '') {
-          let startPoint = 0
-          let endPoint = 0
-          for (let i = 0; i < tempPath.length; i++) {
-            const ele = tempPath[i] as HTMLTableElement
-            if (ele.className === 'table-body') {
-            // extend points start and end
-              for (let j = 0; j < ele.childNodes.length; j++) {
-                const cd = ele.childNodes[j] as HTMLTableElement
-                if (cd.innerText === this.properties.Value) {
-                  startPoint = j + 1
-                }
-                if (cd.innerText === targetElement.innerText) {
-                  endPoint = j
-                }
-              }
-              // upward selection start and end swap
-              if (startPoint > endPoint) {
-                let temp = startPoint
-                startPoint = endPoint
-                endPoint = temp
-              }
-              // setting selection
-              for (let k = startPoint; k <= endPoint; k++) {
-                const node = ele.childNodes[k] as HTMLTableElement
-                const tempNode = node.childNodes[0].childNodes[0] as HTMLInputElement
-                node.style.backgroundColor = 'rgb(59, 122, 231)'
-                if (
-                  this.properties.ListStyle === 1 &&
-                !tempNode.checked
-                ) {
-                  tempNode.checked = !tempNode.checked
-                }
-              }
-              break
-            }
-          }
-        } else {
-          this.clearOptionBGColorAndChecked(e)
-          this.setOptionBGColorAndChecked(e)
-          this.updateDataModel({ propertyName: 'Value', value: targetElement.innerText })
-        }
-      }
-    }
-  }
-
-  /**
-  * @description updates the dataModel listBox object properties when keydown
-  * @function handleExtendArrowKeySelect
-  * @param event its of type KeyboardEvent
-  * @event keydown
-  *
-  */
-  handleExtendArrowKeySelect (e: KeyboardEvent) {
-    const tempPath = e.composedPath()
-    const eventTarget = e.target as HTMLTableElement
-    const nextSiblingEvent = eventTarget.nextSibling as HTMLTableElement
-    const prevSiblingEvent = eventTarget.previousSibling as HTMLTableElement
-
-    if (
-      this.properties.MatchEntry! === 0 &&
-      e.keyCode >= 48 && e.keyCode <= 90
-    ) {
-      this.matchEntry = []
-      const prevMatchData =
-      this.extraDatas.MatchData === '' ? e.key : this.extraDatas.MatchData
-      this.updateDataModelExtraData({ propertyName: 'MatchData', value: prevMatchData !== e.key ? e.key : prevMatchData })
-
-      for (let index = 0; index < tempPath.length; index++) {
-        const element = tempPath[index] as HTMLTableElement
-        if (element.className === 'table-body') {
-          for (let index = 0; index < element.childNodes.length; index++) {
-            const ei = element.childNodes[index] as HTMLTableElement
-            let splitData = ei.innerText.replace(/\t/g, ' ').split(' ')
-            let si = 0
-            if (this.properties.ListStyle === 0) {
-              si = -1
-            }
-            if (splitData[si + 1][0].includes(this.extraDatas.MatchData!)) {
-              this.matchEntry.push(index)
-            }
-          }
-
-          if (
-            this.extraDatas.MatchData![0] !== undefined &&
-            this.extraDatas.MatchData![0] === e.key &&
-            this.extraDatas.MatchData!.length > 0
-          ) {
-            const tempChildNode = element.childNodes[this.matchEntry[this.matchIndex]] as HTMLTableElement
-            this.matchIndex++
-            if (
-              this.matchIndex === this.matchEntry.length &&
-              prevMatchData === this.extraDatas.MatchData
-            ) {
-              this.matchIndex = 0
-              this.clearOptionBGColorAndChecked(e)
-              this.setBGandCheckedForMatch(
-                tempChildNode
-              )
-              break
-            } else if (prevMatchData !== this.extraDatas.MatchData) {
-              this.matchIndex = 0
-              this.clearOptionBGColorAndChecked(e)
-              this.setBGandCheckedForMatch(
-                tempChildNode
-              )
-              break
-            } else {
-              if (this.matchEntry.length === 0) {
-                this.matchEntry.push(0)
-                this.matchIndex = 0
-              }
-              this.clearOptionBGColorAndChecked(e)
-              this.setBGandCheckedForMatch(
-                tempChildNode
-              )
-              break
-            }
-          }
-          break
-        }
-      }
-    } else if (
-      this.properties.MatchEntry === 1 &&
-      e.keyCode >= 48 && e.keyCode <= 90
-    ) {
-      let temp = this.extraDatas.MatchData + e.key
-      this.updateDataModelExtraData({ propertyName: 'MatchData', value: temp })
-
-      for (let point = 0; point < tempPath.length; point++) {
-        const tbody = tempPath[point] as HTMLTableElement
-        if (tbody.className === 'table-body') {
-          this.matchEntry = []
-          for (let p = 0; p < tbody.childNodes.length; p++) {
-            const ei = tbody.childNodes[p] as HTMLTableElement
-            let matchEntryComplete = ei.innerText
-              .replace(/\t/g, ' ')
-              .split(' ')
-            let sii = 0
-            if (this.properties.ListStyle === 0) {
-              sii = -1
-            }
-            if (
-              matchEntryComplete[sii + 1][0].includes(this.extraDatas.MatchData!) &&
-              this.extraDatas.MatchData!.length < 2
-            ) {
-              this.matchEntry.push(p)
-            } else if (
-              matchEntryComplete[sii + 1].includes(this.extraDatas.MatchData!) &&
-              this.extraDatas.MatchData!.length > 1
-            ) {
-              this.matchEntry.push(p)
-            }
-          }
-
-          if (this.extraDatas.MatchData!.length <= 1) {
-            let singleMatch = tbody.childNodes[this.matchEntry[0]] as HTMLTableElement
-            this.clearOptionBGColorAndChecked(e)
-            this.setBGandCheckedForMatch(singleMatch)
-            break
-          } else if (
-            this.extraDatas.MatchData!.length > 1 &&
-            this.matchEntry.length !== 0
-          ) {
-            let completeAutoMatch = tbody.childNodes[this.matchEntry[0]] as HTMLTableElement
-            this.clearOptionBGColorAndChecked(e)
-            this.setBGandCheckedForMatch(completeAutoMatch)
-          }
-          break
-        }
-      }
-    }
-
-    if (
-      e.key === 'ArrowDown' &&
-      e.shiftKey === true &&
-      eventTarget.nextSibling !== null
-    ) {
-      if (eventTarget.style.backgroundColor !== 'rgb(59, 122, 231)') {
-        this.setOptionBGColorAndChecked(e)
-      } else if (
-        eventTarget.style.backgroundColor === 'rgb(59, 122, 231)' &&
-        nextSiblingEvent.style.backgroundColor !== ''
-      ) {
-        this.setOptionBGColorAndChecked(e)
-      } else if (eventTarget.nextSibling.nextSibling !== null) {
-        this.setBGColorForNextSibling(e)
-      } else if (
-        eventTarget.nextSibling.nextSibling === null &&
-        nextSiblingEvent.style.backgroundColor !== 'rgb(59, 122, 231)'
-      ) {
-        this.setBGColorForNextSibling(e)
-      }
-
-      nextSiblingEvent.focus()
-    } else if (
-      e.key === 'ArrowUp' &&
-      e.shiftKey === true &&
-      eventTarget.previousSibling !== null
-    ) {
-      if (
-        eventTarget.style.backgroundColor === 'rgb(59, 122, 231)' &&
-        prevSiblingEvent.style.backgroundColor !== ''
-      ) {
-        this.setOptionBGColorAndChecked(e)
-      } else if (eventTarget.previousSibling.previousSibling !== null) {
-        this.setBGColorForPreviousSibling(e)
-      } else if (
-        eventTarget.previousSibling.previousSibling === null &&
-        prevSiblingEvent.style.backgroundColor !== 'rgb(59, 122, 231)'
-      ) {
-        this.setBGColorForPreviousSibling(e)
-      }
-      prevSiblingEvent.focus()
-    }
-  }
-
-  /**
-  * @description updates the dataModel listBox object properties when mouseenter
-  * @function handleDrag
-  * @param event its of type MouseEvent
-  * @event mouseenter
-  *
-  */
-  handleDrag (e: MouseEvent) {
-    if (this.properties.MultiSelect === 2) {
-      if (e.which === 1) {
-        this.setOptionBGColorAndChecked(e)
-      }
-      window.getSelection()!.removeAllRanges()
-    }
-  }
-
-  /**
-  * @description set Background Color foe next siblings
-  * @function setBGColorForNextSibling
-  * @param event its of type MouseEvent or KeyboardEvent
-  */
-  setBGColorForNextSibling (e: MouseEvent | KeyboardEvent) {
-    const targetEvent = e.target as HTMLTableElement
-    const nextSiblingEvent = targetEvent.nextSibling as HTMLTableElement
-    const nextSiblingCheckedEvent = nextSiblingEvent.children[0].childNodes[0] as HTMLInputElement
-    nextSiblingEvent.style.backgroundColor =
-      nextSiblingEvent.style.backgroundColor === 'rgb(59, 122, 231)'
-        ? ''
-        : 'rgb(59, 122, 231)'
-    if (
-      this.properties.ListStyle === 1 &&
-      this.properties.MultiSelect === 2
-    ) {
-      nextSiblingCheckedEvent.checked = !nextSiblingCheckedEvent.checked
-    }
-  }
-
-  /**
-  * @description set Background Color foe previous siblings
-  * @function setBGColorForNextSibling
-  * @param event its of type MouseEvent or KeyboardEvent
-  */
-  setBGColorForPreviousSibling (e: KeyboardEvent) {
-    const targetEvent = e.target as HTMLTableElement
-    const prevSiblingEvent = targetEvent.previousSibling as HTMLTableElement
-    const prevSiblingCheckedEvent = prevSiblingEvent.children[0].childNodes[0] as HTMLInputElement
-    prevSiblingEvent.style.backgroundColor =
-      prevSiblingEvent.style.backgroundColor === 'rgb(59, 122, 231)'
-        ? ''
-        : 'rgb(59, 122, 231)'
-    if (
-      this.properties.ListStyle === 1 &&
-      this.properties.MultiSelect === 2
-    ) {
-      prevSiblingCheckedEvent.checked = !prevSiblingCheckedEvent.checked
-    }
-  }
-
-  /**
-  * @description clear selected option for SingleSelection
-  * @function clearOptionBGColorAndChecked
-  * @param event
-  */
-  clearOptionBGColorAndChecked (e: any) {
-    const tempPath = e.path
-    if (tempPath && tempPath.length > 0) {
-      for (let index = 0; index < tempPath.length; index++) {
-        const element = tempPath[index] as HTMLTableElement
-        if (element.className === 'table-body') {
-          for (
-            let childIndex = 0;
-            childIndex < element.childNodes.length;
-            childIndex++
-          ) {
-            const childNode = element.childNodes[childIndex] as HTMLTableElement
-            childNode.style.backgroundColor = ''
-            const ChildChecked = childNode.childNodes[0].childNodes[0] as HTMLInputElement
-            if (ChildChecked && this.properties.ListStyle === 1) {
-              ChildChecked.checked = false
-            }
-          }
-          break
-        }
-      }
-    }
-  }
-
-  /**
-  * @description handle setting backgroundColor and option checked/not
-  * @function setOptionBGColorAndChecked
-  * @param event KeyboardEvent or MouseEvent
-  */
-  setOptionBGColorAndChecked (e: KeyboardEvent | MouseEvent) {
-    const currentTargetElement = e.currentTarget as HTMLTableElement
-    const targetEvent = e.target as HTMLTableElement
-    const childNodeChecked = currentTargetElement.children[0].childNodes[0] as HTMLInputElement
-    currentTargetElement.style.backgroundColor =
-      currentTargetElement.style.backgroundColor === 'rgb(59, 122, 231)'
-        ? ''
-        : 'rgb(59, 122, 231)'
-    if (
-      this.properties.ListStyle === 1 &&
-      this.properties.MultiSelect === 0
-    ) {
-      childNodeChecked.checked = !childNodeChecked.checked
-    } else if (
-      this.properties.ListStyle === 1 &&
-      this.properties.MultiSelect === 1 &&
-      targetEvent.tagName === 'INPUT'
-    ) {
-      // e.target.checked = e.target.checked
-    } else {
-      childNodeChecked.checked = !childNodeChecked.checked
-    }
-  }
-
-  /**
-  * @description set BGColor and Checked matchEntry
-  * @function setBGandCheckedForMatch
-  * @param singleMatch which is an HTMLTableElement
-  */
-  setBGandCheckedForMatch (singleMatch: HTMLTableElement) {
-    if (singleMatch !== undefined) {
-      singleMatch.style.backgroundColor = 'rgb(59, 122, 231)'
-      if ((this.properties.ListStyle === 1)) {
-        const tempNode = singleMatch.childNodes[0].childNodes[0] as HTMLInputElement
-        tempNode.checked = !tempNode.checked
-      }
-    }
   }
 }
 

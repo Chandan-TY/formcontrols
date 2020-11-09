@@ -219,7 +219,8 @@ export default class UserForm extends FdContainerVue {
 
   showContextMenu (e: MouseEvent, parentID: string, controlID: string) {
     this.openMenu(e, parentID, controlID)
-    Vue.nextTick(() => (this.containerRef.$refs.contextmenu as HTMLElement).focus())
+    const dynamicRef = 'contextmenu'.concat(this.controlId)
+    Vue.nextTick(() => (this as any).containerRef.$refs[dynamicRef].focus())
   }
 }
 </script>

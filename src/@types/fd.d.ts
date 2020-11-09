@@ -260,3 +260,6 @@ interface ITabOrderDialogInitialStyle {
   left: string;
   top: string;
 }
+interface CustomMouseEvent extends MouseEvent{
+  customCallBack?: Function
+}

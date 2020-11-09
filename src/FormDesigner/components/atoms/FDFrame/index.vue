@@ -8,7 +8,7 @@
     @keydown.enter="setContentEditable($event, true)"
     @click.stop="!isEditMode ? selectedItem : addControlObj($event)"
     @contextmenu.stop="showContextMenu($event, userFormId, controlId)"
-    @mousedown="deActiveControl(this)"
+    @mousedown="frameMouseDown"
     @mouseup="dragSelectorControl($event)"
     ref="frame"
   >
@@ -24,7 +24,7 @@
       :top="top"
       ref="containerRef"
       @closeMenu="closeMenu"
-      @openMenu="(e, parentID, controlID)=>openMenu(e, parentID, controlID)"
+      @openMenu="(e, parentID, controlID)=>showContextMenu(e, parentID, controlID)"
     />
   </fieldset>
 </template>
@@ -199,21 +199,26 @@ export default class FDFrame extends FdContainerVue {
   }
 
   showContextMenu (e: MouseEvent, parentID: string, controlID: string) {
-    debugger
     this.openMenu(e, parentID, controlID)
-    console.log(this.$refs)
-    Vue.nextTick(() => (this as any).containerRef.$refs.contextmenu.focus())
+    const dynamicRef = 'contextmenu'.concat(this.controlId)
+    Vue.nextTick(() => (this as any).containerRef.$refs[dynamicRef].focus())
   }
   closeMenu () {
     this.viewMenu = false
   }
 
   dragSelectorControl (event: MouseEvent) {
-    debugger
     this.selectedControlArray = []
     const refName = 'dragSelector'.concat(this.controlId)
     this.selectedAreaStyle = (this as any).containerRef.$refs[refName].selectAreaStyle
     this.calSelectedAreaStyle(event)
+  }
+
+  frameMouseDown (e: MouseEvent) {
+    if (this.isEditMode) {
+      e.stopPropagation()
+    }
+    this.deActiveControl()
   }
 }
 </script>

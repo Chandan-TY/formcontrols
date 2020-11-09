@@ -98,7 +98,7 @@ export default abstract class FdContainerVue extends FdControlVue {
     deActiveControl (this: this) {
       this.selectControl({
         userFormId: this.userFormId,
-        select: { container: [this.controlId], selected: [this.controlId] }
+        select: { container: [this.containerId], selected: [this.controlId] }
       })
     }
 
@@ -128,6 +128,7 @@ export default abstract class FdContainerVue extends FdControlVue {
         }
       }
       const controlType = this.userformData[this.userFormId][controlID].type
+      const containerType = this.userformData[this.userFormId][this.containerId].type
       if (
         controlType === 'Userform' ||
         controlType === 'Frame'
@@ -136,10 +137,10 @@ export default abstract class FdContainerVue extends FdControlVue {
       } else {
         this.contextMenuType = false
       }
-      const controlLeft: number | undefined = this.userformData[parentID][controlID].properties.Left
-      const controlTop: number | undefined = this.userformData[parentID][controlID].properties.Top
-      this.top = `${e.offsetY + controlTop!}px`
-      this.left = `${e.offsetX + controlLeft!}px`
+      const controlLeft: number | undefined = this.userformData[this.userFormId][controlID].properties.Left
+      const controlTop: number | undefined = this.userformData[this.userFormId][controlID].properties.Top
+      this.top = controlType === 'Frame' ? `${e.offsetY}px` : containerType === 'Frame' ? `${e.offsetY + controlTop!}px` : `${e.offsetY + controlTop! + 30}px`
+      this.left = controlType === 'Frame' ? `${e.offsetX}px` : `${e.offsetX + controlLeft!}px`
       this.viewMenu = true
       const controlLength = this.userformData[this.userFormId][parentID].controls
         .length
@@ -185,8 +186,6 @@ export default abstract class FdContainerVue extends FdControlVue {
    * @event mouseup
    */
     calSelectedAreaStyle (event: MouseEvent) {
-      debugger
-      console.log('containerId', this.containerId)
       const left = parseInt(this.selectedAreaStyle!.left)
       const right =
       parseInt(this.selectedAreaStyle!.left) +
@@ -209,15 +208,15 @@ export default abstract class FdContainerVue extends FdControlVue {
         }
         // leftArray.push(controlProp!.Left!)
       }
-      const selecedGroup = []
+      const selectedGroup = []
       for (const val of this.selectedControlArray) {
         const controlGroupId: string = this.userformData[this.userFormId][val]
           .properties.GroupID!
         if (controlGroupId && controlGroupId !== '') {
-          !selecedGroup.includes(controlGroupId)! &&
-          selecedGroup.push(controlGroupId)
+          !selectedGroup.includes(controlGroupId)! &&
+          selectedGroup.push(controlGroupId)
         } else {
-          selecedGroup.push(val)
+          selectedGroup.push(val)
         }
       }
       if (this.selectedControlArray.length !== 0) {
@@ -225,7 +224,7 @@ export default abstract class FdContainerVue extends FdControlVue {
           userFormId: this.userFormId,
           select: {
             container: [this.containerId],
-            selected: [...selecedGroup]
+            selected: [...selectedGroup]
           }
         })
       }

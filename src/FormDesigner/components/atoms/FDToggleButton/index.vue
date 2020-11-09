@@ -1,33 +1,47 @@
 <template>
+  <div @click.stop="toggleButtonClick">
     <button
     class="toggle-button"
-    :contenteditable=isContentEditable
+    :contenteditable="isEditMode"
     :style="styleObj"
     :name="properties.Name"
     :tabindex="properties.TabIndex"
     :title="properties.ControlTipText"
-    :disabled="properties.Enabled === false"
-    @input="updateCaption"
-    @click="toggleButtonClick"
+    :disabled="getDisableValue"
+    @mousedown="controlEditMode"
     @keydown.enter="setContentEditable($event,true)"
-    @blur="setContentEditable($event,false)"
+    @blur="() => {isClicked = false;}"
     >
-    <span v-if="properties.Accelerator ===''">
-      {{properties.Caption}}
-    </span>
-    <span v-else>
-    <span>{{computedCaption.afterbeginCaption}}</span>
-    <span style="text-decoration:underline;">{{computedCaption.acceleratorCaption}}</span>
-    <span>{{computedCaption.beforeendCaption}}</span>
-    </span>
+    <span v-if="!syncIsEditMode">
+        <span>{{ computedCaption.afterbeginCaption }}</span>
+        <span style="text-decoration: underline">{{
+          computedCaption.acceleratorCaption
+        }}</span>
+        <span>{{ computedCaption.beforeendCaption }}</span>
+      </span>
+      <FDEditableText
+        v-else
+        class="editText"
+        :editable="isRunMode === false && syncIsEditMode"
+        :caption="properties.Caption"
+        @updateCaption="updateCaption"
+        @releaseEditMode="setContentEditable($event, false)"
+      >
+      </FDEditableText>
     </button>
+  </div>
 </template>
 
 <script lang="ts">
 import { Component, Mixins, Watch } from 'vue-property-decorator'
 import FdControlVue from '@/api/abstract/FormDesigner/FdControlVue'
+import FDEditableText from '@/FormDesigner/components/atoms/FDEditableText/index.vue'
+
 @Component({
-  name: 'FDToggleButton'
+  name: 'FDToggleButton',
+  components: {
+    FDEditableText
+  }
 })
 export default class FDToggleButton extends Mixins(FdControlVue) {
   $el!: HTMLButtonElement
@@ -36,12 +50,24 @@ export default class FDToggleButton extends Mixins(FdControlVue) {
   clickCount: number = 0
   isContentEditable : boolean = false
 
+  get getDisableValue () {
+    if (this.isRunMode) {
+      return (
+        this.properties.Enabled === false || this.properties.Locked === true
+      )
+    } else {
+      return true
+    }
+  }
+
   /**
   * @description toggleButtonClick is a method to check the check the clicked functionality of the button tag. Also It sets the variables isClicked and isFocus based on the Locked property
   * @function toggleButtonClick
   *
   */
   toggleButtonClick (e: MouseEvent) {
+    // if (this.isRunMode) {
+    console.log('Im IN')
     this.clickCount = this.clickCount + 1
     if (this.properties.Locked === false) {
       this.isFocus = true
@@ -62,7 +88,10 @@ export default class FDToggleButton extends Mixins(FdControlVue) {
     } else {
       this.isClicked = false
     }
+    // }
+    // if (!this.isRunMode) {
     this.selectedItem(e)
+    // }
   }
 
   /**
@@ -86,8 +115,8 @@ export default class FDToggleButton extends Mixins(FdControlVue) {
   updateAutoSize () {
     if (this.properties.AutoSize === true) {
       this.$nextTick(() => {
-        this.updateDataModel({ propertyName: 'Height', value: (this.$el.childNodes[0] as HTMLSpanElement).offsetHeight + 5 })
-        this.updateDataModel({ propertyName: 'Width', value: (this.$el.childNodes[0] as HTMLSpanElement).offsetWidth + 5 })
+        this.updateDataModel({ propertyName: 'Height', value: (this.$el.childNodes[0].childNodes[0] as HTMLSpanElement).offsetHeight + 5 })
+        this.updateDataModel({ propertyName: 'Width', value: (this.$el.childNodes[0].childNodes[0] as HTMLSpanElement).offsetWidth + 5 })
       })
     }
   }
@@ -106,6 +135,12 @@ export default class FDToggleButton extends Mixins(FdControlVue) {
       FontName: 'Arial',
       FontSize: 10
     }
+    let display = ''
+    if (this.isRunMode) {
+      display = controlProp.Visible ? 'inline-block' : 'none'
+    } else {
+      display = 'inline-block'
+    }
     return {
       // returns the styles to the main button element
       // position: 'relative',
@@ -119,7 +154,7 @@ export default class FDToggleButton extends Mixins(FdControlVue) {
       background: controlProp.BackStyle ? controlProp.BackColor : 'transparent',
       outline: controlProp.Enabled ? (this.isFocus ? '1px dotted black' : 'none') : 'none',
       outlineOffset: this.isClicked ? '-5px' : '-5px',
-      display: controlProp.Visible ? 'inline-block' : 'none',
+      display: display,
       color: ((controlProp.Enabled === true) && (controlProp.Value === 'False' || controlProp.Value === 'false' || controlProp.Value === 'True' || controlProp.Value === 'true')) ? controlProp.ForeColor : this.getEnabled,
       cursor: (controlProp.MousePointer !== 0 || controlProp.MouseIcon !== '') ? this.getMouseCursorData : 'default',
       fontFamily: font.FontStyle ? font.FontStyle : font.FontName,
@@ -151,5 +186,21 @@ export default class FDToggleButton extends Mixins(FdControlVue) {
   border: none;
   overflow: hidden;
   outline: none;
+}
+.editText {
+  width: fit-content;
+    height: auto;
+    text-align: center;
+    background: inherit;
+    font: inherit;
+    border: none;
+    outline: none;
+    padding: 0;
+    resize: none;
+    overflow: hidden;
+    text-decoration: inherit;
+    color: inherit;
+    white-space: normal;
+    word-break: break-word;
 }
 </style>

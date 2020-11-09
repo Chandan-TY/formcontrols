@@ -6,6 +6,7 @@
     :tabindex="properties.TabIndex"
     :title="properties.ControlTipText"
     @keydown.delete.exact="deleteItem"
+    @mousedown="addEventCustomCallback"
     @keydown.enter="setContentEditable($event,true)"
     @click.stop="selectedItem"
   >
@@ -49,6 +50,12 @@ export default class FDLabel extends Mixins(FdControlVue) {
       FontName: 'Arial',
       FontSize: 10
     }
+    let display = ''
+    if (this.isRunMode) {
+      display = controlProp.Visible ? 'inline-block' : 'none'
+    } else {
+      display = 'inline-block'
+    }
     return {
       ...!controlProp.AutoSize && this.renderSize,
       ...this.baseStyle,
@@ -77,8 +84,8 @@ export default class FDLabel extends Mixins(FdControlVue) {
       backgroundRepeat: this.getRepeat,
       backgroundPosition: this.getPosition,
       backgroundPositionX: this.getPositionX,
-      backgroundPositionY: this.getPositionY
-      // display: controlProp.Visible ? 'inline-block' : 'none'
+      backgroundPositionY: this.getPositionY,
+      display: display
     }
   }
 

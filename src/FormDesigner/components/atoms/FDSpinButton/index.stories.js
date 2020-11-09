@@ -1,7 +1,7 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import { storiesOf } from '@storybook/vue'
 import { text, withKnobs } from '@storybook/addon-knobs'
-import { mapState } from 'vuex'
+import { mapState, mapActions } from 'vuex'
 
 import { sampleStore, updateVuexCallback, initUpdate } from '@/api/storybook/utilReactivity.js'
 
@@ -20,10 +20,19 @@ const spinButtonObj = {
         :userFormId="UserFormId"
         :containerId="UserFormId"
         />
-    </div>
+    <div style="position: absolute; bottom: 0;">
+       isRunMode: {{isRunMode}}
+       <button @click="clickChangeMode">
+        changeRunMode
+       </button>
       </div>
+    </div>
     `,
   methods: {
+    ...mapActions({ changeMode: 'fd/changeRunMode' }),
+    clickChangeMode () {
+      this.changeMode(!this.isRunMode)
+    }
   },
   created () {
     initUpdate(sampleStore, this)
@@ -35,6 +44,9 @@ const spinButtonObj = {
     }
   },
   computed: {
+    ...mapState({
+      isRunMode: state => state.fd.isRunMode
+    }),
     styled () {
       return {
         width: `400px`,

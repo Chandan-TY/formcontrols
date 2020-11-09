@@ -3,9 +3,9 @@
     <div
       id="right-click-menu"
       :style="contextMenuStyle"
+      :ref="'contextmenu'.concat(containerId)"
       tabindex="0"
       @blur.stop="closeMenu"
-      ref="contextmenu"
     >
       <ContextMenu
         ref="refContextMenu"
@@ -24,9 +24,9 @@
       @mousedown.stop.self="handleMouseDown"
     >
       <GroupControl
-        :containerId="controlId"
+        :containerId="containerId"
         :userFormId="userFormId"
-        ref="groupRef"
+        :ref="'groupRef'.concat(containerId)"
         class="group"
         :controlRef="$refs"
         :currentSelectedGroup="filterSelected"
@@ -35,9 +35,7 @@
         <ResizeControl
           ref="resizeControl"
           :name="control"
-          @openMenu="
-            (e, parentID, controlID) => openContextMenu(e, parentID, controlID)
-          "
+          @openMenu="(e, parentID, controlID) => openContextMenu(e, parentID, controlID)"
           :controlId="control"
           :containerId="controlId"
           :userFormId="userFormId"
@@ -86,7 +84,7 @@ export default class Container extends Vue {
   @Prop({ required: true, type: String }) left: string;
   @Prop() isEditMode: boolean
 
-  @Ref('groupRef') readonly groupRef!: GroupControl;
+  // @Ref('groupRef') readonly groupRef!: GroupControl;
   @Ref('refContextMenu') readonly refContextMenu!: ContextMenu;
 
   controlContextMenu: Array<IcontextMenu> = controlContextMenu;
@@ -118,13 +116,16 @@ export default class Container extends Vue {
     return result
   }
   createGroup (groupId: string) {
-    this.groupRef.groupStyle(groupId)
+    const refName = 'groupRef'.concat(this.containerId as string);
+    (this as any).$refs[refName].groupStyle(groupId)
   }
   muldragControl (val: IDragResizeGroup) {
-    this.groupRef.handleMouseDown(val.event, val.handler)
+    const refName = 'groupRef'.concat(this.containerId as string);
+    (this as any).$refs[refName].handleMouseDown(val.event, val.handler)
   }
   dragControl (event: MouseEvent) {
-    this.groupRef.handleMouseDown(event, 'drag')
+    const refName = 'groupRef'.concat(this.containerId as string);
+    (this as any).$refs[refName].handleMouseDown(event, 'drag')
   }
   /**
    * @description style object to dynamically changing the styles of  the darg-selctor component based on propControlData
@@ -167,10 +168,6 @@ export default class Container extends Vue {
    */
   openContextMenu (e: MouseEvent, parentID: string, controlID: string) {
     this.$emit('openMenu', e, parentID, controlID)
-  }
-
-  handleMouseDown () {
-    console.log('hhhhhhh')
   }
 }
 </script>

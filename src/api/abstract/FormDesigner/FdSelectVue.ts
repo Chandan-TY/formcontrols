@@ -51,6 +51,11 @@ export default class FdSelectVue extends Vue {
     })
   }
 
+  controlEditMode (e: MouseEvent) {
+    if (this.isEditMode) {
+      e.stopPropagation()
+    }
+  }
   @Emit('updateUserFormResize')
   private updateUserFormResize (value: IResizeValue) {
     if (value.handler === 'br') {
@@ -63,7 +68,9 @@ export default class FdSelectVue extends Vue {
     }
   }
   private updateResize (value: IResizeValue) {
-    for (let i of this.selectedControls[this.userFormId].selected) {
+    const isContainer = this.selectedContainer[0] === this.controlId && !this.selectedControlArray.includes(this.controlId)
+    const dragResizectrlArray = isContainer ? this.selectedContainer : this.selectedControlArray
+    for (let i of dragResizectrlArray) {
       if (!i.startsWith('group')) {
         const dragResizeControl: controlProperties = this.userformData[this.userFormId][i].properties
         const controlType: string = this.userformData[this.userFormId][i].type
@@ -109,6 +116,12 @@ export default class FdSelectVue extends Vue {
     }
   }
 
+  get selectedContainer () {
+    return this.selectedControls[this.userFormId].container
+  }
+  get selectedControlArray () {
+    return this.selectedControls[this.userFormId].selected
+  }
   get propControlData (): controlData {
     return this.userformData[this.userFormId][this.userFormId]
   }

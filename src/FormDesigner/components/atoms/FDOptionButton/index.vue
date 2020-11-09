@@ -12,7 +12,7 @@
            ref="optBtnInput"
           :name="properties.Name"
           :tabindex="properties.TabIndex"
-          :disabled="properties.Locked || !properties.Enabled"
+          :disabled="getDisableValue"
           type="checkbox"
           class="control-input visually-hidden"/>
         <span class="control-indicator"
@@ -21,18 +21,22 @@
     <!-- </div> -->
     <div>
       <div ref="divAutoSize" :style="divcssStyleProperty">
-        <span
-          :style="spancssStyleProperty"
-          v-if="properties.Accelerator === ''"
-        >
-         {{properties.Caption}}
-        </span>
-        <!-- <span :style="spancssStyleProperty" v-else v-html="getAccelerator"> </span> -->
-        <span v-else :style="spancssStyleProperty">
-    <span>{{computedCaption.afterbeginCaption}}</span>
-    <span style="text-decoration:underline;">{{computedCaption.acceleratorCaption}}</span>
-    <span>{{computedCaption.beforeendCaption}}</span>
-    </span>
+       <span v-if="!syncIsEditMode">
+        <span>{{ computedCaption.afterbeginCaption }}</span>
+        <span style="text-decoration: underline">{{
+          computedCaption.acceleratorCaption
+        }}</span>
+        <span>{{ computedCaption.beforeendCaption }}</span>
+      </span>
+      <FDEditableText
+        v-else
+        class="editText"
+        :editable="isRunMode === false && syncIsEditMode"
+        :caption="properties.Caption"
+        @updateCaption="updateCaption"
+        @releaseEditMode="setContentEditable($event, false)"
+      >
+      </FDEditableText>
       </div>
     </div>
   </div>
@@ -41,13 +45,27 @@
 <script lang="ts">
 import { Component, Ref, Mixins, Watch } from 'vue-property-decorator'
 import FdControlVue from '@/api/abstract/FormDesigner/FdControlVue'
+import FDEditableText from '@/FormDesigner/components/atoms/FDEditableText/index.vue'
+
 @Component({
-  name: 'FDOptionButton'
+  name: 'FDOptionButton',
+  components: {
+    FDEditableText
+  }
 })
 export default class FDOptionButton extends Mixins(FdControlVue) {
    @Ref('divAutoSize') readonly autoSizeOptionButton! : HTMLDivElement
    @Ref('optBtnInput') optionBtnRef! : HTMLDivElement
 
+   get getDisableValue () {
+     if (this.isRunMode) {
+       return (
+         this.properties.Enabled === false || this.properties.Locked
+       )
+     } else {
+       return true
+     }
+   }
    /**
    * @description style object is passed to :style attribute in label tag
    * dynamically changing the styles of the component based on properties
@@ -62,6 +80,12 @@ export default class FDOptionButton extends Mixins(FdControlVue) {
          FontName: 'Arial',
          FontSize: 10
        }
+     let display = ''
+     if (this.isRunMode) {
+       display = controlProp.Visible ? 'grid' : 'none'
+     } else {
+       display = 'grid'
+     }
      return {
        left: `${controlProp.Left}px`,
        width: `${controlProp.Width}px`,
@@ -83,9 +107,17 @@ export default class FDOptionButton extends Mixins(FdControlVue) {
        fontFamily: font.FontStyle ? font.FontStyle : font.FontName,
        fontSize: `${font.FontSize}px`,
        fontStyle: font.FontItalic ? 'italic' : '',
+       textDecoration:
+        font.FontStrikethrough === true && font.FontUnderline === true
+          ? 'underline line-through'
+          : font.FontUnderline
+            ? 'underline'
+            : font.FontStrikethrough
+              ? 'line-through'
+              : '',
        fontWeight: font.FontBold ? 'bold' : '',
        //  position: 'relative',
-       display: controlProp.Visible ? 'grid' : 'none',
+       display: display,
        direction: controlProp.Alignment ? 'ltr' : 'rtl',
        overflow: 'hidden',
        gridTemplateColumns: '14px auto ',

@@ -1,30 +1,38 @@
 <template>
 <div @click.stop="selectedItem">
 <div v-if="checkOtherOrientations()" class="outer-scroll-div" :style="styleOuterObj" :title="properties.ControlTipText">
-  <button class="button-element-top" :style="styleButton" :disabled="properties.Enabled === false" @click="decreaseTheValue(isClicked = true)">
+  <template @click="decreaseTheValue(isClicked = true)">
+<button class="button-element-top" :style="styleButton" :disabled="getDisableValue" >
     <FdSvgImage name="top-arrow-scrollbar.svg" @hook:mounted="changeForeColor"/>
   </button>
+  </template>
   <div class="outer-scroll" :style="styleObj" :title="properties.ControlTipText" >
     <div class="inner-scroll" :style="styleScrollObj"></div>
   </div>
-  <button class="button-element-bottom" :style="styleButton" :disabled="properties.Enabled === false" @click="increaseTheValue(isClicked = true)">
+  <template @click="increaseTheValue(isClicked = true)">
+  <button class="button-element-bottom" :style="styleButton" :disabled="getDisableValue" >
   <FdSvgImage name="bottom-arrow-scrollbar.svg" @hook:mounted="changeForeColor"/>
   </button>
+  </template>
   </div>
   <div v-else class="outer-scroll-div-oriented" :style="styleOuterObj" :title="properties.ControlTipText">
-  <button class="button-element-top" :style="styleButton"  :disabled="properties.Enabled === false" @click="decreaseTheValue(isClicked = true)">
+    <template @click="decreaseTheValue(isClicked = true)">
+  <button class="button-element-top" :style="styleButton"  :disabled="getDisableValue" >
     <div :style="{ width:'5px',height:'5px' }">
   <FdSvgImage name="left-arrow.svg" @hook:mounted="changeForeColor" />
     </div>
   </button>
+  </template>
   <div class="outer-scroll-oriented" :style="styleObj" :title="properties.ControlTipText" >
     <div class="inner-scroll-oriented" :style="styleScrollObj"></div>
   </div>
-  <button class="button-element-bottom" :style="styleButton" :disabled="properties.Enabled === false" @click="increaseTheValue(isClicked = true)">
+  <template @click="increaseTheValue(isClicked = true)">
+  <button class="button-element-bottom" :style="styleButton" :disabled="getDisableValue" >
     <div :style="{ width:'5px',height:'5px' }">
   <FdSvgImage name="right-arrow.svg" @hook:mounted="changeForeColor"/>
     </div>
   </button>
+  </template>
   </div>
 </div>
 </template>
@@ -45,6 +53,15 @@ export default class FDScrollBar extends Mixins(FdControlVue) {
   getForeColor: string = ''
   isClicked: boolean = false
 
+  get getDisableValue () {
+    if (this.isRunMode || this.isEditMode) {
+      return (
+        this.properties.Enabled === false
+      )
+    } else {
+      return true
+    }
+  }
   /**
   * @description changes ForeColor property and then updates the getForeColor variable which is given to fill attribute of the svg element
   * @function getForeColorValue
@@ -81,6 +98,12 @@ export default class FDScrollBar extends Mixins(FdControlVue) {
   */
   protected get styleOuterObj () :Partial<CSSStyleDeclaration> {
     const controlProp = this.properties
+    let display = ''
+    if (this.isRunMode) {
+      display = controlProp.Visible ? 'grid' : 'none'
+    } else {
+      display = 'grid'
+    }
     return {
       left: `${controlProp.Left}px`,
       top: `${controlProp.Top}px`,
@@ -90,7 +113,7 @@ export default class FDScrollBar extends Mixins(FdControlVue) {
           : 'default',
       gridTemplateColumns: this.checkOtherOrientations() ? `${controlProp.Width! + 1}px` : '21px 1fr 21px',
       gridTemplateRows: this.checkOtherOrientations() === false ? `${controlProp.Height}px` : '21px 1fr 21px',
-      display: controlProp.Visible ? 'grid' : 'none'
+      display: display
     }
   }
 

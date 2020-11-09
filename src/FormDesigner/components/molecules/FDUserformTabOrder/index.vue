@@ -80,6 +80,7 @@ export default class FDUserformTabOrder extends FdDialogDragVue {
   }
   created () {
     EventBus.$on('userFormTabOrder', (userFormId: string, controlId: string) => {
+      debugger
       const tabOrderControlData = this.userformData[userFormId][controlId]
       this.tabOrderList = Array(tabOrderControlData.controls.length)
       if (tabOrderControlData.controls.length > 0) {

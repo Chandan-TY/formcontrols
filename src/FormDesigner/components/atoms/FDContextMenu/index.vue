@@ -115,14 +115,12 @@ export default class ContextMenu extends Vue {
     } else if (controlActionName === 'ID_DELETEPAGE') {
       this.deleteCurrentPage()
     } else if (controlActionName === 'ID_RENAME') {
-      // Instead of 'ID_USERFORM1' this.userFormId should be passed
-      EventBus.$emit('renamePage', 'ID_USERFORM1', this.controlId, this.selectedTab)
+      EventBus.$emit('renamePage', this.userFormId, this.controlId, this.selectedTab)
     } else if (controlActionName === 'ID_MOVE') {
-      // Instead of 'ID_USERFORM1' this.userFormId should be passed
-      EventBus.$emit('tabStripTabOrder', 'ID_USERFORM1', this.controlId)
+      EventBus.$emit('tabStripTabOrder', this.userFormId, this.controlId)
     } else if (controlActionName === 'ID_TABORDER') {
-      // EventBus.$emit('userFormTabOrder', this.userFormId, this.containerId)
-      // second parameter should be this.controlId
+      debugger
+      console.log(this.userFormId, this.containerId)
       EventBus.$emit('userFormTabOrder', this.userFormId, this.containerId)
     }
     this.closeMenu()
@@ -132,8 +130,7 @@ export default class ContextMenu extends Vue {
     return 0
   }
   addNewPage () {
-    // Instead of 'ID_USERFORM1' this.userFormId should be passed
-    const tabControlData = JSON.parse(JSON.stringify(this.userformData['ID_USERFORM1'][this.controlId])).extraDatas.Tabs
+    const tabControlData = JSON.parse(JSON.stringify(this.userformData[this.userFormId][this.controlId])).extraDatas.Tabs
     let prevTabId = -1
     const initialTabData :tabsItems = {
       Name: '',
@@ -158,19 +155,18 @@ export default class ContextMenu extends Vue {
     }
     tabControlData.push(initialTabData)
     this.updateControlExtraData({
-      userFormId: 'ID_USERFORM1',
+      userFormId: this.userFormId,
       controlId: this.controlId,
       propertyName: 'Tabs',
       value: tabControlData
     })
   }
   deleteCurrentPage () {
-    // Instead of 'ID_USERFORM1' this.userFormId should be passed
-    const tabControlData = JSON.parse(JSON.stringify(this.userformData['ID_USERFORM1'][this.controlId])).extraDatas.Tabs
+    const tabControlData = JSON.parse(JSON.stringify(this.userformData[this.userFormId][this.controlId])).extraDatas.Tabs
     if (tabControlData && tabControlData.length > 0) {
       tabControlData.splice(this.selectedTab, 1)
       this.updateControlExtraData({
-        userFormId: 'ID_USERFORM1',
+        userFormId: this.userFormId,
         controlId: this.controlId,
         propertyName: 'Tabs',
         value: tabControlData

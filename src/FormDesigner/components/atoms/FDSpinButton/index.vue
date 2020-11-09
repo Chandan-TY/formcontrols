@@ -1,7 +1,8 @@
 <template>
-<div @click="selectedItem">
+<div @click="selectedItem" >
   <div :class="classStyle" :style="styleObj" :title="properties.ControlTipText">
-    <button class="button-element-top" :style="styleButton" :disabled="properties.Enabled === false" @click="checkOtherOrientations()?increaseTheValue(isClicked = true):decreaseTheValue(isClicked = true)">
+    <template @click="checkOtherOrientations()?increaseTheValue(isClicked = true):decreaseTheValue(isClicked = true)">
+    <button class="button-element-top" :style="styleButton" :disabled="getDisableValue" >
       <div v-if="checkOtherOrientations()"
       :style="{
         width: properties.Width < 10 ? '2px' : '40%',
@@ -18,7 +19,9 @@
         <FdSvgImage key="leftArrow" name="left-arrow.svg" @hook:mounted="changeForeColor"/>
         </div >
     </button>
-    <button class="button-element-bottom" :style="styleButton" :disabled="properties.Enabled === false" @click="checkOtherOrientations()?decreaseTheValue(isClicked = true):increaseTheValue(isClicked = true)">
+    </template>
+    <template @click="checkOtherOrientations()?decreaseTheValue(isClicked = true):increaseTheValue(isClicked = true)">
+    <button class="button-element-bottom" :style="styleButton" :disabled="getDisableValue" >
       <div id="a3" v-if="checkOtherOrientations()" :style="{
         width: properties.Width < 10 ? '2px' : '40%',
         height: properties.Height < 10 ? '2px' : '40%',
@@ -34,6 +37,7 @@
       <FdSvgImage key="rightArrow" name="right-arrow.svg" @hook:mounted="changeForeColor"/>
       </div>
     </button>
+    </template>
   </div>
 </div>
 </template>
@@ -59,6 +63,16 @@ export default class FDSpinButton extends Mixins(FdControlVue) {
   isClicked: boolean = false
   classStyle: string = 'spin'
   orientedValue: boolean = true
+
+  get getDisableValue () {
+    if (this.isRunMode || this.isEditMode) {
+      return (
+        this.properties.Enabled === false
+      )
+    } else {
+      return true
+    }
+  }
   /**
   * @description style object is passed to :style attribute in div tag
   * dynamically changing the styles of the component based on properties
@@ -76,7 +90,7 @@ export default class FDSpinButton extends Mixins(FdControlVue) {
       height: `${controlProp.Height}px`,
       top: `${controlProp.Top}px`,
       backgroundColor: controlProp.BackColor,
-      display: controlProp.Visible ? '' : 'none'
+      display: controlProp.Visible && this.isRunMode ? '' : controlProp.Visible === false && this.isRunMode ? 'none' : ''
     }
   }
 
@@ -96,7 +110,7 @@ export default class FDSpinButton extends Mixins(FdControlVue) {
         controlProp.MousePointer !== 0 || controlProp.MouseIcon !== ''
           ? this.getMouseCursorData
           : 'default',
-      display: controlProp.Visible ? 'block' : 'none',
+      display: controlProp.Visible && this.isRunMode ? 'block' : controlProp.Visible === false && this.isRunMode ? 'none' : 'block',
       outline: controlProp.Enabled ? (this.isClicked ? '1px solid black' : 'none') : 'none',
       outlineOffset: this.isClicked ? '-5px' : '-5px',
       paddingLeft: controlProp.Width! < 46 ? '0px' : '',

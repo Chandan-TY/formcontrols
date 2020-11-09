@@ -1,8 +1,7 @@
 <template>
   <div>
     <div
-      :class="
-        mainSelected && isEditMode && !isRunMode
+      :class="mainSelected && isEditMode && !isRunMode
           ? 'mainDiv2'
           : mainSelected && !isEditMode && !isRunMode
           ? 'mainDiv'
@@ -10,8 +9,8 @@
       "
       :style="resizeControlStyle"
       :ref="'draRef'.concat(controlId)"
-      @mousedown.stop="mainSelected ? handleDrag($event):dragGroupControl($event)"
-      @contextmenu.stop="openContextMenu($event, userFormId, controlId)"
+      @mousedown.stop="mainSelected && !isRunMode ? handleDrag($event): !isRunMode && dragGroupControl($event)"
+      @contextmenu.stop="openContextMenu($event, containerId, controlId)"
     >
       <ResizeHandler
         v-if="!isRunMode"
@@ -28,11 +27,7 @@
         :controlId="propControlData.properties.ID"
         :userFormId="getUserFormId"
         :data="propControlData"
-        :isActivated="
-          this.selectedControls[this.userFormId].selected.includes(
-            this.controlId
-          )
-        "
+        :isActivated="this.selectedControls[this.userFormId].selected.includes(this.controlId)"
         :isRunMode="isRunMode"
         :isEditMode="isEditMode"
         @setEditMode="setEditMode"
@@ -41,6 +36,7 @@
         @deleteItem="deleteItem"
         @updateModel="updateModelHandle"
         @updateModelExtraData="updateModelExtraDataHandle"
+        @controlEditMode="controlEditMode"
       >
         {{ propControlData.properties.Caption }}
       </component>
@@ -96,16 +92,14 @@ import Container from '../FDContainer/index.vue'
   }
 })
 export default class ResizeControl extends FdSelectVue {
-  // @Prop({ required: true, type: Array }) public currentSelectedGroup!: string[]
   @PropSync('currentSelectedGroup') public syncCurrentSelectedGroup!: string;
   @Prop({ required: true, type: String }) public containerId!: string;
   @Ref('resize') readonly resize!: ResizeHandler;
 
   handleDrag (event: MouseEvent) {
-    debugger
-    if (this.selectedControls[this.userFormId].selected.length > 1) {
-      this.exchangeSelect()
-    }
+    // if (this.selectedControls[this.userFormId].selected.length > 1) {
+    //   this.exchangeSelect()
+    // }
     this.isMoveWhenMouseDown = false
     this.resize.handleMouseDown(event, 'drag', 'control')
   }
@@ -222,7 +216,7 @@ export default class ResizeControl extends FdSelectVue {
         this.isMoveWhenMouseDown = false
       }
     } else {
-      if (currentSelect.length > 1) {
+      if (currentSelect.length > 1 && !currentSelect.includes(groupId) && currentSelect.includes(this.controlId)) {
         this.exchangeSelect()
       } else {
         let selectTarget = null
@@ -267,7 +261,7 @@ export default class ResizeControl extends FdSelectVue {
   get getUserFormId () {
     if (
       this.propControlData.type === 'Frame' ||
-      this.propControlData.type === 'MultiPage'
+      this.propControlData.type === 'MultiPage' || this.propControlData.type === 'TabStrip'
     ) {
       return this.userFormId
     } else {
