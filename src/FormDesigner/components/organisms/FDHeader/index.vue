@@ -115,7 +115,7 @@
           </li>
           <li><u>F</u>ormat</li>
           <li><u>D</u>ebug</li>
-          <li><u>R</u>un</li>
+          <li @click="clickChangeMode"><u>R</u>un</li>
           <li><u>T</u>ools</li>
           <li><u>A</u>dd-Ins</li>
           <li><u>W</u>indow</li>
@@ -190,7 +190,9 @@ import FDSVGImage from '@/FormDesigner/components/atoms/FDSVGImage/index.vue'
 export default class Header extends Vue {
   displaySubMenu: boolean = false
   @Action('fd/addUserform') addControl!: (payload: IaddUserform) => void;
+  @Action('fd/changeRunMode') changeRunMode!: (payload: boolean) => void;
   @State(state => state.fd.userformData) usrFrmData!: userformData
+  @State(state => state.fd.isRunMode) isRunMode!: boolean
   propControlData = {};
   insertUserForm () {
     this.propControlData = this.usrFrmData
@@ -217,6 +219,10 @@ export default class Header extends Vue {
   }
   subMenuDisplay () {
     this.displaySubMenu = !this.displaySubMenu
+  }
+  clickChangeMode () {
+    debugger
+    this.changeRunMode(!this.isRunMode)
   }
 }
 </script>

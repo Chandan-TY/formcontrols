@@ -13,7 +13,7 @@
           :name="properties.Name"
           :tabindex="properties.TabIndex"
           :disabled="getDisableValue"
-          type="checkbox"
+          type="radio"
           class="control-input visually-hidden"/>
         <span class="control-indicator"
          :style="{boxShadow: this.properties.SpecialEffect === 0 ? '0px 0px gray' : '-1px -1px gray', border: this.properties.SpecialEffect === 0 ? '1px solid gray' : ''}"
@@ -21,7 +21,7 @@
     <!-- </div> -->
     <div>
       <div ref="divAutoSize" :style="divcssStyleProperty">
-       <span v-if="!syncIsEditMode">
+       <span v-if="!syncIsEditMode || isRunMode" @click="makeChecked">
         <span>{{ computedCaption.afterbeginCaption }}</span>
         <span style="text-decoration: underline">{{
           computedCaption.acceleratorCaption
@@ -64,6 +64,13 @@ export default class FDOptionButton extends Mixins(FdControlVue) {
        )
      } else {
        return true
+     }
+   }
+
+   makeChecked () {
+     if (this.isRunMode) {
+       const checkDiv = this.$refs.optBtnInput as HTMLInputElement
+       checkDiv.checked = true
      }
    }
    /**

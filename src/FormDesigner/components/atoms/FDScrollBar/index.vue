@@ -1,38 +1,38 @@
 <template>
 <div @click.stop="selectedItem">
 <div v-if="checkOtherOrientations()" class="outer-scroll-div" :style="styleOuterObj" :title="properties.ControlTipText">
-  <template @click="decreaseTheValue(isClicked = true)">
-<button class="button-element-top" :style="styleButton" :disabled="getDisableValue" >
-    <FdSvgImage name="top-arrow-scrollbar.svg" @hook:mounted="changeForeColor"/>
+  <div @click="!getDisableValue?decreaseTheValue(isClicked = true):''">
+<button class="button-element-top" :style="styleButton" :runmode="getDisableValue" @blur="isClicked=false">
+    <FdSvgImage name="top-arrow-scrollbar.svg" @hook:mounted="changeForeColor" class="svgTopBottomStyle"/>
   </button>
-  </template>
-  <div class="outer-scroll" :style="styleObj" :title="properties.ControlTipText" >
+  </div>
+  <div class="outer-scroll" @scroll="disableScrolling" :style="styleObj" :title="properties.ControlTipText" >
     <div class="inner-scroll" :style="styleScrollObj"></div>
   </div>
-  <template @click="increaseTheValue(isClicked = true)">
-  <button class="button-element-bottom" :style="styleButton" :disabled="getDisableValue" >
-  <FdSvgImage name="bottom-arrow-scrollbar.svg" @hook:mounted="changeForeColor"/>
+  <div @click="!getDisableValue?increaseTheValue(isClicked = true):''">
+  <button class="button-element-bottom" :style="styleButton" :runmode="getDisableValue" @blur="isClicked=false">
+  <FdSvgImage name="bottom-arrow-scrollbar.svg" @hook:mounted="changeForeColor" class="svgTopBottomStyle"/>
   </button>
-  </template>
+  </div>
   </div>
   <div v-else class="outer-scroll-div-oriented" :style="styleOuterObj" :title="properties.ControlTipText">
-    <template @click="decreaseTheValue(isClicked = true)">
-  <button class="button-element-top" :style="styleButton"  :disabled="getDisableValue" >
+    <div @click="!getDisableValue?decreaseTheValue(isClicked = true):''">
+  <button class="button-element-top" :style="styleButton"  :runmode="getDisableValue" @blur="isClicked=false">
     <div :style="{ width:'5px',height:'5px' }">
-  <FdSvgImage name="left-arrow.svg" @hook:mounted="changeForeColor" />
+  <FdSvgImage name="left-arrow.svg" @hook:mounted="changeForeColor" class="svgLeftRightStyle"/>
     </div>
   </button>
-  </template>
-  <div class="outer-scroll-oriented" :style="styleObj" :title="properties.ControlTipText" >
+  </div>
+  <div class="outer-scroll-oriented" @scroll="disableScrolling" :style="styleObj" :title="properties.ControlTipText" >
     <div class="inner-scroll-oriented" :style="styleScrollObj"></div>
   </div>
-  <template @click="increaseTheValue(isClicked = true)">
-  <button class="button-element-bottom" :style="styleButton" :disabled="getDisableValue" >
+  <div @click="!getDisableValue?increaseTheValue(isClicked = true):''">
+  <button class="button-element-bottom" :style="styleButton" :runmode="getDisableValue" @blur="isClicked=false">
     <div :style="{ width:'5px',height:'5px' }">
-  <FdSvgImage name="right-arrow.svg" @hook:mounted="changeForeColor"/>
+  <FdSvgImage name="right-arrow.svg" @hook:mounted="changeForeColor" class="svgLeftRightStyle"/>
     </div>
   </button>
-  </template>
+  </div>
   </div>
 </div>
 </template>
@@ -52,6 +52,39 @@ import { controlProperties } from '@/FormDesigner/controls-properties'
 export default class FDScrollBar extends Mixins(FdControlVue) {
   getForeColor: string = ''
   isClicked: boolean = false
+  tempScroll: boolean = false
+  tempEvent: Event
+  /**
+  * @description disable scroll on edit mode and select mode
+  * @function disableScrolling
+  * @param e Event object to set scrollTop and scrollLeft
+  */
+  disableScrolling (e: Event) {
+    // console.log('scroll')
+    // console.log(e)
+    this.tempEvent = e
+    this.tempScroll = true
+    const targetElement = e.target as HTMLDivElement
+    if (this.isRunMode) {
+      if (!this.properties.Enabled) {
+        targetElement.scrollTop = 0
+        targetElement.scrollLeft = 0
+      }
+    } else if (!this.isEditMode) {
+      targetElement.scrollTop = 0
+      targetElement.scrollLeft = 0
+    }
+  }
+  mounted () {
+    setInterval(() => {
+      if (this.tempScroll) {
+        this.tempScroll = false
+        if (!this.isEditMode || !this.isRunMode) {
+          this.selectedItem(this.tempEvent)
+        }
+      }
+    }, 300)
+  }
 
   get getDisableValue () {
     if (this.isRunMode || this.isEditMode) {
@@ -133,7 +166,9 @@ export default class FDScrollBar extends Mixins(FdControlVue) {
       paddingLeft: controlProp.Width! < 20 ? '0px' : '',
       paddingRight: controlProp.Width! < 20 ? '0px' : '',
       paddingTop: controlProp.Height! < 20 ? '0px' : '',
-      paddingBottom: controlProp.Height! < 20 ? '0px' : ''
+      paddingBottom: controlProp.Height! < 20 ? '0px' : '',
+      width: '100%',
+      height: '100%'
     }
   }
 
@@ -279,6 +314,8 @@ display: none;
   background-position: center;
   background-repeat: no-repeat;
   border-color: lightgrey;
+  min-width: 7px;
+  min-height: 7px;
 }
 
 .button-element-bottom {
@@ -288,9 +325,20 @@ display: none;
   background-position: center;
   background-repeat: no-repeat;
   border-color: lightgrey;
+  min-width: 7px;
+  min-height: 7px;
 }
 
 :focus {
   outline: none;
+}
+
+.svgTopBottomStyle {
+  position: relative;
+  top: 33%;
+}
+.svgLeftRightStyle {
+  position: relative;
+  top: -33%;
 }
 </style>

@@ -1,5 +1,5 @@
 <template>
-    <div class="listStyle" :style="listStyleObj" :title="properties.ControlTipText">
+    <div class="listStyle" :style="listStyleObj" :title="properties.ControlTipText" @click="selectedItem" @mousedown="controlEditMode">
     <table
     class="table-style"
       :style="tableStyleObj"
@@ -34,7 +34,7 @@
           @mouseenter="handleDrag"
           @keydown="handleExtendArrowKeySelect"
           @blur="clearMatchEntry"
-          @click="handleMultiSelect"
+          @click="isRunMode||isEditMode?handleMultiSelect($event):''"
         >
           <td :style="tdStyleObj"
             style="width:20px"
@@ -84,6 +84,16 @@ export default class FDListBox extends Mixins(FdControlVue) {
     this.tempEvent = e
   }
 
+  get getDisableValue () {
+    if (this.isRunMode || this.isEditMode) {
+      return (
+        this.properties.Enabled === false
+      )
+    } else {
+      return true
+    }
+  }
+
   /**
   * @description style object is passed to :style attribute in div tag
   * dynamically changing the styles of the component based on properties
@@ -91,6 +101,12 @@ export default class FDListBox extends Mixins(FdControlVue) {
   */
   protected get listStyleObj () :Partial<CSSStyleDeclaration> {
     const controlProp = this.properties
+    let display = ''
+    if (this.isRunMode) {
+      display = controlProp.Visible ? 'inline-block' : 'none'
+    } else {
+      display = 'inline-block'
+    }
     return {
       backgroundColor: controlProp.BackColor,
       borderColor: controlProp.BorderColor,
@@ -99,7 +115,7 @@ export default class FDListBox extends Mixins(FdControlVue) {
       boxShadow: controlProp.SpecialEffect ? this.getSpecialEffectData : 'none',
       height: `${controlProp.Height}px`,
       width: `${controlProp.Width}px`,
-      display: controlProp.Visible ? 'inline-block' : 'none'
+      display: display
     }
   }
 
@@ -121,7 +137,14 @@ export default class FDListBox extends Mixins(FdControlVue) {
       fontFamily: font.FontStyle ? font.FontStyle : font.FontName,
       fontSize: `${font.FontSize}px`,
       fontStyle: font.FontItalic ? 'italic' : '',
-      textDecoration: (font.FontStrikethrough === true && font.FontUnderline === true) ? 'underline line-through' : font.FontUnderline ? 'underline' : font.FontStrikethrough ? 'line-through' : '',
+      textDecoration:
+        font.FontStrikethrough === true && font.FontUnderline === true
+          ? 'underline line-through'
+          : font.FontUnderline
+            ? 'underline'
+            : font.FontStrikethrough
+              ? 'line-through'
+              : '',
       fontWeight: font.FontBold ? 'bold' : '',
       width: (controlProp.ColumnWidths === '') ? `${controlProp.Width}px` : (`${controlProp.Width}px` + parseInt(controlProp.ColumnWidths!)) + 'px'
     }

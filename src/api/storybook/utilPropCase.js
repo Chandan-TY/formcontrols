@@ -247,7 +247,13 @@ export default function getStoryFunction (propName, ControlId) {
       }
       break
     case 'Style':
-      result = (value) => { select('Style', styleOfComboBox, value, GROUPID_1) }
+      result = (value) => {
+        if (ControlId.includes('ComboBox')) {
+          select('Style', styleOfComboBox, value, GROUPID_1)
+        } else {
+          select('Style', styleOfTabs, value, GROUPID_1)
+        }
+      }
       break
     case 'StartUpPosition':
       result = (value) => { select('StartUpPosition', startUpPosition, value, GROUPID_4) }

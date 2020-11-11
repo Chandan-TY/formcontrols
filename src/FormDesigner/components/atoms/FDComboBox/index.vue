@@ -1,15 +1,15 @@
 <template>
   <div class="custom-select" :tabindex="tabindex" :style="customSelectObj"
-   :title="properties.ControlTipText">
-    <div class="combobox" :style="boxStyleObj">
+   :title="properties.ControlTipText" >
+    <div class="combobox" :style="boxStyleObj" @click="selectedItem" @mousedown="controlEditMode">
       <div :class="properties.SelectionMargin?'selectionDiv':''">
-        <span v-if="properties.SelectionMargin" class="selectionSpan" :style="[{backgroundColor:properties.BackColor}]" @click="setSelection"></span>
+        <span v-if="properties.SelectionMargin" class="selectionSpan" :style="[{background: properties.BackStyle ? properties.BackColor : 'transparent'}]" @click="setSelection"></span>
         <textarea
         ref="textareaRef"
         :style="cssStyleProperty"
         wrap="off"
         :tabindex="properties.TabIndex"
-        :readonly="properties.Locked || properties.Style === 2"
+        :readonly="getDisableValue||properties.Style === 2"
         @blur="handleBlur($event, textareaRef, hideSelectionDiv)"
         @click="handleClick($event, textareaRef,hideSelectionDiv)"
         @input="handleTextInput($event)"
@@ -35,7 +35,7 @@
     <label ref="autoSizeTextarea" class="labelStyle" :class="[labelStyleObj]"></label>
     </div>
       <div class="selected" @click="enabledCheck" :style="selectedStyleObj"></div>
-      <div class="items" :class="{ selectHide: !open }" v-if="open" :style="itemsStyleObj">
+      <div class="items" :class="{ selectHide: !open }" :style="itemsStyleObj">
         <div class="listStyle" :title="properties.ControlTipText" >
     <table
       :style="tableStyleObj"
@@ -62,7 +62,7 @@
         </tr>
       </thead>
       <thead v-else></thead>
-      <tbody ref="style" class="table-body" :style="tableBodyObj">
+      <tbody ref="style" class="table-body" :style="tableBodyObj" @click="open=false">
         <tr
           :tabindex="index"
           class="tr"
@@ -128,6 +128,16 @@ export default class FDComboBox extends Mixins(FdControlVue) {
    selectionEnd: number = 0;
    //  matchEntry: Array<number> = [];
    tempInputValue: string = ''
+
+   get getDisableValue () {
+     if (this.isRunMode || this.isEditMode) {
+       return (
+         this.properties.Enabled === false
+       )
+     } else {
+       return true
+     }
+   }
 
    handleTextInput (e: Event) {
      console.log('handleTextInput', e)
@@ -291,7 +301,7 @@ export default class FDComboBox extends Mixins(FdControlVue) {
     return {
       borderCollapse: 'collapse',
       tableLayout: 'fixed',
-      backgroundColor: controlProp.BackColor,
+      background: controlProp.BackStyle ? controlProp.BackColor : 'transparent',
       color: controlProp.ForeColor,
       fontFamily: font.FontStyle ? font.FontStyle : font.FontName,
       fontSize: `${font.FontSize}px`,
@@ -311,8 +321,21 @@ export default class FDComboBox extends Mixins(FdControlVue) {
     return {
       height: `${controlProp.Height}px`,
       width: `${controlProp.Width}px`,
-      fontFamily: font.FontStyle,
-      fontSize: `${font!.FontSize}px`
+      fontFamily: font.FontStyle ? font.FontStyle : font.FontName,
+      fontSize: `${font.FontSize}px`,
+      fontStyle: font.FontItalic ? 'italic' : '',
+      textDecoration:
+        font.FontStrikethrough === true && font.FontUnderline === true
+          ? 'underline line-through'
+          : font.FontUnderline
+            ? 'underline'
+            : font.FontStrikethrough
+              ? 'line-through'
+              : '',
+      fontWeight: font.FontBold ? 'bold' : '',
+      background: controlProp.BackStyle ? controlProp.BackColor : 'transparent',
+      color: controlProp.ForeColor
+
     }
   }
   /**
@@ -329,8 +352,14 @@ export default class FDComboBox extends Mixins(FdControlVue) {
 
   protected get customSelectObj () :Partial<CSSStyleDeclaration> {
     const controlProp = this.properties
+    let display = ''
+    if (this.isRunMode) {
+      display = controlProp.Visible ? 'inline-block' : 'none'
+    } else {
+      display = 'inline-block'
+    }
     return {
-      display: controlProp.Visible ? 'inline-block' : 'none'
+      display: display
     }
   }
   protected get tdStyleObj () :Partial<CSSStyleDeclaration> {
@@ -413,8 +442,18 @@ export default class FDComboBox extends Mixins(FdControlVue) {
       FontSize: 10
     }
     return {
-      fontFamily: font.FontStyle,
-      fontSize: `${font.FontSize}px`
+      fontFamily: font.FontStyle ? font.FontStyle : font.FontName,
+      fontSize: `${font.FontSize}px`,
+      fontStyle: font.FontItalic ? 'italic' : '',
+      textDecoration:
+        font.FontStrikethrough === true && font.FontUnderline === true
+          ? 'underline line-through'
+          : font.FontUnderline
+            ? 'underline'
+            : font.FontStrikethrough
+              ? 'line-through'
+              : '',
+      fontWeight: font.FontBold ? 'bold' : ''
     }
   }
   protected get inputStyleObj () :Partial<CSSStyleDeclaration> {
@@ -425,14 +464,20 @@ export default class FDComboBox extends Mixins(FdControlVue) {
     }
     return {
       outline: 'none',
-      backgroundColor: controlProp.BackColor,
       border: 'none',
       fontFamily: font.FontStyle ? font.FontStyle : font.FontName,
       fontSize: `${font.FontSize}px`,
       fontStyle: font.FontItalic ? 'italic' : '',
-      textDecoration: (font.FontStrikethrough === true && font.FontUnderline === true) ? 'underline line-through' : font.FontUnderline ? 'underline' : font.FontStrikethrough ? 'line-through' : '',
-      cursor: (controlProp.MousePointer !== 0 || controlProp.MouseIcon !== '') ? this.getMouseCursorData : 'default',
+      textDecoration:
+        font.FontStrikethrough === true && font.FontUnderline === true
+          ? 'underline line-through'
+          : font.FontUnderline
+            ? 'underline'
+            : font.FontStrikethrough
+              ? 'line-through'
+              : '',
       fontWeight: font.FontBold ? 'bold' : '',
+      cursor: (controlProp.MousePointer !== 0 || controlProp.MouseIcon !== '') ? this.getMouseCursorData : 'default',
       color: controlProp.ForeColor,
       width: `${controlProp.Width!}px`,
       background: controlProp.BackStyle ? controlProp.BackColor : 'transparent',
@@ -461,10 +506,6 @@ export default class FDComboBox extends Mixins(FdControlVue) {
   }
   protected get selectedStyleObj () :Partial<CSSStyleDeclaration> {
     const controlProp = this.properties
-    const font: font = controlProp.Font ? controlProp.Font : {
-      FontName: 'Arial',
-      FontSize: 10
-    }
     return {
       display: controlProp.ShowDropButtonWhen === 2 ? 'block' : this.expandWidth(),
       backgroundImage: controlProp.DropButtonStyle === 0 ? 'none' : this.changeDropButtonStyle(),
@@ -475,9 +516,13 @@ export default class FDComboBox extends Mixins(FdControlVue) {
   }
   enabledCheck () {
     console.log('enabledCheck', this.properties.Enabled)
-    if (this.properties.Enabled) {
-      if (!this.properties.Locked) {
-        this.open = !this.open
+    if (this.isRunMode || this.isEditMode) {
+      if (this.properties.Enabled) {
+        if (!this.properties.Locked) {
+          this.open = !this.open
+        }
+      } else {
+        this.open = false
       }
     } else {
       this.open = false
@@ -569,6 +614,9 @@ export default class FDComboBox extends Mixins(FdControlVue) {
 }
 .tr {
   outline: none
+}
+.tr:hover {
+  background-color: rgb(75, 161, 214);
 }
 .ul {
   display: grid;

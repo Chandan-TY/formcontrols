@@ -1,5 +1,5 @@
 <template>
-<div>
+<!-- <div> -->
     <button
       class="commandbutton"
       :style="styleObj"
@@ -12,7 +12,7 @@
       @keydown.enter="setContentEditable($event,true)"
       @click.stop="commandButtonClick"
     >
-      <span v-if="!syncIsEditMode">
+      <span v-if="!syncIsEditMode || isRunMode">
         <span>{{ computedCaption.afterbeginCaption }}</span>
         <span style="text-decoration: underline">{{
           computedCaption.acceleratorCaption
@@ -29,7 +29,7 @@
       >
       </FDEditableText>
     </button>
-</div>
+<!-- </div> -->
 </template>
 
 <script lang="ts">
@@ -87,11 +87,11 @@ export default class FDCommandButton extends Mixins(FdControlVue) {
       this.$nextTick(() => {
         this.updateDataModel({
           propertyName: 'Height',
-          value: (this.$el.childNodes[0].childNodes[0] as HTMLSpanElement).offsetHeight + 5
+          value: (this.$el.childNodes[0] as HTMLSpanElement).offsetHeight + 5
         })
         this.updateDataModel({
           propertyName: 'Width',
-          value: (this.$el.childNodes[0].childNodes[0] as HTMLSpanElement).offsetWidth + 5
+          value: (this.$el.childNodes[0] as HTMLSpanElement).offsetWidth + 5
         })
       })
     }

@@ -135,17 +135,38 @@ export default class ResizeControl extends FdSelectVue {
     const bs = currentProperties.BorderStyle!
     const isRotate = currentProperties.Width! > currentProperties.Height!
     const type = this.propControlData.type
+    const tempOrient = currentProperties.Orientation
+    let tempOrientBoolean = false
+    if (this.propControlData.type === 'ScrollBar') {
+      if (tempOrient === 1) {
+        tempOrientBoolean = false
+      } else if (tempOrient === -1) {
+        if (currentProperties.Height! >= currentProperties.Width!) {
+          console.log('heightwidth', currentProperties.Height, currentProperties.Width)
+          tempOrientBoolean = true
+        } else {
+          console.log('heightwidth', currentProperties.Height, currentProperties.Width)
+          tempOrientBoolean = false
+        }
+      } else {
+        tempOrientBoolean = true
+      }
+    }
     return {
       paddingRight:
         (type === 'Label' && (bs ? '4px' : '2px')) ||
         (type === 'TextBox' && (bs ? '6px' : '4px')) ||
         (type === 'FDImage' && (bs ? '2px' : '1px')) ||
-        (type === 'Frame' && (bs ? '20px' : '18px')),
+        (type === 'Frame' && (bs ? '20px' : '18px')) ||
+        (type === 'ComboBox' && (bs ? '27px' : '25px')) ||
+        ((type === 'ScrollBar' && (tempOrientBoolean === false)) ? '43px' : '0px'),
       paddingBottom:
         (type === 'Label' && (bs ? '2px' : '0px')) ||
         (type === 'TextBox' && (bs ? '6px' : '4px')) ||
         (type === 'FDImage' && (bs ? '2px' : '1px')) ||
-        (type === 'Frame' && (bs ? '13px' : '18px')),
+        (type === 'Frame' && (bs ? '13px' : '18px')) ||
+        (type === 'ComboBox' && (bs ? '7px' : '5px')) ||
+        ((type === 'ScrollBar' && (tempOrientBoolean === true) ? '42px' : '0px')),
 
       left: `${currentProperties.Left}px`,
       top: `${currentProperties.Top}px`,
@@ -210,8 +231,9 @@ export default class ResizeControl extends FdSelectVue {
   selectedItem () {
     const groupId = this.propControlData.properties.GroupID ? this.propControlData.properties.GroupID : ''
     const currentSelect = this.selectedControls[this.userFormId].selected
+    console.log('this.selectedControl', this.selectedControls[this.userFormId], currentSelect)
     if (currentSelect.length === 1 && currentSelect[0] === this.controlId) {
-      if (this.isMoveWhenMouseDown !== true) {
+      if (this.isMoveWhenMouseDown !== true && this.propControlData.type !== 'FDImage') {
         this.isEditMode = true
         this.isMoveWhenMouseDown = false
       }

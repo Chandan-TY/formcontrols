@@ -85,6 +85,13 @@ export default abstract class FdContainerVue extends FdControlVue {
           addId: item.properties.ID,
           item: item
         })
+        this.selectControl({
+          userFormId: this.userFormId,
+          select: {
+            container: [this.containerId],
+            selected: [item.properties.ID]
+          }
+        })
       }
       this.changeToolBoxSelect('Select')
     }
@@ -188,45 +195,48 @@ export default abstract class FdContainerVue extends FdControlVue {
     calSelectedAreaStyle (event: MouseEvent) {
       const left = parseInt(this.selectedAreaStyle!.left)
       const right =
-      parseInt(this.selectedAreaStyle!.left) +
-      parseInt(this.selectedAreaStyle!.width)
+    parseInt(this.selectedAreaStyle!.left) +
+    parseInt(this.selectedAreaStyle!.width)
       const top = parseInt(this.selectedAreaStyle!.top)
       const bottom =
-      parseInt(this.selectedAreaStyle!.top) +
-      parseInt(this.selectedAreaStyle!.height)
+    parseInt(this.selectedAreaStyle!.top) +
+    parseInt(this.selectedAreaStyle!.height)
+      console.log(left, right, top, bottom)
       const leftArray: Array<number> = []
-      for (let i in this.data.controls) {
-        const key: string = this.data.controls[i]
-        const controlProp: controlProperties = this.userformData[this.userFormId][key].properties
-        if (
-          left <= controlProp!.Left! + controlProp!.Width! &&
-        right >= controlProp!.Left! &&
-        top <= controlProp!.Top! + controlProp!.Height! &&
-        bottom >= controlProp!.Top!
-        ) {
-          this.selectedControlArray.push(key)
-        }
-        // leftArray.push(controlProp!.Left!)
-      }
-      const selectedGroup = []
-      for (const val of this.selectedControlArray) {
-        const controlGroupId: string = this.userformData[this.userFormId][val]
-          .properties.GroupID!
-        if (controlGroupId && controlGroupId !== '') {
-          !selectedGroup.includes(controlGroupId)! &&
-          selectedGroup.push(controlGroupId)
-        } else {
-          selectedGroup.push(val)
-        }
-      }
-      if (this.selectedControlArray.length !== 0) {
-        this.selectControl({
-          userFormId: this.userFormId,
-          select: {
-            container: [this.containerId],
-            selected: [...selectedGroup]
+      if (left !== right || top !== bottom) {
+        for (let i in this.data.controls) {
+          const key: string = this.data.controls[i]
+          const controlProp: controlProperties = this.userformData[this.userFormId][key].properties
+          if (
+            left <= controlProp!.Left! + controlProp!.Width! &&
+      right >= controlProp!.Left! &&
+      top <= controlProp!.Top! + controlProp!.Height! &&
+      bottom >= controlProp!.Top!
+          ) {
+            this.selectedControlArray.push(key)
           }
-        })
+          // leftArray.push(controlProp!.Left!)
+        }
+        const selectedGroup = []
+        for (const val of this.selectedControlArray) {
+          const controlGroupId: string = this.userformData[this.userFormId][val]
+            .properties.GroupID!
+          if (controlGroupId && controlGroupId !== '') {
+            !selectedGroup.includes(controlGroupId)! &&
+        selectedGroup.push(controlGroupId)
+          } else {
+            selectedGroup.push(val)
+          }
+        }
+        if (this.selectedControlArray.length !== 0) {
+          this.selectControl({
+            userFormId: this.userFormId,
+            select: {
+              container: [this.containerId],
+              selected: [...selectedGroup]
+            }
+          })
+        }
       }
     }
 }

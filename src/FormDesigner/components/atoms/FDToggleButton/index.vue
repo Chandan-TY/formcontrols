@@ -1,18 +1,17 @@
 <template>
-  <div @click.stop="toggleButtonClick">
     <button
     class="toggle-button"
-    :contenteditable="isEditMode"
     :style="styleObj"
     :name="properties.Name"
     :tabindex="properties.TabIndex"
     :title="properties.ControlTipText"
-    :disabled="getDisableValue"
+    :runmode="getDisableValue"
     @mousedown="controlEditMode"
     @keydown.enter="setContentEditable($event,true)"
-    @blur="() => {isClicked = false;}"
+    @blur="() => {isClicked = false; isFocus = false}"
+    @click.stop="toggleButtonClick"
     >
-    <span v-if="!syncIsEditMode">
+    <span v-if="!syncIsEditMode || isRunMode">
         <span>{{ computedCaption.afterbeginCaption }}</span>
         <span style="text-decoration: underline">{{
           computedCaption.acceleratorCaption
@@ -29,7 +28,6 @@
       >
       </FDEditableText>
     </button>
-  </div>
 </template>
 
 <script lang="ts">
@@ -66,29 +64,28 @@ export default class FDToggleButton extends Mixins(FdControlVue) {
   *
   */
   toggleButtonClick (e: MouseEvent) {
-    // if (this.isRunMode) {
-    console.log('Im IN')
-    this.clickCount = this.clickCount + 1
-    if (this.properties.Locked === false) {
-      this.isFocus = true
-      this.isClicked = !this.isClicked
-      if (this.properties.TripleState) {
-        if (this.clickCount % 3 === 0) {
-          this.updateDataModel({ propertyName: 'Value', value: '' })
+    if (this.isRunMode) {
+      this.clickCount = this.clickCount + 1
+      if (this.properties.Locked === false) {
+        this.isFocus = true
+        this.isClicked = !this.isClicked
+        if (this.properties.TripleState) {
+          if (this.clickCount % 3 === 0) {
+            this.updateDataModel({ propertyName: 'Value', value: '' })
+          } else if (this.isClicked) {
+            this.updateDataModel({ propertyName: 'Value', value: 'True' })
+          } else {
+            this.updateDataModel({ propertyName: 'Value', value: 'False' })
+          }
         } else if (this.isClicked) {
           this.updateDataModel({ propertyName: 'Value', value: 'True' })
         } else {
           this.updateDataModel({ propertyName: 'Value', value: 'False' })
         }
-      } else if (this.isClicked) {
-        this.updateDataModel({ propertyName: 'Value', value: 'True' })
       } else {
-        this.updateDataModel({ propertyName: 'Value', value: 'False' })
+        this.isClicked = false
       }
-    } else {
-      this.isClicked = false
     }
-    // }
     // if (!this.isRunMode) {
     this.selectedItem(e)
     // }
@@ -160,7 +157,14 @@ export default class FDToggleButton extends Mixins(FdControlVue) {
       fontFamily: font.FontStyle ? font.FontStyle : font.FontName,
       fontSize: `${font.FontSize}px`,
       fontStyle: font.FontItalic ? 'italic' : '',
-      textDecoration: (font.FontStrikethrough === true && font.FontUnderline === true) ? 'underline line-through' : font.FontUnderline ? 'underline' : font.FontStrikethrough ? 'line-through' : '',
+      textDecoration:
+        font.FontStrikethrough === true && font.FontUnderline === true
+          ? 'underline line-through'
+          : font.FontUnderline
+            ? 'underline'
+            : font.FontStrikethrough
+              ? 'line-through'
+              : '',
       fontWeight: font.FontBold ? 'bold' : '',
       whiteSpace: (controlProp.WordWrap ? 'normal' : 'nowrap'),
       wordBreak: (controlProp.WordWrap ? 'break-word' : 'normal'),
@@ -188,9 +192,8 @@ export default class FDToggleButton extends Mixins(FdControlVue) {
   outline: none;
 }
 .editText {
-  width: fit-content;
-    height: auto;
-    text-align: center;
+    width: 100%;
+    height: 100%;
     background: inherit;
     font: inherit;
     border: none;
@@ -200,7 +203,7 @@ export default class FDToggleButton extends Mixins(FdControlVue) {
     overflow: hidden;
     text-decoration: inherit;
     color: inherit;
-    white-space: normal;
-    word-break: break-word;
-}
+    white-space: inherit;
+    word-break: inherit;
+  }
 </style>

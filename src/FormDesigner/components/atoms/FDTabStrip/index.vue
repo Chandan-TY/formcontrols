@@ -3,7 +3,7 @@
     <div
       class="outer"
       :style="styleOuterObj"
-      @contextmenu="contextMenuVisible"
+      @contextmenu="contextMenuVisible($event, -1)"
       @click.stop="selectedItem"
       @mousedown="controlEditMode"
     >
@@ -21,11 +21,12 @@
               :id="value.Name"
               type="radio"
               :checked="key === properties.Value ? setValue(key) : false"
-              :disabled="properties.Enabled === false ? true : false"
+              :disabled="getDisableValue"
               @click.right="rightClickSelect(key)"
             />
             <label
-              @click="isChecked(key)"
+              @click="!getDisableValue?isChecked(key):''"
+              @contextmenu.stop="contextMenuVisible($event, key)"
               :class="[
                 properties.Style === 1
                   ? properties.TabOrientation === 2
@@ -93,7 +94,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Emit, Prop, Watch } from 'vue-property-decorator'
+import { Component, Emit, Prop, Ref, Watch } from 'vue-property-decorator'
 import FdControlVue from '@/api/abstract/FormDesigner/FdControlVue'
 import { State, Action } from 'vuex-class'
 import ContextMenu from '../FDContextMenu/index.vue'
@@ -157,18 +158,34 @@ export default class FDTabStrip extends FdControlVue {
   tempScrollWidth: number;
   tempScrollHeight: number;
   updatedValue: number = 0;
+
+  get getDisableValue () {
+    if (this.isRunMode || this.isEditMode) {
+      return (
+        this.properties.Enabled === false
+      )
+    } else {
+      return true
+    }
+  }
+
   rightClickSelect (value: number) {
     this.updateDataModel({ propertyName: 'Value', value: value })
   }
-  contextMenuVisible (e: MouseEvent) {
-    debugger
+  contextMenuVisible (e: MouseEvent, selected: number) {
     if (this.isEditMode) {
+      if (selected !== -1) {
+        this.top = `${e.offsetY}px`
+        this.left = `${e.offsetX}px`
+        this.isChecked(selected)
+      } else {
+        this.top = `${e.offsetY + 30}px`
+        this.left = `${e.offsetX}px`
+      }
       e.preventDefault()
       e.stopPropagation()
       const controlLeft: number = this.userformData['ID_USERFORM1'][this.controlId].properties.Left!
       const controlTop: number = this.userformData['ID_USERFORM1'][this.controlId].properties.Top!
-      this.top = `${e.offsetY + controlTop!}px`
-      this.left = `${e.offsetX + controlLeft!}px`
       this.viewMenu = true
       const dynamicRef = 'tabstrip'.concat(this.controlId)
       Vue.nextTick(() => (this as any).$refs[dynamicRef].focus())
@@ -206,6 +223,12 @@ export default class FDTabStrip extends FdControlVue {
    */
   protected get styleOuterObj (): Partial<CSSStyleDeclaration> {
     const controlProp = this.properties
+    let display = ''
+    if (this.isRunMode) {
+      display = controlProp.Visible ? 'inline-block' : 'none'
+    } else {
+      display = 'inline-block'
+    }
     return {
       // position: 'relative',
       top: `${controlProp.Top}px`,
@@ -216,7 +239,7 @@ export default class FDTabStrip extends FdControlVue {
         controlProp.MousePointer !== 0 || controlProp.MouseIcon !== ''
           ? this.getMouseCursorData
           : 'default',
-      display: controlProp.Visible ? 'inline-block' : 'none'
+      display: display
     }
   }
 
@@ -369,11 +392,11 @@ export default class FDTabStrip extends FdControlVue {
       height:
         controlProp.TabOrientation === 0 || controlProp.TabOrientation === 1
           ? 'calc(100% - 25px)'
-          : 'calc(100% - 43px)',
+          : 'calc(100% - 2px)',
       width:
         controlProp.TabOrientation === 0 || controlProp.TabOrientation === 1
-          ? '100%'
-          : 'calc(100% - 75px)',
+          ? 'calc(100% - 3px)'
+          : 'calc(100% - 44px)',
       left: controlProp.TabOrientation === 2 ? '40px' : '0px',
       cursor:
         controlProp.MousePointer !== 0 || controlProp.MouseIcon !== ''

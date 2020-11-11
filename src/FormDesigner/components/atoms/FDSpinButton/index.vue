@@ -1,43 +1,27 @@
 <template>
 <div @click="selectedItem" >
   <div :class="classStyle" :style="styleObj" :title="properties.ControlTipText">
-    <template @click="checkOtherOrientations()?increaseTheValue(isClicked = true):decreaseTheValue(isClicked = true)">
-    <button class="button-element-top" :style="styleButton" :disabled="getDisableValue" >
+    <div @click="!getDisableValue?(checkOtherOrientations()?increaseTheValue(isClicked = true):decreaseTheValue(isClicked = true)):''">
+    <button class="button-element-top" :style="styleButton" :runmode="getDisableValue" @blur="isClicked=false">
       <div v-if="checkOtherOrientations()"
-      :style="{
-        width: properties.Width < 10 ? '2px' : '40%',
-        height: properties.Height < 10 ? '2px' : '40%',
-        margin:'auto'
-      }">
-      <FdSvgImage key="topArrow" name="top-arrow.svg" @hook:mounted="changeForeColor"/>
+      :style="svgTopBottomStyle">
+      <FdSvgImage key="topArrow" name="top-arrow.svg" @hook:mounted="changeForeColor" class="svgTopBottomStyle"/>
       </div>
-      <div v-else :style="{
-        width: properties.Width < 50 ? '5%' : '10%',
-        height: properties.Height < 50 ? '5%' : '10%',
-        margin:'auto'
-      }">
-        <FdSvgImage key="leftArrow" name="left-arrow.svg" @hook:mounted="changeForeColor"/>
+      <div v-else :style="svgLeftRightStyle">
+        <FdSvgImage key="leftArrow" name="left-arrow.svg" @hook:mounted="changeForeColor" class="svgLeftRightStyle"/>
         </div >
     </button>
-    </template>
-    <template @click="checkOtherOrientations()?decreaseTheValue(isClicked = true):increaseTheValue(isClicked = true)">
-    <button class="button-element-bottom" :style="styleButton" :disabled="getDisableValue" >
-      <div id="a3" v-if="checkOtherOrientations()" :style="{
-        width: properties.Width < 10 ? '2px' : '40%',
-        height: properties.Height < 10 ? '2px' : '40%',
-        margin:'auto'
-      }">
-      <FdSvgImage key="bottomArrow" name="bottom-arrow.svg" @hook:mounted="changeForeColor"/>
+    </div>
+    <div @click="!getDisableValue?(checkOtherOrientations()?decreaseTheValue(isClicked = true):increaseTheValue(isClicked = true)):''" >
+    <button class="button-element-bottom" :style="styleButton" :runmode="getDisableValue" @blur="isClicked=false">
+      <div v-if="checkOtherOrientations()" :style="svgTopBottomStyle">
+      <FdSvgImage key="bottomArrow" name="bottom-arrow.svg" @hook:mounted="changeForeColor" class="svgTopBottomStyle"/>
       </div>
-      <div id="a4" v-else :style="{
-        width: properties.Width < 50 ? '5%' : '10%',
-        height: properties.Height < 50 ? '5%' : '10%',
-        margin:'auto'
-      }">
-      <FdSvgImage key="rightArrow" name="right-arrow.svg" @hook:mounted="changeForeColor"/>
+      <div v-else :style="svgLeftRightStyle">
+      <FdSvgImage key="rightArrow" name="right-arrow.svg" @hook:mounted="changeForeColor"  class="svgLeftRightStyle"/>
       </div>
     </button>
-    </template>
+    </div>
   </div>
 </div>
 </template>
@@ -73,6 +57,24 @@ export default class FDSpinButton extends Mixins(FdControlVue) {
       return true
     }
   }
+
+  protected get svgTopBottomStyle () :Partial<CSSStyleDeclaration> {
+    const controlProp = this.properties
+    return {
+      width: controlProp.Width! < 10 ? '2px' : '40%',
+      height: controlProp.Height! < 10 ? '2px' : '40%',
+      margin: 'auto'
+    }
+  }
+
+  protected get svgLeftRightStyle () :Partial<CSSStyleDeclaration> {
+    const controlProp = this.properties
+    return {
+      width: controlProp.Width! < 50 ? '5%' : '10%',
+      height: controlProp.Height! < 50 ? '5%' : '10%',
+      margin: 'auto'
+    }
+  }
   /**
   * @description style object is passed to :style attribute in div tag
   * dynamically changing the styles of the component based on properties
@@ -81,7 +83,6 @@ export default class FDSpinButton extends Mixins(FdControlVue) {
   */
   protected get styleObj () :Partial<CSSStyleDeclaration> {
     const controlProp = this.properties
-    debugger
     return {
       ...this.baseStyle,
       // position: 'relative',
@@ -117,8 +118,10 @@ export default class FDSpinButton extends Mixins(FdControlVue) {
       paddingRight: controlProp.Width! < 46 ? '0px' : '',
       paddingTop: controlProp.Height! < 46 ? '0px' : '',
       paddingBottom: controlProp.Height! < 46 ? '0px' : '',
-      width: controlProp.Width! < 46 ? `${controlProp.Width! + 6}px` : '',
-      height: controlProp.Height! < 46 ? `${controlProp.Height! + 6}px` : ''
+      // width: controlProp.Width! < 46 ? `${controlProp.Width! + 6}px` : '',
+      // height: controlProp.Height! < 46 ? `${controlProp.Height! + 6}px` : ''
+      width: controlProp.Width! < 46 ? `${controlProp.Width! + 6}px` : '100%',
+      height: controlProp.Height! < 46 ? `${controlProp.Height! + 6}px` : '100%'
 
     }
   }
@@ -205,5 +208,13 @@ export default class FDSpinButton extends Mixins(FdControlVue) {
 }
 :focus {
   outline: none;
+}
+.svgTopBottomStyle {
+  position: relative;
+  top: 33%;
+}
+.svgLeftRightStyle {
+  position: relative;
+  top: -33%;
 }
 </style>

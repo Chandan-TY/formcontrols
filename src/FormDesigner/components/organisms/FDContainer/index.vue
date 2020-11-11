@@ -110,7 +110,9 @@ export default class Container extends Vue {
     const result =
       this.currentSelectedGroup === ''
         ? this.selectedControls[this.userFormId].selected.filter((Id) => {
-          return Id.startsWith('group')
+          if (typeof Id === 'string') {
+            return Id.startsWith('group')
+          }
         })
         : [this.currentSelectedGroup]
     return result

@@ -500,7 +500,6 @@ export default class FdControlVue extends Vue {
    * @returns object value
    */
  protected get computedCaption () {
-   debugger
    let accelerator = ''
    if (this.properties.Accelerator) {
      accelerator = this.properties.Accelerator!.charAt(0)
@@ -511,7 +510,7 @@ export default class FdControlVue extends Vue {
    const updateColWidth = controlProp.ColumnWidths!.split(';')
    return {
      textAlign: controlProp.TextAlign === 0 ? 'left' : controlProp.TextAlign === 2 ? 'right' : 'center',
-     width: (updateColWidth[index] !== '') ? parseInt(updateColWidth[index]) + 'px' : '100px',
+     width: (updateColWidth[index]) ? parseInt(updateColWidth[index]) + 'px' : '100px',
      overflow: 'hidden'
    }
  }
@@ -521,7 +520,7 @@ export default class FdControlVue extends Vue {
    return {
      textAlign: controlProp.TextAlign === 0 ? 'left' : controlProp.TextAlign === 2 ? 'right' : 'center',
      borderRight: (index < controlProp.ColumnCount! - 1) ? '1px solid' : '',
-     width: (updateColWidth[index] !== '') ? parseInt(updateColWidth[index]) + 'px' : 'auto',
+     width: (updateColWidth[index]) ? parseInt(updateColWidth[index]) + 'px' : 'auto',
      overflow: 'hidden'
    }
  }
@@ -583,7 +582,6 @@ topIndexCheck (newVal:number, oldVal:number) {
  *
  */
 handleMultiSelect (e: MouseEvent) {
-  console.log('Click Event', e)
   const targetElement = (e.target as HTMLTableElement)
   const tempPath = e.composedPath()
   targetElement.focus()
@@ -907,7 +905,6 @@ setBGColorForPreviousSibling (e: KeyboardEvent) {
 * @param event
 */
 clearOptionBGColorAndChecked (e: any) {
-  console.log(';Eveny', e)
   const tempPath = e.path
   if (tempPath && tempPath.length > 0) {
     for (let index = 0; index < tempPath.length; index++) {

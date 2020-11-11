@@ -1,7 +1,7 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import { storiesOf } from '@storybook/vue'
 import { text, withKnobs } from '@storybook/addon-knobs'
-import { mapState } from 'vuex'
+import { mapState, mapActions } from 'vuex'
 
 import { sampleStore, updateVuexCallback, initUpdate } from '@/api/storybook/utilReactivity.js'
 
@@ -14,14 +14,36 @@ const tabStripObj = {
   props: {},
   template: `
   <div :style="styled">
-  <fd-resize-control
-    :controlId="ControlId"
-    :userFormId="UserFormId"
-    :containerId="UserFormId"
-    />
-</div>
+    <fd-resize-control
+      :controlId="ControlId"
+      :userFormId="UserFormId"
+      :containerId="UserFormId"
+      />
+      <div style="position: absolute; bottom: 0;">
+      isRunMode: {{isRunMode}}
+      <button @click="clickChangeMode">
+        changeRunMode
+      </button>
+      <button @click="releaseSelect">
+        releaseSelect
+      </button>
+    </div>
+  </div>
     `,
   methods: {
+    ...mapActions({
+      changeMode: 'fd/changeRunMode',
+      selectControl: 'fd/selectControl'
+    }),
+    clickChangeMode () {
+      this.changeMode(!this.isRunMode)
+    },
+    releaseSelect () {
+      this.selectControl({
+        userFormId: this.UserFormId,
+        select: { container: [], selected: [] }
+      })
+    }
   },
   created () {
     initUpdate(sampleStore, this)
@@ -34,6 +56,7 @@ const tabStripObj = {
   },
   computed: {
     ...mapState({
+      isRunMode: state => state.fd.isRunMode
     }),
     styled () {
       return {

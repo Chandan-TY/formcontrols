@@ -19,7 +19,7 @@
         ></span></label>
     <div>
       <div ref="divAutoSize" :style="divcssStyleProperty">
-        <span v-if="!syncIsEditMode">
+        <span v-if="!syncIsEditMode || isRunMode" @click="makeChecked">
         <span>{{ computedCaption.afterbeginCaption }}</span>
         <span style="text-decoration: underline">{{
           computedCaption.acceleratorCaption
@@ -55,6 +55,12 @@ export default class FDCheckBox extends Mixins(FdControlVue) {
   @Ref('checkboxInput') checkboxRef! : HTMLInputElement
   @Ref('divAutoSize') autoSizecheckbox! : HTMLDivElement
 
+  makeChecked () {
+    if (this.isRunMode) {
+      const checkDiv = this.$refs.checkboxInput as HTMLInputElement
+      checkDiv.checked = !checkDiv.checked
+    }
+  }
   get getDisableValue () {
     if (this.isRunMode) {
       return (

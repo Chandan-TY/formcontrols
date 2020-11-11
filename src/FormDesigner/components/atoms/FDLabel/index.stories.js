@@ -26,13 +26,25 @@ const labelObj = {
       <button @click="clickChangeMode">
         changeRunMode
       </button>
+      <button @click="releaseSelect">
+        releaseSelect
+      </button>
     </div>
   </div>
     `,
   methods: {
-    ...mapActions({ changeMode: 'fd/changeRunMode' }),
+    ...mapActions({
+      changeMode: 'fd/changeRunMode',
+      selectControl: 'fd/selectControl'
+    }),
     clickChangeMode () {
       this.changeMode(!this.isRunMode)
+    },
+    releaseSelect () {
+      this.selectControl({
+        userFormId: this.UserFormId,
+        select: { container: [], selected: [] }
+      })
     }
   },
   created () {

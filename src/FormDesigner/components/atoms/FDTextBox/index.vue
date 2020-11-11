@@ -9,6 +9,7 @@
             ? properties.MaxLength
             : null
         "
+        :disabled="getDisableValue"
         :title="properties.ControlTipText"
         :readonly="properties.Locked"
         v-cursorDirective="{
@@ -105,6 +106,15 @@ export default class FDTextBox extends Mixins(FdControlVue) {
   @Ref('autoSizeTextarea') readonly autoSizeTextarea! : HTMLLabelElement
   @Ref('textareaRef') textareaRef: HTMLTextAreaElement
 
+  get getDisableValue () {
+    if (this.isRunMode || this.isEditMode) {
+      return (
+        this.properties.Enabled === false || this.properties.Locked === true
+      )
+    } else {
+      return true
+    }
+  }
   /**
   * @description style object is passed to :style attribute in Textarea tag
   * dynamically changing the styles of the component based on properties
