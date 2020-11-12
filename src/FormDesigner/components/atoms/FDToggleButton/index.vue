@@ -1,5 +1,5 @@
 <template>
-    <button
+  <button
     class="toggle-button"
     :style="styleObj"
     :name="properties.Name"
@@ -7,27 +7,30 @@
     :title="properties.ControlTipText"
     :runmode="getDisableValue"
     @mousedown="controlEditMode"
-    @keydown.enter="setContentEditable($event,true)"
-    @blur="() => {isClicked = false; isFocus = false}"
+    @keydown.enter="setContentEditable($event, true)"
+    @blur="
+      () => {
+        isClicked = false;
+        isFocus = false;
+      }
+    "
     @click.stop="toggleButtonClick"
-    >
+  >
     <span v-if="!syncIsEditMode || isRunMode">
-        <span>{{ computedCaption.afterbeginCaption }}</span>
-        <span style="text-decoration: underline">{{
-          computedCaption.acceleratorCaption
-        }}</span>
-        <span>{{ computedCaption.beforeendCaption }}</span>
-      </span>
-      <FDEditableText
-        v-else
-        class="editText"
-        :editable="isRunMode === false && syncIsEditMode"
-        :caption="properties.Caption"
-        @updateCaption="updateCaption"
-        @releaseEditMode="setContentEditable($event, false)"
-      >
-      </FDEditableText>
-    </button>
+      <span>{{ computedCaption.afterbeginCaption }}</span>
+      <span class="spanClass">{{ computedCaption.acceleratorCaption }}</span>
+      <span>{{ computedCaption.beforeendCaption }}</span>
+    </span>
+    <FDEditableText
+      v-else
+      class="editText"
+      :editable="isRunMode === false && syncIsEditMode"
+      :caption="properties.Caption"
+      @updateCaption="updateCaption"
+      @releaseEditMode="setContentEditable($event, false)"
+    >
+    </FDEditableText>
+  </button>
 </template>
 
 <script lang="ts">
@@ -42,12 +45,16 @@ import FDEditableText from '@/FormDesigner/components/atoms/FDEditableText/index
   }
 })
 export default class FDToggleButton extends Mixins(FdControlVue) {
-  $el!: HTMLButtonElement
-  isClicked: boolean = true
-  isFocus: boolean = false
-  clickCount: number = 0
-  isContentEditable : boolean = false
+  $el!: HTMLButtonElement;
+  isClicked: boolean = true;
+  isFocus: boolean = false;
+  clickCount: number = 0;
 
+  /**
+   * @description getDisableValue checks for the RunMode of the control and then returns after checking for the Enabled
+   * and the Locked property
+   * @function getDisableValue
+   */
   get getDisableValue () {
     if (this.isRunMode) {
       return (
@@ -59,10 +66,11 @@ export default class FDToggleButton extends Mixins(FdControlVue) {
   }
 
   /**
-  * @description toggleButtonClick is a method to check the check the clicked functionality of the button tag. Also It sets the variables isClicked and isFocus based on the Locked property
-  * @function toggleButtonClick
-  *
-  */
+   * @description toggleButtonClick is a method to check the check the clicked functionality of the button tag.
+   * Also It sets the variables isClicked and isFocus based on the Locked property
+   * @function toggleButtonClick
+   * @param MouseEvent
+   */
   toggleButtonClick (e: MouseEvent) {
     if (this.isRunMode) {
       this.clickCount = this.clickCount + 1
@@ -86,52 +94,23 @@ export default class FDToggleButton extends Mixins(FdControlVue) {
         this.isClicked = false
       }
     }
-    // if (!this.isRunMode) {
     this.selectedItem(e)
-    // }
   }
 
   /**
-  * @description watches changes in properties to set autoset when true
-  * @function autoSize
-  * @param oldVal previous properties data
-  * @param newVal  new/changed properties data
-  */
-  @Watch('properties.AutoSize', { deep: true })
-  autoSize (newVal:boolean, oldVal:boolean) {
-    // if autoSize is true then height and width value will not get updated
-    this.updateAutoSize()
-  }
-
-  /**
-  * @description changes width and height when autoSize is true by getting content offsetWidth
-  *  and offsetHeight with the help of Ref attribute
-  * @function updateAutoSize
-  * @override
-  */
-  updateAutoSize () {
-    if (this.properties.AutoSize === true) {
-      this.$nextTick(() => {
-        this.updateDataModel({ propertyName: 'Height', value: (this.$el.childNodes[0].childNodes[0] as HTMLSpanElement).offsetHeight + 5 })
-        this.updateDataModel({ propertyName: 'Width', value: (this.$el.childNodes[0].childNodes[0] as HTMLSpanElement).offsetWidth + 5 })
-      })
-    }
-  }
-  mounted () {
-    this.updateAutoSize()
-  }
-  /**
-  * @description style object is passed to :style attribute in button tag
-  * dynamically changing the styles of the component based on properties
-  * @function styleObj
-  *
-  */
-  protected get styleObj () :Partial<CSSStyleDeclaration> {
+   * @description style object is passed to :style attribute in button tag
+   * dynamically changing the styles of the component based on properties
+   * @function styleObj
+   *
+   */
+  protected get styleObj (): Partial<CSSStyleDeclaration> {
     const controlProp = this.properties
-    const font: font = controlProp.Font ? controlProp.Font : {
-      FontName: 'Arial',
-      FontSize: 10
-    }
+    const font: font = controlProp.Font
+      ? controlProp.Font
+      : {
+        FontName: 'Arial',
+        FontSize: 10
+      }
     let display = ''
     if (this.isRunMode) {
       display = controlProp.Visible ? 'inline-block' : 'none'
@@ -139,21 +118,39 @@ export default class FDToggleButton extends Mixins(FdControlVue) {
       display = 'inline-block'
     }
     return {
-      // returns the styles to the main button element
-      // position: 'relative',
       left: `${controlProp.Left}px`,
       width: `${controlProp.Width}px`,
       height: `${controlProp.Height}px`,
       top: `${controlProp.Top}px`,
       backgroundColor: controlProp.BackColor,
       borderColor: controlProp.BorderColor,
-      boxShadow: controlProp.Enabled ? (controlProp.Value === 'False' || controlProp.Value === 'false' ? '1px 1px gray' : controlProp.Value === 'True' || controlProp.Value === 'true' ? '-1px -1px black' : '1px 1px gray') : '1px 1px gray',
+      boxShadow: controlProp.Enabled
+        ? controlProp.Value === 'False' || controlProp.Value === 'false'
+          ? '1px 1px gray'
+          : controlProp.Value === 'True' || controlProp.Value === 'true'
+            ? '-1px -1px black'
+            : '1px 1px gray'
+        : '1px 1px gray',
       background: controlProp.BackStyle ? controlProp.BackColor : 'transparent',
-      outline: controlProp.Enabled ? (this.isFocus ? '1px dotted black' : 'none') : 'none',
+      outline: controlProp.Enabled
+        ? this.isFocus
+          ? '1px dotted black'
+          : 'none'
+        : 'none',
       outlineOffset: this.isClicked ? '-5px' : '-5px',
       display: display,
-      color: ((controlProp.Enabled === true) && (controlProp.Value === 'False' || controlProp.Value === 'false' || controlProp.Value === 'True' || controlProp.Value === 'true')) ? controlProp.ForeColor : this.getEnabled,
-      cursor: (controlProp.MousePointer !== 0 || controlProp.MouseIcon !== '') ? this.getMouseCursorData : 'default',
+      color:
+        controlProp.Enabled === true &&
+        (controlProp.Value === 'False' ||
+          controlProp.Value === 'false' ||
+          controlProp.Value === 'True' ||
+          controlProp.Value === 'true')
+          ? controlProp.ForeColor
+          : this.getEnabled,
+      cursor:
+        controlProp.MousePointer !== 0 || controlProp.MouseIcon !== ''
+          ? this.getMouseCursorData
+          : 'default',
       fontFamily: font.FontStyle ? font.FontStyle : font.FontName,
       fontSize: `${font.FontSize}px`,
       fontStyle: font.FontItalic ? 'italic' : '',
@@ -166,11 +163,16 @@ export default class FDToggleButton extends Mixins(FdControlVue) {
               ? 'line-through'
               : '',
       fontWeight: font.FontBold ? 'bold' : '',
-      whiteSpace: (controlProp.WordWrap ? 'normal' : 'nowrap'),
-      wordBreak: (controlProp.WordWrap ? 'break-word' : 'normal'),
+      whiteSpace: controlProp.WordWrap ? 'normal' : 'nowrap',
+      wordBreak: controlProp.WordWrap ? 'break-word' : 'normal',
       paddingLeft: controlProp.AutoSize ? '0px' : '0px',
       paddingRight: controlProp.WordWrap ? '0px' : '6px',
-      textAlign: controlProp.TextAlign === 0 ? 'left' : controlProp.TextAlign === 1 ? 'center' : 'right',
+      textAlign:
+        controlProp.TextAlign === 0
+          ? 'left'
+          : controlProp.TextAlign === 1
+            ? 'center'
+            : 'right',
       backgroundImage: `url(${controlProp.Picture})`,
       backgroundRepeat: this.getRepeat,
       backgroundPosition: this.getPosition,
@@ -178,8 +180,51 @@ export default class FDToggleButton extends Mixins(FdControlVue) {
       backgroundPositionY: this.getPositionY
     }
   }
-}
 
+  /**
+   * @description watches changes in properties to set autoset when true
+   * @function autoSize
+   * @param oldVal previous properties data
+   * @param newVal  new/changed properties data
+   */
+  @Watch('properties.AutoSize', { deep: true })
+  autoSize (newVal: boolean, oldVal: boolean) {
+    // if autoSize is true then height and width value will not get updated
+    this.updateAutoSize()
+  }
+
+  /**
+   * @description changes width and height when autoSize is true by getting content offsetWidth
+   *  and offsetHeight with the help of Ref attribute
+   * @function updateAutoSize
+   * @override
+   */
+  updateAutoSize () {
+    if (this.properties.AutoSize === true) {
+      this.$nextTick(() => {
+        this.updateDataModel({
+          propertyName: 'Height',
+          value:
+            (this.$el.childNodes[0].childNodes[0] as HTMLSpanElement)
+              .offsetHeight + 5
+        })
+        this.updateDataModel({
+          propertyName: 'Width',
+          value:
+            (this.$el.childNodes[0].childNodes[0] as HTMLSpanElement)
+              .offsetWidth + 5
+        })
+      })
+    }
+  }
+
+  /**
+   * @description mounted initializes the values which are required for the component
+   */
+  mounted () {
+    this.updateAutoSize()
+  }
+}
 </script>
 
 <style scoped>
@@ -192,18 +237,22 @@ export default class FDToggleButton extends Mixins(FdControlVue) {
   outline: none;
 }
 .editText {
-    width: 100%;
-    height: 100%;
-    background: inherit;
-    font: inherit;
-    border: none;
-    outline: none;
-    padding: 0;
-    resize: none;
-    overflow: hidden;
-    text-decoration: inherit;
-    color: inherit;
-    white-space: inherit;
-    word-break: inherit;
-  }
+  width: 100%;
+  height: 100%;
+  background: inherit;
+  font: inherit;
+  border: none;
+  outline: none;
+  padding: 0;
+  resize: none;
+  overflow: hidden;
+  text-decoration: inherit;
+  color: inherit;
+  white-space: inherit;
+  word-break: inherit;
+}
+
+.spanClass {
+  text-decoration: underline;
+}
 </style>

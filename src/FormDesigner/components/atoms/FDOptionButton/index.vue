@@ -5,38 +5,35 @@
     :style="cssStyleProperty"
     @click="selectedItem"
   >
-    <!-- <div :class="properties.Width>100 ? 'label-outer-div' : ''"> -->
-      <label class="control"
-        ><input
-           @change="handleChange($event, optionBtnRef)"
-           ref="optBtnInput"
-          :name="properties.Name"
-          :tabindex="properties.TabIndex"
-          :disabled="getDisableValue"
-          type="radio"
-          class="control-input visually-hidden"/>
-        <span class="control-indicator"
-         :style="{boxShadow: this.properties.SpecialEffect === 0 ? '0px 0px gray' : '-1px -1px gray', border: this.properties.SpecialEffect === 0 ? '1px solid gray' : ''}"
-         ></span></label>
-    <!-- </div> -->
+    <label class="control"
+      ><input
+        @change="handleChange($event, optionBtnRef)"
+        ref="optBtnInput"
+        :name="properties.Name"
+        :tabindex="properties.TabIndex"
+        :disabled="getDisableValue"
+        type="radio"
+        class="control-input visually-hidden" />
+      <span class="control-indicator" :style="controlIndicatorStyleObj"></span
+    ></label>
     <div>
       <div ref="divAutoSize" :style="divcssStyleProperty">
-       <span v-if="!syncIsEditMode || isRunMode" @click="makeChecked">
-        <span>{{ computedCaption.afterbeginCaption }}</span>
-        <span style="text-decoration: underline">{{
-          computedCaption.acceleratorCaption
-        }}</span>
-        <span>{{ computedCaption.beforeendCaption }}</span>
-      </span>
-      <FDEditableText
-        v-else
-        class="editText"
-        :editable="isRunMode === false && syncIsEditMode"
-        :caption="properties.Caption"
-        @updateCaption="updateCaption"
-        @releaseEditMode="setContentEditable($event, false)"
-      >
-      </FDEditableText>
+        <span v-if="!syncIsEditMode || isRunMode" @click="makeChecked">
+          <span>{{ computedCaption.afterbeginCaption }}</span>
+          <span class="spanClass">{{
+            computedCaption.acceleratorCaption
+          }}</span>
+          <span>{{ computedCaption.beforeendCaption }}</span>
+        </span>
+        <FDEditableText
+          v-else
+          class="editText"
+          :editable="isRunMode === false && syncIsEditMode"
+          :caption="properties.Caption"
+          @updateCaption="updateCaption"
+          @releaseEditMode="setContentEditable($event, false)"
+        >
+        </FDEditableText>
       </div>
     </div>
   </div>
@@ -54,67 +51,63 @@ import FDEditableText from '@/FormDesigner/components/atoms/FDEditableText/index
   }
 })
 export default class FDOptionButton extends Mixins(FdControlVue) {
-   @Ref('divAutoSize') readonly autoSizeOptionButton! : HTMLDivElement
-   @Ref('optBtnInput') optionBtnRef! : HTMLDivElement
+  @Ref('divAutoSize') readonly autoSizeOptionButton!: HTMLDivElement;
+  @Ref('optBtnInput') optionBtnRef!: HTMLDivElement;
 
-   get getDisableValue () {
-     if (this.isRunMode) {
-       return (
-         this.properties.Enabled === false || this.properties.Locked
-       )
-     } else {
-       return true
-     }
-   }
+  get getDisableValue () {
+    if (this.isRunMode) {
+      return this.properties.Enabled === false || this.properties.Locked
+    } else {
+      return true
+    }
+  }
 
-   makeChecked () {
-     if (this.isRunMode) {
-       const checkDiv = this.$refs.optBtnInput as HTMLInputElement
-       checkDiv.checked = true
-     }
-   }
-   /**
+  makeChecked () {
+    if (this.isRunMode) {
+      const checkDiv = this.$refs.optBtnInput as HTMLInputElement
+      checkDiv.checked = true
+    }
+  }
+  /**
    * @description style object is passed to :style attribute in label tag
    * dynamically changing the styles of the component based on properties
    * @function cssStyleProperty
    *
    */
-   get cssStyleProperty () {
-     const controlProp = this.properties
-     const font: font = controlProp.Font
-       ? controlProp.Font
-       : {
-         FontName: 'Arial',
-         FontSize: 10
-       }
-     let display = ''
-     if (this.isRunMode) {
-       display = controlProp.Visible ? 'grid' : 'none'
-     } else {
-       display = 'grid'
-     }
-     return {
-       left: `${controlProp.Left}px`,
-       width: `${controlProp.Width}px`,
-       height: `${controlProp.Height}px`,
-       top: `${controlProp.Top}px`,
-       backgroundColor: controlProp.BackColor,
-       background: controlProp.BackStyle ? controlProp.BackColor : 'transparent',
-       whiteSpace: controlProp.WordWrap ? 'normal' : 'nowrap',
-       wordBreak: controlProp.WordWrap ? 'break-word' : 'normal',
-       color:
-        controlProp.Enabled === true
-          ? controlProp.ForeColor
-          : this.getEnabled,
-       cursor:
+  get cssStyleProperty () {
+    const controlProp = this.properties
+    const font: font = controlProp.Font
+      ? controlProp.Font
+      : {
+        FontName: 'Arial',
+        FontSize: 10
+      }
+    let display = ''
+    if (this.isRunMode) {
+      display = controlProp.Visible ? 'grid' : 'none'
+    } else {
+      display = 'grid'
+    }
+    return {
+      left: `${controlProp.Left}px`,
+      width: `${controlProp.Width}px`,
+      height: `${controlProp.Height}px`,
+      top: `${controlProp.Top}px`,
+      backgroundColor: controlProp.BackColor,
+      background: controlProp.BackStyle ? controlProp.BackColor : 'transparent',
+      whiteSpace: controlProp.WordWrap ? 'normal' : 'nowrap',
+      wordBreak: controlProp.WordWrap ? 'break-word' : 'normal',
+      color:
+        controlProp.Enabled === true ? controlProp.ForeColor : this.getEnabled,
+      cursor:
         controlProp.MousePointer !== 0 || controlProp.MouseIcon !== ''
           ? this.getMouseCursorData
           : 'default',
-       // Fix Font.FontSize, Font.FontItalic ...
-       fontFamily: font.FontStyle ? font.FontStyle : font.FontName,
-       fontSize: `${font.FontSize}px`,
-       fontStyle: font.FontItalic ? 'italic' : '',
-       textDecoration:
+      // Fix Font.FontSize, Font.FontItalic ...
+      fontFamily: font.FontStyle ? font.FontStyle : font.FontName,
+      fontSize: `${font.FontSize}px`,
+      fontStyle: font.FontItalic ? 'italic' : '',
+      textDecoration:
         font.FontStrikethrough === true && font.FontUnderline === true
           ? 'underline line-through'
           : font.FontUnderline
@@ -122,41 +115,41 @@ export default class FDOptionButton extends Mixins(FdControlVue) {
             : font.FontStrikethrough
               ? 'line-through'
               : '',
-       fontWeight: font.FontBold ? 'bold' : '',
-       //  position: 'relative',
-       display: display,
-       direction: controlProp.Alignment ? 'ltr' : 'rtl',
-       overflow: 'hidden',
-       gridTemplateColumns: '14px auto ',
-       gap: '2px',
-       alignItems: (font.FontSize! > 17) ? 'center' : '',
-       alignContent: 'center',
-       boxShadow: 'none'
-     }
-   }
+      fontWeight: font.FontBold ? 'bold' : '',
+      //  position: 'relative',
+      display: display,
+      direction: controlProp.Alignment ? 'ltr' : 'rtl',
+      overflow: 'hidden',
+      gridTemplateColumns: '14px auto ',
+      gap: '2px',
+      alignItems: font.FontSize! > 17 ? 'center' : '',
+      alignContent: 'center',
+      boxShadow: 'none'
+    }
+  }
 
-   /**
+  /**
    * @description style object is passed to :style attribute in span tag
    * dynamically changing the styles of the component based on properties
    * @function spancssStyleProperty
    *
    */
-   get spancssStyleProperty () {
-     const controlProp = this.properties
-     const font: font = controlProp.Font
-       ? controlProp.Font
-       : {
-         FontName: 'Arial',
-         FontSize: 10
-       }
-     return {
-       textAlign:
+  get spancssStyleProperty () {
+    const controlProp = this.properties
+    const font: font = controlProp.Font
+      ? controlProp.Font
+      : {
+        FontName: 'Arial',
+        FontSize: 10
+      }
+    return {
+      textAlign:
         controlProp.TextAlign === 0
           ? 'left'
           : controlProp.TextAlign === 1
             ? 'center'
             : 'right',
-       textDecoration:
+      textDecoration:
         font.FontStrikethrough === true && font.FontUnderline === true
           ? 'underline line-through'
           : font.FontUnderline
@@ -164,43 +157,72 @@ export default class FDOptionButton extends Mixins(FdControlVue) {
             : font.FontStrikethrough
               ? 'line-through'
               : ''
-     }
-   }
+    }
+  }
 
-   /**
+  /**
+   * @description style object is passed to :style attribute in span tag
+   * dynamically changing the styles of the component based on properties
+   * @function controlIndicatorStyleObj
+   *
+   */
+  get controlIndicatorStyleObj () {
+    const controlProp = this.properties
+    return {
+      boxShadow:
+        controlProp.SpecialEffect === 0 ? '0px 0px gray' : '-1px -1px gray',
+      border: controlProp.SpecialEffect === 0 ? '1px solid gray' : ''
+    }
+  }
+
+  /**
    * @description style object is passed to :style attribute in div tag
    * dynamically changing the styles of the component based on properties
    * @function divcssStyleProperty
    *
    */
-   get divcssStyleProperty () {
-     const controlProp = this.properties
-     return {
-       overflow: 'hidden',
-       textAlign: controlProp.TextAlign === 0 ? 'left' : controlProp.TextAlign === 1 ? 'center' : 'right',
-       backgroundImage: `url(${controlProp.Picture})`,
-       backgroundRepeat: this.getRepeat,
-       backgroundPosition: this.getPosition,
-       backgroundPositionX: this.getPositionX,
-       backgroundPositionY: this.getPositionY
-     }
-   }
-   /**
-    * @override
-    */
+  get divcssStyleProperty () {
+    const controlProp = this.properties
+    return {
+      overflow: 'hidden',
+      textAlign:
+        controlProp.TextAlign === 0
+          ? 'left'
+          : controlProp.TextAlign === 1
+            ? 'center'
+            : 'right',
+      backgroundImage: `url(${controlProp.Picture})`,
+      backgroundRepeat: this.getRepeat,
+      backgroundPosition: this.getPosition,
+      backgroundPositionX: this.getPositionX,
+      backgroundPositionY: this.getPositionY
+    }
+  }
+
+  /**
+   * @override
+   */
   @Watch('properties.AutoSize', { deep: true })
-   updateAutoSize (newVal:boolean, oldVal:boolean) {
-     if (this.properties.AutoSize) {
-       this.$nextTick(() => {
-         let divRef:HTMLDivElement = this.autoSizeOptionButton
-         const offsetWidth = (divRef.childNodes[0] as HTMLSpanElement).offsetWidth
-         const offsetHeight = (divRef.childNodes[0] as HTMLSpanElement).offsetHeight
-         // Value 14 for OptionButton, 2 for Gap style value, and offsetHeight and offsetWidth + 3
-         this.updateDataModel({ propertyName: 'Width', value: 14 + 2 + offsetHeight + 1 })
-         this.updateDataModel({ propertyName: 'Height', value: 14 + 2 + offsetWidth + 1 })
-       })
-     }
-   }
+  updateAutoSize (newVal: boolean, oldVal: boolean) {
+    if (this.properties.AutoSize) {
+      this.$nextTick(() => {
+        let divRef: HTMLDivElement = this.autoSizeOptionButton
+        const offsetWidth = (divRef.childNodes[0] as HTMLSpanElement)
+          .offsetWidth
+        const offsetHeight = (divRef.childNodes[0] as HTMLSpanElement)
+          .offsetHeight
+        // Value 14 for OptionButton, 2 for Gap style value, and offsetHeight and offsetWidth + 3
+        this.updateDataModel({
+          propertyName: 'Width',
+          value: 14 + 2 + offsetHeight + 1
+        })
+        this.updateDataModel({
+          propertyName: 'Height',
+          value: 14 + 2 + offsetWidth + 1
+        })
+      })
+    }
+  }
 
   mounted () {
     this.controlSource()
@@ -209,7 +231,6 @@ export default class FDOptionButton extends Mixins(FdControlVue) {
 </script>
 
 <style scoped>
-
 .container {
   /* position: relative; */
   left: 100px;
@@ -227,30 +248,23 @@ export default class FDOptionButton extends Mixins(FdControlVue) {
   align-items: center;
 }
 
-/* .label-outer-div {
-  position: relative;
-  top: -13%;
-} */
-
 .radio {
   background-color: rgb(238, 238, 238);
-  /* border: 0.2px solid gray; */
- box-shadow: 0.1px 0.1px 1px 1px gray;
+  box-shadow: 0.1px 0.1px 1px 1px gray;
   width: 150px;
   height: 23px;
 }
+
 .radio-input {
-    /* float: left; */
-    /* padding-top:5px; */
-    margin: 0px 0px 0px 5px;
+  margin: 0px 0px 0px 5px;
 }
-.radio-label{
-    float: left;
-    font-size: 11px;
-    padding-top: 5px;
-    /* font-weight: 550; */
+
+.radio-label {
+  float: left;
+  font-size: 11px;
+  padding-top: 5px;
 }
-/*  */
+
 .outer-option {
   position: relative;
   height: 30px;
@@ -273,10 +287,6 @@ export default class FDOptionButton extends Mixins(FdControlVue) {
 
 .control {
   display: inline-flex;
-  /* align-items: center; */
-  /* position: absolute; */
-  /* top: 20%; */
-  /* left: 10px; */
 }
 
 .control-indicator {
@@ -293,5 +303,9 @@ export default class FDOptionButton extends Mixins(FdControlVue) {
   border-radius: 50%;
   background-position: center;
   background-repeat: no-repeat;
+}
+
+.spanClass {
+  text-decoration: underline;
 }
 </style>

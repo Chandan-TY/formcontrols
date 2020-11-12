@@ -1,11 +1,6 @@
 <template>
-  <div
-    id="popup1"
-    class="overlay"
-    :style="tabOrderStyleObj"
-  >
-    <div class="outer-taborder-div popup"
-     :style="tabOrderDialogInitialStyle">
+  <div id="popup1" class="overlay" :style="tabOrderStyleObj">
+    <div class="outer-taborder-div popup" :style="tabOrderDialogInitialStyle">
       <div class="taborder-header-div" @mousedown.stop="dragTabOrderDialog">
         <div class="taborder-header-innerdiv">
           <a>Page Order</a>
@@ -22,29 +17,39 @@
         <div class="wrapper1">
           <span class="inner-header">Page Order</span>
           <div class="frame">
-             <div  v-for="(value, index) in tabOrderList" :key="value.Name">
-            <button
-              class="inside-frame"
-              :class="{'active-item':currentIndex === index}"
-              @click="selectedTab(index)"
-            >{{value.Caption}}</button>
+            <div v-for="(value, index) in tabOrderList" :key="value.Name">
+              <button
+                class="inside-frame"
+                :class="{ 'active-item': currentIndex === index }"
+                @click="selectedTab(index)"
+              >
+                {{ value.Caption }}
+              </button>
             </div>
           </div>
-          </div>
-        <div class="wrapper2">
-          <div style="height:3px"></div>
-          <div class="wrapper21">
-            <button class="taborder-buttons" @click="updateControlData">OK</button>
-            <button class="taborder-buttons" @click="closeDialog">Cancel</button>
-          </div>
-          <div style="height:35px"></div>
-          <div class="wrapper21">
-            <button class="taborder-buttons" @click="moveControlUp()">Move Up</button>
-            <button class="taborder-buttons" @click="moveControlDown()">Move Down</button>
-          </div>
         </div>
+        <div class="wrapper2">
+          <div class="wrapperDiv1"></div>
+          <div class="wrapper21">
+            <button class="taborder-buttons" @click="updateControlData">
+              OK
+            </button>
+            <button class="taborder-buttons" @click="closeDialog">
+              Cancel
+            </button>
+          </div>
+          <div class="wrapperDiv2"></div>
+          <div class="wrapper21">
+            <button class="taborder-buttons" @click="moveControlUp()">
+              Move Up
+            </button>
+            <button class="taborder-buttons" @click="moveControlDown()">
+              Move Down
+            </button>
+          </div>
         </div>
       </div>
+    </div>
   </div>
 </template>
 
@@ -60,14 +65,16 @@ import FdDialogDragVue from '@/api/abstract/FormDesigner/FdDialogDragVue'
   components: {}
 })
 export default class TabStripTabOrderModal extends FdDialogDragVue {
-   @State(state => state.fd.userformData) userformData!: userformData
-  @Action('fd/updateControlExtraData') updateControlExtraData!: (payload: IupdateControlExtraData) => void;
+  @State((state) => state.fd.userformData) userformData!: userformData;
+  @Action('fd/updateControlExtraData') updateControlExtraData!: (
+    payload: IupdateControlExtraData
+  ) => void;
 
- isTabOrderOpen: boolean = false
-  userFormId : string = ''
-  controlId : string = ''
-  currentIndex: number = -1
-  tabOrderList: tabsItems[] = []
+  isTabOrderOpen: boolean = false;
+  userFormId: string = '';
+  controlId: string = '';
+  currentIndex: number = -1;
+  tabOrderList: tabsItems[] = [];
 
   updateControlData () {
     this.updateControlExtraData({
@@ -82,16 +89,20 @@ export default class TabStripTabOrderModal extends FdDialogDragVue {
     this.isTabOrderOpen = false
   }
   created () {
-    EventBus.$on('tabStripTabOrder', (userFormId: string, controlId: string) => {
-      const tabOrderControlData = this.userformData[userFormId][controlId].extraDatas!.Tabs!
-      if (tabOrderControlData.length > 0) {
-        this.tabOrderList = JSON.parse(JSON.stringify(tabOrderControlData))
+    EventBus.$on(
+      'tabStripTabOrder',
+      (userFormId: string, controlId: string) => {
+        const tabOrderControlData = this.userformData[userFormId][controlId]
+          .extraDatas!.Tabs!
+        if (tabOrderControlData.length > 0) {
+          this.tabOrderList = JSON.parse(JSON.stringify(tabOrderControlData))
+        }
+        this.isTabOrderOpen = true
+        this.userFormId = userFormId
+        this.controlId = controlId
+        this.currentIndex = 0
       }
-      this.isTabOrderOpen = true
-      this.userFormId = userFormId
-      this.controlId = controlId
-      this.currentIndex = 0
-    })
+    )
   }
   destroyed () {
     EventBus.$off('tabStripTabOrder')
@@ -308,5 +319,11 @@ h1 {
   width: 10px;
   height: 10px;
   stroke: white;
+}
+.wrapperDiv1 {
+  height: 3px;
+}
+.wrapperDiv2 {
+  height: 35px;
 }
 </style>

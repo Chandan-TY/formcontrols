@@ -9,7 +9,7 @@
           <SplitArea :size="20" class="splitleft">
             <Split :direction="vertical">
               <SplitArea class="innersplit">
-                <div v-if="hideShowTree===false">
+                <div v-if="hideShowTree === false">
                   <div class="sideheader">
                     <span class="sideheader1">
                       <span>Project - VBAProject</span>
@@ -22,16 +22,18 @@
                   </div>
 
                   <div>
-                   <ViewCodeLogo class='icon-style' />
-                    <ViewObject class='icon-style' />
-                    <CloseFolderLogo class='icon-style' />
-                    <!-- <i class="material-icons">&#xe2c8;</i> -->
+                    <ViewCodeLogo class="icon-style" />
+                    <ViewObject class="icon-style" />
+                    <CloseFolderLogo class="icon-style" />
                   </div>
                   <hr />
                   <div>
-                    <!-- <TreeBrowser style="cursor:pointer;" /> -->
-                    <div v-for="(userform,userformId) in userformData" :key="userformId"  @click="setUserForm(userformId)">
-                      <p>{{userformId}}</p>
+                    <div
+                      v-for="(userform, userformId) in userformData"
+                      :key="userformId"
+                      @click="setUserForm(userformId)"
+                    >
+                      <p>{{ userformId }}</p>
                     </div>
                   </div>
                 </div>
@@ -40,21 +42,25 @@
               <SplitArea class="innersplit">
                 <!-- <PropertiesList /> -->
                 <label>Prop Name</label>
-                <input type="text" v-model="testPropName">
-                <br>
+                <input type="text" v-model="testPropName" />
+                <br />
                 <label>Prop Value</label>
-                <input type="text" v-model="testPropValue">
-                <br>
+                <input type="text" v-model="testPropValue" />
+                <br />
                 <button @click="clickUpdate">Update selected Control</button>
-                <br><br>
+                <br /><br />
                 <button @click="clickDelete">Delete selected Control</button>
               </SplitArea>
             </Split>
           </SplitArea>
 
-          <SplitArea :size="80" style="background:gray;oveflow:hidden;">
-            <div style="position:relative; padding: 5px">
-              <ResizeUserForm :userFormId="userFormId" :controlId="userFormId" :containerId="userFormId"/>
+          <SplitArea :size="80" class="splitAreaClass">
+            <div class="splitAreaDiv">
+              <ResizeUserForm
+                :userFormId="userFormId"
+                :controlId="userFormId"
+                :containerId="userFormId"
+              />
             </div>
           </SplitArea>
         </Split>
@@ -63,9 +69,9 @@
         <ToolBox />
       </div>
       <div>
-      <UserformTabOrder />
-      <TabStripTabOrder />
-      <RenameMultiPageDialog />
+        <UserformTabOrder />
+        <TabStripTabOrder />
+        <RenameMultiPageDialog />
       </div>
     </div>
   </div>
@@ -87,7 +93,10 @@ import ViewObject from '../../../../assets/view-object.svg'
 import CloseFolderLogo from '../../../../assets/close-folder.svg'
 import { State, Action } from 'vuex-class'
 import { Payload } from 'vuex'
-import { IupdateControl, IdeleteControl } from '../../../../storeModules/fd/actions'
+import {
+  IupdateControl,
+  IdeleteControl
+} from '../../../../storeModules/fd/actions'
 import { EventBus } from '@/FormDesigner/event-bus'
 
 @Component({
@@ -107,19 +116,20 @@ import { EventBus } from '@/FormDesigner/event-bus'
   }
 })
 export default class FDPage extends Vue {
-  @State(state => state.fd.userformData) userformData!: userformData
+  @State((state) => state.fd.userformData) userformData!: userformData;
   vertical: string = 'vertical';
   display: string = '';
   hideShowTree: boolean = false;
   hideShowTreeBrowser () {
     this.hideShowTree = true
   }
-  userFormId: string = 'ID_USERFORM1'
-  @State((state:rootState) => state.fd.selectedControls) selectedControls!: fdState['selectedControls']
-  @Action('fd/updateControl') updateControl!: (payload: IupdateControl) => void
-  @Action('fd/deleteControl') deleteControl!: (payload: IdeleteControl) => void
-  testPropName : keyof controlProperties = 'Width'
-  testPropValue = '100'
+  userFormId: string = 'ID_USERFORM1';
+  @State((state: rootState) => state.fd.selectedControls)
+  selectedControls!: fdState['selectedControls'];
+  @Action('fd/updateControl') updateControl!: (payload: IupdateControl) => void;
+  @Action('fd/deleteControl') deleteControl!: (payload: IdeleteControl) => void;
+  testPropName: keyof controlProperties = 'Width';
+  testPropValue = '100';
   clickUpdate () {
     const selected = this.selectedControls[this.userFormId].selected
     for (let i = 0; i < selected.length; i++) {
@@ -282,5 +292,13 @@ export default class FDPage extends Vue {
 .icon-style {
   margin-top: 7px;
   margin-left: 5px;
+}
+.splitAreaClass {
+  background: gray;
+  overflow: hidden;
+}
+.splitAreaDiv {
+  position: relative;
+  padding: 5px;
 }
 </style>

@@ -3,7 +3,7 @@
     <div class="outer-toolbox-div" :style="outerToolboxDivStyleObj">
       <div class="toolbox-header">
         <div>
-          <span style="margin-left: 5px">ToolBox</span>
+          <span class="spanClass">ToolBox</span>
         </div>
         <div>
           <span class="closeButton">
@@ -50,18 +50,17 @@ interface IToolbox {
   name: string;
   icon: string;
 }
-interface IRef
-{
-   [icons: string]:[]
+interface IRef {
+  [icons: string]: [];
 }
 interface Istyle {
-  id: string
+  id: string;
   style: {
-    borderRight: string
-    borderBottom: string
-    borderWidth: string
-    borderStyle: string
-      }
+    borderRight: string;
+    borderBottom: string;
+    borderWidth: string;
+    borderStyle: string;
+  };
 }
 @Component({
   name: 'ToolBox',
@@ -70,8 +69,11 @@ interface Istyle {
   }
 })
 export default class ToolBox extends Vue {
-  @State((state:rootState) => state.fd.toolBoxSelect) toolBoxSelect!: fdState['toolBoxSelect']
-  @Action('fd/changeToolBoxSelect') changeToolBoxSelect!: (payload: IchangeToolBoxSelect) => void
+  @State((state: rootState) => state.fd.toolBoxSelect)
+  toolBoxSelect!: fdState['toolBoxSelect'];
+  @Action('fd/changeToolBoxSelect') changeToolBoxSelect!: (
+    payload: IchangeToolBoxSelect
+  ) => void;
   toolBox: Array<IToolbox> = toolBox;
   zIndexChange: number = 0;
   mounted () {
@@ -79,7 +81,7 @@ export default class ToolBox extends Vue {
     this.changeToolBoxSelect(toolBox[0].name)
   }
 
-  clickIcon (value : string) {
+  clickIcon (value: string) {
     this.changeToolBoxSelect(value)
   }
 
@@ -214,5 +216,8 @@ export default class ToolBox extends Vue {
   right: 0px;
   float: right;
   cursor: pointer;
+}
+.spanClass {
+  margin-left: 5px;
 }
 </style>

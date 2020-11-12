@@ -1,26 +1,27 @@
 <template>
-    <div class="listStyle" :style="listStyleObj" :title="properties.ControlTipText" @click="selectedItem" @mousedown="controlEditMode">
-    <table
-    class="table-style"
-      :style="tableStyleObj"
-      @click="tableClick"
-    >
-      <thead
-        v-if="properties.ColumnHeads === true"
-        style="border-bottom:1px solid;white-space: nowrap;"
-      >
+  <div
+    class="listStyle"
+    :style="listStyleObj"
+    :title="properties.ControlTipText"
+    @click="selectedItem"
+    @mousedown="controlEditMode"
+  >
+    <table class="table-style" :style="tableStyleObj" @click="tableClick">
+      <thead v-if="properties.ColumnHeads === true" class="theadClass">
         <tr>
-          <td :style="tdStyleObj"
+          <td
+            :style="tdStyleObj"
             v-if="properties.ListStyle === 1"
-            style="width:15px;border-right: 1px solid"
+            class="tdClass"
           ></td>
-          <template v-for="(a,columnIndex) in extraDatas.ColumnHeadsValues">
+          <template v-for="(a, columnIndex) in extraDatas.ColumnHeadsValues">
             <td
-              v-if="(columnIndex<properties.ColumnCount)"
+              v-if="columnIndex < properties.ColumnCount"
               :key="columnIndex"
               :style="updateColHeads(columnIndex)"
-            >{{a}}</td>
-              <!-- :style="[tdStyleObj,{borderRight: (columnIndex<properties.ColumnCount-1)?'1px solid':'',width:(columnIndex==0 && properties.ColumnWidths!=='')?parseInt(properties.ColumnWidths)+'px':'auto',overflow:'hidden'}]" -->
+            >
+              {{ a }}
+            </td>
           </template>
         </tr>
       </thead>
@@ -29,32 +30,35 @@
         <tr
           :tabindex="index"
           class="tr"
-          v-for="(item,index) of extraDatas.RowSourceData"
+          v-for="(item, index) of extraDatas.RowSourceData"
           :key="index"
           @mouseenter="handleDrag"
           @keydown="handleExtendArrowKeySelect"
           @blur="clearMatchEntry"
-          @click="isRunMode||isEditMode?handleMultiSelect($event):''"
+          @click="isRunMode || isEditMode ? handleMultiSelect($event) : ''"
         >
-          <td :style="tdStyleObj"
-            style="width:20px"
-            v-if="properties.ListStyle === 1 && properties.ColumnCount>0"
+          <td
+            :style="tdStyleObj"
+            class="tdClassIn"
+            v-if="properties.ListStyle === 1 && properties.ColumnCount > 0"
           >
             <input
-              :name="properties.MultiSelect === 2? 'checkbox' : 'radio'"
+              :name="properties.MultiSelect === 2 ? 'checkbox' : 'radio'"
               :type="
-                properties.MultiSelect === 1 ||
-                properties.MultiSelect === 2 ? 'checkbox' : 'radio'"
-              style="margin:0"
+                properties.MultiSelect === 1 || properties.MultiSelect === 2
+                  ? 'checkbox'
+                  : 'radio'
+              "
+              class="inputClass"
             />
           </td>
           <td
             class="column-item"
-            v-for="(i,index) in item"
+            v-for="(i, index) in item"
             :key="index"
             :style="updateColumnWidths(index)"
           >
-            <template v-if="(index<properties.ColumnCount)">{{i}}</template>
+            <template v-if="index < properties.ColumnCount">{{ i }}</template>
           </td>
         </tr>
       </tbody>
@@ -63,7 +67,15 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Model, Emit, Mixins, Watch, Ref } from 'vue-property-decorator'
+import {
+  Component,
+  Prop,
+  Model,
+  Emit,
+  Mixins,
+  Watch,
+  Ref
+} from 'vue-property-decorator'
 import FdControlVue from '@/api/abstract/FormDesigner/FdControlVue'
 
 @Component({
@@ -86,20 +98,18 @@ export default class FDListBox extends Mixins(FdControlVue) {
 
   get getDisableValue () {
     if (this.isRunMode || this.isEditMode) {
-      return (
-        this.properties.Enabled === false
-      )
+      return this.properties.Enabled === false
     } else {
       return true
     }
   }
 
   /**
-  * @description style object is passed to :style attribute in div tag
-  * dynamically changing the styles of the component based on properties
-  * @function listStyleObj
-  */
-  protected get listStyleObj () :Partial<CSSStyleDeclaration> {
+   * @description style object is passed to :style attribute in div tag
+   * dynamically changing the styles of the component based on properties
+   * @function listStyleObj
+   */
+  protected get listStyleObj (): Partial<CSSStyleDeclaration> {
     const controlProp = this.properties
     let display = ''
     if (this.isRunMode) {
@@ -110,8 +120,13 @@ export default class FDListBox extends Mixins(FdControlVue) {
     return {
       backgroundColor: controlProp.BackColor,
       borderColor: controlProp.BorderColor,
-      border: this.properties.BorderStyle ? `1px solid ${this.properties.BorderColor}` : 'none',
-      cursor: (controlProp.MousePointer !== 0 || controlProp.MouseIcon !== '') ? this.getMouseCursorData : 'default',
+      border: this.properties.BorderStyle
+        ? `1px solid ${this.properties.BorderColor}`
+        : 'none',
+      cursor:
+        controlProp.MousePointer !== 0 || controlProp.MouseIcon !== ''
+          ? this.getMouseCursorData
+          : 'default',
       boxShadow: controlProp.SpecialEffect ? this.getSpecialEffectData : 'none',
       height: `${controlProp.Height}px`,
       width: `${controlProp.Width}px`,
@@ -120,16 +135,18 @@ export default class FDListBox extends Mixins(FdControlVue) {
   }
 
   /**
-  * @description style object is passed to :style attribute in table tag
-  * dynamically changing the styles of the component based on properties
-  * @function tableStyleObj
-  */
-  protected get tableStyleObj () :Partial<CSSStyleDeclaration> {
+   * @description style object is passed to :style attribute in table tag
+   * dynamically changing the styles of the component based on properties
+   * @function tableStyleObj
+   */
+  protected get tableStyleObj (): Partial<CSSStyleDeclaration> {
     const controlProp = this.properties
-    const font: font = controlProp.Font ? controlProp.Font : {
-      FontName: 'Arial',
-      FontSize: 10
-    }
+    const font: font = controlProp.Font
+      ? controlProp.Font
+      : {
+        FontName: 'Arial',
+        FontSize: 10
+      }
     return {
       borderCollapse: 'collapse',
       tableLayout: 'fixed',
@@ -146,37 +163,50 @@ export default class FDListBox extends Mixins(FdControlVue) {
               ? 'line-through'
               : '',
       fontWeight: font.FontBold ? 'bold' : '',
-      width: (controlProp.ColumnWidths === '') ? `${controlProp.Width}px` : (`${controlProp.Width}px` + parseInt(controlProp.ColumnWidths!)) + 'px'
+      width:
+        controlProp.ColumnWidths === ''
+          ? `${controlProp.Width}px`
+          : `${controlProp.Width}px` +
+            parseInt(controlProp.ColumnWidths!) +
+            'px'
     }
   }
 
-  protected get tableBodyObj () :Partial<CSSStyleDeclaration> {
+  protected get tableBodyObj (): Partial<CSSStyleDeclaration> {
     const controlProp = this.properties
     return {
       width: `${controlProp.Width}px !important`
     }
   }
   /**
-  * @description style object is passed to :style attribute in td tag
-  * dynamically changing the styles of the component based on properties
-  * @function tdStyleObj
-  */
-  protected get tdStyleObj () :Partial<CSSStyleDeclaration> {
+   * @description style object is passed to :style attribute in td tag
+   * dynamically changing the styles of the component based on properties
+   * @function tdStyleObj
+   */
+  protected get tdStyleObj (): Partial<CSSStyleDeclaration> {
     const controlProp = this.properties
     return {
-      textAlign: controlProp.TextAlign === 0 ? 'left' : controlProp.TextAlign === 2 ? 'right' : 'center'
+      textAlign:
+        controlProp.TextAlign === 0
+          ? 'left'
+          : controlProp.TextAlign === 2
+            ? 'right'
+            : 'center'
     }
   }
 
   /**
-  * @description watches changes in properties for Value
-  * @function ValueData
-  * @param oldVal previous properties data
-  * @param newVal  new/changed properties data
-  */
+   * @description watches changes in properties for Value
+   * @function ValueData
+   * @param oldVal previous properties data
+   * @param newVal  new/changed properties data
+   */
   @Watch('properties.Value', { deep: true })
-  ValueData (newVal:string, oldVal:string) {
-    if (this.properties.BoundColumn! > 0 && this.properties.BoundColumn! < this.extraDatas.RowSourceData!.length) {
+  ValueData (newVal: string, oldVal: string) {
+    if (
+      this.properties.BoundColumn! > 0 &&
+      this.properties.BoundColumn! < this.extraDatas.RowSourceData!.length
+    ) {
       let tempData = [...this.extraDatas.RowSourceData!]
       if (tempData![0][this.properties.BoundColumn! - 1] === newVal) {
         this.updateDataModel({ propertyName: 'Value', value: newVal })
@@ -200,32 +230,31 @@ export default class FDListBox extends Mixins(FdControlVue) {
   }
 
   /**
-  * @description watches changes in properties for MultiSelect
-  * @function multiSelectCheck
-  * @param oldVal previous properties data
-  * @param newVal  new/changed properties data
-  */
+   * @description watches changes in properties for MultiSelect
+   * @function multiSelectCheck
+   * @param oldVal previous properties data
+   * @param newVal  new/changed properties data
+   */
   @Watch('properties.MultiSelect', { deep: true })
-  multiSelectCheck (newVal:number, oldVal:number) {
+  multiSelectCheck (newVal: number, oldVal: number) {
     this.clearOptionBGColorAndChecked(this.tempEvent)
   }
 
   /**
-  * @description watches changes in properties for ListStyle
-  * @function listCheck
-  * @param oldVal previous properties data
-  * @param newVal  new/changed properties data
-  */
+   * @description watches changes in properties for ListStyle
+   * @function listCheck
+   * @param oldVal previous properties data
+   * @param newVal  new/changed properties data
+   */
   @Watch('properties.ListStyle', { deep: true })
-  listCheck (newVal:number, oldVal:number) {
+  listCheck (newVal: number, oldVal: number) {
     this.clearOptionBGColorAndChecked(this.tempEvent)
   }
 }
-
 </script>
 
 <style scoped>
-.listStyle{
+.listStyle {
   width: 200px;
   height: 200px;
   background-color: lightgray;
@@ -241,7 +270,7 @@ export default class FDListBox extends Mixins(FdControlVue) {
   box-shadow: -1px -1px grey;
 }
 .tr {
-  outline: none
+  outline: none;
 }
 .ul {
   display: grid;
@@ -288,7 +317,7 @@ export default class FDListBox extends Mixins(FdControlVue) {
   height: 100px;
   width: 300px;
   background-color: lightgray;
-  border:1px solid gray;
+  border: 1px solid gray;
 }
 .columnHeads {
   height: 19.2px;
@@ -301,6 +330,20 @@ export default class FDListBox extends Mixins(FdControlVue) {
   grid-template-columns: 100%;
 }
 .table-style {
-  width: 100px;
+  width: 100%;
+}
+.theadClass {
+  border-bottom: 1px solid;
+  white-space: nowrap;
+}
+.tdClass {
+  width: 15px;
+  border-right: 1px solid;
+}
+.tdClassIn {
+  width: 20px;
+}
+.inputClass {
+  margin: 0;
 }
 </style>

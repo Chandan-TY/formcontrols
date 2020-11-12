@@ -1,108 +1,137 @@
 <template>
-  <div class="custom-select" :tabindex="tabindex" :style="customSelectObj"
-   :title="properties.ControlTipText" >
-    <div class="combobox" :style="boxStyleObj" @click="selectedItem" @mousedown="controlEditMode">
-      <div :class="properties.SelectionMargin?'selectionDiv':''">
-        <span v-if="properties.SelectionMargin" class="selectionSpan" :style="[{background: properties.BackStyle ? properties.BackColor : 'transparent'}]" @click="setSelection"></span>
-        <textarea
-        ref="textareaRef"
-        :style="cssStyleProperty"
-        wrap="off"
-        :tabindex="properties.TabIndex"
-        :readonly="getDisableValue||properties.Style === 2"
-        @blur="handleBlur($event, textareaRef, hideSelectionDiv)"
-        @click="handleClick($event, textareaRef,hideSelectionDiv)"
-        @input="handleTextInput($event)"
-        :maxlength="properties.MaxLength!==0?properties.MaxLength:''"
-        class="text-box-design"
-        :value="
-          selectionData[0]
-        "
-        @dragstart="dragBehavior"
-      />
-
-      <div
-        ref="hideSelectionDiv"
-        @click="divHide($event, textareaRef)"
-        :style="divcssStyleProperty"
-        :title="properties.ControlTipText"
-        class="text-box-design"
-      >
-        {{
-          selectionData[0]
-        }}
-      </div>
-    <label ref="autoSizeTextarea" class="labelStyle" :class="[labelStyleObj]"></label>
-    </div>
-      <div class="selected" @click="enabledCheck" :style="selectedStyleObj"></div>
-      <div class="items" :class="{ selectHide: !open }" :style="itemsStyleObj">
-        <div class="listStyle" :title="properties.ControlTipText" >
-    <table
-      :style="tableStyleObj"
-      class="table-style"
+  <div
+    class="custom-select"
+    :tabindex="tabindex"
+    :style="customSelectObj"
+    :title="properties.ControlTipText"
+  >
+    <div
+      class="combobox"
+      :style="boxStyleObj"
+      @click="selectedItem"
+      @mousedown="controlEditMode"
     >
-      <thead
-        v-if="properties.ColumnHeads === true"
-        style="border-bottom:1px solid;white-space: nowrap;"
-      >
-        <tr>
-          <td :style="tdStyleObj"
-            v-if="properties.ListStyle === 1"
-            style="width:15px;border-right: 1px solid;"
-          ></td>
-          <template v-for="(a,columnIndex) in extraDatas.ColumnHeadsValues">
-              <!-- v-if="(columnIndex<properties.ColumnCount)" -->
-            <td
-              v-if="(columnIndex<properties.ColumnCount)"
-              :key="columnIndex"
-              :style="updateColHeads(columnIndex)"
-            >{{a}}</td>
-              <!-- :style="[tdStyleObj,{borderRight: (columnIndex<properties.ColumnCount-1)?'1px solid':'',width:(columnIndex==0 && properties.ColumnWidths!=='')?parseInt(properties.ColumnWidths)+'px':'auto',overflow:'hidden'}]" -->
-          </template>
-        </tr>
-      </thead>
-      <thead v-else></thead>
-      <tbody ref="style" class="table-body" :style="tableBodyObj" @click="open=false">
-        <tr
-          :tabindex="index"
-          class="tr"
-          v-for="(item,index) of tempArray"
-          :key="index"
-          @mouseenter="handleDrag"
-          @keydown="handleExtendArrowKeySelect"
-          @blur="clearMatchEntry"
-          @click="handleMultiSelect"
+      <div :class="properties.SelectionMargin ? 'selectionDiv' : ''">
+        <span
+          v-if="properties.SelectionMargin"
+          class="selectionSpan"
+          :style="selectionSpanObj"
+          @click="setSelection"
+        ></span>
+        <textarea
+          ref="textareaRef"
+          :style="cssStyleProperty"
+          wrap="off"
+          :tabindex="properties.TabIndex"
+          :readonly="getDisableValue || properties.Style === 2"
+          @blur="handleBlur($event, textareaRef, hideSelectionDiv)"
+          @click="handleClick($event, textareaRef, hideSelectionDiv)"
+          @input="handleTextInput($event)"
+          :maxlength="properties.MaxLength !== 0 ? properties.MaxLength : ''"
+          class="text-box-design"
+          :value="selectionData[0]"
+          @dragstart="dragBehavior"
+        />
+
+        <div
+          ref="hideSelectionDiv"
+          @click="divHide($event, textareaRef)"
+          :style="divcssStyleProperty"
+          :title="properties.ControlTipText"
+          class="text-box-design"
         >
-          <td :style="tdStyleObj"
-            style="width:10px"
-            v-if="(properties.ListStyle === 1 && properties.ColumnCount>0)"
-          >
-            <input
-              name="radio"
-              type="radio"
-              style="margin:0"
-            />
-          </td>
-          <td
-            class="column-item"
-            v-for="(i,index) in item"
-            :key="index"
-            :style="updateColumnWidths(index)"
-          >
-            <!-- :style="[tdStyleObj,{width:(index==0 && properties.ColumnWidths!=='')?parseInt(properties.ColumnWidths)+'px':'100px',overflow:'hidden'}]" -->
-            <template v-if="(index<properties.ColumnCount)">{{i}}</template>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
+          {{ selectionData[0] }}
+        </div>
+        <label
+          ref="autoSizeTextarea"
+          class="labelStyle"
+          :class="[labelStyleObj]"
+        ></label>
+      </div>
+      <div
+        class="selected"
+        @click="enabledCheck"
+        :style="selectedStyleObj"
+      ></div>
+      <div class="items" :class="{ selectHide: !open }" :style="itemsStyleObj">
+        <div class="listStyle" :title="properties.ControlTipText">
+          <table :style="tableStyleObj" class="table-style">
+            <thead v-if="properties.ColumnHeads === true" class="theadClass">
+              <tr>
+                <td
+                  :style="tdStyleObj"
+                  v-if="properties.ListStyle === 1"
+                  class="tdClass"
+                ></td>
+                <template
+                  v-for="(a, columnIndex) in extraDatas.ColumnHeadsValues"
+                >
+                  <td
+                    v-if="columnIndex < properties.ColumnCount"
+                    :key="columnIndex"
+                    :style="updateColHeads(columnIndex)"
+                  >
+                    {{ a }}
+                  </td>
+                </template>
+              </tr>
+            </thead>
+            <thead v-else></thead>
+            <tbody
+              ref="style"
+              class="table-body"
+              :style="tableBodyObj"
+              @click="open = false"
+            >
+              <tr
+                :tabindex="index"
+                class="tr"
+                v-for="(item, index) of tempArray"
+                :key="index"
+                @mouseenter="handleDrag"
+                @keydown="handleExtendArrowKeySelect"
+                @blur="clearMatchEntry"
+                @click="
+                  isRunMode || isEditMode ? handleMultiSelect($event) : ''
+                "
+              >
+                <td
+                  :style="tdStyleObj"
+                  class="tdClassIn"
+                  v-if="
+                    properties.ListStyle === 1 && properties.ColumnCount > 0
+                  "
+                >
+                  <input name="radio" type="radio" class="inputClass" />
+                </td>
+                <td
+                  class="column-item"
+                  v-for="(i, index) in item"
+                  :key="index"
+                  :style="updateColumnWidths(index)"
+                >
+                  <template v-if="index < properties.ColumnCount">{{
+                    i
+                  }}</template>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop, Mixins, Watch, Ref } from 'vue-property-decorator'
+import {
+  Component,
+  Vue,
+  Prop,
+  Mixins,
+  Watch,
+  Ref
+} from 'vue-property-decorator'
 import FdControlVue from '@/api/abstract/FormDesigner/FdControlVue'
 import { Mutation, Action, Getter } from 'vuex-class'
 
@@ -110,194 +139,223 @@ import { Mutation, Action, Getter } from 'vuex-class'
   name: 'FDComboBox'
 })
 export default class FDComboBox extends Mixins(FdControlVue) {
-  $el!: HTMLDivElement
-  @Ref('textareaRef') textareaRef: HTMLTextAreaElement
-  @Ref('autoSizeTextarea') readonly autoSizeTextarea! : HTMLLabelElement
-  @Ref('hideSelectionDiv') readonly hideSelectionDiv! : HTMLDivElement
+  $el!: HTMLDivElement;
+  @Ref('textareaRef') textareaRef: HTMLTextAreaElement;
+  @Ref('autoSizeTextarea') readonly autoSizeTextarea!: HTMLLabelElement;
+  @Ref('hideSelectionDiv') readonly hideSelectionDiv!: HTMLDivElement;
 
-   private options = ['hello'];
-   private tabindex = 0;
-   tempArray: Array<Array<string>> = []
-   open: boolean = false;
-   isVisible: boolean = false
-   selected = this.options.length > 0 ? '' : null;
-   //  matchIndex: number = 0;
-   multiselect = [];
-   //  selectionData: Array<string> = [];
-   selectionStart: number = 0;
-   selectionEnd: number = 0;
-   //  matchEntry: Array<number> = [];
-   tempInputValue: string = ''
+  private options = ['hello'];
+  private tabindex = 0;
+  tempArray: Array<Array<string>> = [];
+  open: boolean = false;
+  isVisible: boolean = false;
+  selected = this.options.length > 0 ? '' : null;
+  //  matchIndex: number = 0;
+  multiselect = [];
+  //  selectionData: Array<string> = [];
+  selectionStart: number = 0;
+  selectionEnd: number = 0;
+  //  matchEntry: Array<number> = [];
+  tempInputValue: string = '';
 
-   get getDisableValue () {
-     if (this.isRunMode || this.isEditMode) {
-       return (
-         this.properties.Enabled === false
-       )
-     } else {
-       return true
-     }
-   }
+  get getDisableValue () {
+    if (this.isRunMode || this.isEditMode) {
+      return this.properties.Enabled === false
+    } else {
+      return true
+    }
+  }
 
-   handleTextInput (e: Event) {
-     console.log('handleTextInput', e)
-     const tempEvent = e.target as HTMLTextAreaElement
-     this.tempInputValue = tempEvent!.value
-   }
-   setSelection () {
-     const setSelectionRef = this.$refs['textareaRef'] as HTMLTextAreaElement
-     setSelectionRef.focus()
-     setSelectionRef.select()
-   }
-   // MatchEntryComplete
-   clearMatchEntry () {
-     this.updateDataModelExtraData({ propertyName: 'MatchData', value: '' })
-   }
+  handleTextInput (e: Event) {
+    console.log('handleTextInput', e)
+    const tempEvent = e.target as HTMLTextAreaElement
+    this.tempInputValue = tempEvent!.value
+  }
+  setSelection () {
+    const setSelectionRef = this.$refs['textareaRef'] as HTMLTextAreaElement
+    setSelectionRef.focus()
+    setSelectionRef.select()
+  }
+  // MatchEntryComplete
+  clearMatchEntry () {
+    this.updateDataModelExtraData({ propertyName: 'MatchData', value: '' })
+  }
 
-   checkMaxLength () {
-     if (this.properties.MaxLength === 0) {} else {
-       return this.properties.MaxLength
-     }
-   }
+  checkMaxLength () {
+    if (this.properties.MaxLength === 0) {
+    } else {
+      return this.properties.MaxLength
+    }
+  }
 
-   protected get tableBodyObj () :Partial<CSSStyleDeclaration> {
-     const controlProp = this.properties
-     return {
-       width: `${controlProp.Width}px !important`
-     }
-   }
+  protected get seledctionSpanObj (): Partial<CSSStyleDeclaration> {
+    const controlProp = this.properties
+    return {
+      background: controlProp.BackStyle ? controlProp.BackColor : 'transparent'
+    }
+  }
+  protected get tableBodyObj (): Partial<CSSStyleDeclaration> {
+    const controlProp = this.properties
+    return {
+      width: `${controlProp.Width}px !important`
+    }
+  }
 
-   /**
-  * @description  show selection when TextBox loses focus
-  * when HideSelection is false selection is show if user selects any text
-  * @function handleBlur
-  * @event blur
-  *
-  */
-   handleBlur (event: TextEvent, textareaRef: HTMLTextAreaElement, hideSelectionDiv: HTMLDivElement) {
-     console.log('HandleBlur Event Check', event)
-     if (this.properties.EnterFieldBehavior === 1) {
-       debugger
-       const eventTarget = event.target as HTMLTextAreaElement
-       let tempField = this.tempInputValue.slice(eventTarget.selectionStart - eventTarget.selectionEnd)
-       this.selectionStart = eventTarget.selectionStart
-       this.selectionEnd = eventTarget.selectionEnd
-       console.log('Temp Fiels', tempField)
-     }
-     if (!this.properties.HideSelection && textareaRef) {
-       const eventTarget = event.target as HTMLTextAreaElement
-       console.log('event Targer', event)
-       hideSelectionDiv.style.display = 'block'
-       hideSelectionDiv.style.height = this.properties.Height! + 2 + 'px'
-       hideSelectionDiv.style.width = this.properties.Width! + 2 + 'px'
-       textareaRef.style.display = 'none'
-       let textarea = eventTarget.value
-       let firstPart =
-    textarea.slice(0, eventTarget.selectionEnd) +
-    '</span>' +
-    textarea.slice(eventTarget.selectionEnd + Math.abs(0))
-       let text =
-    firstPart.slice(0, eventTarget.selectionStart) +
-    "<span style='background-color:lightblue'>" +
-    firstPart.slice(eventTarget.selectionStart + Math.abs(0))
-       hideSelectionDiv.innerHTML = text
-       console.log('Fi9rst Part', firstPart)
-     }
-     if (this.properties.MatchRequired && textareaRef) {
-       const arrayCheck = this.extraDatas.RowSourceData!.findIndex(element => element[0] === this.tempInputValue)
-       if (arrayCheck === -1) {
-         const textareaRef = this.$refs['textareaRef'] as HTMLTextAreaElement
-         textareaRef.focus()
-       }
-     }
-   }
-   /**
-  *@description hides the div when focus comes to textarea when hideSelection
-  * properties is false
-  * @function handleClick
-  * @param event its of FocusEvent
-  * @event click
- */
-   handleClick (event: TextEvent, textareaRef: HTMLTextAreaElement, hideSelectionDiv:HTMLDivElement) {
-     console.log('handleClick Event check', event)
-     if (!this.properties.HideSelection) {
-       hideSelectionDiv.style.display = 'none'
-     }
-     if (this.properties.EnterFieldBehavior === 0) {
-       const textAreaRef = this.$refs['textareaRef'] as HTMLTextAreaElement
-       textAreaRef.focus()
-       textAreaRef.select()
-     } else if (this.properties.EnterFieldBehavior === 1) {
-     }
-   }
-   /**
-  * @description hides div instead of textarea when hideSelection is false
-  * when hideSelection properties is true textarea is shown
-  * when hideSelection properties is false div is shown
-  * @function divHide
-  * @param event its of type MouseEvent
-  * @event click
-  */
-   divHide (event: MouseEvent, textareaRef: HTMLTextAreaElement) {
-     console.log('HideDiv', event);
-     (event.target as HTMLDivElement).style.display = 'none'
-     textareaRef.style.display = 'block'
-     if ((event.target as HTMLDivElement).tagName === 'SPAN' && (event.target as HTMLDivElement).parentNode!.nodeName === 'DIV') {
-       ((event.target as HTMLDivElement).parentNode as HTMLElement).style.display = 'none'
-     }
-     textareaRef.focus()
-     textareaRef.selectionStart = textareaRef.selectionEnd
-   }
-   /**
-  * @description dragBehavior - if true when dragging
-  *  if false the cursor remains in same place
-  * @function dragBehavior
-  * @param event its of type KeyboardEvent
-  * @event dragStart
-  */
-   dragBehavior (e:Event) {
-     if (this.properties.DragBehavior) {
-       return true
-     }
-     e.preventDefault()
-   }
+  /**
+   * @description  show selection when TextBox loses focus
+   * when HideSelection is false selection is show if user selects any text
+   * @function handleBlur
+   * @event blur
+   *
+   */
+  handleBlur (
+    event: TextEvent,
+    textareaRef: HTMLTextAreaElement,
+    hideSelectionDiv: HTMLDivElement
+  ) {
+    console.log('HandleBlur Event Check', event)
+    if (this.properties.EnterFieldBehavior === 1) {
+      debugger
+      const eventTarget = event.target as HTMLTextAreaElement
+      let tempField = this.tempInputValue.slice(
+        eventTarget.selectionStart - eventTarget.selectionEnd
+      )
+      this.selectionStart = eventTarget.selectionStart
+      this.selectionEnd = eventTarget.selectionEnd
+      console.log('Temp Fiels', tempField)
+    }
+    if (!this.properties.HideSelection && textareaRef) {
+      const eventTarget = event.target as HTMLTextAreaElement
+      console.log('event Targer', event)
+      hideSelectionDiv.style.display = 'block'
+      hideSelectionDiv.style.height = this.properties.Height! + 2 + 'px'
+      hideSelectionDiv.style.width = this.properties.Width! + 2 + 'px'
+      textareaRef.style.display = 'none'
+      let textarea = eventTarget.value
+      let firstPart =
+        textarea.slice(0, eventTarget.selectionEnd) +
+        '</span>' +
+        textarea.slice(eventTarget.selectionEnd + Math.abs(0))
+      let text =
+        firstPart.slice(0, eventTarget.selectionStart) +
+        "<span style='background-color:lightblue'>" +
+        firstPart.slice(eventTarget.selectionStart + Math.abs(0))
+      hideSelectionDiv.innerHTML = text
+      console.log('Fi9rst Part', firstPart)
+    }
+    if (this.properties.MatchRequired && textareaRef) {
+      const arrayCheck = this.extraDatas.RowSourceData!.findIndex(
+        (element) => element[0] === this.tempInputValue
+      )
+      if (arrayCheck === -1) {
+        const textareaRef = this.$refs['textareaRef'] as HTMLTextAreaElement
+        textareaRef.focus()
+      }
+    }
+  }
+  /**
+   *@description hides the div when focus comes to textarea when hideSelection
+   * properties is false
+   * @function handleClick
+   * @param event its of FocusEvent
+   * @event click
+   */
+  handleClick (
+    event: TextEvent,
+    textareaRef: HTMLTextAreaElement,
+    hideSelectionDiv: HTMLDivElement
+  ) {
+    console.log('handleClick Event check', event)
+    if (!this.properties.HideSelection) {
+      hideSelectionDiv.style.display = 'none'
+    }
+    if (this.properties.EnterFieldBehavior === 0) {
+      const textAreaRef = this.$refs['textareaRef'] as HTMLTextAreaElement
+      textAreaRef.focus()
+      textAreaRef.select()
+    } else if (this.properties.EnterFieldBehavior === 1) {
+    }
+  }
+  /**
+   * @description hides div instead of textarea when hideSelection is false
+   * when hideSelection properties is true textarea is shown
+   * when hideSelection properties is false div is shown
+   * @function divHide
+   * @param event its of type MouseEvent
+   * @event click
+   */
+  divHide (event: MouseEvent, textareaRef: HTMLTextAreaElement) {
+    console.log('HideDiv', event);
+    (event.target as HTMLDivElement).style.display = 'none'
+    textareaRef.style.display = 'block'
+    if (
+      (event.target as HTMLDivElement).tagName === 'SPAN' &&
+      (event.target as HTMLDivElement).parentNode!.nodeName === 'DIV'
+    ) {
+      ((event.target as HTMLDivElement)
+        .parentNode as HTMLElement).style.display = 'none'
+    }
+    textareaRef.focus()
+    textareaRef.selectionStart = textareaRef.selectionEnd
+  }
+  /**
+   * @description dragBehavior - if true when dragging
+   *  if false the cursor remains in same place
+   * @function dragBehavior
+   * @param event its of type KeyboardEvent
+   * @event dragStart
+   */
+  dragBehavior (e: Event) {
+    if (this.properties.DragBehavior) {
+      return true
+    }
+    e.preventDefault()
+  }
 
   /**
    * @override
    */
   @Watch('properties.AutoSize', { deep: true })
-   updateAutoSize (newVal:boolean, oldVal:boolean) {
-     if (this.properties.AutoSize === true) {
-       debugger
-       this.updateDataModel({ propertyName: 'SelectionMargin', value: false })
-       this.$nextTick(() => {
-         const textareaRef: HTMLTextAreaElement = this.textareaRef
-         // replication of stype attribute to Label tag for autoSize property to work
-         let tempLabel: HTMLLabelElement = this.autoSizeTextarea
-         tempLabel.style.display = 'inline'
-         tempLabel.style.fontStyle = textareaRef.style.fontStyle
-         tempLabel.style.fontSize = parseInt(textareaRef.style.fontSize) + 'px'
-         tempLabel.style.whiteSpace = textareaRef.style.whiteSpace
-         tempLabel.style.wordBreak = textareaRef.style.wordBreak
-         tempLabel.style.fontWeight = textareaRef.style.fontWeight
-         tempLabel.style.width = textareaRef.style.width
-         tempLabel.style.height = textareaRef.style.height
-         tempLabel.innerText = textareaRef.value
-         this.updateDataModel({ propertyName: 'Width', value: tempLabel.offsetWidth + 5 })
-         this.updateDataModel({ propertyName: 'Height', value: tempLabel.offsetHeight + 5 })
-         tempLabel.innerText = ''
-         tempLabel.style.display = 'none'
-         this.selectionData[0] = this.tempInputValue
-       })
-     }
-   }
-
-  protected get tableStyleObj () :Partial<CSSStyleDeclaration> {
-    const controlProp = this.properties
-    const font: font = controlProp.Font ? controlProp.Font : {
-      FontName: 'Arial',
-      FontSize: 10
+  updateAutoSize (newVal: boolean, oldVal: boolean) {
+    if (this.properties.AutoSize === true) {
+      debugger
+      this.updateDataModel({ propertyName: 'SelectionMargin', value: false })
+      this.$nextTick(() => {
+        const textareaRef: HTMLTextAreaElement = this.textareaRef
+        // replication of stype attribute to Label tag for autoSize property to work
+        let tempLabel: HTMLLabelElement = this.autoSizeTextarea
+        tempLabel.style.display = 'inline'
+        tempLabel.style.fontStyle = textareaRef.style.fontStyle
+        tempLabel.style.fontSize = parseInt(textareaRef.style.fontSize) + 'px'
+        tempLabel.style.whiteSpace = textareaRef.style.whiteSpace
+        tempLabel.style.wordBreak = textareaRef.style.wordBreak
+        tempLabel.style.fontWeight = textareaRef.style.fontWeight
+        tempLabel.style.width = textareaRef.style.width
+        tempLabel.style.height = textareaRef.style.height
+        tempLabel.innerText = textareaRef.value
+        this.updateDataModel({
+          propertyName: 'Width',
+          value: tempLabel.offsetWidth + 5
+        })
+        this.updateDataModel({
+          propertyName: 'Height',
+          value: tempLabel.offsetHeight + 5
+        })
+        tempLabel.innerText = ''
+        tempLabel.style.display = 'none'
+        this.selectionData[0] = this.tempInputValue
+      })
     }
+  }
+
+  protected get tableStyleObj (): Partial<CSSStyleDeclaration> {
+    const controlProp = this.properties
+    const font: font = controlProp.Font
+      ? controlProp.Font
+      : {
+        FontName: 'Arial',
+        FontSize: 10
+      }
     return {
       borderCollapse: 'collapse',
       tableLayout: 'fixed',
@@ -306,18 +364,32 @@ export default class FDComboBox extends Mixins(FdControlVue) {
       fontFamily: font.FontStyle ? font.FontStyle : font.FontName,
       fontSize: `${font.FontSize}px`,
       fontStyle: font.FontItalic ? 'italic' : '',
-      textDecoration: (font.FontStrikethrough === true && font.FontUnderline === true) ? 'underline line-through' : font.FontUnderline ? 'underline' : font.FontStrikethrough ? 'line-through' : '',
+      textDecoration:
+        font.FontStrikethrough === true && font.FontUnderline === true
+          ? 'underline line-through'
+          : font.FontUnderline
+            ? 'underline'
+            : font.FontStrikethrough
+              ? 'line-through'
+              : '',
       fontWeight: font.FontBold ? 'bold' : '',
-      width: (controlProp.ColumnWidths === '') ? `${controlProp.Width}px` : (`${controlProp.Width}px` + parseInt(controlProp.ColumnWidths!)) + 'px'
+      width:
+        controlProp.ColumnWidths === ''
+          ? `${controlProp.Width}px`
+          : `${controlProp.Width}px` +
+            parseInt(controlProp.ColumnWidths!) +
+            'px'
     }
   }
 
-  protected get cssStyleProperty () :Partial<CSSStyleDeclaration> {
+  protected get cssStyleProperty (): Partial<CSSStyleDeclaration> {
     const controlProp = this.properties
-    const font: font = controlProp.Font ? controlProp.Font : {
-      FontName: 'Arial',
-      FontSize: 10
-    }
+    const font: font = controlProp.Font
+      ? controlProp.Font
+      : {
+        FontName: 'Arial',
+        FontSize: 10
+      }
     return {
       height: `${controlProp.Height}px`,
       width: `${controlProp.Width}px`,
@@ -335,22 +407,27 @@ export default class FDComboBox extends Mixins(FdControlVue) {
       fontWeight: font.FontBold ? 'bold' : '',
       background: controlProp.BackStyle ? controlProp.BackColor : 'transparent',
       color: controlProp.ForeColor
-
     }
   }
   /**
-  * @description style object is passed to :style attribute in div tag
-  * dynamically changing the styles of the component based on cssStyleProperty of
-  * textarea
-  * @function divcssStyleProperty
-  *
-  */
+   * @description style object is passed to :style attribute in div tag
+   * dynamically changing the styles of the component based on cssStyleProperty of
+   * textarea
+   * @function divcssStyleProperty
+   *
+   */
   get divcssStyleProperty () {
     const styleObject = this.cssStyleProperty
-    return { ...styleObject, display: 'none', paddingTop: '2px', paddingLeft: '2px', whiteSpace: 'break-spaces' }
+    return {
+      ...styleObject,
+      display: 'none',
+      paddingTop: '2px',
+      paddingLeft: '2px',
+      whiteSpace: 'break-spaces'
+    }
   }
 
-  protected get customSelectObj () :Partial<CSSStyleDeclaration> {
+  protected get customSelectObj (): Partial<CSSStyleDeclaration> {
     const controlProp = this.properties
     let display = ''
     if (this.isRunMode) {
@@ -362,15 +439,23 @@ export default class FDComboBox extends Mixins(FdControlVue) {
       display: display
     }
   }
-  protected get tdStyleObj () :Partial<CSSStyleDeclaration> {
+  protected get tdStyleObj (): Partial<CSSStyleDeclaration> {
     const controlProp = this.properties
     return {
-      textAlign: controlProp.TextAlign === 0 ? 'left' : controlProp.TextAlign === 2 ? 'right' : 'center'
+      textAlign:
+        controlProp.TextAlign === 0
+          ? 'left'
+          : controlProp.TextAlign === 2
+            ? 'right'
+            : 'center'
     }
   }
   @Watch('properties.Value', { deep: true })
-  ValueData (newVal:string, oldVal:string) {
-    if (this.properties.BoundColumn! > 0 && this.properties.BoundColumn! < this.extraDatas.RowSourceData!.length) {
+  ValueData (newVal: string, oldVal: string) {
+    if (
+      this.properties.BoundColumn! > 0 &&
+      this.properties.BoundColumn! < this.extraDatas.RowSourceData!.length
+    ) {
       let tempData = [...this.extraDatas.RowSourceData!]
       if (tempData![0][this.properties.BoundColumn! - 1] === newVal) {
         this.updateDataModel({ propertyName: 'Value', value: newVal })
@@ -383,14 +468,14 @@ export default class FDComboBox extends Mixins(FdControlVue) {
   }
 
   @Watch('properties.ListRows', { deep: true })
-  ListRowsValue (newVal:number, oldVal:number) {
+  ListRowsValue (newVal: number, oldVal: number) {
     this.tempArray = []
     for (let i = 0; i < newVal; i++) {
       this.tempArray[i] = this.extraDatas.RowSourceData![i]
     }
   }
   @Watch('properties.SelectionMargin', { deep: true })
-  checkSelectionMargin (newVal:boolean, oldVal:boolean) {
+  checkSelectionMargin (newVal: boolean, oldVal: boolean) {
     this.selectionData[0] = this.tempInputValue
   }
   mounted () {
@@ -426,21 +511,21 @@ export default class FDComboBox extends Mixins(FdControlVue) {
   changeDropButtonStyle () {
     if (this.properties.DropButtonStyle === 1) {
       return `url('https://img.icons8.com/android/24/000000/sort-down.png')`
-    } else if (
-      this.properties.DropButtonStyle === 2
-    ) {
+    } else if (this.properties.DropButtonStyle === 2) {
       return `url('https://img.icons8.com/ios-glyphs/30/000000/ellipsis.png')`
     } else if (this.properties.DropButtonStyle === 3) {
       return `url('https://img.icons8.com/android/24/000000/minus.png')`
     }
   }
 
-  protected get labelStyleObj () :Partial<CSSStyleDeclaration> {
+  protected get labelStyleObj (): Partial<CSSStyleDeclaration> {
     const controlProp = this.properties
-    const font: font = controlProp.Font ? controlProp.Font : {
-      FontName: 'Arial',
-      FontSize: 10
-    }
+    const font: font = controlProp.Font
+      ? controlProp.Font
+      : {
+        FontName: 'Arial',
+        FontSize: 10
+      }
     return {
       fontFamily: font.FontStyle ? font.FontStyle : font.FontName,
       fontSize: `${font.FontSize}px`,
@@ -456,12 +541,14 @@ export default class FDComboBox extends Mixins(FdControlVue) {
       fontWeight: font.FontBold ? 'bold' : ''
     }
   }
-  protected get inputStyleObj () :Partial<CSSStyleDeclaration> {
+  protected get inputStyleObj (): Partial<CSSStyleDeclaration> {
     const controlProp = this.properties
-    const font: font = controlProp.Font ? controlProp.Font : {
-      FontName: 'Arial',
-      FontSize: 10
-    }
+    const font: font = controlProp.Font
+      ? controlProp.Font
+      : {
+        FontName: 'Arial',
+        FontSize: 10
+      }
     return {
       outline: 'none',
       border: 'none',
@@ -477,41 +564,57 @@ export default class FDComboBox extends Mixins(FdControlVue) {
               ? 'line-through'
               : '',
       fontWeight: font.FontBold ? 'bold' : '',
-      cursor: (controlProp.MousePointer !== 0 || controlProp.MouseIcon !== '') ? this.getMouseCursorData : 'default',
+      cursor:
+        controlProp.MousePointer !== 0 || controlProp.MouseIcon !== ''
+          ? this.getMouseCursorData
+          : 'default',
       color: controlProp.ForeColor,
       width: `${controlProp.Width!}px`,
       background: controlProp.BackStyle ? controlProp.BackColor : 'transparent',
       height: `${controlProp.Height}px`
-
     }
   }
-  protected get boxStyleObj () :Partial<CSSStyleDeclaration> {
+  protected get boxStyleObj (): Partial<CSSStyleDeclaration> {
     const controlProp = this.properties
     return {
-      border: controlProp.BorderStyle === 0 ? 'none' : '1px solid ' + controlProp.BorderColor,
+      border:
+        controlProp.BorderStyle === 0
+          ? 'none'
+          : '1px solid ' + controlProp.BorderColor,
       width: `${controlProp.Width! + 25}px`,
-      cursor: (controlProp.MousePointer !== 0 || controlProp.MouseIcon !== '') ? this.getMouseCursorData : 'default',
-      boxShadow: controlProp.SpecialEffect ? this.getSpecialEffectData : '-1px -1px lightgray',
+      cursor:
+        controlProp.MousePointer !== 0 || controlProp.MouseIcon !== ''
+          ? this.getMouseCursorData
+          : 'default',
+      boxShadow: controlProp.SpecialEffect
+        ? this.getSpecialEffectData
+        : '-1px -1px lightgray',
       display: 'grid',
       gridTemplateColumns: `${controlProp.Width! + 5}px` + ' 20px'
-
     }
   }
 
-  protected get itemsStyleObj () :Partial<CSSStyleDeclaration> {
+  protected get itemsStyleObj (): Partial<CSSStyleDeclaration> {
     const controlProp = this.properties
     return {
       width: `${controlProp.ListWidth}px`
     }
   }
-  protected get selectedStyleObj () :Partial<CSSStyleDeclaration> {
+  protected get selectedStyleObj (): Partial<CSSStyleDeclaration> {
     const controlProp = this.properties
     return {
-      display: controlProp.ShowDropButtonWhen === 2 ? 'block' : this.expandWidth(),
-      backgroundImage: controlProp.DropButtonStyle === 0 ? 'none' : this.changeDropButtonStyle(),
-      backgroundPosition: controlProp.DropButtonStyle === 1 ? 'center' : 'bottom',
-      cursor: (controlProp.MousePointer !== 0 || controlProp.MouseIcon !== '') ? this.getMouseCursorData : 'default'
-
+      display:
+        controlProp.ShowDropButtonWhen === 2 ? 'block' : this.expandWidth(),
+      backgroundImage:
+        controlProp.DropButtonStyle === 0
+          ? 'none'
+          : this.changeDropButtonStyle(),
+      backgroundPosition:
+        controlProp.DropButtonStyle === 1 ? 'center' : 'bottom',
+      cursor:
+        controlProp.MousePointer !== 0 || controlProp.MouseIcon !== ''
+          ? this.getMouseCursorData
+          : 'default'
     }
   }
   enabledCheck () {
@@ -540,10 +643,10 @@ export default class FDComboBox extends Mixins(FdControlVue) {
   height: 47px;
   /* line-height: 10px; specify the drop down height */
 }
-.selectionSpan{
+.selectionSpan {
   width: 5px;
 }
-.selectionDiv{
+.selectionDiv {
   display: grid;
   grid-template-columns: 5px auto;
 }
@@ -597,7 +700,7 @@ export default class FDComboBox extends Mixins(FdControlVue) {
   display: grid;
   grid-template-columns: 100%;
 }
-.listStyle{
+.listStyle {
   width: 100%;
   height: 100%;
   background-color: lightgray;
@@ -613,10 +716,10 @@ export default class FDComboBox extends Mixins(FdControlVue) {
   box-shadow: -1px -1px grey;
 }
 .tr {
-  outline: none
+  outline: none;
 }
 .tr:hover {
-  background-color: rgb(75, 161, 214);
+  background-color: rgb(59, 122, 231);
 }
 .ul {
   display: grid;
@@ -666,7 +769,7 @@ export default class FDComboBox extends Mixins(FdControlVue) {
   height: 100px;
   width: 300px;
   background-color: lightgray;
-  border:1px solid gray;
+  border: 1px solid gray;
 }
 .columnHeads {
   height: 19.2px;
@@ -695,6 +798,20 @@ export default class FDComboBox extends Mixins(FdControlVue) {
   background: lightblue;
 }
 .table-style {
-  width: 100px;
+  width: 100%;
+}
+.theadClass {
+  border-bottom: 1px solid;
+  white-space: nowrap;
+}
+.tdClass {
+  width: 15px;
+  border-right: 1px solid;
+}
+.tdClassIn {
+  width: 10px;
+}
+.inputClass {
+  margin: 0;
 }
 </style>

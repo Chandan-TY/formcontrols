@@ -1,7 +1,14 @@
 <template>
   <div>
-    <div class="buttonIn grid-design" >
-      <input type="text" id="enter" :name="name" class="color-input"  v-on="$listeners"  v-model="emitChange"/>
+    <div class="buttonIn grid-design">
+      <input
+        type="text"
+        id="enter"
+        :name="name"
+        class="color-input"
+        v-on="$listeners"
+        v-model="emitChange"
+      />
       <button
         id="clear"
         :style="colorPalettesStyleObj"
@@ -15,7 +22,6 @@
       <div class="outer-border">
         <div
           class="tabs"
-          style="margin: 0px 0px;float:right;margin-right:0px;outline:none"
           ref="colorPalleteRef"
           tabindex="1"
           v-if="isVisible"
@@ -23,29 +29,47 @@
           @blur="hideColorPallete"
         >
           <div class="tab">
-            <input class="tabinput" type="radio" id="color-1" name="tab-color-1" checked />
+            <input
+              class="tabinput"
+              type="radio"
+              id="color-1"
+              name="tab-color-1"
+              checked
+            />
             <label for="color-1">Palette</label>
             <div class="content">
-              <div class="grid-container" >
+              <div class="grid-container">
                 <div
                   class="grid-item1"
-                  v-for="(color,i) in colors" :key="i"
+                  v-for="(color, i) in colors"
+                  :key="i"
                   @click="selectColor(color)"
-                  :style="{backgroundColor:color.value}"
+                  :style="{ backgroundColor: color.value }"
                 ></div>
               </div>
             </div>
           </div>
           <div class="tab">
-            <input class="tabinput" type="radio" id="color-2" name="tab-color-1" />
+            <input
+              class="tabinput"
+              type="radio"
+              id="color-2"
+              name="tab-color-1"
+            />
             <label for="color-2">System</label>
             <div class="content">
               <div class="gridcontainer">
                 <div
-                 class="gridcontainerStyle"
-                 v-for="(color,i) in colorSystem" :key="i"
-                @click="selectColor(color)">
-                  <span class="griditem1" :style="{backgroundColor:color.value}"></span>{{color.displayName}}
+                  class="gridcontainerStyle"
+                  v-for="(color, i) in colorSystem"
+                  :key="i"
+                  @click="selectColor(color)"
+                >
+                  <span
+                    class="griditem1"
+                    :style="{ backgroundColor: color.value }"
+                  ></span
+                  >{{ color.displayName }}
                 </div>
               </div>
             </div>
@@ -62,18 +86,18 @@ import { colorSystem } from '../../../models/colorSystem'
 import { Component, Prop, Vue, Emit, Ref } from 'vue-property-decorator'
 import { tableData } from '../../molecules/FDPropertyTableItem/index.vue'
 interface IColors {
-  name: string,
-  value: string
+  name: string;
+  value: string;
 }
 interface IColorSystem {
-  name: string,
-  value: string,
-  displayName: string
+  name: string;
+  value: string;
+  displayName: string;
 }
 interface ISelectedValue {
-  name: string,
-  value: string,
-  displayName: string
+  name: string;
+  value: string;
+  displayName: string;
 }
 @Component({
   name: 'FDColorPalettes'
@@ -81,15 +105,13 @@ interface ISelectedValue {
 export default class FDColorPalettes extends Vue {
   @Prop() value: ISelectedValue;
   @Prop() name: string;
-  @Ref('colorPalleteRef') readonly colorPalleteRef! : HTMLDivElement
+  @Ref('colorPalleteRef') readonly colorPalleteRef!: HTMLDivElement;
   constructor () {
     super()
     this.colorDataValue = this.value
   }
   private isVisible = false;
-  colorDataValue: ISelectedValue = { name: '',
-    value: '',
-    displayName: '' };
+  colorDataValue: ISelectedValue = { name: '', value: '', displayName: '' };
   colors: Array<IColors> = colors;
   colorSystem: Array<IColorSystem> = colorSystem;
   selectedValue: ISelectedValue = this.colorDataValue;
@@ -113,7 +135,9 @@ export default class FDColorPalettes extends Vue {
   }
   get emitChange () {
     this.emitColorPalette(this.selectedValue.value, this.name)
-    return this.selectedValue.name !== undefined ? this.selectedValue.name : this.selectedValue
+    return this.selectedValue.name !== undefined
+      ? this.selectedValue.name
+      : this.selectedValue
   }
   @Emit('colorPalette')
   emitColorPalette (selectedValue: string, name: string) {
@@ -167,6 +191,10 @@ grid-design1 {
   align-self: right;
   z-index: 400;
   right: 0px;
+  margin: 0px 0px;
+  float: right;
+  margin-right: 0px;
+  outline: none;
 }
 .tab {
   float: left;
@@ -232,9 +260,9 @@ grid-design1 {
   text-align: center;
   margin: 1px;
   display: inline-block;
-  cursor:none;
+  cursor: none;
 }
 .gridcontainerStyle {
-  cursor:'context-menu'
+  cursor: "context-menu";
 }
 </style>

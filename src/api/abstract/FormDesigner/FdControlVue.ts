@@ -520,7 +520,7 @@ export default class FdControlVue extends Vue {
    return {
      textAlign: controlProp.TextAlign === 0 ? 'left' : controlProp.TextAlign === 2 ? 'right' : 'center',
      borderRight: (index < controlProp.ColumnCount! - 1) ? '1px solid' : '',
-     width: (updateColWidth[index]) ? parseInt(updateColWidth[index]) + 'px' : 'auto',
+     width: (updateColWidth[index]) ? parseInt(updateColWidth[index]) + 'px' : '100px',
      overflow: 'hidden'
    }
  }
@@ -582,12 +582,14 @@ topIndexCheck (newVal:number, oldVal:number) {
  *
  */
 handleMultiSelect (e: MouseEvent) {
+  console.log('Selected Value NOW', e)
   const targetElement = (e.target as HTMLTableElement)
   const tempPath = e.composedPath()
   targetElement.focus()
   let data = targetElement.innerText
   let splitData = data.replace(/\t/g, ' ').split(' ')
   this.selectionData = splitData
+  console.log('Selectioon Data', this.selectionData[0])
   if (this.properties.Enabled && this.properties.Locked === false) {
     if (this.properties.MultiSelect === 0) {
       if (this.properties.ControlSource !== '') {
@@ -656,7 +658,8 @@ handleMultiSelect (e: MouseEvent) {
                 this.properties.ListStyle === 1 &&
              !tempNode.checked
               ) {
-                tempNode.checked = !tempNode.checked
+                // tempNode.checked = !tempNode.checked
+                tempNode.checked = true
               }
             }
             break

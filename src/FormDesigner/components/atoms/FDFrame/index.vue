@@ -24,13 +24,22 @@
       :top="top"
       ref="containerRef"
       @closeMenu="closeMenu"
-      @openMenu="(e, parentID, controlID)=>showContextMenu(e, parentID, controlID)"
+      @openMenu="
+        (e, parentID, controlID) => showContextMenu(e, parentID, controlID)
+      "
     />
   </fieldset>
 </template>
 
 <script lang="ts">
-import { Component, Prop, Model, Emit, Ref, Watch } from 'vue-property-decorator'
+import {
+  Component,
+  Prop,
+  Model,
+  Emit,
+  Ref,
+  Watch
+} from 'vue-property-decorator'
 import FdControlVue from '@/api/abstract/FormDesigner/FdControlVue'
 import {
   IupdateControl,
@@ -52,7 +61,7 @@ import { controlProperties } from '@/FormDesigner/controls-properties'
 })
 export default class FDFrame extends FdContainerVue {
   @Ref('containerRef') readonly containerRef!: Container;
-  @Prop({ required: true, type: Boolean }) public readonly isEditMode : boolean
+  @Prop({ required: true, type: Boolean }) public readonly isEditMode: boolean;
   get dragSelectorStyle () {
     return {
       height: `${this.data.properties.Height}px`,
@@ -193,7 +202,8 @@ export default class FDFrame extends FdContainerVue {
   protected get legendCssStyleProperty (): Partial<CSSStyleDeclaration> {
     const controlProp = this.data.properties
     return {
-      color: controlProp.Enabled === true ? controlProp.ForeColor : this.getEnabled,
+      color:
+        controlProp.Enabled === true ? controlProp.ForeColor : this.getEnabled,
       background: controlProp.BackColor
     }
   }

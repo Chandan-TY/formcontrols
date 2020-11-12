@@ -1,11 +1,6 @@
 <template>
-  <div
-    id="popup1"
-    class="overlay"
-    :style="tabOrderStyleObj"
-    >
-    <div class="outer-taborder-div popup"
-    :style="tabOrderDialogInitialStyle">
+  <div id="popup1" class="overlay" :style="tabOrderStyleObj">
+    <div class="outer-taborder-div popup" :style="tabOrderDialogInitialStyle">
       <div class="taborder-header-div" @mousedown.stop="dragTabOrderDialog">
         <div class="taborder-header-innerdiv">
           <a>Tab Order</a>
@@ -22,25 +17,35 @@
         <div class="wrapper1">
           <span class="inner-header">Tab Order</span>
           <div class="frame">
-            <div  v-for="(value, index) in tabOrderList" :key="value.controlId">
-            <button
-              class="inside-frame"
-              :class="{'active-item':currentIndex === index}"
-              @click="selectedTab(index)"
-            >{{value.name }}</button>
+            <div v-for="(value, index) in tabOrderList" :key="value.controlId">
+              <button
+                class="inside-frame"
+                :class="{ 'active-item': currentIndex === index }"
+                @click="selectedTab(index)"
+              >
+                {{ value.name }}
+              </button>
             </div>
           </div>
         </div>
         <div class="wrapper2">
-          <div style="height:3px"></div>
+          <div class="wrapper2Div1"></div>
           <div class="wrapper21">
-            <button class="taborder-buttons" @click="updateControlData">OK</button>
-            <button class="taborder-buttons" @click="closeDialog">Cancel</button>
+            <button class="taborder-buttons" @click="updateControlData">
+              OK
+            </button>
+            <button class="taborder-buttons" @click="closeDialog">
+              Cancel
+            </button>
           </div>
-          <div style="height:35px"></div>
+          <div class="wrapper2Div2"></div>
           <div class="wrapper21">
-            <button class="taborder-buttons" @click="moveControlUp()">Move Up</button>
-            <button class="taborder-buttons" @click="moveControlDown()">Move Down</button>
+            <button class="taborder-buttons" @click="moveControlUp()">
+              Move Up
+            </button>
+            <button class="taborder-buttons" @click="moveControlDown()">
+              Move Down
+            </button>
           </div>
         </div>
       </div>
@@ -53,18 +58,20 @@ import { Component, Prop, Vue, Ref } from 'vue-property-decorator'
 import { EventBus } from '@/FormDesigner/event-bus'
 import { State, Action } from 'vuex-class'
 import { IupdateControl } from '@/storeModules/fd/actions'
-import FdDialogDragVue, { localTabOrderItem } from '@/api/abstract/FormDesigner/FdDialogDragVue'
+import FdDialogDragVue, {
+  localTabOrderItem
+} from '@/api/abstract/FormDesigner/FdDialogDragVue'
 
 @Component({
   name: 'FDUserformTabOrder'
 })
 export default class FDUserformTabOrder extends FdDialogDragVue {
-  @State(state => state.fd.userformData) userformData!: userformData
+  @State((state) => state.fd.userformData) userformData!: userformData;
   @Action('fd/updateControl') updateControl!: (payload: IupdateControl) => void;
-  isTabOrderOpen: boolean = false
-  userFormId : string = ''
-  currentIndex: number = -1
-  tabOrderList: localTabOrderItem[] = []
+  isTabOrderOpen: boolean = false;
+  userFormId: string = '';
+  currentIndex: number = -1;
+  tabOrderList: localTabOrderItem[] = [];
 
   updateControlData () {
     const controlNum = this.tabOrderList.length
@@ -79,29 +86,32 @@ export default class FDUserformTabOrder extends FdDialogDragVue {
     this.closeDialog()
   }
   created () {
-    EventBus.$on('userFormTabOrder', (userFormId: string, controlId: string) => {
-      debugger
-      const tabOrderControlData = this.userformData[userFormId][controlId]
-      this.tabOrderList = Array(tabOrderControlData.controls.length)
-      if (tabOrderControlData.controls.length > 0) {
-        for (let control of tabOrderControlData.controls) {
-          const targetData = this.userformData[userFormId][control]
-          if (targetData) {
-            const targetTabIndex = targetData.properties.TabIndex
-            const targetTabName = targetData.properties.Name
-            if (targetTabIndex !== undefined && targetTabName !== undefined) {
-              this.tabOrderList[targetTabIndex] = {
-                controlId: control,
-                name: targetTabName
+    EventBus.$on(
+      'userFormTabOrder',
+      (userFormId: string, controlId: string) => {
+        debugger
+        const tabOrderControlData = this.userformData[userFormId][controlId]
+        this.tabOrderList = Array(tabOrderControlData.controls.length)
+        if (tabOrderControlData.controls.length > 0) {
+          for (let control of tabOrderControlData.controls) {
+            const targetData = this.userformData[userFormId][control]
+            if (targetData) {
+              const targetTabIndex = targetData.properties.TabIndex
+              const targetTabName = targetData.properties.Name
+              if (targetTabIndex !== undefined && targetTabName !== undefined) {
+                this.tabOrderList[targetTabIndex] = {
+                  controlId: control,
+                  name: targetTabName
+                }
               }
             }
           }
         }
+        this.isTabOrderOpen = true
+        this.userFormId = userFormId
+        this.currentIndex = 0
       }
-      this.isTabOrderOpen = true
-      this.userFormId = userFormId
-      this.currentIndex = 0
-    })
+    )
   }
   destroyed () {
     EventBus.$off('userFormTabOrder')
@@ -315,5 +325,11 @@ h1 {
   width: 10px;
   height: 10px;
   stroke: white;
+}
+.wrapper2Div1 {
+  height: 3px;
+}
+.wrapper2Div2 {
+  height: 35px;
 }
 </style>

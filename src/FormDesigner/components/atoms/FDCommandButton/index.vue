@@ -1,35 +1,35 @@
 <template>
-<!-- <div> -->
-    <button
-      class="commandbutton"
-      :style="styleObj"
-      :name="properties.Name"
-      :tabindex="properties.TabIndex"
-      :title="properties.ControlTipText"
-      :runmode="getDisableValue"
-      @blur="() => {isClicked = false;}"
-      @mousedown="controlEditMode"
-      @keydown.enter="setContentEditable($event,true)"
-      @click.stop="commandButtonClick"
+  <button
+    class="commandbutton"
+    :style="styleObj"
+    :name="properties.Name"
+    :tabindex="properties.TabIndex"
+    :title="properties.ControlTipText"
+    :runmode="getDisableValue"
+    @blur="
+      () => {
+        isClicked = false;
+      }
+    "
+    @mousedown="controlEditMode"
+    @keydown.enter="setContentEditable($event, true)"
+    @click.stop="commandButtonClick"
+  >
+    <span v-if="!syncIsEditMode || isRunMode">
+      <span>{{ computedCaption.afterbeginCaption }}</span>
+      <span class="spanClass">{{ computedCaption.acceleratorCaption }}</span>
+      <span>{{ computedCaption.beforeendCaption }}</span>
+    </span>
+    <FDEditableText
+      v-else
+      class="editText"
+      :editable="isRunMode === false && syncIsEditMode"
+      :caption="properties.Caption"
+      @updateCaption="updateCaption"
+      @releaseEditMode="setContentEditable($event, false)"
     >
-      <span v-if="!syncIsEditMode || isRunMode">
-        <span>{{ computedCaption.afterbeginCaption }}</span>
-        <span style="text-decoration: underline">{{
-          computedCaption.acceleratorCaption
-        }}</span>
-        <span>{{ computedCaption.beforeendCaption }}</span>
-      </span>
-      <FDEditableText
-        v-else
-        class="editText"
-        :editable="isRunMode === false && syncIsEditMode"
-        :caption="properties.Caption"
-        @updateCaption="updateCaption"
-        @releaseEditMode="setContentEditable($event, false)"
-      >
-      </FDEditableText>
-    </button>
-<!-- </div> -->
+    </FDEditableText>
+  </button>
 </template>
 
 <script lang="ts">
@@ -48,6 +48,11 @@ export default class FDCommandButton extends Mixins(FdControlVue) {
   isClicked: boolean = false;
   isContentEditable: boolean = false;
 
+  /**
+   * @description getDisableValue checks for the RunMode of the control and then returns after checking for the Enabled
+   * and the Locked property
+   * @function getDisableValue
+   */
   get getDisableValue () {
     if (this.isRunMode) {
       return (
@@ -57,6 +62,7 @@ export default class FDCommandButton extends Mixins(FdControlVue) {
       return true
     }
   }
+
   /**
    * @description commandButtonClick is a method to check the check the clicked functionality of the button tag.
    * Also It sets the variable isClicked based on the Locked property
@@ -98,30 +104,6 @@ export default class FDCommandButton extends Mixins(FdControlVue) {
   }
 
   /**
-   * @description watches changes in propControlData to set autoset when true
-   * @function autoSize
-   * @param oldVal previous propControlData data
-   * @param newVal  new/changed propControlData data
-   */
-  @Watch('properties.AutoSize', { deep: true })
-  autoSize (newVal: boolean, oldVal: boolean) {
-    // if autoSize is true then height and width value will not get updated
-    this.updateAutoSize()
-  }
-
-  /**
-   * @description mounted initializes the values which are required for the component
-   */
-  mounted () {
-    this.updateAutoSize()
-  }
-  get divStyle (): Partial<CSSStyleDeclaration> {
-    const controlProp = this.properties
-    return {
-      border: controlProp.Default ? '1px solid black' : controlProp.BackColor
-    }
-  }
-  /**
    * @description style object is passed to :style attribute in button tag
    * dynamically changing the styles of the component based on properties
    * @function styleObj
@@ -143,13 +125,11 @@ export default class FDCommandButton extends Mixins(FdControlVue) {
     return {
       ...(!controlProp.AutoSize && this.renderSize),
       ...this.baseStyle,
-      // position: 'relative',
       left: `${controlProp.Left}px`,
       width: `${controlProp.Width}px`,
       height: `${controlProp.Height}px`,
       top: `${controlProp.Top}px`,
       backgroundColor: controlProp.BackColor,
-      // borderColor: controlProp.BorderColor,
       borderTopColor: controlProp.Default ? 'black' : controlProp.BackColor,
       borderBottomColor: controlProp.Default ? 'black' : controlProp.BackColor,
       borderLeftColor: controlProp.Default ? 'black' : controlProp.BackColor,
@@ -192,6 +172,25 @@ export default class FDCommandButton extends Mixins(FdControlVue) {
       backgroundPositionY: this.getPositionY
     }
   }
+
+  /**
+   * @description watches changes in propControlData to set autoset when true
+   * @function autoSize
+   * @param oldVal previous propControlData data
+   * @param newVal  new/changed propControlData data
+   */
+  @Watch('properties.AutoSize', { deep: true })
+  autoSize (newVal: boolean, oldVal: boolean) {
+    // if autoSize is true then height and width value will not get updated
+    this.updateAutoSize()
+  }
+
+  /**
+   * @description mounted initializes the values which are required for the component
+   */
+  mounted () {
+    this.updateAutoSize()
+  }
 }
 </script>
 
@@ -202,21 +201,24 @@ export default class FDCommandButton extends Mixins(FdControlVue) {
 }
 .editText {
   width: fit-content;
-    height: auto;
-    text-align: center;
-    background: inherit;
-    font: inherit;
-    border: none;
-    outline: none;
-    padding: 0;
-    resize: none;
-    overflow: hidden;
-    text-decoration: inherit;
-    color: inherit;
-    white-space: inherit;
-    word-break: inherit;
+  height: auto;
+  text-align: center;
+  background: inherit;
+  font: inherit;
+  border: none;
+  outline: none;
+  padding: 0;
+  resize: none;
+  overflow: hidden;
+  text-decoration: inherit;
+  color: inherit;
+  white-space: inherit;
+  word-break: inherit;
 }
 .commandbutton[runmode]:active {
   border-style: outset !important;
+}
+.spanClass {
+  text-decoration: underline;
 }
 </style>

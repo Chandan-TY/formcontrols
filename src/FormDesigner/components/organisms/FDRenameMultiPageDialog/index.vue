@@ -1,58 +1,65 @@
 <template>
-<div id="popup1" class="overlay" :style="tabOrderStyleObj">
-  <div class="rename-div-1 popup">
-    <div class="remane-header-div" @mousedown.stop="dragTabOrderDialog">
-      Rename
-      <a class="close" href="#">
-        <button class="ui-btn close" @click="closeDialog">
-          <svg viewBox="0 0 10 10">
-            <polygon
-              points="10.2,0.7 9.5,0 5.1,4.4 0.7,0 0,0.7 4.4,5.1 0,9.5 0.7,10.2 5.1,5.8 9.5,10.2 10.2,9.5 5.8,5.1"
-            />
-          </svg>
-        </button>
-      </a>
+  <div id="popup1" class="overlay" :style="tabOrderStyleObj">
+    <div class="rename-div-1 popup">
+      <div class="remane-header-div" @mousedown.stop="dragTabOrderDialog">
+        Rename
+        <a class="close" href="#">
+          <button class="ui-btn close" @click="closeDialog">
+            <svg viewBox="0 0 10 10">
+              <polygon
+                points="10.2,0.7 9.5,0 5.1,4.4 0.7,0 0,0.7 4.4,5.1 0,9.5 0.7,10.2 5.1,5.8 9.5,10.2 10.2,9.5 5.8,5.1"
+              />
+            </svg>
+          </button>
+        </a>
+      </div>
+      <hr class="hr" />
+      <br />
+      <div class="wrapper">
+        <span>Caption:</span>
+        <div>
+          <input
+            type="text"
+            class="btn-outline"
+            @input="handleRename"
+            :value="selectedTabData.Caption"
+          />
+        </div>
+        <span>Accelerator Key:</span>
+        <div>
+          <input
+            class="btn-outline inputClass"
+            type="text"
+            @input="updateAccelerator"
+            :value="selectedTabData.Accelerator"
+          />
+        </div>
+        <span>Control Tip Text:</span>
+        <div>
+          <input
+            class="btn-outline"
+            type="text"
+            @input="handleTip"
+            :value="selectedTabData.ToolTip"
+          />
+        </div>
+        <div></div>
+        <div>
+          <input
+            type="Button"
+            value="OK"
+            class="btn-outline inputTwoClass"
+            @click="updateChanges()"
+          />
+          <input
+            type="Button"
+            value="Cancel"
+            class="btn-outline inputTwoClass"
+            @click="closeDialog"
+          />
+        </div>
+      </div>
     </div>
-    <hr style="margin: 1px;" />
-    <br />
-    <div class="wrapper">
-      <span>Caption:</span>
-      <div>
-        <input type="text"
-          class="btn-outline"
-         @input="handleRename" :value="selectedTabData.Caption"/>
-
-      </div>
-      <span>Accelerator Key:</span>
-      <div>
-        <input class="btn-outline"
-        type="text" style="width:10%" @input="updateAccelerator" :value="selectedTabData.Accelerator"/>
-      </div>
-      <span>Control Tip Text:</span>
-      <div>
-        <input
-          class="btn-outline"
-         type="text" @input="handleTip" :value="selectedTabData.ToolTip"/>
-      </div>
-      <div></div>
-      <div>
-        <input
-          type="Button"
-          value="OK"
-          class="btn-outline"
-          style="width:60px; box-shadow: 1px 1px; border: 0.5px solid gray ;"
-          @click="updateChanges()"
-        />
-        <input
-          type="Button"
-          value="Cancel"
-          class="btn-outline"
-          style="width:60px; box-shadow: 1px 1px; border: 0.5px solid gray"
-          @click="closeDialog"
-        />
-      </div>
-    </div>
-  </div>
   </div>
 </template>
 
@@ -67,44 +74,49 @@ import { EventBus } from '@/FormDesigner/event-bus'
   name: 'FDRenameMultiPageDialog'
 })
 export default class FDRenameMultiPageDialog extends FdDialogDragVue {
-  userFormId: string
-  controlId: string
-  @Action('fd/updateControlExtraData') updateControlExtraData!: (payload: IupdateControlExtraData) => void;
-  @State(state => state.fd.userformData) userformData!: userformData
-    tabOrderList : tabsItems[]
-    selectedTabData : tabsItems = {
-      Name: '',
-      Caption: '',
-      ToolTip: '',
-      Accelerator: ''
-    };
+  userFormId: string;
+  controlId: string;
+  @Action('fd/updateControlExtraData') updateControlExtraData!: (
+    payload: IupdateControlExtraData
+  ) => void;
+  @State((state) => state.fd.userformData) userformData!: userformData;
+  tabOrderList: tabsItems[];
+  selectedTabData: tabsItems = {
+    Name: '',
+    Caption: '',
+    ToolTip: '',
+    Accelerator: ''
+  };
 
-    handleRename (e: KeyboardEvent) {
-      this.selectedTabData.Caption = (e.target as HTMLInputElement).value
-    }
+  handleRename (e: KeyboardEvent) {
+    this.selectedTabData.Caption = (e.target as HTMLInputElement).value
+  }
 
-    updateAccelerator (e: KeyboardEvent) {
-      this.selectedTabData.Accelerator = (e.target as HTMLInputElement).value
+  updateAccelerator (e: KeyboardEvent) {
+    this.selectedTabData.Accelerator = (e.target as HTMLInputElement).value
+  }
+  handleTip (e: KeyboardEvent) {
+    this.selectedTabData.ToolTip = (e.target as HTMLInputElement).value
+  }
+  updateChanges () {
+    if (this.selectedTabData.Accelerator) {
+      this.selectedTabData.Accelerator = this.selectedTabData.Accelerator[0]
     }
-    handleTip (e: KeyboardEvent) {
-      this.selectedTabData.ToolTip = (e.target as HTMLInputElement).value
-    }
-    updateChanges () {
-      if (this.selectedTabData.Accelerator) {
-        this.selectedTabData.Accelerator = this.selectedTabData.Accelerator[0]
-      }
-      this.updateControlExtraData({
-        userFormId: this.userFormId,
-        controlId: this.controlId,
-        propertyName: 'Tabs',
-        value: this.tabOrderList
-      })
-      this.isTabOrderOpen = false
-    }
-    created () {
-      EventBus.$on('renamePage', (userFormId: string, controlId: string, selectedTab : number) => {
+    this.updateControlExtraData({
+      userFormId: this.userFormId,
+      controlId: this.controlId,
+      propertyName: 'Tabs',
+      value: this.tabOrderList
+    })
+    this.isTabOrderOpen = false
+  }
+  created () {
+    EventBus.$on(
+      'renamePage',
+      (userFormId: string, controlId: string, selectedTab: number) => {
         console.log('==========>', controlId)
-        const tabOrderControlData = this.userformData[userFormId][controlId].extraDatas!.Tabs!
+        const tabOrderControlData = this.userformData[userFormId][controlId]
+          .extraDatas!.Tabs!
         if (tabOrderControlData.length > 0) {
           this.tabOrderList = JSON.parse(JSON.stringify(tabOrderControlData))
           this.selectedTabData = this.tabOrderList[selectedTab]
@@ -112,11 +124,12 @@ export default class FDRenameMultiPageDialog extends FdDialogDragVue {
         this.isTabOrderOpen = true
         this.userFormId = userFormId
         this.controlId = controlId
-      })
-    }
-    destroyed () {
-      EventBus.$off('renamePage')
-    }
+      }
+    )
+  }
+  destroyed () {
+    EventBus.$off('renamePage')
+  }
 }
 </script>
 
@@ -281,5 +294,16 @@ h1 {
 }
 .btn-outline {
   outline: none;
+}
+.hr {
+  margin: 1px;
+}
+.inputClass {
+  width: 10%;
+}
+.inputTwoClass {
+  width: 60px;
+  box-shadow: 1px 1px;
+  border: 0.5px solid gray;
 }
 </style>

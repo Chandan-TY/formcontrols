@@ -1,70 +1,86 @@
 <template>
-<div>
-  <div class="outercontext-div">
-    <div class="wrapper-context" v-for="(value,i) in values" :key="i">
-      <button
-        class="wrapper1-context"
-        v-if="value.values.length===0"
-        :style="{'border': value.text==='none'?'0.3px solid white':'',
-                  'background':value.text==='none'?'white':'',
-                  'height': value.text==='none'?'4px':'' ,
-                  'padding-top': value.text==='none'?'0px':'',
-                  'outline': value.text==='none'?'none':''
-                }"
-        @mousedown.stop="value.disabled === false? controlAction(value.id): ''"
-      >
-        <div>
-         <FDSVGImage v-if="value.icon" :name="value.icon" />
-        </div>
-        <span v-if="value.text==='none'">
-          <hr />
-        </span>
-        <span v-else class="set-context" v-html="value.text" :style="{opacity: value.disabled? 0.5: 1}">{{value.text}}</span>
-      </button>
-      <button class="wrapper1-context wrapper21" v-else>
-        <div></div>
-        <ul class="set-context top-level-menu">
-          <li>
-            <a href="#" v-html="value.text">{{value.text}}</a>
-            <ul class="third-level-menu">
-              <li
-                class="wrapper1-context"
-                v-for="(subVal,i) in value.values"
-                :key="i"
-                :style="{'border': subVal.text==='none'?'0.3px solid white':'',
-                          'background':subVal.text==='none'?'white':'',
-                          'height': subVal.text==='none'?'4px':'' ,
-                          'padding-top': subVal.text==='none'?'0px':'',
-                          'outline': subVal.text==='none'?'none':''
-                        }"
-              >
-                <div>
-                  <FDSVGImage  v-if="subVal.icon" :name="subVal.icon" />
-                </div>
-                <a v-if="subVal.text==='none'">
-                  <hr />
-                </a>
-                <a v-else href="#" v-html="subVal.text">{{subVal.text}}</a>
-              </li>
-            </ul>
-          </li>
-        </ul>
-        <div class="triangle-right"></div>
-      </button>
-    </div>
-  </div>
   <div>
-</div>
-<div>
-</div>
-</div>
+    <div class="outercontext-div">
+      <div class="wrapper-context" v-for="(value, i) in values" :key="i">
+        <button
+          class="wrapper1-context"
+          v-if="value.values.length === 0"
+          :style="{
+            border: value.text === 'none' ? '0.3px solid white' : '',
+            background: value.text === 'none' ? 'white' : '',
+            height: value.text === 'none' ? '4px' : '',
+            'padding-top': value.text === 'none' ? '0px' : '',
+            outline: value.text === 'none' ? 'none' : '',
+          }"
+          @mousedown.stop="
+            value.disabled === false ? controlAction(value.id) : ''
+          "
+        >
+          <div>
+            <FDSVGImage v-if="value.icon" :name="value.icon" />
+          </div>
+          <span v-if="value.text === 'none'">
+            <hr />
+          </span>
+          <span
+            v-else
+            class="set-context"
+            v-html="value.text"
+            :style="{ opacity: value.disabled ? 0.5 : 1 }"
+            >{{ value.text }}</span
+          >
+        </button>
+        <button class="wrapper1-context wrapper21" v-else>
+          <div></div>
+          <ul class="set-context top-level-menu">
+            <li>
+              <a href="#" v-html="value.text">{{ value.text }}</a>
+              <ul class="third-level-menu">
+                <li
+                  class="wrapper1-context"
+                  v-for="(subVal, i) in value.values"
+                  :key="i"
+                  :style="{
+                    border: subVal.text === 'none' ? '0.3px solid white' : '',
+                    background: subVal.text === 'none' ? 'white' : '',
+                    height: subVal.text === 'none' ? '4px' : '',
+                    'padding-top': subVal.text === 'none' ? '0px' : '',
+                    outline: subVal.text === 'none' ? 'none' : '',
+                  }"
+                >
+                  <div>
+                    <FDSVGImage v-if="subVal.icon" :name="subVal.icon" />
+                  </div>
+                  <a v-if="subVal.text === 'none'">
+                    <hr />
+                  </a>
+                  <a v-else href="#" v-html="subVal.text">{{ subVal.text }}</a>
+                </li>
+              </ul>
+            </li>
+          </ul>
+          <div class="triangle-right"></div>
+        </button>
+      </div>
+    </div>
+    <div></div>
+    <div></div>
+  </div>
 </template>
 
 <script lang="ts">
 import { Component, Vue, Prop, Emit } from 'vue-property-decorator'
 import FDSVGImage from '@/FormDesigner/components/atoms/FDSVGImage/index.vue'
 import { Action, State } from 'vuex-class'
-import { IaddControl, IdeleteControl, IselectControl, IupdateControl, IupdateControlExtraData, IupdateCopyControlList, IupdateGroup } from '@/storeModules/fd/actions'
+import {
+  IaddControl,
+  IdeleteControl,
+  IselectControl,
+  IupdateControl,
+  IupdateControlExtraData,
+  IupdateCopyControlList,
+  IupdateGroup
+} from '@/storeModules/fd/actions'
 import { EventBus } from '@/FormDesigner/event-bus'
 
 @Component({
@@ -74,25 +90,32 @@ import { EventBus } from '@/FormDesigner/event-bus'
   }
 })
 export default class ContextMenu extends Vue {
-  @Prop() values: Array<IControlContextMenu>
-  @Prop() userFormId: string
-  @Prop() containerId: string
-  @Prop() keyEventName: string
-  @Prop() controlId: string
-  @Prop() selectedTab: number
-  @Prop() data: controlData
+  @Prop() values: Array<IControlContextMenu>;
+  @Prop() userFormId: string;
+  @Prop() containerId: string;
+  @Prop() keyEventName: string;
+  @Prop() controlId: string;
+  @Prop() selectedTab: number;
+  @Prop() data: controlData;
 
-  @State(state => state.fd.selectedControls) selectedControls!: fdState['selectedControls']
-  @State((state:rootState) => state.fd.copyControlList) copyControlList!: fdState['copyControlList']
-  @State(state => state.fd.userformData) userformData!: userformData
-  @State(state => state.fd.groupedControls) groupedControls!: fdState['groupedControls']
+  @State((state) => state.fd.selectedControls)
+  selectedControls!: fdState['selectedControls'];
+  @State((state: rootState) => state.fd.copyControlList)
+  copyControlList!: fdState['copyControlList'];
+  @State((state) => state.fd.userformData) userformData!: userformData;
+  @State((state) => state.fd.groupedControls)
+  groupedControls!: fdState['groupedControls'];
 
-  @Action('fd/deleteControl') deleteControl!: (payload: IdeleteControl) => void
-  @Action('fd/updateCopyControlList') updateCopyControlList!: (payload: IupdateCopyControlList) => void
+  @Action('fd/deleteControl') deleteControl!: (payload: IdeleteControl) => void;
+  @Action('fd/updateCopyControlList') updateCopyControlList!: (
+    payload: IupdateCopyControlList
+  ) => void;
   @Action('fd/addControl') addControl!: (payload: IaddControl) => void;
   @Action('fd/selectControl') selectControl!: (payload: IselectControl) => void;
-  @Action('fd/updateGroup') updateGroup!: (payload: IupdateGroup) => void
-  @Action('fd/updateControlExtraData') updateControlExtraData!: (payload: IupdateControlExtraData) => void;
+  @Action('fd/updateGroup') updateGroup!: (payload: IupdateGroup) => void;
+  @Action('fd/updateControlExtraData') updateControlExtraData!: (
+    payload: IupdateControlExtraData
+  ) => void;
   @Action('fd/updateControl') updateControl!: (payload: IupdateControl) => void;
 
   controlAction (controlActionName: string) {
@@ -115,7 +138,12 @@ export default class ContextMenu extends Vue {
     } else if (controlActionName === 'ID_DELETEPAGE') {
       this.deleteCurrentPage()
     } else if (controlActionName === 'ID_RENAME') {
-      EventBus.$emit('renamePage', this.userFormId, this.controlId, this.selectedTab)
+      EventBus.$emit(
+        'renamePage',
+        this.userFormId,
+        this.controlId,
+        this.selectedTab
+      )
     } else if (controlActionName === 'ID_MOVE') {
       EventBus.$emit('tabStripTabOrder', this.userFormId, this.controlId)
     } else if (controlActionName === 'ID_TABORDER') {
@@ -130,9 +158,11 @@ export default class ContextMenu extends Vue {
     return 0
   }
   addNewPage () {
-    const tabControlData = JSON.parse(JSON.stringify(this.userformData[this.userFormId][this.controlId])).extraDatas.Tabs
+    const tabControlData = JSON.parse(
+      JSON.stringify(this.userformData[this.userFormId][this.controlId])
+    ).extraDatas.Tabs
     let prevTabId = -1
-    const initialTabData :tabsItems = {
+    const initialTabData: tabsItems = {
       Name: '',
       Caption: '',
       ToolTip: '',
@@ -162,7 +192,9 @@ export default class ContextMenu extends Vue {
     })
   }
   deleteCurrentPage () {
-    const tabControlData = JSON.parse(JSON.stringify(this.userformData[this.userFormId][this.controlId])).extraDatas.Tabs
+    const tabControlData = JSON.parse(
+      JSON.stringify(this.userformData[this.userFormId][this.controlId])
+    ).extraDatas.Tabs
     if (tabControlData && tabControlData.length > 0) {
       tabControlData.splice(this.selectedTab, 1)
       this.updateControlExtraData({
@@ -173,7 +205,11 @@ export default class ContextMenu extends Vue {
       })
     }
   }
-  updateControlProperty (propertyName: keyof controlProperties, propertyValue: number|string, controlId: string) {
+  updateControlProperty (
+    propertyName: keyof controlProperties,
+    propertyValue: number | string,
+    controlId: string
+  ) {
     this.updateControl({
       userFormId: this.userFormId,
       controlId: controlId,
@@ -185,36 +221,45 @@ export default class ContextMenu extends Vue {
   unGroupControl () {
     const isGroup = this.selectedControls[this.userFormId].selected[0].startsWith('group')
     const selControl = this.selectedControls[this.userFormId].selected[0]
-    const selected = isGroup ? selControl : this.userformData[this.userFormId][selControl].properties.GroupID!
+    const selected = isGroup
+      ? selControl
+      : this.userformData[this.userFormId][selControl].properties.GroupID!
 
     const controlList = []
     for (const key in this.userformData[this.userFormId]) {
       const type = this.userformData[this.userFormId][key].type
-      if (type !== 'Userform' && this.userformData[this.userFormId][key].properties.GroupID === selected) {
+      if (
+        type !== 'Userform' &&
+        this.userformData[this.userFormId][key].properties.GroupID === selected
+      ) {
         controlList.push(key)
       }
     }
     const groupArray = [...this.groupedControls[this.userFormId]!.groupArray!]
     this.updateControlGroupID(selected, '')
-    const index = this.groupedControls[this.userFormId]!.groupArray!.findIndex(val => val === selected)
+    const index = this.groupedControls[this.userFormId]!.groupArray!.findIndex(
+      (val) => val === selected
+    )
     groupArray.splice(index, 1)
     this.updateGroup({ userFormId: this.userFormId, groupArray: groupArray })
     this.selectControl({
       userFormId: this.userFormId,
-      select: { container: [this.userFormId], selected: isGroup ? controlList : [selControl] }
+      select: {
+        container: [this.userFormId],
+        selected: isGroup ? controlList : [selControl]
+      }
     })
   }
 
   /**
-  * @description To generate new GroupID
-  * @function createGroupId
-  */
+   * @description To generate new GroupID
+   * @function createGroupId
+   */
   createGroupId () {
     let lastControlId = 0
     for (let i of this.groupedControls[this.userFormId]!.groupArray!) {
       if (i.indexOf('group') !== -1) {
-        const IdNum =
-            i.split('group').pop() || '-1'
+        const IdNum = i.split('group').pop() || '-1'
         const pasreId = parseInt(IdNum, 10)
         if (!isNaN(pasreId) && lastControlId < pasreId) {
           lastControlId = pasreId
@@ -232,7 +277,8 @@ export default class ContextMenu extends Vue {
   updateControlGroupID (groupName: string, updateGroupId: string) {
     for (const val in this.userformData[this.userFormId]) {
       if (!val.startsWith('ID_USERFORM')) {
-        const controlGrpId = this.userformData[this.userFormId][val].properties.GroupID
+        const controlGrpId = this.userformData[this.userFormId][val].properties
+          .GroupID
         if (controlGrpId === groupName) {
           this.updateControlProperty('GroupID', updateGroupId, val)
         }
@@ -240,17 +286,21 @@ export default class ContextMenu extends Vue {
     }
   }
   /**
-  * @description To update the group Information in main data
-  * @function groupControl
-  */
+   * @description To update the group Information in main data
+   * @function groupControl
+   */
   groupControl () {
     let updateGroupId: string = ''
     const selected = this.selectedControls[this.userFormId].selected
 
-    const selectedGroupArray = selected.filter((val: string) => val.startsWith('group') && val)
+    const selectedGroupArray = selected.filter(
+      (val: string) => val.startsWith('group') && val
+    )
     updateGroupId = selectedGroupArray[0]
     if (selectedGroupArray.length >= 2) {
-      const groupArray = [...this.groupedControls[this.userFormId]!.groupArray!]
+      const groupArray = [
+        ...this.groupedControls[this.userFormId]!.groupArray!
+      ]
       for (let i = 0; i < groupArray.length; i++) {
         for (let j = 0; j < selectedGroupArray.length; j++) {
           if (selectedGroupArray[j] === groupArray[i]) {
@@ -259,11 +309,17 @@ export default class ContextMenu extends Vue {
           }
         }
       }
-      this.updateGroup({ userFormId: this.userFormId, groupArray: [...groupArray, selectedGroupArray[0]] })
+      this.updateGroup({
+        userFormId: this.userFormId,
+        groupArray: [...groupArray, selectedGroupArray[0]]
+      })
       updateGroupId = selectedGroupArray[0]!
     } else if (selectedGroupArray.length === 0) {
       updateGroupId = this.createGroupId()
-      const groupArray = [...this.groupedControls[this.userFormId]!.groupArray!, updateGroupId]
+      const groupArray = [
+        ...this.groupedControls[this.userFormId]!.groupArray!,
+        updateGroupId
+      ]
       this.updateGroup({ userFormId: this.userFormId, groupArray: groupArray })
     }
 
@@ -280,16 +336,20 @@ export default class ContextMenu extends Vue {
   }
 
   /**
-  * @description To select all the controls in respective container present in respective userform
-  * @function selectAll
-  */
+   * @description To select all the controls in respective container present in respective userform
+   * @function selectAll
+   */
   selectAll () {
-    const controlObjectList = [...this.userformData[this.userFormId][this.containerId].controls]
+    const controlObjectList = [
+      ...this.userformData[this.userFormId][this.containerId].controls
+    ]
     const selecedGroup = []
     for (const val of controlObjectList) {
-      const controlGroupId: string = this.userformData[this.userFormId][val].properties.GroupID!
+      const controlGroupId: string = this.userformData[this.userFormId][val]
+        .properties.GroupID!
       if (controlGroupId && controlGroupId !== '') {
-        !selecedGroup.includes(controlGroupId)! && selecedGroup.push(controlGroupId)
+        !selecedGroup.includes(controlGroupId)! &&
+          selecedGroup.push(controlGroupId)
       } else {
         selecedGroup.push(val)
       }
@@ -307,18 +367,18 @@ export default class ContextMenu extends Vue {
   }
 
   /**
-  * @description To update the cutted controls in respective container present in respective userform
-  * @function cutControl
-  */
+   * @description To update the cutted controls in respective container present in respective userform
+   * @function cutControl
+   */
   cutControl () {
     this.copyControl()
     this.clickDelete()
   }
 
   /**
-  * @description To update the copied controls in respective container present in respective userform
-  * @function copyControl
-  */
+   * @description To update the copied controls in respective container present in respective userform
+   * @function copyControl
+   */
   copyControl () {
     const targetControlObj: Array<controlData> = []
     const targetId: string[] = []
@@ -326,7 +386,10 @@ export default class ContextMenu extends Vue {
     for (let i of selected) {
       if (i.startsWith('group')) {
         for (const j in this.userformData[this.userFormId]) {
-          if (!i.startsWith('ID_USERFORM') && this.userformData[this.userFormId][j].properties.GroupID === i) {
+          if (
+            !i.startsWith('ID_USERFORM') &&
+            this.userformData[this.userFormId][j].properties.GroupID === i
+          ) {
             targetControlObj.push(this.userformData[this.userFormId][j])
             targetId.push(j)
           }
@@ -345,33 +408,54 @@ export default class ContextMenu extends Vue {
   }
 
   /**
-  * @description To paste controls in respective container present in respective userform
-  * @function pasteControl
-  */
+   * @description To paste controls in respective container present in respective userform
+   * @function pasteControl
+   */
   pasteControl () {
     let lastControlId = -1
     let updateSeelctedControl: string[] = []
     let oldGroupId: string[] = []
     let newGroupId: string[] = []
     for (let i = 0; i < this.copyControlList.targetObject.length; i++) {
-      if (this.copyControlList.targetObject[i].properties.GroupID && !oldGroupId.includes(this.copyControlList.targetObject[i].properties.GroupID!)) {
-        oldGroupId.push(this.copyControlList.targetObject[i].properties.GroupID!)
+      if (
+        this.copyControlList.targetObject[i].properties.GroupID &&
+        !oldGroupId.includes(
+          this.copyControlList.targetObject[i].properties.GroupID!
+        )
+      ) {
+        oldGroupId.push(
+          this.copyControlList.targetObject[i].properties.GroupID!
+        )
       }
     }
     for (let j in oldGroupId) {
       const newId = this.createGroupId()
       newGroupId.push(newId)
-      let groupArray: string[] = [...this.groupedControls[this.userFormId]!.groupArray!, newId]
-      this.updateGroup({ userFormId: this.userFormId, groupArray: groupArray! })
+      let groupArray: string[] = [
+        ...this.groupedControls[this.userFormId]!.groupArray!,
+        newId
+      ]
+      this.updateGroup({
+        userFormId: this.userFormId,
+        groupArray: groupArray!
+      })
     }
 
     for (let i = 0; i < this.copyControlList.targetId.length; i++) {
       let lastControlId = -1
-      const selectedControlName: string|undefined = this.copyControlList.targetId[i].replace(/[0-9]/g, '').split('_').pop()
-      const userformControlIds = Object.keys(this.userformData[this.userFormId])
+      const selectedControlName:
+        | string
+        | undefined = this.copyControlList.targetId[i]
+          .replace(/[0-9]/g, '')
+          .split('_')
+          .pop()
+      const userformControlIds = Object.keys(
+        this.userformData[this.userFormId]
+      )
       for (let i = 0; i < userformControlIds.length; i++) {
         if (userformControlIds[i].indexOf(selectedControlName!) !== -1) {
-          const IdNum = userformControlIds[i].split(selectedControlName!).pop() || '-1'
+          const IdNum =
+            userformControlIds[i].split(selectedControlName!).pop() || '-1'
           const pasreId = parseInt(IdNum, 10)
           if (!isNaN(pasreId) && lastControlId < pasreId) {
             lastControlId = pasreId
@@ -380,10 +464,15 @@ export default class ContextMenu extends Vue {
       }
 
       const controlObj = this.copyControlList.targetObject[i]
-      const selCtrlIndex = oldGroupId.findIndex((val) => val === controlObj.properties.GroupID)
+      const selCtrlIndex = oldGroupId.findIndex(
+        (val) => val === controlObj.properties.GroupID
+      )
       lastControlId += 1
-      const controlID: string|undefined = `ID_${selectedControlName}${lastControlId}`
-      const item: controlData = { ...controlObj,
+      const controlID:
+        | string
+        | undefined = `ID_${selectedControlName}${lastControlId}`
+      const item: controlData = {
+        ...controlObj,
         properties: {
           ...controlObj.properties,
           ID: controlID!,
@@ -407,18 +496,23 @@ export default class ContextMenu extends Vue {
       })
     }
     for (let j of updateSeelctedControl) {
-      if (j.startsWith('group')) { this.createGroup(j) }
+      if (j.startsWith('group')) {
+        this.createGroup(j)
+      }
     }
     this.selectControl({
       userFormId: this.userFormId,
-      select: { container: [this.containerId], selected: updateSeelctedControl }
+      select: {
+        container: [this.containerId],
+        selected: updateSeelctedControl
+      }
     })
   }
 
   /**
-  * @description To delete controls in respective container present in respective userform
-  * @function pasteControl
-  */
+   * @description To delete controls in respective container present in respective userform
+   * @function pasteControl
+   */
   clickDelete () {
     this.closeMenu()
     const selControl = []
@@ -427,7 +521,10 @@ export default class ContextMenu extends Vue {
       if (!control.startsWith('ID_USERFORM')) {
         if (control.startsWith('group')) {
           for (const key in this.userformData[this.userFormId]) {
-            if (this.userformData[this.userFormId][key].properties.GroupID === control) {
+            if (
+              this.userformData[this.userFormId][key].properties.GroupID ===
+              control
+            ) {
               selControl.push(key)
             }
           }
@@ -445,8 +542,7 @@ export default class ContextMenu extends Vue {
     }
     this.selectControl({
       userFormId: this.userFormId,
-      select: { container: [this.containerId],
-        selected: [this.containerId] }
+      select: { container: [this.containerId], selected: [this.containerId] }
     })
   }
   updateAction (event: KeyboardEvent) {

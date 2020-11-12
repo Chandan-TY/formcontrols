@@ -6,27 +6,27 @@
         <div class="ui-titlecontrols">
           <!-- fixed svg issue -->
           <button class="ui-btn minimize">
-                <FDSVGImage name="minimize.svg"/>
-              </button>
-              <button class="ui-btn maximize">
-               <FDSVGImage name="maximize.svg"/>
-              </button>
-              <button class="ui-btn close">
-                <FDSVGImage name="close-button.svg"/>
-              </button>
+            <FDSVGImage name="minimize.svg" />
+          </button>
+          <button class="ui-btn maximize">
+            <FDSVGImage name="maximize.svg" />
+          </button>
+          <button class="ui-btn close">
+            <FDSVGImage name="close-button.svg" />
+          </button>
         </div>
       </div>
     </div>
 
     <div class="secondrow">
-      <i style="float:left" class="material-icons">&#xe5d4;</i>
+      <i class="material-icons material-float">&#xe5d4;</i>
       <div class="menu-bar">
         <ul>
           <li><u>F</u>ile</li>
           <li><u>E</u>dit</li>
           <li @click="subMenuDisplay">
             <u>V</u>iew
-            <div class="sub-menu-1" v-if="displaySubMenu===true" >
+            <div class="sub-menu-1" v-if="displaySubMenu === true">
               <ul class="sub-menu-ul">
                 <li class="sub-menu-li">
                   <CodeLogo class="fa padding" />
@@ -87,7 +87,7 @@
           </li>
           <li @click="subMenuDisplay">
             <u>I</u>nsert
-            <div class="sub-menu-1" v-if="displaySubMenu===true">
+            <div class="sub-menu-1" v-if="displaySubMenu === true">
               <ul class="sub-menu-ul">
                 <li class="sub-menu-li">
                   <UseSvgImage />
@@ -188,11 +188,11 @@ import FDSVGImage from '@/FormDesigner/components/atoms/FDSVGImage/index.vue'
   }
 })
 export default class Header extends Vue {
-  displaySubMenu: boolean = false
+  displaySubMenu: boolean = false;
   @Action('fd/addUserform') addControl!: (payload: IaddUserform) => void;
   @Action('fd/changeRunMode') changeRunMode!: (payload: boolean) => void;
-  @State(state => state.fd.userformData) usrFrmData!: userformData
-  @State(state => state.fd.isRunMode) isRunMode!: boolean
+  @State((state) => state.fd.userformData) usrFrmData!: userformData;
+  @State((state) => state.fd.isRunMode) isRunMode!: boolean;
   propControlData = {};
   insertUserForm () {
     this.propControlData = this.usrFrmData
@@ -276,11 +276,14 @@ export default class Header extends Vue {
   margin-left: 3px;
   margin-right: 3px;
 }
-.padding{
-  padding-top:3px;
+.padding {
+  padding-top: 3px;
 }
 .material-icons {
   size: 15px;
+}
+.material-float {
+  float: left;
 }
 i:hover {
   background-color: #4dbce0;

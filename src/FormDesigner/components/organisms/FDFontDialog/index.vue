@@ -1,10 +1,6 @@
 <template>
   <div>
-    <div
-      id=""
-      class="overlay"
-      :style="fontStyleObj"
-    >
+    <div id="" class="overlay" :style="fontStyleObj">
       <div
         class="font-div popup"
         :style="fontDialogInitialStyle"
@@ -12,11 +8,11 @@
       >
         <div class="font-header" @mousedown.stop="dragFontDialogBox">
           <span class="span-style">Font</span>
-            <button class="ui-btn close" @click="setFontDialogVisiblilty(false)">
-              <FDSVGImage name="close-button.svg" />
-            </button>
+          <button class="ui-btn close" @click="setFontDialogVisiblilty(false)">
+            <FDSVGImage name="close-button.svg" />
+          </button>
         </div>
-        <hr style="margin: 0px" />
+        <hr class="hr" />
         <div class="font-body">
           <div class="wrapper">
             <div class="wrapper-1">
@@ -42,13 +38,13 @@
                 </div>
               </div>
               <div>
-                <div class="fieldset" style="height: 96px; margin-top: 33px">
+                <div class="fieldset fieldDiv1">
                   <h1>
                     <span>Effects</span>
                   </h1>
                   <input
                     type="checkbox"
-                    style="width: 12px; margin-top: 0px"
+                    class="checkboxClass"
                     id="checkbox1"
                     name="StrikeOut"
                     value="StrikeOut"
@@ -60,7 +56,7 @@
                   <input
                     type="checkbox"
                     id="checkbox2"
-                    style="width: 12px; margin-top: 0px"
+                    class="inputClass"
                     name="Underline"
                     value="Underline"
                     @change="fontEffects"
@@ -136,15 +132,12 @@
                 </div>
               </div>
               <div class="wrapper-21">
-                <div class="fieldset" style="width: 192px; height: 50px">
+                <div class="fieldset fieldsetDiv">
                   <h1>
                     <span>Sample</span>
                   </h1>
-                  <div style="width: 192px; height: 48px; overflow: hidden">
-                    <div
-                      class="sampleStyle"
-                      :style="sampleStyleObj"
-                    >
+                  <div class="SampleDiv">
+                    <div class="sampleStyle" :style="sampleStyleObj">
                       AaBbYyZz
                     </div>
                   </div>
@@ -152,7 +145,7 @@
               </div>
               <div class="wrapper22">
                 Script:
-                <select style="width: 210px">
+                <select class="scriptClass">
                   <option value="western">Western</option>
                   <option value="greek">Greek</option>
                   <option value="turkish">Turkish</option>
@@ -166,25 +159,14 @@
 
             <div class="nested">
               <div class="blank-div"></div>
-              <div style="height: 0px">
-                <button
-                  style="
-                    width: 100%;
-                    border: 1px solid white;
-                    box-shadow: -1px -1px grey;
-                  "
-                  @click="updateFont"
-                >
+              <div class="nestedDivStyle">
+                <button class="nestedButtonClass" @click="updateFont">
                   OK
                 </button>
               </div>
               <div>
                 <button
-                  style="
-                    width: 100%;
-                    border: 1px solid white;
-                    box-shadow: -1px -1px grey;
-                  "
+                  class="nestedButtonClass"
                   @click="setFontDialogVisiblilty(false)"
                 >
                   Cancel
@@ -221,20 +203,19 @@ export interface IDragEvent {
   clientX: number;
   clientY: number;
 }
-interface IRef
-{
-   [refName: string]:[]
+interface IRef {
+  [refName: string]: [];
 }
 export interface IChangeStyle {
   style: {
-  color: string;
-  cursor: string;
-  fontWeight: string;
-  fontStretch: string;
-  fontFamily: string;
-  fontStyle: string;
-  backgroundColor: string;
-  }
+    color: string;
+    cursor: string;
+    fontWeight: string;
+    fontStretch: string;
+    fontFamily: string;
+    fontStyle: string;
+    backgroundColor: string;
+  };
 }
 @Component({
   name: 'FDFontDialog',
@@ -252,10 +233,10 @@ export default class FDFontDialog extends Vue {
 
   @Prop() value: font;
   @Ref('fontDialogDrag') readonly fontDialogDrag!: HTMLDivElement;
-  @Prop() isOpen :boolean;
+  @Prop() isOpen: boolean;
   // @Ref('fontStyleRef') readonly fontStyleRef! : HTMLDivElement
-  isFontStrikeOut : boolean = false;
-  isFontUnderline : boolean = false;
+  isFontStrikeOut: boolean = false;
+  isFontUnderline: boolean = false;
   fontDialogInitialStyle: IFontDialogInitialStyle = {
     left: '290px',
     top: '50px'
@@ -389,7 +370,7 @@ export default class FDFontDialog extends Vue {
   }
 
   @Emit('setFontDialogVisiblilty')
-  setFontDialogVisiblilty (isFontDialogVisible : boolean) {
+  setFontDialogVisiblilty (isFontDialogVisible: boolean) {
     return isFontDialogVisible
   }
   get fontStyleObj () {
@@ -701,5 +682,40 @@ h1 {
 .sampleStyle {
   overflow: hidden;
   cursor: context-menu;
+}
+.hr {
+  margin: 0;
+}
+.fieldDiv1 {
+  height: 96px;
+  margin-top: 33px;
+}
+.checkboxClass {
+  width: 12px;
+  margin-top: 0px;
+}
+.inputClass {
+  width: 12px;
+  margin-top: 0px;
+}
+.fieldsetDiv {
+  width: 192px;
+  height: 50px;
+}
+.sampleDiv {
+  width: 192px;
+  height: 48px;
+  overflow: hidden;
+}
+.scriptClass {
+  width: 210px;
+}
+.nestedDivStyle {
+  height: 0px;
+}
+.nestedButtonClass {
+  width: 100%;
+  border: 1px solid white;
+  box-shadow: -1px -1px grey;
 }
 </style>

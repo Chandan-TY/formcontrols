@@ -1,40 +1,104 @@
 <template>
-<div @click.stop="selectedItem">
-<div v-if="checkOtherOrientations()" class="outer-scroll-div" :style="styleOuterObj" :title="properties.ControlTipText">
-  <div @click="!getDisableValue?decreaseTheValue(isClicked = true):''">
-<button class="button-element-top" :style="styleButton" :runmode="getDisableValue" @blur="isClicked=false">
-    <FdSvgImage name="top-arrow-scrollbar.svg" @hook:mounted="changeForeColor" class="svgTopBottomStyle"/>
-  </button>
-  </div>
-  <div class="outer-scroll" @scroll="disableScrolling" :style="styleObj" :title="properties.ControlTipText" >
-    <div class="inner-scroll" :style="styleScrollObj"></div>
-  </div>
-  <div @click="!getDisableValue?increaseTheValue(isClicked = true):''">
-  <button class="button-element-bottom" :style="styleButton" :runmode="getDisableValue" @blur="isClicked=false">
-  <FdSvgImage name="bottom-arrow-scrollbar.svg" @hook:mounted="changeForeColor" class="svgTopBottomStyle"/>
-  </button>
-  </div>
-  </div>
-  <div v-else class="outer-scroll-div-oriented" :style="styleOuterObj" :title="properties.ControlTipText">
-    <div @click="!getDisableValue?decreaseTheValue(isClicked = true):''">
-  <button class="button-element-top" :style="styleButton"  :runmode="getDisableValue" @blur="isClicked=false">
-    <div :style="{ width:'5px',height:'5px' }">
-  <FdSvgImage name="left-arrow.svg" @hook:mounted="changeForeColor" class="svgLeftRightStyle"/>
+  <div @click.stop="selectedItem">
+    <div
+      v-if="checkOtherOrientations()"
+      class="outer-scroll-div"
+      :style="styleOuterObj"
+      :title="properties.ControlTipText"
+    >
+      <div
+        @click="!getDisableValue ? decreaseTheValue((isClicked = true)) : ''"
+      >
+        <button
+          class="button-element-top"
+          :style="styleButton"
+          :runmode="getDisableValue"
+          @blur="isClicked = false"
+        >
+          <FdSvgImage
+            name="top-arrow-scrollbar.svg"
+            @hook:mounted="changeForeColor"
+            class="svgTopBottomStyle"
+          />
+        </button>
+      </div>
+      <div
+        class="outer-scroll"
+        @scroll="disableScrolling"
+        :style="styleObj"
+        :title="properties.ControlTipText"
+      >
+        <div class="inner-scroll" :style="styleScrollObj"></div>
+      </div>
+      <div
+        @click="!getDisableValue ? increaseTheValue((isClicked = true)) : ''"
+      >
+        <button
+          class="button-element-bottom"
+          :style="styleButton"
+          :runmode="getDisableValue"
+          @blur="isClicked = false"
+        >
+          <FdSvgImage
+            name="bottom-arrow-scrollbar.svg"
+            @hook:mounted="changeForeColor"
+            class="svgTopBottomStyle"
+          />
+        </button>
+      </div>
     </div>
-  </button>
-  </div>
-  <div class="outer-scroll-oriented" @scroll="disableScrolling" :style="styleObj" :title="properties.ControlTipText" >
-    <div class="inner-scroll-oriented" :style="styleScrollObj"></div>
-  </div>
-  <div @click="!getDisableValue?increaseTheValue(isClicked = true):''">
-  <button class="button-element-bottom" :style="styleButton" :runmode="getDisableValue" @blur="isClicked=false">
-    <div :style="{ width:'5px',height:'5px' }">
-  <FdSvgImage name="right-arrow.svg" @hook:mounted="changeForeColor" class="svgLeftRightStyle"/>
+    <div
+      v-else
+      class="outer-scroll-div-oriented"
+      :style="styleOuterObj"
+      :title="properties.ControlTipText"
+    >
+      <div
+        @click="!getDisableValue ? decreaseTheValue((isClicked = true)) : ''"
+      >
+        <button
+          class="button-element-top"
+          :style="styleButton"
+          :runmode="getDisableValue"
+          @blur="isClicked = false"
+        >
+          <div class="svgDivClass">
+            <FdSvgImage
+              name="left-arrow.svg"
+              @hook:mounted="changeForeColor"
+              class="svgLeftRightStyle"
+            />
+          </div>
+        </button>
+      </div>
+      <div
+        class="outer-scroll-oriented"
+        @scroll="disableScrolling"
+        :style="styleObj"
+        :title="properties.ControlTipText"
+      >
+        <div class="inner-scroll-oriented" :style="styleScrollObj"></div>
+      </div>
+      <div
+        @click="!getDisableValue ? increaseTheValue((isClicked = true)) : ''"
+      >
+        <button
+          class="button-element-bottom"
+          :style="styleButton"
+          :runmode="getDisableValue"
+          @blur="isClicked = false"
+        >
+          <div class="svgDivClass">
+            <FdSvgImage
+              name="right-arrow.svg"
+              @hook:mounted="changeForeColor"
+              class="svgLeftRightStyle"
+            />
+          </div>
+        </button>
+      </div>
     </div>
-  </button>
   </div>
-  </div>
-</div>
 </template>
 
 <script lang="ts">
@@ -50,18 +114,20 @@ import { controlProperties } from '@/FormDesigner/controls-properties'
   }
 })
 export default class FDScrollBar extends Mixins(FdControlVue) {
-  getForeColor: string = ''
-  isClicked: boolean = false
-  tempScroll: boolean = false
-  tempEvent: Event
+  getForeColor: string = '';
+  isClicked: boolean = false;
+  tempScroll: boolean = false;
+  tempEvent: Event;
+  initialWidth: number = 0;
+  initialHeight: number = 0;
   /**
-  * @description disable scroll on edit mode and select mode
-  * @function disableScrolling
-  * @param e Event object to set scrollTop and scrollLeft
-  */
+   * @description disable scroll on edit mode and select mode
+   * @function disableScrolling
+   * @param e Event object to set scrollTop and scrollLeft
+   */
   disableScrolling (e: Event) {
     // console.log('scroll')
-    // console.log(e)
+    console.log('scroll', e)
     this.tempEvent = e
     this.tempScroll = true
     const targetElement = e.target as HTMLDivElement
@@ -76,6 +142,10 @@ export default class FDScrollBar extends Mixins(FdControlVue) {
     }
   }
   mounted () {
+    this.initialWidth = this.properties.Width!
+    this.initialHeight = this.properties.Height!
+    console.log('initialWidth', this.initialWidth)
+    console.log('initialHeight', this.initialHeight)
     setInterval(() => {
       if (this.tempScroll) {
         this.tempScroll = false
@@ -88,48 +158,52 @@ export default class FDScrollBar extends Mixins(FdControlVue) {
 
   get getDisableValue () {
     if (this.isRunMode || this.isEditMode) {
-      return (
-        this.properties.Enabled === false
-      )
+      return this.properties.Enabled === false
     } else {
       return true
     }
   }
   /**
-  * @description changes ForeColor property and then updates the getForeColor variable which is given to fill attribute of the svg element
-  * @function getForeColorValue
-  *
-  */
+   * @description changes ForeColor property and then updates the getForeColor variable which is given to fill attribute of the svg element
+   * @function getForeColorValue
+   *
+   */
   @Watch('properties', { deep: true })
-  changeForeColor (newVal:controlData, oldVal:controlData) {
+  changeForeColor (newVal: controlData, oldVal: controlData) {
     this.$el.querySelectorAll('.foreColor').forEach((e) => {
       (e as SVGGElement).style.fill = this.getForeColorValue
     })
   }
 
   /**
-  * @description style object is passed to :style attribute in div tag
-  * dynamically changing the styles of the component based on properties
-  * @function styleObj
-  *
-  */
-  protected get styleObj () :Partial<CSSStyleDeclaration> {
+   * @description style object is passed to :style attribute in div tag
+   * dynamically changing the styles of the component based on properties
+   * @function styleObj
+   *
+   */
+  protected get styleObj (): Partial<CSSStyleDeclaration> {
     const controlProp = this.properties
     return {
       //  position: 'relative',
-      width: this.checkOtherOrientations() ? `${controlProp.Width! - 1}px` : `${controlProp.Width}px`,
-      height: this.checkOtherOrientations() ? `${controlProp.Height}px` : `${controlProp.Height! - 1}px`,
+      // width: this.checkOtherOrientations() ? `${controlProp.Width! - 1}px` : `${this.initialWidth}px`,
+      // height: this.checkOtherOrientations() ? `${this.initialHeight}px` : `${controlProp.Height! - 1}px`,
+      width: this.checkOtherOrientations()
+        ? `${controlProp.Width! - 1}px`
+        : `${controlProp.Width!}px`,
+      height: this.checkOtherOrientations()
+        ? `${controlProp.Height!}px`
+        : `${controlProp.Height! - 1}px`,
       backgroundColor: controlProp.BackColor
     }
   }
 
   /**
-  * @description style object is passed to :style attribute in div tag
-  * dynamically changing the styles of the component based on properties
-  * @function styleOuterObj
-  *
-  */
-  protected get styleOuterObj () :Partial<CSSStyleDeclaration> {
+   * @description style object is passed to :style attribute in div tag
+   * dynamically changing the styles of the component based on properties
+   * @function styleOuterObj
+   *
+   */
+  protected get styleOuterObj (): Partial<CSSStyleDeclaration> {
     const controlProp = this.properties
     let display = ''
     if (this.isRunMode) {
@@ -144,24 +218,33 @@ export default class FDScrollBar extends Mixins(FdControlVue) {
         controlProp.MousePointer !== 0 || controlProp.MouseIcon !== ''
           ? this.getMouseCursorData
           : 'default',
-      gridTemplateColumns: this.checkOtherOrientations() ? `${controlProp.Width! + 1}px` : '21px 1fr 21px',
-      gridTemplateRows: this.checkOtherOrientations() === false ? `${controlProp.Height}px` : '21px 1fr 21px',
+      gridTemplateColumns: this.checkOtherOrientations()
+        ? `${controlProp.Width! + 1}px`
+        : '21px 1fr 21px',
+      gridTemplateRows:
+        this.checkOtherOrientations() === false
+          ? `${controlProp.Height}px`
+          : '21px 1fr 21px',
       display: display
     }
   }
 
   /**
-  * @description style object is passed to :style attribute in button tag
-  * dynamically changing the styles of the component based on properties
-  * @function styleButton
-  *
-  */
-  protected get styleButton () :Partial<CSSStyleDeclaration> {
+   * @description style object is passed to :style attribute in button tag
+   * dynamically changing the styles of the component based on properties
+   * @function styleButton
+   *
+   */
+  protected get styleButton (): Partial<CSSStyleDeclaration> {
     const controlProp = this.properties
     return {
       overflow: 'hidden',
       backgroundColor: controlProp.BackColor,
-      outline: controlProp.Enabled ? (this.isClicked ? '1px solid black' : 'none') : 'none',
+      outline: controlProp.Enabled
+        ? this.isClicked
+          ? '1px solid black'
+          : 'none'
+        : 'none',
       outlineOffset: this.isClicked ? '-5px' : '-5px',
       paddingLeft: controlProp.Width! < 20 ? '0px' : '',
       paddingRight: controlProp.Width! < 20 ? '0px' : '',
@@ -173,26 +256,43 @@ export default class FDScrollBar extends Mixins(FdControlVue) {
   }
 
   /**
-  * @description style object is passed to :style attribute in div tag
-  * dynamically changing the styles of the component based on properties
-  * @function styleScrollObj
-  *
-  */
-  protected get styleScrollObj () :Partial<CSSStyleDeclaration> {
+   * @description style object is passed to :style attribute in div tag
+   * dynamically changing the styles of the component based on properties
+   * @function styleScrollObj
+   *
+   */
+  protected get styleScrollObj (): Partial<CSSStyleDeclaration> {
     const controlProp = this.properties
     return {
-      height: this.checkOtherOrientations() ? (controlProp.ProportionalThumb === false ? 'calc(100% + 100px)' : (controlProp.Max! < controlProp.LargeChange!) ? '0px' : (controlProp.LargeChange! > 100) ? 'calc(100% + ' + controlProp.LargeChange + 'px)' : 'calc(100% + 100px)') : 'calc(100% + 100px)',
-      width: this.checkOtherOrientations() === false ? (controlProp.ProportionalThumb === false ? 'calc(100% + 100px)' : (controlProp.Max! < controlProp.LargeChange!) ? '0px' : (controlProp.LargeChange! > 100) ? 'calc(100% + ' + controlProp.LargeChange + 'px)' : 'calc(100% + 100px)') : 'calc(100% + 100px)'
+      height: this.checkOtherOrientations()
+        ? controlProp.ProportionalThumb === false
+          ? 'calc(100% + 100px)'
+          : controlProp.Max! < controlProp.LargeChange!
+            ? '0px'
+            : controlProp.LargeChange! > 100
+              ? 'calc(100% + ' + controlProp.LargeChange + 'px)'
+              : 'calc(100% + 100px)'
+        : 'calc(100% + 100px)',
+      width:
+        this.checkOtherOrientations() === false
+          ? controlProp.ProportionalThumb === false
+            ? 'calc(100% + 100px)'
+            : controlProp.Max! < controlProp.LargeChange!
+              ? '0px'
+              : controlProp.LargeChange! > 100
+                ? 'calc(100% + ' + controlProp.LargeChange + 'px)'
+                : 'calc(100% + 100px)'
+          : 'calc(100% + 100px)'
     }
   }
   /**
-     * @description checkOtherOrientations returns string value from
-     * controlProperties.controlsOrientationProp
-     * @function checkOtherOrientations
-     * @returns boolean value
-     * @override
-     */
-  checkOtherOrientations () : boolean {
+   * @description checkOtherOrientations returns string value from
+   * controlProperties.controlsOrientationProp
+   * @function checkOtherOrientations
+   * @returns boolean value
+   * @override
+   */
+  checkOtherOrientations (): boolean {
     return controlProperties.controlsOrientationProp(this.data)
   }
 }
@@ -340,5 +440,16 @@ display: none;
 .svgLeftRightStyle {
   position: relative;
   top: -33%;
+}
+
+.button-element-top[runmode]:active {
+  border-style: outset !important;
+}
+.button-element-bottom[runmode]:active {
+  border-style: outset !important;
+}
+.svgDivClass {
+      width: 5px;
+      height: 5px;
 }
 </style>

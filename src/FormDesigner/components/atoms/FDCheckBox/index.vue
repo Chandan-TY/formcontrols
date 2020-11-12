@@ -5,36 +5,38 @@
     :style="cssStyleProperty"
     @click.stop="selectedItem"
   >
-      <label class="control">
-        <input
-          @change="handleChange($event, checkboxRef)"
-          ref="checkboxInput"
-          :name="properties.Name"
-          :tabindex="properties.TabIndex"
-          :disabled="getDisableValue"
-          type="checkbox"
-          class="control-input visually-hidden"/>
-        <span class="control-indicator"
-          :style="{boxShadow: this.properties.SpecialEffect === 0 ? '0px 0px gray' : '-1px -1px gray'}"
-        ></span></label>
+    <label class="control">
+      <input
+        @change="handleChange($event, checkboxRef)"
+        ref="checkboxInput"
+        :name="properties.Name"
+        :tabindex="properties.TabIndex"
+        :disabled="getDisableValue"
+        type="checkbox"
+        class="control-input visually-hidden" />
+      <span
+        class="control-indicator"
+        :style="controlIndicatorStyleObj"
+      ></span
+    ></label>
     <div>
       <div ref="divAutoSize" :style="divcssStyleProperty">
         <span v-if="!syncIsEditMode || isRunMode" @click="makeChecked">
-        <span>{{ computedCaption.afterbeginCaption }}</span>
-        <span style="text-decoration: underline">{{
-          computedCaption.acceleratorCaption
-        }}</span>
-        <span>{{ computedCaption.beforeendCaption }}</span>
-      </span>
-      <FDEditableText
-        v-else
-        class="editText"
-        :editable="isRunMode === false && syncIsEditMode"
-        :caption="properties.Caption"
-        @updateCaption="updateCaption"
-        @releaseEditMode="setContentEditable($event, false)"
-      >
-      </FDEditableText>
+          <span>{{ computedCaption.afterbeginCaption }}</span>
+          <span class="spanStyle">{{
+            computedCaption.acceleratorCaption
+          }}</span>
+          <span>{{ computedCaption.beforeendCaption }}</span>
+        </span>
+        <FDEditableText
+          v-else
+          class="editText"
+          :editable="isRunMode === false && syncIsEditMode"
+          :caption="properties.Caption"
+          @updateCaption="updateCaption"
+          @releaseEditMode="setContentEditable($event, false)"
+        >
+        </FDEditableText>
       </div>
     </div>
   </div>
@@ -52,8 +54,8 @@ import FDEditableText from '@/FormDesigner/components/atoms/FDEditableText/index
   }
 })
 export default class FDCheckBox extends Mixins(FdControlVue) {
-  @Ref('checkboxInput') checkboxRef! : HTMLInputElement
-  @Ref('divAutoSize') autoSizecheckbox! : HTMLDivElement
+  @Ref('checkboxInput') checkboxRef!: HTMLInputElement;
+  @Ref('divAutoSize') autoSizecheckbox!: HTMLDivElement;
 
   makeChecked () {
     if (this.isRunMode) {
@@ -63,11 +65,24 @@ export default class FDCheckBox extends Mixins(FdControlVue) {
   }
   get getDisableValue () {
     if (this.isRunMode) {
-      return (
-        this.properties.Enabled === false || this.properties.Locked
-      )
+      return this.properties.Enabled === false || this.properties.Locked
     } else {
       return true
+    }
+  }
+  /**
+   * @description style object is passed to :style attribute in span tag
+   * dynamically changing the styles of the component based on properties
+   * @function controlIndicatorStyleObj
+   *
+   */
+  get controlIndicatorStyleObj () {
+    const controlProp = this.properties
+    return {
+      boxShadow:
+            controlProp.SpecialEffect === 0
+              ? '0px 0px gray'
+              : '-1px -1px gray'
     }
   }
   /**
@@ -102,9 +117,7 @@ export default class FDCheckBox extends Mixins(FdControlVue) {
       whiteSpace: controlProp.WordWrap ? 'normal' : 'nowrap',
       wordBreak: controlProp.WordWrap ? 'break-word' : 'normal',
       color:
-        controlProp.Enabled === true
-          ? controlProp.ForeColor
-          : this.getEnabled,
+        controlProp.Enabled === true ? controlProp.ForeColor : this.getEnabled,
       cursor:
         controlProp.MousePointer !== 0 || controlProp.MouseIcon !== ''
           ? this.getMouseCursorData
@@ -128,7 +141,7 @@ export default class FDCheckBox extends Mixins(FdControlVue) {
       overflow: 'hidden',
       gridTemplateColumns: '12px auto ',
       gap: '2px',
-      alignItems: (font.FontSize! > 17) ? 'center' : '',
+      alignItems: font.FontSize! > 17 ? 'center' : '',
       alignContent: 'center',
       boxShadow: 'none'
     }
@@ -180,7 +193,12 @@ export default class FDCheckBox extends Mixins(FdControlVue) {
     const controlProp = this.properties
     return {
       overflow: 'hidden',
-      textAlign: controlProp.TextAlign === 0 ? 'left' : controlProp.TextAlign === 1 ? 'center' : 'right',
+      textAlign:
+        controlProp.TextAlign === 0
+          ? 'left'
+          : controlProp.TextAlign === 1
+            ? 'center'
+            : 'right',
       backgroundImage: `url(${controlProp.Picture})`,
       backgroundRepeat: this.getRepeat,
       backgroundPosition: this.getPosition,
@@ -191,16 +209,26 @@ export default class FDCheckBox extends Mixins(FdControlVue) {
   /**
    * @override
    */
-  @Watch('properties.AutoSize', { deep: true })
-  updateAutoSize (newVal:boolean, oldVal:boolean) {
+  @Watch('properties.AutoSize', {
+    deep: true
+  })
+  updateAutoSize (newVal: boolean, oldVal: boolean) {
     if (this.properties.AutoSize) {
       this.$nextTick(() => {
-        let divRef:HTMLDivElement = this.autoSizecheckbox
-        const offsetWidth = (divRef.childNodes[0] as HTMLSpanElement).offsetWidth
-        const offsetHeight = (divRef.childNodes[0] as HTMLSpanElement).offsetHeight
+        let divRef: HTMLDivElement = this.autoSizecheckbox
+        const offsetWidth = (divRef.childNodes[0] as HTMLSpanElement)
+          .offsetWidth
+        const offsetHeight = (divRef.childNodes[0] as HTMLSpanElement)
+          .offsetHeight
         // Value 10 for checkbox, 4 for Gap style value, and offsetHeight and offsetWidth + 1
-        this.updateDataModel({ propertyName: 'Width', value: 10 + 4 + offsetWidth + 1 })
-        this.updateDataModel({ propertyName: 'Height', value: 10 + 4 + offsetHeight + 1 })
+        this.updateDataModel({
+          propertyName: 'Width',
+          value: 10 + 4 + offsetWidth + 1
+        })
+        this.updateDataModel({
+          propertyName: 'Height',
+          value: 10 + 4 + offsetHeight + 1
+        })
       })
     }
   }
@@ -226,6 +254,7 @@ export default class FDCheckBox extends Mixins(FdControlVue) {
   overflow: hidden;
   align-items: center;
 }
+
 .visually-hidden {
   border: 0;
   clip: rect(0, 0, 0, 0);
@@ -236,6 +265,7 @@ export default class FDCheckBox extends Mixins(FdControlVue) {
   position: absolute;
   width: 1px;
 }
+
 .control {
   /* position: absolute; */
   /* top: 20%;
@@ -243,6 +273,7 @@ export default class FDCheckBox extends Mixins(FdControlVue) {
   display: inline-flex;
   /* align-items: center; */
 }
+
 .control-indicator {
   width: 10px;
   height: 10px;
@@ -258,6 +289,11 @@ export default class FDCheckBox extends Mixins(FdControlVue) {
   background-position: center;
   background-repeat: no-repeat;
 }
+
+.spanStyle {
+  text-decoration: underline;
+}
+
 /* .checkbox {
    top: 1px;
    position: static;
@@ -274,28 +310,28 @@ export default class FDCheckBox extends Mixins(FdControlVue) {
 /* asd */
 .menu {
   width: 10%;
-  margin: 0 auto
+  margin: 0 auto;
 }
 
 .main {
   width: 90%;
-  margin: 0 auto
+  margin: 0 auto;
 }
 
 .editText {
   width: fit-content;
-    height: auto;
-    text-align: left;
-    background: inherit;
-    font: inherit;
-    border: none;
-    outline: none;
-    padding: 0;
-    resize: none;
-    overflow: hidden;
-    text-decoration: inherit;
-    color: inherit;
-    white-space: normal;
-    word-break: break-word;
+  height: auto;
+  text-align: left;
+  background: inherit;
+  font: inherit;
+  border: none;
+  outline: none;
+  padding: 0;
+  resize: none;
+  overflow: hidden;
+  text-decoration: inherit;
+  color: inherit;
+  white-space: normal;
+  word-break: break-word;
 }
 </style>
