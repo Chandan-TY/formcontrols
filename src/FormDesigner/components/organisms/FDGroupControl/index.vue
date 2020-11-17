@@ -4,7 +4,6 @@
       v-for="groupName in groupedControls[userFormId].groupArray"
       :class="[getGroupEditStyle(groupName)? 'mainEditDiv' : 'mainDiv']"
       :key="groupName"
-      :ref="groupName"
       :style="getGroupStyle(groupName)"
       @mousedown.stop="handleMouseDown($event,'drag')"
     >
@@ -21,7 +20,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop, Watch } from 'vue-property-decorator'
+import { Component, Vue, Prop, Watch, Ref } from 'vue-property-decorator'
 import { IselectControl, IupdateControl, IupdateGroup } from '@/storeModules/fd/actions'
 import { State, Action } from 'vuex-class'
 @Component({
@@ -195,13 +194,11 @@ export default class GroupControl extends Vue {
     this.positions.clientX = event.clientX - diffGridX
     this.positions.clientY = event.clientY - diffGridY
 
-    let dragResizeRef: IdragResizeRefStyle = { offsetTop: 0, offsetLeft: 0 }
     let dragResizeControl: IGroupStyle = {}
     let dragResizeControl1: controlProperties = { ID: '' }
 
     for (let i = 0; i < this.divStyleArray.length; i++) {
       this.groupName = this.divStyleArray[i].groupName!
-      dragResizeRef = (this.$refs as IdragResizeRef)[this.groupName][0 as number]
       dragResizeControl = this.divStyleArray[i]
       if (dragResizeControl.display === 'block') {
         let top: number = -1

@@ -11,7 +11,6 @@
     >
       <ResizeHandler
         v-if="isInnerWindowClicked"
-        :refOfResizeDiv="$refs"
         :controlId="controlId"
         :userFormId="userFormId"
         controlType="userform"

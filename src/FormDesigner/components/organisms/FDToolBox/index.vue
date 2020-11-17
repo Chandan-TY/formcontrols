@@ -41,7 +41,7 @@
 
 <script lang="ts">
 import { toolBox } from '../../../models/toolBox'
-import { Component, Vue, Prop, Watch } from 'vue-property-decorator'
+import { Component, Vue, Prop, Watch, Ref } from 'vue-property-decorator'
 import { State, Action } from 'vuex-class'
 import UseSvgImage from '../../atoms/FDSVGImage/index.vue'
 import { IchangeToolBoxSelect } from '../../../../storeModules/fd/actions'
@@ -69,11 +69,10 @@ interface Istyle {
   }
 })
 export default class ToolBox extends Vue {
-  @State((state: rootState) => state.fd.toolBoxSelect)
-  toolBoxSelect!: fdState['toolBoxSelect'];
-  @Action('fd/changeToolBoxSelect') changeToolBoxSelect!: (
-    payload: IchangeToolBoxSelect
-  ) => void;
+  @State((state:rootState) => state.fd.toolBoxSelect) toolBoxSelect!: fdState['toolBoxSelect']
+  @Action('fd/changeToolBoxSelect') changeToolBoxSelect!: (payload: IchangeToolBoxSelect) => void
+  @Ref('icons') icons: HTMLDivElement[]
+
   toolBox: Array<IToolbox> = toolBox;
   zIndexChange: number = 0;
   mounted () {
@@ -87,8 +86,8 @@ export default class ToolBox extends Vue {
 
   @Watch('toolBoxSelect')
   selectedControl (value: string) {
-    for (let index = 0; index < (this.$refs as IRef).icons.length; index++) {
-      const element: Istyle = (this.$refs as IRef).icons[index]
+    for (let index = 0; index < this.icons.length; index++) {
+      const element: HTMLDivElement = this.icons[index]
       if (value.includes(element.id)) {
         element.style.borderRight = '2px solid white'
         element.style.borderBottom = '2px solid white'

@@ -88,11 +88,33 @@ describe('FDCheckBox.vue', () => {
       expect(checkBox.checked).toBe(true)
       checkBox.trigger('input')
     })
+    it('makeChecked test', () => {
+      testWrapper.vm.syncIsEditMode = false
+      testWrapper.vm.isRunMode = true
+      testWrapper.vm.makeChecked()
+    })
+    it('verifyValue test', () => {
+      testWrapper.vm.isRunMode = false
+      testWrapper.vm.verifyValue('true', 'false')
+    })
+    it('verifyValue test', () => {
+      testWrapper.vm.isRunMode = false
+      testWrapper.vm.verifyValue('true', 'false')
+    })
+    it('verifyValue test when false', () => {
+      testWrapper.vm.isRunMode = false
+      testWrapper.vm.verifyValue('false', 'true')
+    })
   })
 
   describe('prop data test', () => {
     const testWrapper = factory({ data: controlObj.data.CheckBox })
     const checkBox = { ...checkbox1 }
+    testWrapper.vm.isRunMode = true
+    delete checkBox.properties.Font
+    checkBox.properties.Visible = !checkBox.properties.Visible
+    checkBox.properties.BackStyle = !checkBox.properties.BackStyle
+    checkBox.properties.BackColor = '#D6D5D5'
     checkBox.properties.TabKeyBehavior = !checkbox1.properties.TabKeyBehavior
     checkBox.properties.AutoSize = !checkbox1.properties.AutoSize
     checkBox.properties.AutoTab = !checkbox1.properties.AutoTab
@@ -100,8 +122,14 @@ describe('FDCheckBox.vue', () => {
     checkBox.properties.EnterKeyBehavior = !checkbox1.properties.EnterKeyBehavior
     checkBox.properties.Locked = !checkbox1.properties.Locked
     checkBox.properties.MultiLine = !checkbox1.properties.MultiLine
+    checkBox.properties.Alignment = !checkBox.properties.Alignment
+    checkBox.properties.TextAlign = 1
+    checkBox.properties.SpecialEffect = 1
     checkBox.properties.Value = 'text'
     checkBox.properties.Text = 'text'
+    checkBox.properties.WordWrap = !checkBox.properties.WordWrap
+    checkBox.properties.Enabled = !checkBox.properties.Enabled
+
     testWrapper.setProps({ data: checkBox })
     it('autoSize test', () => {
       expect(testWrapper.props().data.properties.AutoSize).toBe(true)
@@ -125,16 +153,16 @@ describe('FDCheckBox.vue', () => {
       expect(testWrapper.props().data.properties.TabKeyBehavior).toBe(true)
     })
     it('Visible test', () => {
-      expect(testWrapper.props().data.properties.Visible).toBe(true)
+      expect(testWrapper.props().data.properties.Visible).toBe(false)
     })
     it('wordWrap test', () => {
-      expect(testWrapper.props().data.properties.WordWrap).toBe(true)
+      expect(testWrapper.props().data.properties.WordWrap).toBe(false)
     })
     it('Name test', () => {
       expect(testWrapper.props().data.properties.Name).toMatch('CheckBox')
     })
     it('BackColor test', () => {
-      expect(testWrapper.props().data.properties.BackColor).toMatch('#ffffff')
+      expect(testWrapper.props().data.properties.BackColor).toMatch('#D6D5D5')
     })
     it('ForeColor test', () => {
       expect(testWrapper.props().data.properties.ForeColor).toMatch('#000000')
@@ -144,6 +172,28 @@ describe('FDCheckBox.vue', () => {
     })
     it('Text test', () => {
       expect(testWrapper.props().data.properties.Text).toMatch('text')
+    })
+    it('TextAlign test', () => {
+      expect(testWrapper.props().data.properties.TextAlign).toBe(1)
+    })
+    it('SpecialEffect test', () => {
+      expect(testWrapper.props().data.properties.SpecialEffect).toBe(1)
+    })
+    it('BackStyle test', () => {
+      expect(testWrapper.props().data.properties.BackStyle).toBe(false)
+    })
+    it('BackColor test', () => {
+      expect(testWrapper.props().data.properties.BackColor).toBe('#D6D5D5')
+    })
+    it('WordWrap test', () => {
+      expect(testWrapper.props().data.properties.WordWrap).toBe(false)
+    })
+    it('Visible test', () => {
+      testWrapper.vm.isRunMode = false
+      expect(testWrapper.vm.data.properties.Visible).toBe(false)
+    })
+    it('Alignment test', () => {
+      expect(testWrapper.props().data.properties.Alignment).toBe(false)
     })
   })
 

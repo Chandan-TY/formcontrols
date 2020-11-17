@@ -29,6 +29,7 @@ const checkboxObj = {
         releaseSelect
     </button>
   </div>
+  </div>
     `,
   methods: {
     ...mapActions({

@@ -77,7 +77,7 @@
       id="right-click-menu"
       tabindex="0"
       @blur.stop="closeMenu"
-      :ref="'tabstrip'.concat(controlId)"
+       ref="tabstripContextMenu"
       :style="{ top: top, left: left, display: viewMenu ? 'block' : 'none' }"
     >
       <ContextMenu
@@ -93,7 +93,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Emit, Prop, Watch } from 'vue-property-decorator'
+import { Component, Emit, Prop, Ref, Watch } from 'vue-property-decorator'
 import FdControlVue from '@/api/abstract/FormDesigner/FdControlVue'
 import { State, Action } from 'vuex-class'
 import ContextMenu from '../FDContextMenu/index.vue'
@@ -149,6 +149,8 @@ export default class FDTabStrip extends FdControlVue {
   @State((state) => state.fd.userformData) userformData!: userformData;
   @Prop() isEditMode: boolean;
   @Prop({ required: true, type: String }) public userFormId!: string;
+  @Ref('tabstripContextMenu') tabstripContextMenu: HTMLDivElement
+  @Ref('scrolling') scrolling:HTMLDivElement
   isScroll = true;
   // values: Array<tabsItems> = []
   viewMenu?: boolean = false;
@@ -186,11 +188,8 @@ export default class FDTabStrip extends FdControlVue {
       e.stopPropagation()
       const controlLeft: number = this.userformData['ID_USERFORM1'][this.controlId].properties.Left!
       const controlTop: number = this.userformData['ID_USERFORM1'][this.controlId].properties.Top!
-      // this.top = `${e.offsetY + controlTop!}px`
-      // this.left = `${e.offsetX + controlLeft!}px`
       this.viewMenu = true
-      const dynamicRef = 'tabstrip'.concat(this.controlId)
-      Vue.nextTick(() => (this as any).$refs[dynamicRef].focus())
+      Vue.nextTick(() => this.tabstripContextMenu.focus())
     }
   }
 
@@ -201,8 +200,7 @@ export default class FDTabStrip extends FdControlVue {
   }
 
   leftmove () {
-    const scrollRef = (this.$refs as Iscrolling).scrolling
-    console.log('scrol;Ref', this.$refs)
+    const scrollRef = this.scrolling
     if (this.properties.TabOrientation === 0 || this.properties.TabOrientation === 1) {
     scrollRef.scrollLeft! -= 50
     } else {
@@ -210,20 +208,15 @@ export default class FDTabStrip extends FdControlVue {
     }
   }
   rightmove () {
-    const scrollRef = (this.$refs as Iscrolling).scrolling
-    debugger
+    const scrollRef = this.scrolling
     // scrollRef.scrollLeft! = scrollRef.scrollLeft! + 50
-    console.log('Top;Ref', this.$refs)
     let tempScrollTop = scrollRef.scrollTop!
     if (this.properties.TabOrientation === 0 || this.properties.TabOrientation === 1) {
     scrollRef.scrollLeft! += 50
     } else {
       tempScrollTop += 50
       scrollRef.scrollTop = tempScrollTop
-      console.log('tempscrollTop', scrollRef.scrollTop)
     }
-    // console.log(scrollRef)
-    // scrollRef.scrollLeft! += 20
   }
 
   isChecked (value: number) {
@@ -284,14 +277,9 @@ export default class FDTabStrip extends FdControlVue {
    */
   protected get getScrollButtonStyleObj (): Partial<CSSStyleDeclaration> {
     const controlProp = this.properties
-    // console.log('extratablebngth', this.extraDatas.Tabs!.length * this.properties.TabFixedWidth!)
-    // console.log('tabfixedwidth', this.properties.TabFixedWidth!)
-    // console.log('width', this.properties.Width!)
-    // this.scrollCheck()
     const tabsLength = this.extraDatas.Tabs!.length * this.properties.TabFixedWidth! + (10 * this.extraDatas.Tabs!.length)
     const tabsHeight = this.extraDatas.Tabs!.length * this.properties.TabFixedHeight! + (10 * this.extraDatas.Tabs!.length)
-    console.log('height', this.properties.Height)
-    console.log('tabfixedheight', tabsHeight)
+
     return {
       zIndex: '3',
       marginTop:
@@ -438,8 +426,6 @@ export default class FDTabStrip extends FdControlVue {
   scrollCheck () {
     // debugger
     const tabsLength = this.extraDatas.Tabs!.length * this.properties.TabFixedWidth! + (10 * this.extraDatas.Tabs!.length)
-    console.log('WidthTabsd', this.properties.Width!)
-    console.log('tabsLewngth', tabsLength)
     if (
       tabsLength > this.properties.Width!
     ) {
@@ -457,13 +443,13 @@ export default class FDTabStrip extends FdControlVue {
    */
   @Watch('properties.Width', { deep: true })
   isScrollUsed (newVal: controlData, oldVal: controlData) {
-    this.tempScrollWidth = (this.$refs as Iscrolling).scrolling.offsetWidth!
-    // this.tempScrollHeight = (this.$refs as Iscrolling).scrolling.offsetHeight!
+    this.tempScrollWidth = this.scrolling.offsetWidth!
+    // this.tempScrollHeight = this.scrolling.offsetHeight!
     this.scrollCheck()
   }
   mounted () {
-    this.tempScrollWidth = (this.$refs as Iscrolling).scrolling.offsetWidth!
-    // this.tempScrollHeight = (this.$refs as Iscrolling).scrolling.offsetHeight!
+    this.tempScrollWidth = this.scrolling.offsetWidth!
+    // this.tempScrollHeight = this.scrolling.offsetHeight!
     this.scrollCheck()
   }
   @Emit('updateModel')

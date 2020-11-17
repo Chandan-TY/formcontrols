@@ -22,7 +22,6 @@
     </span>
     <FDEditableText
       v-else
-      class="editText"
       :editable="isRunMode === false && syncIsEditMode"
       :caption="properties.Caption"
       @updateCaption="updateCaption"
@@ -114,7 +113,11 @@ export default class FDCommandButton extends Mixins(FdControlVue) {
       ? controlProp.Font
       : {
         FontName: 'Arial',
-        FontSize: 10
+        FontSize: 10,
+        FontItalic: true,
+        FontBold: true,
+        FontUnderline: true,
+        FontStrikethrough: true
       }
     let display = ''
     if (this.isRunMode) {
@@ -161,8 +164,8 @@ export default class FDCommandButton extends Mixins(FdControlVue) {
               ? 'line-through'
               : '',
       fontWeight: font.FontBold ? 'bold' : '',
-      whiteSpace: controlProp.WordWrap ? 'normal' : 'nowrap',
-      wordBreak: controlProp.WordWrap ? 'break-word' : 'normal',
+      whiteSpace: controlProp.WordWrap ? 'pre-wrap' : 'pre',
+      wordBreak: controlProp.WordWrap ? 'break-all' : 'normal',
       paddingLeft: controlProp.AutoSize ? '0px' : '0px',
       paddingRight: controlProp.WordWrap ? '0px' : '6px',
       backgroundImage: `url(${controlProp.Picture})`,
@@ -198,22 +201,6 @@ export default class FDCommandButton extends Mixins(FdControlVue) {
 .commandbutton {
   overflow: hidden;
   display: inline-block;
-}
-.editText {
-  width: fit-content;
-  height: auto;
-  text-align: center;
-  background: inherit;
-  font: inherit;
-  border: none;
-  outline: none;
-  padding: 0;
-  resize: none;
-  overflow: hidden;
-  text-decoration: inherit;
-  color: inherit;
-  white-space: inherit;
-  word-break: inherit;
 }
 .commandbutton[runmode]:active {
   border-style: outset !important;

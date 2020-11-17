@@ -5,7 +5,6 @@ import { mapState, mapActions } from 'vuex'
 import { sampleStore, updateVuexCallback, initUpdate } from '@/api/storybook/utilReactivity.js'
 
 import FdResizeControl from '@/FormDesigner/components/organisms/FDResizeControl/index.vue'
-// import FDOptionButton from '.'
 import SpecNote from './index.spec.md'
 
 const textBoxObj = {

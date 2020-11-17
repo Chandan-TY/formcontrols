@@ -21,6 +21,7 @@ export default class FdControlVue extends Vue {
   selectionData :Array<string> = [];
   matchEntry: Array<number> = [];
   matchIndex = -1;
+  isDropdownVisible: boolean = true
 
    // global variable to keep track of TripleState when enabled
    protected tripleState:number = 0
@@ -79,11 +80,6 @@ export default class FdControlVue extends Vue {
   controlEditMode (event: MouseEvent) {
     return event
   }
-  /* updateCaption (event : KeyboardEvent) {
-    const targetElement = event.target as HTMLSpanElement
-    const captionValue = targetElement.innerText
-    this.updateDataModel({ propertyName: 'Caption', value: captionValue })
-  } */
 
   updateCaption (updateValue : string) {
     this.updateDataModel({ propertyName: 'Caption', value: updateValue })
@@ -351,9 +347,12 @@ export default class FdControlVue extends Vue {
    *@param bgColor
    */
   setStyle (ref:HTMLInputElement, checked:boolean, disabled:boolean, bgColor:string) {
-    ref.checked = checked;
-    ((ref.parentNode as HTMLLabelElement).childNodes[1] as HTMLSpanElement).style.backgroundColor = bgColor
-    ref.disabled = disabled
+    debugger
+    if (ref) {
+      ref.checked = checked;
+      ((ref.parentNode as HTMLLabelElement).childNodes[1] as HTMLSpanElement).style.backgroundColor = bgColor
+      ref.disabled = disabled
+    }
   }
 
   /**
@@ -508,9 +507,10 @@ export default class FdControlVue extends Vue {
  } updateColumnWidths (index: number) {
    const controlProp = this.properties
    const updateColWidth = controlProp.ColumnWidths!.split(';')
+   const colChangeCheck: boolean = controlProp.ColumnCount! - 1 < index
    return {
      textAlign: controlProp.TextAlign === 0 ? 'left' : controlProp.TextAlign === 2 ? 'right' : 'center',
-     width: (updateColWidth[index]) ? parseInt(updateColWidth[index]) + 'px' : '100px',
+     width: colChangeCheck ? '0px' : ((updateColWidth[index]) ? parseInt(updateColWidth[index]) + 'px' : controlProp.ColumnCount! > index ? '100px' : '0px'),
      overflow: 'hidden'
    }
  }
@@ -582,14 +582,23 @@ topIndexCheck (newVal:number, oldVal:number) {
  *
  */
 handleMultiSelect (e: MouseEvent) {
+  debugger
   console.log('Selected Value NOW', e)
+  // console.log('FIRST ELE', e.path[1].attributes[0].ownerElement.firstChildElement.innerText)
   const targetElement = (e.target as HTMLTableElement)
+  const tempData = targetElement.parentElement!.children[0] as HTMLTableElement
+  const tempDataOption = targetElement.parentElement!.children[1] as HTMLTableElement
   const tempPath = e.composedPath()
   targetElement.focus()
   let data = targetElement.innerText
   let splitData = data.replace(/\t/g, ' ').split(' ')
-  this.selectionData = splitData
-  console.log('Selectioon Data', this.selectionData[0])
+  // this.selectionData[0] = this.data.properties.ListStyle === 0 ? tempData.innerText : tempDataOption.innerText
+  if (this.data.properties.ListStyle === 0) {
+    this.selectionData[0] = tempData.innerText
+  } else {
+    this.selectionData[0] = tempDataOption.innerText
+  }
+  console.log('Selectioon Data', this.selectionData)
   if (this.properties.Enabled && this.properties.Locked === false) {
     if (this.properties.MultiSelect === 0) {
       if (this.properties.ControlSource !== '') {
@@ -669,6 +678,31 @@ handleMultiSelect (e: MouseEvent) {
         this.clearOptionBGColorAndChecked(e)
         this.setOptionBGColorAndChecked(e)
         this.updateDataModel({ propertyName: 'Value', value: targetElement.innerText })
+      }
+    } else {
+      console.log('Check the event', e)
+      // console.log('FIRST ELE', e.path[1].attributes[0].ownerElement.firstChildElement.innerText)
+      if (this.properties.ControlSource !== '') {
+        this.updateDataModel({ propertyName: 'Text', value: this.selectionData[0] })
+        this.updateDataModel({ propertyName: 'Value', value: this.selectionData[0] })
+        this.updateDataModelExtraData({ propertyName: 'ControlSourceValue', value: this.selectionData[0] })
+      }
+      this.clearOptionBGColorAndChecked(e)
+      this.setOptionBGColorAndChecked(e)
+      let isListStyle = 0
+      if (this.properties.TextColumn === -1 || this.properties.TextColumn === 1) {
+        // 0th index is empty string
+        if (this.properties.ListStyle === 0) {
+          isListStyle = -1
+        }
+        this.updateDataModel({ propertyName: 'Text', value: splitData[1 - isListStyle] })
+        this.updateDataModel({ propertyName: 'Value', value: splitData[1 - isListStyle] })
+      } else if (this.properties.TextColumn === 0) {
+        this.updateDataModel({ propertyName: 'Text', value: splitData[2 - isListStyle] })
+        this.updateDataModel({ propertyName: 'Value', value: splitData[1 - isListStyle] })
+      } else {
+        this.updateDataModel({ propertyName: 'Text', value: splitData[this.properties.TextColumn!] })
+        this.updateDataModel({ propertyName: 'Value', value: splitData[1 - isListStyle] })
       }
     }
   }
@@ -944,6 +978,9 @@ setOptionBGColorAndChecked (e: KeyboardEvent | MouseEvent) {
    currentTargetElement.style.backgroundColor === 'rgb(59, 122, 231)'
      ? ''
      : 'rgb(59, 122, 231)'
+  if (this.data.type === 'ComboBox') {
+    currentTargetElement.style.backgroundColor = ''
+  }
   if (
     this.properties.ListStyle === 1 &&
    this.properties.MultiSelect === 0

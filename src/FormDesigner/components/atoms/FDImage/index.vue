@@ -34,6 +34,7 @@ export default class FDImage extends Mixins(FdControlVue) {
    */
   @Watch('properties.AutoSize', { deep: true })
   updateAutoSize (newVal: boolean, oldVal: boolean) {
+    /* istanbul ignore else */
     if (newVal && this.properties.Picture) {
       const img = new Image()
       img.src = this.properties.Picture[0]

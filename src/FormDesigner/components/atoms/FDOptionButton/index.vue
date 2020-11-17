@@ -27,7 +27,6 @@
         </span>
         <FDEditableText
           v-else
-          class="editText"
           :editable="isRunMode === false && syncIsEditMode"
           :caption="properties.Caption"
           @updateCaption="updateCaption"
@@ -51,9 +50,33 @@ import FDEditableText from '@/FormDesigner/components/atoms/FDEditableText/index
   }
 })
 export default class FDOptionButton extends Mixins(FdControlVue) {
-  @Ref('divAutoSize') readonly autoSizeOptionButton!: HTMLDivElement;
-  @Ref('optBtnInput') optionBtnRef!: HTMLDivElement;
+   @Ref('divAutoSize') readonly autoSizeOptionButton! : HTMLDivElement
+   @Ref('optBtnInput') optBtnInput! : HTMLInputElement
 
+  /**
+   * @description  watches Value property and the sets the checked
+   * @function verifyValue
+   */
+  @Watch('properties.Value', {
+    deep: true
+  })
+   verifyValue (newVal: string, oldVal: string) {
+     if (!this.isRunMode) {
+       let tempValue = newVal.toLowerCase()
+       const checkDiv = this.optBtnInput
+       if (tempValue === 'true') {
+         checkDiv.checked = true
+       } else if (tempValue === 'false') {
+         checkDiv.checked = false
+       }
+     }
+   }
+
+  /**
+   * @description getDisableValue checks for the RunMode of the control and then returns after checking for the Enabled
+   * and the Locked property
+   * @function getDisableValue
+   */
   get getDisableValue () {
     if (this.isRunMode) {
       return this.properties.Enabled === false || this.properties.Locked
@@ -62,10 +85,13 @@ export default class FDOptionButton extends Mixins(FdControlVue) {
     }
   }
 
+  /**
+   * @description  makeChecked controls the checked of the control in RunMode
+   * @function makeChecked
+   */
   makeChecked () {
     if (this.isRunMode) {
-      const checkDiv = this.$refs.optBtnInput as HTMLInputElement
-      checkDiv.checked = true
+      this.optBtnInput.checked = true
     }
   }
   /**
@@ -95,8 +121,8 @@ export default class FDOptionButton extends Mixins(FdControlVue) {
       top: `${controlProp.Top}px`,
       backgroundColor: controlProp.BackColor,
       background: controlProp.BackStyle ? controlProp.BackColor : 'transparent',
-      whiteSpace: controlProp.WordWrap ? 'normal' : 'nowrap',
-      wordBreak: controlProp.WordWrap ? 'break-word' : 'normal',
+      whiteSpace: controlProp.WordWrap ? 'pre-wrap' : 'pre',
+      wordBreak: controlProp.WordWrap ? 'break-all' : 'normal',
       color:
         controlProp.Enabled === true ? controlProp.ForeColor : this.getEnabled,
       cursor:
@@ -224,6 +250,10 @@ export default class FDOptionButton extends Mixins(FdControlVue) {
     }
   }
 
+  /**
+   * @description  sets controlSource if present and updates Value property
+   * @function controlSource
+   */
   mounted () {
     this.controlSource()
   }
@@ -232,12 +262,10 @@ export default class FDOptionButton extends Mixins(FdControlVue) {
 
 <style scoped>
 .container {
-  /* position: relative; */
   left: 100px;
   top: 100px;
 }
 .outer-check {
-  /* position: relative; */
   height: 30px;
   width: 150px;
   min-width: 14px;

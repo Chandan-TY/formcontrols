@@ -7,17 +7,14 @@
   >
     <label class="control">
       <input
-        @change="handleChange($event, checkboxRef)"
+        @change="handleChange($event, checkboxInput)"
         ref="checkboxInput"
         :name="properties.Name"
         :tabindex="properties.TabIndex"
         :disabled="getDisableValue"
         type="checkbox"
         class="control-input visually-hidden" />
-      <span
-        class="control-indicator"
-        :style="controlIndicatorStyleObj"
-      ></span
+      <span class="control-indicator" :style="controlIndicatorStyleObj"></span
     ></label>
     <div>
       <div ref="divAutoSize" :style="divcssStyleProperty">
@@ -30,7 +27,6 @@
         </span>
         <FDEditableText
           v-else
-          class="editText"
           :editable="isRunMode === false && syncIsEditMode"
           :caption="properties.Caption"
           @updateCaption="updateCaption"
@@ -54,15 +50,45 @@ import FDEditableText from '@/FormDesigner/components/atoms/FDEditableText/index
   }
 })
 export default class FDCheckBox extends Mixins(FdControlVue) {
-  @Ref('checkboxInput') checkboxRef!: HTMLInputElement;
+  @Ref('checkboxInput') checkboxInput!: HTMLInputElement;
   @Ref('divAutoSize') autoSizecheckbox!: HTMLDivElement;
 
+  /**
+   * @description  watches Value property and the sets the checked
+   * @function verifyValue
+   */
+  @Watch('properties.Value', {
+    deep: true
+  })
+  verifyValue (newVal: string, oldVal: string) {
+    if (!this.isRunMode) {
+      let tempValue = newVal.toLowerCase()
+      const checkDiv = this.checkboxInput
+      if (tempValue === 'true') {
+        checkDiv.checked = true
+      } else if (tempValue === 'false') {
+        checkDiv.checked = false
+      }
+    }
+  }
+
+  /**
+   * @description  makeChecked controls the checked of the control in RunMode
+   * @function makeChecked
+   */
   makeChecked () {
+    /* istanbul ignore else */
     if (this.isRunMode) {
-      const checkDiv = this.$refs.checkboxInput as HTMLInputElement
+      const checkDiv = this.checkboxInput
       checkDiv.checked = !checkDiv.checked
     }
   }
+
+  /**
+   * @description getDisableValue checks for the RunMode of the control and then returns after checking for the Enabled
+   * and the Locked property
+   * @function getDisableValue
+   */
   get getDisableValue () {
     if (this.isRunMode) {
       return this.properties.Enabled === false || this.properties.Locked
@@ -70,6 +96,7 @@ export default class FDCheckBox extends Mixins(FdControlVue) {
       return true
     }
   }
+
   /**
    * @description style object is passed to :style attribute in span tag
    * dynamically changing the styles of the component based on properties
@@ -79,12 +106,10 @@ export default class FDCheckBox extends Mixins(FdControlVue) {
   get controlIndicatorStyleObj () {
     const controlProp = this.properties
     return {
-      boxShadow:
-            controlProp.SpecialEffect === 0
-              ? '0px 0px gray'
-              : '-1px -1px gray'
+      boxShadow: controlProp.SpecialEffect === 0 ? '0px 0px gray' : '-1px -1px gray'
     }
   }
+
   /**
    * @description style object is passed to :style attribute in label tag
    * dynamically changing the styles of the component based on properties
@@ -97,7 +122,12 @@ export default class FDCheckBox extends Mixins(FdControlVue) {
       ? controlProp.Font
       : {
         FontName: 'Arial',
-        FontSize: 10
+        FontSize: 20,
+        FontItalic: true,
+        FontBold: true,
+        FontUnderline: true,
+        FontStrikethrough: true
+        // FontStyle: 'Arial Narrow Italic'
       }
     let display = ''
     if (this.isRunMode) {
@@ -114,15 +144,14 @@ export default class FDCheckBox extends Mixins(FdControlVue) {
       borderColor: controlProp.BorderColor,
       border: this.getBorderStyle,
       background: controlProp.BackStyle ? controlProp.BackColor : 'transparent',
-      whiteSpace: controlProp.WordWrap ? 'normal' : 'nowrap',
-      wordBreak: controlProp.WordWrap ? 'break-word' : 'normal',
+      whiteSpace: controlProp.WordWrap ? 'pre-wrap' : 'pre',
+      wordBreak: controlProp.WordWrap ? 'break-all' : 'normal',
       color:
         controlProp.Enabled === true ? controlProp.ForeColor : this.getEnabled,
       cursor:
         controlProp.MousePointer !== 0 || controlProp.MouseIcon !== ''
           ? this.getMouseCursorData
           : 'default',
-      // Fix Font.FontSize, Font.FontItalic ...
       fontFamily: font.FontStyle ? font.FontStyle : font.FontName,
       fontSize: `${font.FontSize}px`,
       fontStyle: font.FontItalic ? 'italic' : '',
@@ -135,7 +164,6 @@ export default class FDCheckBox extends Mixins(FdControlVue) {
               ? 'line-through'
               : '',
       fontWeight: font.FontBold ? 'bold' : '',
-      // position: 'relative',
       display: display,
       direction: controlProp.Alignment ? 'ltr' : 'rtl',
       overflow: 'hidden',
@@ -144,42 +172,6 @@ export default class FDCheckBox extends Mixins(FdControlVue) {
       alignItems: font.FontSize! > 17 ? 'center' : '',
       alignContent: 'center',
       boxShadow: 'none'
-    }
-  }
-
-  /**
-   * @description style object is passed to :style attribute in span tag
-   * dynamically changing the styles of the component based on properties
-   * @function spancssStyleProperty
-   *
-   */
-  get spancssStyleProperty () {
-    const controlProp = this.properties
-    const font: font = controlProp.Font
-      ? controlProp.Font
-      : {
-        FontName: 'Arial',
-        FontSize: 10
-      }
-    return {
-      cursor:
-        controlProp.MousePointer !== 0 || controlProp.MouseIcon !== ''
-          ? this.getMouseCursorData
-          : 'default',
-      textAlign:
-        controlProp.TextAlign === 0
-          ? 'left'
-          : controlProp.TextAlign === 1
-            ? 'center'
-            : 'right',
-      textDecoration:
-        font.FontStrikethrough === true && font.FontUnderline === true
-          ? 'underline line-through'
-          : font.FontUnderline
-            ? 'underline'
-            : font.FontStrikethrough
-              ? 'line-through'
-              : ''
     }
   }
 
@@ -206,6 +198,7 @@ export default class FDCheckBox extends Mixins(FdControlVue) {
       backgroundPositionY: this.getPositionY
     }
   }
+
   /**
    * @override
    */
@@ -213,6 +206,7 @@ export default class FDCheckBox extends Mixins(FdControlVue) {
     deep: true
   })
   updateAutoSize (newVal: boolean, oldVal: boolean) {
+    /* istanbul ignore else */
     if (this.properties.AutoSize) {
       this.$nextTick(() => {
         let divRef: HTMLDivElement = this.autoSizecheckbox
@@ -232,6 +226,11 @@ export default class FDCheckBox extends Mixins(FdControlVue) {
       })
     }
   }
+
+  /**
+   * @description  sets controlSource if present and updates Value property
+   * @function controlSource
+   */
   mounted () {
     this.controlSource()
   }
@@ -244,7 +243,6 @@ export default class FDCheckBox extends Mixins(FdControlVue) {
 }
 
 .outer-check {
-  /* position: relative; */
   height: 30px;
   width: 150px;
   min-width: 12px;
@@ -267,18 +265,13 @@ export default class FDCheckBox extends Mixins(FdControlVue) {
 }
 
 .control {
-  /* position: absolute; */
-  /* top: 20%;
-  left: 10px; */
   display: inline-flex;
-  /* align-items: center; */
 }
 
 .control-indicator {
   width: 10px;
   height: 10px;
   margin: 1px;
-  /* margin-right: 6px; */
   background-color: white;
   border: 1px inset grey;
 }
@@ -294,20 +287,6 @@ export default class FDCheckBox extends Mixins(FdControlVue) {
   text-decoration: underline;
 }
 
-/* .checkbox {
-   top: 1px;
-   position: static;
-}
-.lable-text{
-  overflow: hidden;
-} */
-/*  */
-/* .flex-container {
-  display: flex;
-  flex-wrap: nowrap;
-  flex-direction: row;
-} */
-/* asd */
 .menu {
   width: 10%;
   margin: 0 auto;
@@ -316,22 +295,5 @@ export default class FDCheckBox extends Mixins(FdControlVue) {
 .main {
   width: 90%;
   margin: 0 auto;
-}
-
-.editText {
-  width: fit-content;
-  height: auto;
-  text-align: left;
-  background: inherit;
-  font: inherit;
-  border: none;
-  outline: none;
-  padding: 0;
-  resize: none;
-  overflow: hidden;
-  text-decoration: inherit;
-  color: inherit;
-  white-space: normal;
-  word-break: break-word;
 }
 </style>

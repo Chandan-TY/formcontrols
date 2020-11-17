@@ -263,3 +263,7 @@ interface ITabOrderDialogInitialStyle {
 interface CustomMouseEvent extends MouseEvent{
   customCallBack?: Function
 }
+interface IScrollRef{
+  scrollLeft?: number
+  scrollTop?: number
+}

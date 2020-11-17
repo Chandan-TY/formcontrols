@@ -26,7 +26,7 @@
         </tr>
       </thead>
       <thead v-else></thead>
-      <tbody ref="style" class="table-body" :style="tableBodyObj">
+      <tbody ref="style" class="table-body">
         <tr
           :tabindex="index"
           class="tr"
@@ -92,7 +92,7 @@ export default class FDListBox extends Mixins(FdControlVue) {
   }
 
   tableClick (e: Event) {
-    console.log('EVENT', e)
+    debugger
     this.tempEvent = e
   }
 
@@ -172,12 +172,6 @@ export default class FDListBox extends Mixins(FdControlVue) {
     }
   }
 
-  protected get tableBodyObj (): Partial<CSSStyleDeclaration> {
-    const controlProp = this.properties
-    return {
-      width: `${controlProp.Width}px !important`
-    }
-  }
   /**
    * @description style object is passed to :style attribute in td tag
    * dynamically changing the styles of the component based on properties

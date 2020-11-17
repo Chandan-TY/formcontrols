@@ -56,16 +56,33 @@ describe('FDCommandButton.vue', () => {
       expect(testWrapper.vm.isContentEditable).toBe(false)
     })
     it('commandButtonClick()', () => {
-      testWrapper.vm.commandButtonClick()
-      expect(testWrapper.vm.isClicked).toBe(true)
+      testWrapper.vm.isRunMode = true
+      testWrapper.props().data.properties.Visible = true
+      testWrapper.props().data.BackStyle = 1
+      testWrapper.props().data.BackColor = '#eeeeee'
+      testWrapper.vm.isActivated = true
+      delete testWrapper.props().data.properties.Font
+      testWrapper.trigger('click.stop')
+    })
+    it('commandButtonClickWhenNotLocked()', () => {
+      testWrapper.vm.isActivated = true
+      // testWrapper.setProps(...testWrapper.properties.Locked = false)
+      testWrapper.props().data.properties.Locked = false
+      testWrapper.trigger('click.stop')
+    })
+    it('commandButtonClickThree()', () => {
+      testWrapper.vm.isRunMode = true
+      testWrapper.props().data.properties.Enabled = !testWrapper.props().data.properties.Enabled
+      testWrapper.props().data.properties.Locked = true
+      testWrapper.trigger('click.stop')
     })
     it('updateAutoSize()', () => {
       testWrapper.vm.updateAutoSize()
-      expect(testWrapper.props().data.properties.Height).toBe(18)
-      expect(testWrapper.props().data.properties.Width).toBe(72)
+      expect(testWrapper.props().data.properties.Height).toBe(22)
+      expect(testWrapper.props().data.properties.Width).toBe(120)
     })
     it('isClicked', () => {
-      expect(testWrapper.vm.isClicked).toBe(true)
+      expect(testWrapper.vm.isClicked).toBe(false)
     })
     it('updateCaption()', () => {
       const button = testWrapper.find('button')
@@ -73,9 +90,16 @@ describe('FDCommandButton.vue', () => {
       button.trigger('input')
       expect(testWrapper.props().data.properties.Caption).toBe('CommandButton1')
     })
-    // it('Locked test', () => {
-    //   expect(testWrapper.props().data.properties.Locked).toBe(false)
-    // })
+    it('isActivated test', () => {
+      testWrapper.vm.isRunMode = true
+      testWrapper.vm.isActivated = true
+    })
+    it('getDisableValue test', () => {
+      testWrapper.vm.isRunMode = true
+      testWrapper.props().data.properties.Enabled = false
+      testWrapper.props().data.properties.Locked = true
+      expect(testWrapper.props().data.properties.Locked).toBe(true)
+    })
   })
   describe('button prop test', () => {
     const testWrapper = factory({ data: commandButton1 })
@@ -86,8 +110,7 @@ describe('FDCommandButton.vue', () => {
     })
     const otherCommandButton = { ...commandButton1 }
     delete otherCommandButton.properties.Font
-    otherCommandButton.properties.BackStyle = 1
-    otherCommandButton.properties.FontBold = ''
+    otherCommandButton.properties.BackStyle = !otherCommandButton.properties.BackStyle
     otherCommandButton.properties.BackColor = '#eeeeee'
     otherCommandButton.properties.WordWrap = !otherCommandButton.properties.WordWrap
     otherCommandButton.properties.Enabled = !otherCommandButton.properties.Enabled
@@ -96,6 +119,7 @@ describe('FDCommandButton.vue', () => {
     otherCommandButton.properties.Cancel = !otherCommandButton.properties.Cancel
     otherCommandButton.properties.AutoSize = !otherCommandButton.properties.AutoSize
     otherCommandButton.properties.TakeFocusOnClick = !otherCommandButton.properties.TakeFocusOnClick
+    otherCommandButton.properties.Locked = !otherCommandButton.properties.Locked
     testWrapper.setProps({ data: otherCommandButton })
     it('autoSize test', () => {
       expect(testWrapper.props().data.properties.AutoSize).toBe(true)
@@ -113,6 +137,12 @@ describe('FDCommandButton.vue', () => {
       otherCommandButton.properties.Locked = true
       testWrapper.setProps({ data: otherCommandButton })
       expect(testWrapper.vm.isClicked).toBe(false)
+    })
+    it('Visible test', () => {
+      const testWrapper = factory({ data: commandButton1 })
+      testWrapper.vm.isRunMode = false
+      testWrapper.vm.isActivated = true
+      expect(testWrapper.props().data.properties.Visible).toBe(true)
     })
   })
 })

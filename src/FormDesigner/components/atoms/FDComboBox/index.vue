@@ -4,12 +4,13 @@
     :tabindex="tabindex"
     :style="customSelectObj"
     :title="properties.ControlTipText"
+    @click="selectedItem"
   >
     <div
       class="combobox"
       :style="boxStyleObj"
-      @click="selectedItem"
       @mousedown="controlEditMode"
+      @click="toFocus"
     >
       <div :class="properties.SelectionMargin ? 'selectionDiv' : ''">
         <span
@@ -54,8 +55,8 @@
         :style="selectedStyleObj"
       ></div>
       <div class="items" :class="{ selectHide: !open }" :style="itemsStyleObj">
-        <div class="listStyle" :title="properties.ControlTipText">
-          <table :style="tableStyleObj" class="table-style">
+        <div class="listStyle" :title="properties.ControlTipText" >
+          <table :style="tableStyleObj" class="table-style" @click="tableClick" ref="comboRef" @blur="toBlur" tabindex="1">
             <thead v-if="properties.ColumnHeads === true" class="theadClass">
               <tr>
                 <td
@@ -91,7 +92,7 @@
                 @mouseenter="handleDrag"
                 @keydown="handleExtendArrowKeySelect"
                 @blur="clearMatchEntry"
-                @click="
+                @mousedown="
                   isRunMode || isEditMode ? handleMultiSelect($event) : ''
                 "
               >
@@ -102,7 +103,7 @@
                     properties.ListStyle === 1 && properties.ColumnCount > 0
                   "
                 >
-                  <input name="radio" type="radio" class="inputClass" />
+                <input name="radio" type="radio" class="inputClass" />
                 </td>
                 <td
                   class="column-item"
@@ -143,7 +144,7 @@ export default class FDComboBox extends Mixins(FdControlVue) {
   @Ref('textareaRef') textareaRef: HTMLTextAreaElement;
   @Ref('autoSizeTextarea') readonly autoSizeTextarea!: HTMLLabelElement;
   @Ref('hideSelectionDiv') readonly hideSelectionDiv!: HTMLDivElement;
-
+  @Ref('comboRef') comboRef!: HTMLDivElement
   private options = ['hello'];
   private tabindex = 0;
   tempArray: Array<Array<string>> = [];
@@ -157,22 +158,35 @@ export default class FDComboBox extends Mixins(FdControlVue) {
   selectionEnd: number = 0;
   //  matchEntry: Array<number> = [];
   tempInputValue: string = '';
+  tempEvent: Event;
 
   get getDisableValue () {
     if (this.isRunMode || this.isEditMode) {
-      return this.properties.Enabled === false
+      return this.properties.Enabled === false || this.properties.Locked
     } else {
       return true
     }
   }
 
+  toBlur () {
+    // this.isDropdownVisible = false
+    // if (!this.isDropdownVisible) {
+    this.open = false
+    // }
+  }
+  toFocus () {
+    //
+    this.comboRef.focus()
+  }
+  tableClick (e: Event) {
+    this.tempEvent = e
+  }
   handleTextInput (e: Event) {
-    console.log('handleTextInput', e)
     const tempEvent = e.target as HTMLTextAreaElement
     this.tempInputValue = tempEvent!.value
   }
   setSelection () {
-    const setSelectionRef = this.$refs['textareaRef'] as HTMLTextAreaElement
+    const setSelectionRef = this.textareaRef
     setSelectionRef.focus()
     setSelectionRef.select()
   }
@@ -188,7 +202,7 @@ export default class FDComboBox extends Mixins(FdControlVue) {
     }
   }
 
-  protected get seledctionSpanObj (): Partial<CSSStyleDeclaration> {
+  protected get selectionSpanObj (): Partial<CSSStyleDeclaration> {
     const controlProp = this.properties
     return {
       background: controlProp.BackStyle ? controlProp.BackColor : 'transparent'
@@ -213,20 +227,17 @@ export default class FDComboBox extends Mixins(FdControlVue) {
     textareaRef: HTMLTextAreaElement,
     hideSelectionDiv: HTMLDivElement
   ) {
-    console.log('HandleBlur Event Check', event)
-    if (this.properties.EnterFieldBehavior === 1) {
-      debugger
-      const eventTarget = event.target as HTMLTextAreaElement
+    if (this.properties.EnterFieldBehavior === 1 && event.target instanceof HTMLTextAreaElement) {
+      const eventTarget = event.target
       let tempField = this.tempInputValue.slice(
         eventTarget.selectionStart - eventTarget.selectionEnd
       )
       this.selectionStart = eventTarget.selectionStart
       this.selectionEnd = eventTarget.selectionEnd
-      console.log('Temp Fiels', tempField)
     }
-    if (!this.properties.HideSelection && textareaRef) {
-      const eventTarget = event.target as HTMLTextAreaElement
-      console.log('event Targer', event)
+    if (!this.properties.HideSelection && textareaRef && event.target instanceof HTMLTextAreaElement) {
+      const eventTarget = event.target
+
       hideSelectionDiv.style.display = 'block'
       hideSelectionDiv.style.height = this.properties.Height! + 2 + 'px'
       hideSelectionDiv.style.width = this.properties.Width! + 2 + 'px'
@@ -241,15 +252,13 @@ export default class FDComboBox extends Mixins(FdControlVue) {
         "<span style='background-color:lightblue'>" +
         firstPart.slice(eventTarget.selectionStart + Math.abs(0))
       hideSelectionDiv.innerHTML = text
-      console.log('Fi9rst Part', firstPart)
     }
     if (this.properties.MatchRequired && textareaRef) {
       const arrayCheck = this.extraDatas.RowSourceData!.findIndex(
         (element) => element[0] === this.tempInputValue
       )
       if (arrayCheck === -1) {
-        const textareaRef = this.$refs['textareaRef'] as HTMLTextAreaElement
-        textareaRef.focus()
+        this.textareaRef.focus()
       }
     }
   }
@@ -265,14 +274,12 @@ export default class FDComboBox extends Mixins(FdControlVue) {
     textareaRef: HTMLTextAreaElement,
     hideSelectionDiv: HTMLDivElement
   ) {
-    console.log('handleClick Event check', event)
     if (!this.properties.HideSelection) {
       hideSelectionDiv.style.display = 'none'
     }
     if (this.properties.EnterFieldBehavior === 0) {
-      const textAreaRef = this.$refs['textareaRef'] as HTMLTextAreaElement
-      textAreaRef.focus()
-      textAreaRef.select()
+      this.textareaRef.focus()
+      this.textareaRef.select()
     } else if (this.properties.EnterFieldBehavior === 1) {
     }
   }
@@ -285,7 +292,6 @@ export default class FDComboBox extends Mixins(FdControlVue) {
    * @event click
    */
   divHide (event: MouseEvent, textareaRef: HTMLTextAreaElement) {
-    console.log('HideDiv', event);
     (event.target as HTMLDivElement).style.display = 'none'
     textareaRef.style.display = 'block'
     if (
@@ -318,7 +324,6 @@ export default class FDComboBox extends Mixins(FdControlVue) {
   @Watch('properties.AutoSize', { deep: true })
   updateAutoSize (newVal: boolean, oldVal: boolean) {
     if (this.properties.AutoSize === true) {
-      debugger
       this.updateDataModel({ propertyName: 'SelectionMargin', value: false })
       this.$nextTick(() => {
         const textareaRef: HTMLTextAreaElement = this.textareaRef
@@ -459,10 +464,8 @@ export default class FDComboBox extends Mixins(FdControlVue) {
       let tempData = [...this.extraDatas.RowSourceData!]
       if (tempData![0][this.properties.BoundColumn! - 1] === newVal) {
         this.updateDataModel({ propertyName: 'Value', value: newVal })
-        console.log('tempValue', this.properties.Value)
       } else {
         this.updateDataModel({ propertyName: 'Value', value: '' })
-        console.log('tempValueSpace', this.properties.Value)
       }
     }
   }
@@ -618,7 +621,6 @@ export default class FDComboBox extends Mixins(FdControlVue) {
     }
   }
   enabledCheck () {
-    console.log('enabledCheck', this.properties.Enabled)
     if (this.isRunMode || this.isEditMode) {
       if (this.properties.Enabled) {
         if (!this.properties.Locked) {
@@ -630,6 +632,7 @@ export default class FDComboBox extends Mixins(FdControlVue) {
     } else {
       this.open = false
     }
+    this.toFocus()
   }
 }
 </script>

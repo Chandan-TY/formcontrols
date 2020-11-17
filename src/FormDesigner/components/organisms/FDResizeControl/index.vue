@@ -152,6 +152,8 @@ export default class ResizeControl extends FdSelectVue {
         tempOrientBoolean = true
       }
     }
+    console.log('Height Spin', currentProperties.Height)
+    console.log('Width Spin', currentProperties.Width)
     return {
       paddingRight:
         (type === 'Label' && (bs ? '4px' : '2px')) ||

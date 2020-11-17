@@ -56,8 +56,49 @@ describe('FDToggleButton.vue', () => {
       expect(testWrapper.vm.isContentEditable).toBe(false)
     })
     it('toggleButtonClick()', () => {
-      testWrapper.vm.toggleButtonClick()
-      expect(testWrapper.vm.isClicked).toBe(true)
+      testWrapper.vm.isRunMode = true
+      testWrapper.vm.clickCount = 2
+      testWrapper.props().data.properties.Locked = false
+      testWrapper.props().data.properties.TripleState = true
+      testWrapper.trigger('click.stop')
+    })
+    it('toggleButtonClickTwo()', () => {
+      testWrapper.vm.isRunMode = true
+      testWrapper.vm.clickCount = 3
+      testWrapper.props().data.properties.Locked = false
+      testWrapper.props().data.properties.TripleState = true
+      testWrapper.trigger('click.stop')
+    })
+    it('toggleButtonClickThree()', () => {
+      testWrapper.vm.isRunMode = true
+      testWrapper.vm.clickCount = 3
+      testWrapper.props().data.properties.Locked = false
+      testWrapper.vm.isClicked = false
+      testWrapper.props().data.properties.TripleState = true
+      testWrapper.trigger('click.stop')
+    })
+    it('toggleButtonClickFour()', () => {
+      testWrapper.vm.isRunMode = true
+      testWrapper.vm.clickCount = 3
+      testWrapper.props().data.properties.Locked = false
+      testWrapper.vm.isClicked = false
+      testWrapper.props().data.properties.TripleState = false
+      testWrapper.trigger('click.stop')
+    })
+    it('toggleButtonClickFive()', () => {
+      testWrapper.vm.isRunMode = true
+      testWrapper.vm.clickCount = 3
+      testWrapper.props().data.properties.Locked = false
+      testWrapper.vm.isClicked = true
+      testWrapper.props().data.properties.TripleState = false
+      testWrapper.trigger('click.stop')
+    })
+    it('toggleButtonClickFive()', () => {
+      testWrapper.vm.isRunMode = true
+      testWrapper.vm.clickCount = 3
+      testWrapper.vm.isClicked = false
+      testWrapper.props().data.properties.Locked = true
+      testWrapper.trigger('click.stop')
     })
     it('updateAutoSize()', () => {
       testWrapper.vm.updateAutoSize()
@@ -68,10 +109,10 @@ describe('FDToggleButton.vue', () => {
       const button = testWrapper.find('button')
       button.element.innerText = 'toggleButton1'
       button.trigger('input')
-      expect(testWrapper.props().data.properties.Caption).toBe('ToggleButton1')
+      expect(testWrapper.props().data.properties.Caption).toBe('Toggle Button1')
     })
     it('Locked test', () => {
-      expect(testWrapper.props().data.properties.Locked).toBe(false)
+      expect(testWrapper.props().data.properties.Locked).toBe(true)
     })
   })
   describe('button prop test', () => {
@@ -84,13 +125,16 @@ describe('FDToggleButton.vue', () => {
     it('isClicked', () => {
       expect(testWrapper.vm.isClicked).toBe(true)
     })
+    const testWarpper = toggleButton1
+    testWrapper.vm.isRunMode = true
     const otherToggleButton = { ...toggleButton1 }
     delete otherToggleButton.properties.Font
-    otherToggleButton.properties.BackStyle = 1
+    otherToggleButton.properties.Visible = !otherToggleButton.properties.Visible
+    otherToggleButton.properties.BackStyle = !otherToggleButton.properties.BackStyle
+    otherToggleButton.properties.BackColor = '#eeeeee'
     otherToggleButton.properties.ControlSource = 'True'
     otherToggleButton.properties.WordWrap = !otherToggleButton.properties.WordWrap
     otherToggleButton.properties.Enabled = !otherToggleButton.properties.Enabled
-    otherToggleButton.properties.Visible = !otherToggleButton.properties.Visible
     otherToggleButton.properties.TripleState = !otherToggleButton.properties.TripleState
     otherToggleButton.properties.AutoSize = !otherToggleButton.properties.AutoSize
     otherToggleButton.properties.TakeFocusOnClick = !otherToggleButton.properties.TakeFocusOnClick

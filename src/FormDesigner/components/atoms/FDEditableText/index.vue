@@ -1,15 +1,17 @@
 <template>
-  <textarea
-    class='editText'
-    :style="editStyle"
+  <span
+    class="editText"
+    ref="labelArea"
+    role="textbox"
+    contenteditable="true"
     :readonly="editable === false"
-    v-on="eventStoppers()"
-    v-model="currentValue">
-  </textarea>
+    @input="onInput"
+    v-on="eventStoppers()">
+  </span>
 </template>
 
 <script lang="ts">
-import { Component, Emit, Prop, Vue } from 'vue-property-decorator'
+import { Component, Prop, Vue, Ref } from 'vue-property-decorator'
 
 @Component({
   name: 'FDEditableText'
@@ -17,7 +19,12 @@ import { Component, Emit, Prop, Vue } from 'vue-property-decorator'
 export default class FDEditableText extends Vue {
   @Prop() private editable! : boolean
   @Prop() private caption! : string
-  // @Prop() private accelerator! : string
+
+  @Ref('labelArea') readonly labelArea! : HTMLSpanElement
+
+  mounted () {
+    this.labelArea.innerText = this.caption
+  }
 
   eventStoppers () {
     const eventStop = (event: Event) => event.stopPropagation()
@@ -37,24 +44,16 @@ export default class FDEditableText extends Vue {
       e.preventDefault()
     }
   }
-  get editStyle () {
-    return {
-      cursor: this.editable ? 'text' : 'inherit'
-    }
-  }
-  get currentValue () {
-    return this.caption
-  }
-  set currentValue (value) {
-    this.$emit('updateCaption', value)
+
+  onInput (event: KeyboardEvent) {
+    this.$emit('updateCaption', this.labelArea.innerText)
   }
 }
 </script>
 
 <style scoped>
   .editText {
-    width: 100%;
-    height: 100%;
+    text-align: inherit;
     background: inherit;
     font: inherit;
     border: none;

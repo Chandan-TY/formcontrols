@@ -51,7 +51,6 @@ import Vue from 'vue'
 import FdContainerVue from '@/api/abstract/FormDesigner/FdContainerVue'
 import Container from '@/FormDesigner/components/organisms/FDContainer/index.vue'
 import { controlProperties } from '@/FormDesigner/controls-properties'
-
 @Component({
   name: 'FDFrame',
   components: {
@@ -61,7 +60,8 @@ import { controlProperties } from '@/FormDesigner/controls-properties'
 })
 export default class FDFrame extends FdContainerVue {
   @Ref('containerRef') readonly containerRef!: Container;
-  @Prop({ required: true, type: Boolean }) public readonly isEditMode: boolean;
+  @Ref('frame') readonly frame!: FDFrame;
+  @Prop({ required: true, type: Boolean }) public readonly isEditMode : boolean
   get dragSelectorStyle () {
     return {
       height: `${this.data.properties.Height}px`,
@@ -111,14 +111,13 @@ export default class FDFrame extends FdContainerVue {
    * @param controlData propControlData passed as input
    */
   scrollLeftTop (controlData: controlData) {
-    const refName: any = this.$refs.frame
     const scrollLeft: number = this.properties.ScrollLeft!
     const scrollTop: number = this.properties.ScrollTop!
     if (scrollLeft > 0) {
-      refName.scrollLeft = scrollLeft
+      (this.frame as IScrollRef).scrollLeft = scrollLeft
     }
     if (scrollTop > 0) {
-      refName.scrollTop = scrollTop
+      (this.frame as IScrollRef).scrollLeft = scrollTop
     }
   }
   /**
@@ -210,8 +209,7 @@ export default class FDFrame extends FdContainerVue {
 
   showContextMenu (e: MouseEvent, parentID: string, controlID: string) {
     this.openMenu(e, parentID, controlID)
-    const dynamicRef = 'contextmenu'.concat(this.controlId)
-    Vue.nextTick(() => (this as any).containerRef.$refs[dynamicRef].focus())
+    Vue.nextTick(() => this.containerRef.contextmenu.focus())
   }
   closeMenu () {
     this.viewMenu = false
@@ -219,8 +217,8 @@ export default class FDFrame extends FdContainerVue {
 
   dragSelectorControl (event: MouseEvent) {
     this.selectedControlArray = []
-    const refName = 'dragSelector'.concat(this.controlId)
-    this.selectedAreaStyle = (this as any).containerRef.$refs[refName].selectAreaStyle
+    const refName = 'dragSelector'
+    this.selectedAreaStyle = (this as any).containerRef[refName].selectAreaStyle
     this.calSelectedAreaStyle(event)
   }
 

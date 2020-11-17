@@ -3,7 +3,7 @@
     <div
       id="right-click-menu"
       :style="contextMenuStyle"
-      :ref="'contextmenu'.concat(containerId)"
+      ref="contextmenu"
       tabindex="0"
       @blur.stop="closeMenu"
     >
@@ -19,14 +19,14 @@
     </div>
     <drag-selector
       :class="[!isEditMode?'dragSelector':'']"
-      :ref="'dragSelector'.concat(containerId)"
+      ref="dragSelector"
       :style="dragSelectorStyle"
       @mousedown.stop.self="handleMouseDown"
     >
       <GroupControl
         :containerId="containerId"
         :userFormId="userFormId"
-        :ref="'groupRef'.concat(containerId)"
+        ref="groupRef"
         class="group"
         :controlRef="$refs"
         :currentSelectedGroup="filterSelected"
@@ -84,8 +84,10 @@ export default class Container extends Vue {
   @Prop({ required: true, type: String }) left: string;
   @Prop() isEditMode: boolean
 
-  // @Ref('groupRef') readonly groupRef!: GroupControl;
+  @Ref('groupRef') readonly groupRef!: GroupControl;
   @Ref('refContextMenu') readonly refContextMenu!: ContextMenu;
+  @Ref('dragSelector') readonly dragSelector: HTMLDivElement;
+  @Ref('contextmenu') readonly contextmenu: HTMLDivElement;
 
   controlContextMenu: Array<IcontextMenu> = controlContextMenu;
   userformContextMenu: Array<IcontextMenu> = userformContextMenu;
@@ -118,16 +120,13 @@ export default class Container extends Vue {
     return result
   }
   createGroup (groupId: string) {
-    const refName = 'groupRef'.concat(this.containerId as string);
-    (this as any).$refs[refName].groupStyle(groupId)
+    this.groupRef.groupStyle(groupId)
   }
   muldragControl (val: IDragResizeGroup) {
-    const refName = 'groupRef'.concat(this.containerId as string);
-    (this as any).$refs[refName].handleMouseDown(val.event, val.handler)
+    this.groupRef.handleMouseDown(val.event, val.handler)
   }
   dragControl (event: MouseEvent) {
-    const refName = 'groupRef'.concat(this.containerId as string);
-    (this as any).$refs[refName].handleMouseDown(event, 'drag')
+    this.groupRef.handleMouseDown(event, 'drag')
   }
   /**
    * @description style object to dynamically changing the styles of  the darg-selctor component based on propControlData

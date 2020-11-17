@@ -23,7 +23,6 @@
     </span>
     <FDEditableText
       v-else
-      class="editText"
       :editable="isRunMode === false && syncIsEditMode"
       :caption="properties.Caption"
       @updateCaption="updateCaption"
@@ -109,7 +108,11 @@ export default class FDToggleButton extends Mixins(FdControlVue) {
       ? controlProp.Font
       : {
         FontName: 'Arial',
-        FontSize: 10
+        FontSize: 10,
+        FontItalic: true,
+        FontBold: true,
+        FontUnderline: true,
+        FontStrikethrough: true
       }
     let display = ''
     if (this.isRunMode) {
@@ -163,8 +166,8 @@ export default class FDToggleButton extends Mixins(FdControlVue) {
               ? 'line-through'
               : '',
       fontWeight: font.FontBold ? 'bold' : '',
-      whiteSpace: controlProp.WordWrap ? 'normal' : 'nowrap',
-      wordBreak: controlProp.WordWrap ? 'break-word' : 'normal',
+      whiteSpace: controlProp.WordWrap ? 'pre-wrap' : 'pre',
+      wordBreak: controlProp.WordWrap ? 'break-all' : 'normal',
       paddingLeft: controlProp.AutoSize ? '0px' : '0px',
       paddingRight: controlProp.WordWrap ? '0px' : '6px',
       textAlign:
@@ -205,13 +208,13 @@ export default class FDToggleButton extends Mixins(FdControlVue) {
         this.updateDataModel({
           propertyName: 'Height',
           value:
-            (this.$el.childNodes[0].childNodes[0] as HTMLSpanElement)
+            (this.$el.childNodes[0] as HTMLSpanElement)
               .offsetHeight + 5
         })
         this.updateDataModel({
           propertyName: 'Width',
           value:
-            (this.$el.childNodes[0].childNodes[0] as HTMLSpanElement)
+            (this.$el.childNodes[0] as HTMLSpanElement)
               .offsetWidth + 5
         })
       })
@@ -235,21 +238,6 @@ export default class FDToggleButton extends Mixins(FdControlVue) {
   border: none;
   overflow: hidden;
   outline: none;
-}
-.editText {
-  width: 100%;
-  height: 100%;
-  background: inherit;
-  font: inherit;
-  border: none;
-  outline: none;
-  padding: 0;
-  resize: none;
-  overflow: hidden;
-  text-decoration: inherit;
-  color: inherit;
-  white-space: inherit;
-  word-break: inherit;
 }
 
 .spanClass {

@@ -126,8 +126,6 @@ export default class FDScrollBar extends Mixins(FdControlVue) {
    * @param e Event object to set scrollTop and scrollLeft
    */
   disableScrolling (e: Event) {
-    // console.log('scroll')
-    console.log('scroll', e)
     this.tempEvent = e
     this.tempScroll = true
     const targetElement = e.target as HTMLDivElement
@@ -144,8 +142,6 @@ export default class FDScrollBar extends Mixins(FdControlVue) {
   mounted () {
     this.initialWidth = this.properties.Width!
     this.initialHeight = this.properties.Height!
-    console.log('initialWidth', this.initialWidth)
-    console.log('initialHeight', this.initialHeight)
     setInterval(() => {
       if (this.tempScroll) {
         this.tempScroll = false

@@ -3,9 +3,19 @@
 <h3><b>Description:</b></h3>
 <h4>TabStrip allows you to create several tabs of the same controls<br />It Allows you to define multiple pages for the same area of a window or dialog box in your application</h4>
 
+<span>1: Unimplemented properties.</span>
+
+<span>2: Properties which will be implemented in main app.</span>
+
+<span>3: Properties which are not exactly working as same as excel.</span>
+
+<span>4: Properties need clarification.</span>
+
+<span>5: Extra properties added.</span>
+
+<span style='color:red'>Red numbers in parentheses indicate status of properties</span>
 
 <h3><b>Control Properties:</b></h3>
-
 <h4>BackColor</h4>
 <span>Control's background color - Color table appears when the button is clicked sets the selected color to the control</span>
 
@@ -27,7 +37,7 @@
 <h4>Height</h4>
 <span>Set height of command button control </span>
 
-<h4>HelpContextID<span style="color:red;">***</span></h4>
+<h4>HelpContextID <span style="color:red;">(3)</span></h4>
 <span> Opens the file designated as HelpFile and shows the item set as HelpContextID</span>
 
 <h4>Left</h4>
@@ -51,10 +61,13 @@
 <h4>TabFixedWidth</h4>
 <span>Specifies the Width of the tabs alone and will be same for all the tabs in the control</span>
 
-<h4>TabIndex <span style="color:red;">***</span></h4>
+<h4>TabIndex <span style="color:red;">(2)</span></h4>
 <span>Tab order of the control, focus order of the control when changing focus with the tab key</span>
 
-<h4>TabStop <span style="color:red;">***</span></h4>
+<h4>TabOrientation </h4>
+<span>Specifies the appearance of the tab,The tabs appear at the top, left, bottom or right of the control based on its values</span>
+
+<h4>TabStop <span style="color:red;">(2)</span></h4>
 <span>Decide whether to bring focus to the control with the tab key </span>
 
 <h4>Tag </h4>
@@ -72,4 +85,5 @@
 <h4>Width</h4>
 <span>The width of the control</span>
 
--<span style="color:red;">(*): This function is not implemented in this control.</span>
+<h4>Tabs <span style="color:red;">(5)</span></h4>
+<span>The data model of the Tabstrip control alone. It is the array of objects.It contains the Name, Caption, ToolTip and Accelerator keys.</span>

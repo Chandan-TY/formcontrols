@@ -345,7 +345,6 @@ export default class FDFontDialog extends Vue {
     this.fontStretch = fontRef.style.fontStretch
     this.tempVal.FontName = fontRef.style.fontFamily
     this.tempVal.FontStyle = this.fontStyle
-    console.log('temp val', this.tempVal)
   }
   updateFont () {
     if (this.fontWeight === 'bold' && this.fontStyle1 === 'italic') {

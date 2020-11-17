@@ -58,6 +58,7 @@ import { IupdateControl } from '@/storeModules/fd/actions'
 })
 export default class UserForm extends FdContainerVue {
   @Ref('containerRef') readonly containerRef!: Container;
+  @Ref('innerUserForm') readonly innerUserForm!: HTMLDivElement;
   @Action('fd/updateControl') updateControl!: (payload: IupdateControl) => void;
 
   innerWindowFocused: boolean = false;
@@ -112,7 +113,7 @@ export default class UserForm extends FdContainerVue {
    * @param controlData propControlData passed as input
    */
   scrollLeftTop (controlData: controlData) {
-    const refName: any = this.$refs.innerUserForm
+    const refName: IScrollRef = this.innerUserForm
     const scrollLeft: number = this.properties.ScrollLeft!
     const scrollTop: number = this.properties.ScrollTop!
     if (scrollLeft > 0) {
@@ -193,7 +194,7 @@ export default class UserForm extends FdContainerVue {
   }
 
   updateScrollingLeftTop (e: MouseEvent) {
-    const refName: any = this.$refs.innerUserForm
+    const refName = this.innerUserForm
     this.updateControl({
       userFormId: this.userFormId,
       controlId: this.controlId,
@@ -212,15 +213,13 @@ export default class UserForm extends FdContainerVue {
   dragSelectorControl (event: MouseEvent) {
     console.log(this.containerId)
     this.selectedControlArray = []
-    const refName = 'dragSelector'.concat(this.controlId)
-    this.selectedAreaStyle = (this as any).containerRef.$refs[refName].selectAreaStyle
+    this.selectedAreaStyle = (this as any).containerRef.dragSelector.selectAreaStyle
     this.calSelectedAreaStyle(event)
   }
 
   showContextMenu (e: MouseEvent, parentID: string, controlID: string) {
     this.openMenu(e, parentID, controlID)
-    const dynamicRef = 'contextmenu'.concat(this.controlId)
-    Vue.nextTick(() => (this as any).containerRef.$refs[dynamicRef].focus())
+    Vue.nextTick(() => this.containerRef.contextmenu.focus())
   }
 }
 </script>
