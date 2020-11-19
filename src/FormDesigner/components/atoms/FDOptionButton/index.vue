@@ -18,7 +18,7 @@
     ></label>
     <div>
       <div ref="divAutoSize" :style="divcssStyleProperty">
-        <span v-if="!syncIsEditMode || isRunMode" @click="makeChecked">
+        <span v-if="!syncIsEditMode || isRunMode" @click="isRunMode && makeChecked($event)">
           <span>{{ computedCaption.afterbeginCaption }}</span>
           <span class="spanClass">{{
             computedCaption.acceleratorCaption
@@ -90,9 +90,7 @@ export default class FDOptionButton extends Mixins(FdControlVue) {
    * @function makeChecked
    */
   makeChecked () {
-    if (this.isRunMode) {
-      this.optBtnInput.checked = true
-    }
+    this.optBtnInput.checked = true
   }
   /**
    * @description style object is passed to :style attribute in label tag
@@ -106,7 +104,11 @@ export default class FDOptionButton extends Mixins(FdControlVue) {
       ? controlProp.Font
       : {
         FontName: 'Arial',
-        FontSize: 10
+        FontSize: 20,
+        FontItalic: true,
+        FontBold: true,
+        FontUnderline: true,
+        FontStrikethrough: true
       }
     let display = ''
     if (this.isRunMode) {
@@ -151,38 +153,6 @@ export default class FDOptionButton extends Mixins(FdControlVue) {
       alignItems: font.FontSize! > 17 ? 'center' : '',
       alignContent: 'center',
       boxShadow: 'none'
-    }
-  }
-
-  /**
-   * @description style object is passed to :style attribute in span tag
-   * dynamically changing the styles of the component based on properties
-   * @function spancssStyleProperty
-   *
-   */
-  get spancssStyleProperty () {
-    const controlProp = this.properties
-    const font: font = controlProp.Font
-      ? controlProp.Font
-      : {
-        FontName: 'Arial',
-        FontSize: 10
-      }
-    return {
-      textAlign:
-        controlProp.TextAlign === 0
-          ? 'left'
-          : controlProp.TextAlign === 1
-            ? 'center'
-            : 'right',
-      textDecoration:
-        font.FontStrikethrough === true && font.FontUnderline === true
-          ? 'underline line-through'
-          : font.FontUnderline
-            ? 'underline'
-            : font.FontStrikethrough
-              ? 'line-through'
-              : ''
     }
   }
 
@@ -247,6 +217,8 @@ export default class FDOptionButton extends Mixins(FdControlVue) {
           value: 14 + 2 + offsetWidth + 1
         })
       })
+    } else {
+      return undefined
     }
   }
 
@@ -264,6 +236,7 @@ export default class FDOptionButton extends Mixins(FdControlVue) {
 .container {
   left: 100px;
   top: 100px;
+  box-sizing: border-box;
 }
 .outer-check {
   height: 30px;

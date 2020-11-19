@@ -181,44 +181,47 @@ export default class FDTextBox extends Mixins(FdControlVue) {
    *
    */
   handlePasswordChar (event: TextEvent) {
+    debugger
     let newData
     let text = this.properties.Text!
     let selectionDiff =
       (this.data.properties!.CursorStartPosition as number) !==
       (this.data.properties!.CursorEndPosition as number)
-    if (selectionDiff) {
+    if (event.target instanceof HTMLTextAreaElement) {
+      if (selectionDiff) {
       // selection
-      newData =
+        newData =
         text.substring(0, this.data.properties!.CursorStartPosition as number) +
         text.substring(this.data.properties!.CursorEndPosition as number)
-      this.updateDataModel({ propertyName: 'Text', value: newData })
-      this.updateDataModel({ propertyName: 'Value', value: newData })
-    } else if (text.length < (event.target as HTMLFormElement).value.length) {
+        this.updateDataModel({ propertyName: 'Text', value: newData })
+        this.updateDataModel({ propertyName: 'Value', value: newData })
+      } else if (text.length < event.target.value.length) {
       // insertion
-      newData = [
-        text.slice(0, (event.target as HTMLFormElement).selectionStart - 1),
-        event.data,
-        text.slice((event.target as HTMLFormElement).selectionStart - 1)
-      ].join('')
-      this.updateDataModel({ propertyName: 'Text', value: newData })
-      this.updateDataModel({ propertyName: 'Value', value: newData })
-    } else if (text.length > (event.target as HTMLFormElement).value.length) {
+        newData = [
+          text.slice(0, event.target.selectionStart - 1),
+          event.data,
+          text.slice(event.target.selectionStart - 1)
+        ].join('')
+        this.updateDataModel({ propertyName: 'Text', value: newData })
+        this.updateDataModel({ propertyName: 'Value', value: newData })
+      } else if (text.length > event.target.value.length) {
       // deletion
-      newData = [
-        text.slice(0, (event.target as HTMLFormElement).selectionStart),
-        text.slice((event.target as HTMLFormElement).selectionStart + 1)
-      ].join('')
-      this.updateDataModel({ propertyName: 'Text', value: newData })
-      this.updateDataModel({ propertyName: 'Value', value: newData })
+        newData = [
+          text.slice(0, event.target.selectionStart),
+          text.slice(event.target.selectionStart + 1)
+        ].join('')
+        this.updateDataModel({ propertyName: 'Text', value: newData })
+        this.updateDataModel({ propertyName: 'Value', value: newData })
+      }
+      this.updateDataModel({
+        propertyName: 'CursorStartPosition',
+        value: event.target.selectionStart
+      })
+      this.updateDataModel({
+        propertyName: 'CursorEndPosition',
+        value: event.target.selectionEnd
+      })
     }
-    this.updateDataModel({
-      propertyName: 'CursorStartPosition',
-      value: (event.target as HTMLFormElement).selectionStart
-    })
-    this.updateDataModel({
-      propertyName: 'CursorEndPosition',
-      value: (event.target as HTMLFormElement).selectionEnd
-    })
   }
   /**
    * @description style object is passed to :style attribute in div tag
@@ -263,20 +266,22 @@ export default class FDTextBox extends Mixins(FdControlVue) {
   tabKeyBehavior (event: KeyboardEvent): boolean {
     if (this.properties.TabKeyBehavior) {
       const TABKEY = 9
-      const eventTaget = event.target as HTMLTextAreaElement
-      const selectionStart = eventTaget.selectionStart
-      const selectionEnd = eventTaget.selectionEnd
-      const value = eventTaget.value
-      if (event.keyCode === TABKEY) {
-        (event.target as HTMLTextAreaElement).value =
+      if (event.target instanceof HTMLTextAreaElement) {
+        const eventTaget = event.target
+        const selectionStart = eventTaget.selectionStart
+        const selectionEnd = eventTaget.selectionEnd
+        const value = eventTaget.value
+        if (event.keyCode === TABKEY) {
+          (event.target).value =
           value.substring(0, selectionStart) +
           '\t' +
           value.substring(selectionEnd)
-        event.preventDefault()
-      }
-      (event.target as HTMLTextAreaElement).selectionStart = selectionStart + 1;
-      (event.target as HTMLTextAreaElement).selectionEnd = (event.target as HTMLTextAreaElement).selectionStart
-      return false
+          event.preventDefault()
+        }
+        (event.target).selectionStart = selectionStart + 1;
+        (event.target).selectionEnd = (event.target).selectionStart
+        return false
+      } return false
     } else {
       return true
     }
@@ -291,19 +296,22 @@ export default class FDTextBox extends Mixins(FdControlVue) {
    */
   textAndValueUpdate (event: InputEvent) {
     const propData = this.properties
-    this.updateDataModel({
-      propertyName: 'Value',
-      value: (event.target as HTMLInputElement).value
-    })
-    this.updateDataModel({
-      propertyName: 'Text',
-      value: (event.target as HTMLInputElement).value
-    })
-    if (this.properties.ControlSource !== '') {
-      this.updateDataModelExtraData({
-        propertyName: 'ControlSourceValue',
-        value: (event.target as HTMLInputElement).value
+    debugger
+    if (event.target instanceof HTMLTextAreaElement) {
+      this.updateDataModel({
+        propertyName: 'Value',
+        value: (event.target).value
       })
+      this.updateDataModel({
+        propertyName: 'Text',
+        value: (event.target).value
+      })
+      if (this.properties.ControlSource !== '') {
+        this.updateDataModelExtraData({
+          propertyName: 'ControlSourceValue',
+          value: (event.target).value
+        })
+      }
     }
   }
 
@@ -377,15 +385,19 @@ export default class FDTextBox extends Mixins(FdControlVue) {
    * @event keydown
    */
   handleDelete (event: KeyboardEvent) {
-    if (event.keyCode === 8) {
-      this.updateDataModel({
-        propertyName: 'CursorStartPosition',
-        value: (event.target as HTMLInputElement).selectionStart!
-      })
-      this.updateDataModel({
-        propertyName: 'CursorEndPosition',
-        value: (event.target as HTMLInputElement).selectionEnd!
-      })
+    debugger
+    if (event.target instanceof HTMLTextAreaElement) {
+      if (event.keyCode === 8) {
+        console.log('HandleDelete', event.target)
+        this.updateDataModel({
+          propertyName: 'CursorStartPosition',
+          value: (event.target).selectionStart!
+        })
+        this.updateDataModel({
+          propertyName: 'CursorEndPosition',
+          value: (event.target).selectionEnd!
+        })
+      }
     }
   }
   /**
@@ -401,21 +413,23 @@ export default class FDTextBox extends Mixins(FdControlVue) {
     hideSelectionDiv: HTMLDivElement
   ) {
     if (!this.properties.HideSelection) {
-      const eventTarget = event.target as HTMLTextAreaElement
-      hideSelectionDiv.style.display = 'block'
-      hideSelectionDiv.style.height = this.properties.Height! + 2 + 'px'
-      hideSelectionDiv.style.width = this.properties.Width! + 2 + 'px'
-      textareaRef.style.display = 'none'
-      let textarea = eventTarget.value
-      let firstPart =
+      if (event.target instanceof HTMLTextAreaElement) {
+        const eventTarget = event.target
+        hideSelectionDiv.style.display = 'block'
+        hideSelectionDiv.style.height = this.properties.Height! + 2 + 'px'
+        hideSelectionDiv.style.width = this.properties.Width! + 2 + 'px'
+        textareaRef.style.display = 'none'
+        let textarea = eventTarget.value
+        let firstPart =
         textarea.slice(0, eventTarget.selectionEnd) +
         '</span>' +
         textarea.slice(eventTarget.selectionEnd + Math.abs(0))
-      let text =
+        let text =
         firstPart.slice(0, eventTarget.selectionStart) +
         "<span style='background-color:lightblue'>" +
         firstPart.slice(eventTarget.selectionStart + Math.abs(0))
-      hideSelectionDiv.innerHTML = text
+        hideSelectionDiv.innerHTML = text
+      }
     }
   }
   /**
@@ -439,17 +453,20 @@ export default class FDTextBox extends Mixins(FdControlVue) {
    * @event click
    */
   divHide (event: MouseEvent, textareaRef: HTMLTextAreaElement) {
-    (event.target as HTMLDivElement).style.display = 'none'
-    textareaRef.style.display = 'block'
-    if (
-      (event.target as HTMLDivElement).tagName === 'SPAN' &&
-      (event.target as HTMLDivElement).parentNode!.nodeName === 'DIV'
-    ) {
-      ((event.target as HTMLDivElement)
-        .parentNode as HTMLElement).style.display = 'none'
+    debugger
+    if (event.target instanceof HTMLSpanElement || event.target instanceof HTMLDivElement) {
+      (event.target).style.display = 'none'
+      textareaRef.style.display = 'block'
+      if (
+        (event.target).tagName === 'SPAN' &&
+      (event.target).parentNode!.nodeName === 'DIV'
+      ) {
+        ((event.target)
+          .parentNode as HTMLElement).style.display = 'none'
+      }
+      textareaRef.focus()
+      textareaRef.selectionStart = textareaRef.selectionEnd
     }
-    textareaRef.focus()
-    textareaRef.selectionStart = textareaRef.selectionEnd
   }
 }
 </script>
@@ -463,6 +480,7 @@ export default class FDTextBox extends Mixins(FdControlVue) {
   height: 20px;
   resize: none;
   overflow: hidden;
+  box-sizing: border-box;
 }
 .text-box-design:focus {
   outline: none;

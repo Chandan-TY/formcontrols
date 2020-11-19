@@ -1,10 +1,10 @@
-import { Vue, Component, Prop, Emit, Watch, PropSync } from 'vue-property-decorator'
 import { controlProperties } from '@/FormDesigner/controls-properties'
 import {
   PositionXYData,
   ScrollBarData
 } from '@/FormDesigner/controls-properties-types'
 import { PropType } from 'vue'
+import { Component, Emit, Prop, PropSync, Vue, Watch } from 'vue-property-decorator'
 
 @Component({
   name: 'FdControlVue'
@@ -347,7 +347,6 @@ export default class FdControlVue extends Vue {
    *@param bgColor
    */
   setStyle (ref:HTMLInputElement, checked:boolean, disabled:boolean, bgColor:string) {
-    debugger
     if (ref) {
       ref.checked = checked;
       ((ref.parentNode as HTMLLabelElement).childNodes[1] as HTMLSpanElement).style.backgroundColor = bgColor
@@ -468,16 +467,18 @@ export default class FdControlVue extends Vue {
    * @param event it is of type MouseEvent
    */
  handleChange (event: MouseEvent, targetRef: HTMLInputElement) {
-   if (this.tripleState % 3 === 0) {
-     this.tripleState++
-     if (this.properties.TripleState) {
-       this.setStyle(targetRef, true, false, 'rgba(220, 220, 220, 1)')
+   if (event.target instanceof HTMLInputElement) {
+     if (this.tripleState % 3 === 0) {
+       this.tripleState++
+       if (this.properties.TripleState) {
+         this.setStyle(targetRef, true, false, 'rgba(220, 220, 220, 1)')
+       }
+     } else {
+       this.tripleState++
+       const el = event.target.checked
+       this.updateDataModel({ propertyName: 'Value', value: el })
+       this.setStyle(targetRef, el, false, 'white')
      }
-   } else {
-     this.tripleState++
-     const el = (event.target as HTMLInputElement).checked
-     this.updateDataModel({ propertyName: 'Value', value: el })
-     this.setStyle(targetRef, el, false, 'white')
    }
  }
  /**
@@ -582,127 +583,127 @@ topIndexCheck (newVal:number, oldVal:number) {
  *
  */
 handleMultiSelect (e: MouseEvent) {
-  debugger
-  console.log('Selected Value NOW', e)
+  if (e.target instanceof HTMLTableCellElement) {
   // console.log('FIRST ELE', e.path[1].attributes[0].ownerElement.firstChildElement.innerText)
-  const targetElement = (e.target as HTMLTableElement)
-  const tempData = targetElement.parentElement!.children[0] as HTMLTableElement
-  const tempDataOption = targetElement.parentElement!.children[1] as HTMLTableElement
-  const tempPath = e.composedPath()
-  targetElement.focus()
-  let data = targetElement.innerText
-  let splitData = data.replace(/\t/g, ' ').split(' ')
-  // this.selectionData[0] = this.data.properties.ListStyle === 0 ? tempData.innerText : tempDataOption.innerText
-  if (this.data.properties.ListStyle === 0) {
-    this.selectionData[0] = tempData.innerText
-  } else {
-    this.selectionData[0] = tempDataOption.innerText
-  }
-  console.log('Selectioon Data', this.selectionData)
-  if (this.properties.Enabled && this.properties.Locked === false) {
-    if (this.properties.MultiSelect === 0) {
-      if (this.properties.ControlSource !== '') {
-        this.updateDataModel({ propertyName: 'Text', value: this.selectionData[0] })
-        this.updateDataModel({ propertyName: 'Value', value: this.selectionData[0] })
-        this.updateDataModelExtraData({ propertyName: 'ControlSourceValue', value: this.selectionData[0] })
-      }
-      this.clearOptionBGColorAndChecked(e)
-      this.setOptionBGColorAndChecked(e)
-      let isListStyle = 0
-      if (this.properties.TextColumn === -1 || this.properties.TextColumn === 1) {
-        // 0th index is empty string
-        if (this.properties.ListStyle === 0) {
-          isListStyle = -1
+    const targetElement = e.target
+    const tempData = targetElement.parentElement!.children[0] as HTMLTableElement
+    const tempDataOption = targetElement.parentElement!.children[1] as HTMLTableElement
+    const tempPath = e.composedPath()
+    targetElement.focus()
+    let data = targetElement.innerText
+    let splitData = data.replace(/\t/g, ' ').split(' ')
+    // this.selectionData[0] = this.data.properties.ListStyle === 0 ? tempData.innerText : tempDataOption.innerText
+    if (this.data.properties.ListStyle === 0) {
+      this.selectionData[0] = tempData.innerText
+    } else {
+      this.selectionData[0] = tempDataOption.innerText
+    }
+    console.log('Selectioon Data', this.selectionData)
+    if (this.properties.Enabled && this.properties.Locked === false) {
+      if (this.properties.MultiSelect === 0) {
+        if (this.properties.ControlSource !== '') {
+          this.updateDataModel({ propertyName: 'Text', value: this.selectionData[0] })
+          this.updateDataModel({ propertyName: 'Value', value: this.selectionData[0] })
+          this.updateDataModelExtraData({ propertyName: 'ControlSourceValue', value: this.selectionData[0] })
         }
-        this.updateDataModel({ propertyName: 'Text', value: splitData[1 - isListStyle] })
-        this.updateDataModel({ propertyName: 'Value', value: splitData[1 - isListStyle] })
-      } else if (this.properties.TextColumn === 0) {
-        this.updateDataModel({ propertyName: 'Text', value: splitData[2 - isListStyle] })
-        this.updateDataModel({ propertyName: 'Value', value: splitData[1 - isListStyle] })
-      } else {
-        this.updateDataModel({ propertyName: 'Text', value: splitData[this.properties.TextColumn!] })
-        this.updateDataModel({ propertyName: 'Value', value: splitData[1 - isListStyle] })
-      }
-    } else if (this.properties.MultiSelect === 1) {
-      if (targetElement.tagName === 'INPUT') {
+        this.clearOptionBGColorAndChecked(e)
         this.setOptionBGColorAndChecked(e)
-      } else {
-        this.setOptionBGColorAndChecked(e)
-      }
-    } else if (this.properties.MultiSelect === 2) {
-      if (e.ctrlKey === true) {
+        let isListStyle = 0
+        if (this.properties.TextColumn === -1 || this.properties.TextColumn === 1) {
+        // 0th index is empty string
+          if (this.properties.ListStyle === 0) {
+            isListStyle = -1
+          }
+          this.updateDataModel({ propertyName: 'Text', value: splitData[1 - isListStyle] })
+          this.updateDataModel({ propertyName: 'Value', value: splitData[1 - isListStyle] })
+        } else if (this.properties.TextColumn === 0) {
+          this.updateDataModel({ propertyName: 'Text', value: splitData[2 - isListStyle] })
+          this.updateDataModel({ propertyName: 'Value', value: splitData[1 - isListStyle] })
+        } else {
+          this.updateDataModel({ propertyName: 'Text', value: splitData[this.properties.TextColumn!] })
+          this.updateDataModel({ propertyName: 'Value', value: splitData[1 - isListStyle] })
+        }
+      } else if (this.properties.MultiSelect === 1) {
         if (targetElement.tagName === 'INPUT') {
           this.setOptionBGColorAndChecked(e)
         } else {
           this.setOptionBGColorAndChecked(e)
         }
-      } else if (e.shiftKey === true && this.properties.Value !== '') {
-        let startPoint = 0
-        let endPoint = 0
-        for (let i = 0; i < tempPath.length; i++) {
-          const ele = tempPath[i] as HTMLTableElement
-          if (ele.className === 'table-body') {
-            // extend points start and end
-            for (let j = 0; j < ele.childNodes.length; j++) {
-              const cd = ele.childNodes[j] as HTMLTableElement
-              if (cd.innerText === this.properties.Value) {
-                startPoint = j + 1
-              }
-              if (cd.innerText === targetElement.innerText) {
-                endPoint = j
-              }
-            }
-            // upward selection start and end swap
-            if (startPoint > endPoint) {
-              let temp = startPoint
-              startPoint = endPoint
-              endPoint = temp
-            }
-            // setting selection
-            for (let k = startPoint; k <= endPoint; k++) {
-              const node = ele.childNodes[k] as HTMLTableElement
-              const tempNode = node.childNodes[0].childNodes[0] as HTMLInputElement
-              node.style.backgroundColor = 'rgb(59, 122, 231)'
-              if (
-                this.properties.ListStyle === 1 &&
-             !tempNode.checked
-              ) {
-                // tempNode.checked = !tempNode.checked
-                tempNode.checked = true
-              }
-            }
-            break
+      } else if (this.properties.MultiSelect === 2) {
+        if (e.ctrlKey === true) {
+          if (targetElement.tagName === 'INPUT') {
+            this.setOptionBGColorAndChecked(e)
+          } else {
+            this.setOptionBGColorAndChecked(e)
           }
+        } else if (e.shiftKey === true && this.properties.Value !== '') {
+          let startPoint = 0
+          let endPoint = 0
+          for (let i = 0; i < tempPath.length; i++) {
+            const ele = tempPath[i] as HTMLTableElement
+            if (ele.className === 'table-body') {
+            // extend points start and end
+              for (let j = 0; j < ele.childNodes.length; j++) {
+                const cd = ele.childNodes[j] as HTMLTableElement
+                if (cd.innerText === this.properties.Value) {
+                  startPoint = j + 1
+                }
+                if (cd.innerText === targetElement.innerText) {
+                  endPoint = j
+                }
+              }
+              // upward selection start and end swap
+              if (startPoint > endPoint) {
+                let temp = startPoint
+                startPoint = endPoint
+                endPoint = temp
+              }
+              // setting selection
+              for (let k = startPoint; k <= endPoint; k++) {
+                const node = ele.childNodes[k] as HTMLTableElement
+                const tempNode = node.childNodes[0].childNodes[0] as HTMLInputElement
+                node.style.backgroundColor = 'rgb(59, 122, 231)'
+                if (
+                  this.properties.ListStyle === 1 &&
+             !tempNode.checked
+                ) {
+                // tempNode.checked = !tempNode.checked
+                  tempNode.checked = true
+                }
+              }
+              break
+            }
+          }
+        } else {
+          this.clearOptionBGColorAndChecked(e)
+          this.setOptionBGColorAndChecked(e)
+          this.updateDataModel({ propertyName: 'Value', value: targetElement.innerText })
         }
       } else {
+        console.log('Check the event', e)
+        // console.log('FIRST ELE', e.path[1].attributes[0].ownerElement.firstChildElement.innerText)
+        if (this.properties.ControlSource !== '') {
+          this.updateDataModel({ propertyName: 'Text', value: this.selectionData[0] })
+          this.updateDataModel({ propertyName: 'Value', value: this.selectionData[0] })
+          this.updateDataModelExtraData({ propertyName: 'ControlSourceValue', value: this.selectionData[0] })
+        }
         this.clearOptionBGColorAndChecked(e)
         this.setOptionBGColorAndChecked(e)
-        this.updateDataModel({ propertyName: 'Value', value: targetElement.innerText })
-      }
-    } else {
-      console.log('Check the event', e)
-      // console.log('FIRST ELE', e.path[1].attributes[0].ownerElement.firstChildElement.innerText)
-      if (this.properties.ControlSource !== '') {
-        this.updateDataModel({ propertyName: 'Text', value: this.selectionData[0] })
-        this.updateDataModel({ propertyName: 'Value', value: this.selectionData[0] })
-        this.updateDataModelExtraData({ propertyName: 'ControlSourceValue', value: this.selectionData[0] })
-      }
-      this.clearOptionBGColorAndChecked(e)
-      this.setOptionBGColorAndChecked(e)
-      let isListStyle = 0
-      if (this.properties.TextColumn === -1 || this.properties.TextColumn === 1) {
+        let isListStyle = 0
+        if (this.properties.TextColumn === -1 || this.properties.TextColumn === 1) {
         // 0th index is empty string
-        if (this.properties.ListStyle === 0) {
-          isListStyle = -1
+          if (this.properties.ListStyle === 0) {
+            isListStyle = -1
+          }
+          this.updateDataModel({ propertyName: 'Text', value: splitData[1 - isListStyle] })
+          this.updateDataModel({ propertyName: 'Value', value: splitData[1 - isListStyle] })
+        } else if (this.properties.TextColumn === 0) {
+          this.updateDataModel({ propertyName: 'Text', value: splitData[2 - isListStyle] })
+          this.updateDataModel({ propertyName: 'Value', value: splitData[1 - isListStyle] })
+        } else {
+          this.updateDataModel({ propertyName: 'Text', value: splitData[this.properties.TextColumn!] })
+          this.updateDataModel({ propertyName: 'Value', value: splitData[1 - isListStyle] })
         }
-        this.updateDataModel({ propertyName: 'Text', value: splitData[1 - isListStyle] })
-        this.updateDataModel({ propertyName: 'Value', value: splitData[1 - isListStyle] })
-      } else if (this.properties.TextColumn === 0) {
-        this.updateDataModel({ propertyName: 'Text', value: splitData[2 - isListStyle] })
-        this.updateDataModel({ propertyName: 'Value', value: splitData[1 - isListStyle] })
-      } else {
-        this.updateDataModel({ propertyName: 'Text', value: splitData[this.properties.TextColumn!] })
-        this.updateDataModel({ propertyName: 'Value', value: splitData[1 - isListStyle] })
       }
     }
   }
@@ -715,166 +716,167 @@ handleMultiSelect (e: MouseEvent) {
  *
  */
 handleExtendArrowKeySelect (e: KeyboardEvent) {
-  const tempPath = e.composedPath()
-  const eventTarget = e.target as HTMLTableElement
-  const nextSiblingEvent = eventTarget.nextSibling as HTMLTableElement
-  const prevSiblingEvent = eventTarget.previousSibling as HTMLTableElement
-
-  if (
+  if (e.target instanceof HTMLTableRowElement) {
+    const tempPath = e.composedPath()
+    const eventTarget = e.target
+    const nextSiblingEvent = eventTarget.nextSibling as HTMLTableElement
+    const prevSiblingEvent = eventTarget.previousSibling as HTMLTableElement
+    if (
    this.properties.MatchEntry! === 0 &&
    e.keyCode >= 48 && e.keyCode <= 90
-  ) {
-    this.matchEntry = []
-    const prevMatchData =
+    ) {
+      this.matchEntry = []
+      const prevMatchData =
    this.extraDatas.MatchData === '' ? e.key : this.extraDatas.MatchData
-    this.updateDataModelExtraData({ propertyName: 'MatchData', value: prevMatchData !== e.key ? e.key : prevMatchData })
+      this.updateDataModelExtraData({ propertyName: 'MatchData', value: prevMatchData !== e.key ? e.key : prevMatchData })
 
-    for (let index = 0; index < tempPath.length; index++) {
-      const element = tempPath[index] as HTMLTableElement
-      if (element.className === 'table-body') {
-        for (let index = 0; index < element.childNodes.length; index++) {
-          const ei = element.childNodes[index] as HTMLTableElement
-          let splitData = ei.innerText.replace(/\t/g, ' ').split(' ')
-          let si = 0
-          if (this.properties.ListStyle === 0) {
-            si = -1
+      for (let index = 0; index < tempPath.length; index++) {
+        const element = tempPath[index] as HTMLTableElement
+        if (element.className === 'table-body') {
+          for (let index = 0; index < element.childNodes.length; index++) {
+            const ei = element.childNodes[index] as HTMLTableElement
+            let splitData = ei.innerText.replace(/\t/g, ' ').split(' ')
+            let si = 0
+            if (this.properties.ListStyle === 0) {
+              si = -1
+            }
+            if (splitData[si + 1][0].includes(this.extraDatas.MatchData!)) {
+              this.matchEntry.push(index)
+            }
           }
-          if (splitData[si + 1][0].includes(this.extraDatas.MatchData!)) {
-            this.matchEntry.push(index)
-          }
-        }
 
-        if (
+          if (
          this.extraDatas.MatchData![0] !== undefined &&
          this.extraDatas.MatchData![0] === e.key &&
          this.extraDatas.MatchData!.length > 0
-        ) {
-          const tempChildNode = element.childNodes[this.matchEntry[this.matchIndex]] as HTMLTableElement
-          this.matchIndex++
-          if (
-            this.matchIndex === this.matchEntry.length &&
+          ) {
+            const tempChildNode = element.childNodes[this.matchEntry[this.matchIndex]] as HTMLTableElement
+            this.matchIndex++
+            if (
+              this.matchIndex === this.matchEntry.length &&
            prevMatchData === this.extraDatas.MatchData
-          ) {
-            this.matchIndex = 0
-            this.clearOptionBGColorAndChecked(e)
-            this.setBGandCheckedForMatch(
-              tempChildNode
-            )
-            break
-          } else if (prevMatchData !== this.extraDatas.MatchData) {
-            this.matchIndex = 0
-            this.clearOptionBGColorAndChecked(e)
-            this.setBGandCheckedForMatch(
-              tempChildNode
-            )
-            break
-          } else {
-            if (this.matchEntry.length === 0) {
-              this.matchEntry.push(0)
+            ) {
               this.matchIndex = 0
+              this.clearOptionBGColorAndChecked(e)
+              this.setBGandCheckedForMatch(
+                tempChildNode
+              )
+              break
+            } else if (prevMatchData !== this.extraDatas.MatchData) {
+              this.matchIndex = 0
+              this.clearOptionBGColorAndChecked(e)
+              this.setBGandCheckedForMatch(
+                tempChildNode
+              )
+              break
+            } else {
+              if (this.matchEntry.length === 0) {
+                this.matchEntry.push(0)
+                this.matchIndex = 0
+              }
+              this.clearOptionBGColorAndChecked(e)
+              this.setBGandCheckedForMatch(
+                tempChildNode
+              )
+              break
             }
-            this.clearOptionBGColorAndChecked(e)
-            this.setBGandCheckedForMatch(
-              tempChildNode
-            )
-            break
           }
-        }
-        break
-      }
-    }
-  } else if (
-    this.properties.MatchEntry === 1 &&
-   e.keyCode >= 48 && e.keyCode <= 90
-  ) {
-    let temp = this.extraDatas.MatchData + e.key
-    this.updateDataModelExtraData({ propertyName: 'MatchData', value: temp })
-
-    for (let point = 0; point < tempPath.length; point++) {
-      const tbody = tempPath[point] as HTMLTableElement
-      if (tbody.className === 'table-body') {
-        this.matchEntry = []
-        for (let p = 0; p < tbody.childNodes.length; p++) {
-          const ei = tbody.childNodes[p] as HTMLTableElement
-          let matchEntryComplete = ei.innerText
-            .replace(/\t/g, ' ')
-            .split(' ')
-          let sii = 0
-          if (this.properties.ListStyle === 0) {
-            sii = -1
-          }
-          if (
-            matchEntryComplete[sii + 1][0].includes(this.extraDatas.MatchData!) &&
-           this.extraDatas.MatchData!.length < 2
-          ) {
-            this.matchEntry.push(p)
-          } else if (
-            matchEntryComplete[sii + 1].includes(this.extraDatas.MatchData!) &&
-           this.extraDatas.MatchData!.length > 1
-          ) {
-            this.matchEntry.push(p)
-          }
-        }
-
-        if (this.extraDatas.MatchData!.length <= 1) {
-          let singleMatch = tbody.childNodes[this.matchEntry[0]] as HTMLTableElement
-          this.clearOptionBGColorAndChecked(e)
-          this.setBGandCheckedForMatch(singleMatch)
           break
-        } else if (
+        }
+      }
+    } else if (
+      this.properties.MatchEntry === 1 &&
+   e.keyCode >= 48 && e.keyCode <= 90
+    ) {
+      let temp = this.extraDatas.MatchData + e.key
+      this.updateDataModelExtraData({ propertyName: 'MatchData', value: temp })
+
+      for (let point = 0; point < tempPath.length; point++) {
+        const tbody = tempPath[point] as HTMLTableElement
+        if (tbody.className === 'table-body') {
+          this.matchEntry = []
+          for (let p = 0; p < tbody.childNodes.length; p++) {
+            const ei = tbody.childNodes[p] as HTMLTableElement
+            let matchEntryComplete = ei.innerText
+              .replace(/\t/g, ' ')
+              .split(' ')
+            let sii = 0
+            if (this.properties.ListStyle === 0) {
+              sii = -1
+            }
+            if (
+              matchEntryComplete[sii + 1][0].includes(this.extraDatas.MatchData!) &&
+           this.extraDatas.MatchData!.length < 2
+            ) {
+              this.matchEntry.push(p)
+            } else if (
+              matchEntryComplete[sii + 1].includes(this.extraDatas.MatchData!) &&
+           this.extraDatas.MatchData!.length > 1
+            ) {
+              this.matchEntry.push(p)
+            }
+          }
+
+          if (this.extraDatas.MatchData!.length <= 1) {
+            let singleMatch = tbody.childNodes[this.matchEntry[0]] as HTMLTableElement
+            this.clearOptionBGColorAndChecked(e)
+            this.setBGandCheckedForMatch(singleMatch)
+            break
+          } else if (
          this.extraDatas.MatchData!.length > 1 &&
          this.matchEntry.length !== 0
-        ) {
-          let completeAutoMatch = tbody.childNodes[this.matchEntry[0]] as HTMLTableElement
-          this.clearOptionBGColorAndChecked(e)
-          this.setBGandCheckedForMatch(completeAutoMatch)
+          ) {
+            let completeAutoMatch = tbody.childNodes[this.matchEntry[0]] as HTMLTableElement
+            this.clearOptionBGColorAndChecked(e)
+            this.setBGandCheckedForMatch(completeAutoMatch)
+          }
+          break
         }
-        break
       }
     }
-  }
 
-  if (
-    e.key === 'ArrowDown' &&
+    if (
+      e.key === 'ArrowDown' &&
    e.shiftKey === true &&
    eventTarget.nextSibling !== null
-  ) {
-    if (eventTarget.style.backgroundColor !== 'rgb(59, 122, 231)') {
-      this.setOptionBGColorAndChecked(e)
-    } else if (
-      eventTarget.style.backgroundColor === 'rgb(59, 122, 231)' &&
+    ) {
+      if (eventTarget.style.backgroundColor !== 'rgb(59, 122, 231)') {
+        this.setOptionBGColorAndChecked(e)
+      } else if (
+        eventTarget.style.backgroundColor === 'rgb(59, 122, 231)' &&
      nextSiblingEvent.style.backgroundColor !== ''
-    ) {
-      this.setOptionBGColorAndChecked(e)
-    } else if (eventTarget.nextSibling.nextSibling !== null) {
-      this.setBGColorForNextSibling(e)
-    } else if (
-      eventTarget.nextSibling.nextSibling === null &&
+      ) {
+        this.setOptionBGColorAndChecked(e)
+      } else if (eventTarget.nextSibling.nextSibling !== null) {
+        this.setBGColorForNextSibling(e)
+      } else if (
+        eventTarget.nextSibling.nextSibling === null &&
      nextSiblingEvent.style.backgroundColor !== 'rgb(59, 122, 231)'
-    ) {
-      this.setBGColorForNextSibling(e)
-    }
+      ) {
+        this.setBGColorForNextSibling(e)
+      }
 
-    nextSiblingEvent.focus()
-  } else if (
-    e.key === 'ArrowUp' &&
+      nextSiblingEvent.focus()
+    } else if (
+      e.key === 'ArrowUp' &&
    e.shiftKey === true &&
    eventTarget.previousSibling !== null
-  ) {
-    if (
-      eventTarget.style.backgroundColor === 'rgb(59, 122, 231)' &&
+    ) {
+      if (
+        eventTarget.style.backgroundColor === 'rgb(59, 122, 231)' &&
      prevSiblingEvent.style.backgroundColor !== ''
-    ) {
-      this.setOptionBGColorAndChecked(e)
-    } else if (eventTarget.previousSibling.previousSibling !== null) {
-      this.setBGColorForPreviousSibling(e)
-    } else if (
-      eventTarget.previousSibling.previousSibling === null &&
+      ) {
+        this.setOptionBGColorAndChecked(e)
+      } else if (eventTarget.previousSibling.previousSibling !== null) {
+        this.setBGColorForPreviousSibling(e)
+      } else if (
+        eventTarget.previousSibling.previousSibling === null &&
      prevSiblingEvent.style.backgroundColor !== 'rgb(59, 122, 231)'
-    ) {
-      this.setBGColorForPreviousSibling(e)
+      ) {
+        this.setBGColorForPreviousSibling(e)
+      }
+      prevSiblingEvent.focus()
     }
-    prevSiblingEvent.focus()
   }
 }
 
@@ -895,23 +897,25 @@ handleDrag (e: MouseEvent) {
 }
 
 /**
-* @description set Background Color foe next siblings
+* @description set Background Color for next siblings
 * @function setBGColorForNextSibling
 * @param event its of type MouseEvent or KeyboardEvent
 */
 setBGColorForNextSibling (e: MouseEvent | KeyboardEvent) {
-  const targetEvent = e.target as HTMLTableElement
-  const nextSiblingEvent = targetEvent.nextSibling as HTMLTableElement
-  const nextSiblingCheckedEvent = nextSiblingEvent.children[0].childNodes[0] as HTMLInputElement
-  nextSiblingEvent.style.backgroundColor =
+  if (e.target instanceof HTMLTableCellElement) {
+    const targetEvent = e.target
+    const nextSiblingEvent = targetEvent.nextSibling as HTMLTableElement
+    const nextSiblingCheckedEvent = nextSiblingEvent.children[0].childNodes[0] as HTMLInputElement
+    nextSiblingEvent.style.backgroundColor =
    nextSiblingEvent.style.backgroundColor === 'rgb(59, 122, 231)'
      ? ''
      : 'rgb(59, 122, 231)'
-  if (
-    this.properties.ListStyle === 1 &&
+    if (
+      this.properties.ListStyle === 1 &&
    this.properties.MultiSelect === 2
-  ) {
-    nextSiblingCheckedEvent.checked = !nextSiblingCheckedEvent.checked
+    ) {
+      nextSiblingCheckedEvent.checked = !nextSiblingCheckedEvent.checked
+    }
   }
 }
 
@@ -921,18 +925,20 @@ setBGColorForNextSibling (e: MouseEvent | KeyboardEvent) {
 * @param event its of type MouseEvent or KeyboardEvent
 */
 setBGColorForPreviousSibling (e: KeyboardEvent) {
-  const targetEvent = e.target as HTMLTableElement
-  const prevSiblingEvent = targetEvent.previousSibling as HTMLTableElement
-  const prevSiblingCheckedEvent = prevSiblingEvent.children[0].childNodes[0] as HTMLInputElement
-  prevSiblingEvent.style.backgroundColor =
+  if (e.target instanceof HTMLTableCellElement) {
+    const targetEvent = e.target
+    const prevSiblingEvent = targetEvent.previousSibling as HTMLTableElement
+    const prevSiblingCheckedEvent = prevSiblingEvent.children[0].childNodes[0] as HTMLInputElement
+    prevSiblingEvent.style.backgroundColor =
    prevSiblingEvent.style.backgroundColor === 'rgb(59, 122, 231)'
      ? ''
      : 'rgb(59, 122, 231)'
-  if (
-    this.properties.ListStyle === 1 &&
+    if (
+      this.properties.ListStyle === 1 &&
    this.properties.MultiSelect === 2
-  ) {
-    prevSiblingCheckedEvent.checked = !prevSiblingCheckedEvent.checked
+    ) {
+      prevSiblingCheckedEvent.checked = !prevSiblingCheckedEvent.checked
+    }
   }
 }
 
@@ -971,29 +977,30 @@ clearOptionBGColorAndChecked (e: any) {
 * @param event KeyboardEvent or MouseEvent
 */
 setOptionBGColorAndChecked (e: KeyboardEvent | MouseEvent) {
-  const currentTargetElement = e.currentTarget as HTMLTableElement
-  const targetEvent = e.target as HTMLTableElement
-  const childNodeChecked = currentTargetElement.children[0].childNodes[0] as HTMLInputElement
-  currentTargetElement.style.backgroundColor =
+  if (e.target instanceof HTMLTableCellElement) {
+    const currentTargetElement = e.currentTarget as HTMLTableElement
+    const targetEvent = e.target
+    const childNodeChecked = currentTargetElement.children[0].childNodes[0] as HTMLInputElement
+    currentTargetElement.style.backgroundColor =
    currentTargetElement.style.backgroundColor === 'rgb(59, 122, 231)'
      ? ''
      : 'rgb(59, 122, 231)'
-  if (this.data.type === 'ComboBox') {
-    currentTargetElement.style.backgroundColor = ''
-  }
-  if (
-    this.properties.ListStyle === 1 &&
+    if (this.data.type === 'ComboBox') {
+      currentTargetElement.style.backgroundColor = ''
+    }
+    if (
+      this.properties.ListStyle === 1 &&
    this.properties.MultiSelect === 0
-  ) {
-    childNodeChecked.checked = !childNodeChecked.checked
-  } else if (
-    this.properties.ListStyle === 1 &&
+    ) {
+      childNodeChecked.checked = !childNodeChecked.checked
+    } else if (
+      this.properties.ListStyle === 1 &&
    this.properties.MultiSelect === 1 &&
    targetEvent.tagName === 'INPUT'
-  ) {
-    // e.target.checked = e.target.checked
-  } else {
-    childNodeChecked.checked = !childNodeChecked.checked
+    ) {
+    } else {
+      childNodeChecked.checked = !childNodeChecked.checked
+    }
   }
 }
 

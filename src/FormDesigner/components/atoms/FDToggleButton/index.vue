@@ -238,6 +238,7 @@ export default class FDToggleButton extends Mixins(FdControlVue) {
   border: none;
   overflow: hidden;
   outline: none;
+  box-sizing: border-box;
 }
 
 .spanClass {

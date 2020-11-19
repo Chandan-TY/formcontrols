@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div @mouseup="onMouseUp">
     <div
       id="right-click-menu"
       :style="contextMenuStyle"
@@ -58,7 +58,8 @@ import ContextMenu from '@/FormDesigner/components/atoms/FDContextMenu/index.vue
 import { controlContextMenu } from '@/FormDesigner/models/controlContextMenuData'
 import { userformContextMenu } from '../../../models/userformContextMenuData'
 import GroupControl from '@/FormDesigner/components/organisms/FDGroupControl/index.vue'
-
+import { IsetChildControls, IaddChildControls, IselectControl, IupdateControl } from '@/storeModules/fd/actions'
+import { EventBus } from '../../../event-bus'
 @Component({
   name: 'Container',
   components: {
@@ -68,15 +69,21 @@ import GroupControl from '@/FormDesigner/components/organisms/FDGroupControl/ind
   }
 })
 export default class Container extends Vue {
+  $el!: HTMLDivElement
   currentSelectedGroup: string = '';
 
   @Prop({ required: true, type: String }) public controlId!: string;
   @Prop({ required: true, type: String }) userFormId!: string;
   @Prop({ required: true, type: String }) containerId!: string;
+  @Prop() mouseCursorData: string
 
-  @State((state) => state.fd.selectedControls)
-  selectedControls!: fdState['selectedControls'];
+  @State((state) => state.fd.selectedControls) selectedControls!: fdState['selectedControls']
   @State((state) => state.fd.userformData) userformData!: userformData;
+
+  @Action('fd/updateControl') updateControl!: (payload: IupdateControl) => void
+  @Action('fd/setChildControls') setChildControls!: (payload: IsetChildControls) => void
+  @Action('fd/addChildControls') addChildControls!: (payload: IaddChildControls) => void
+  @Action('fd/selectControl') selectControl!: (payload: IselectControl) => void;
 
   @Prop({ required: true, type: Boolean }) viewMenu: boolean;
   @Prop({ required: true, type: Boolean }) contextMenuType: boolean;
@@ -86,11 +93,89 @@ export default class Container extends Vue {
 
   @Ref('groupRef') readonly groupRef!: GroupControl;
   @Ref('refContextMenu') readonly refContextMenu!: ContextMenu;
-  @Ref('dragSelector') readonly dragSelector: HTMLDivElement;
-  @Ref('contextmenu') readonly contextmenu: HTMLDivElement;
+  @Ref('dragSelector') readonly dragSelector: dragselector
+  @Ref('contextmenu') readonly contextmenu: HTMLDivElement
 
   controlContextMenu: Array<IcontextMenu> = controlContextMenu;
   userformContextMenu: Array<IcontextMenu> = userformContextMenu;
+  handler=''
+
+  onMouseUp (event: MouseEvent) {
+    if (document.onmousemove && document.onmouseup && this.handler === 'drag') {
+      const selectedContainer = [...this.selectedControls[this.userFormId].container][0]
+      const selectedSelect = this.selectedControls[this.userFormId].selected
+      if (!selectedSelect.find(id => id === selectedContainer)) {
+        const fromContainerControls = [...this.userformData[this.userFormId][selectedContainer].controls]
+        for (let i = 0; i < selectedSelect.length; i++) {
+          let tragetId: undefined|string = selectedSelect[i]
+          let targetIndex = fromContainerControls.findIndex(id => id === tragetId)
+          if (targetIndex !== -1) {
+            fromContainerControls.splice(targetIndex, 1)
+          }
+        }
+
+        let moveValueX = 0
+        let moveValueY = 0
+        let mainSelect = ''
+        EventBus.$emit('getMoveValue',
+          (offsetX: number, offsetY: number, id: string) => {
+            moveValueX = offsetX
+            moveValueY = offsetY
+            mainSelect = id
+          })
+
+        console.warn('getMoveValue', moveValueX, moveValueY)
+        const currentControlsData = this.userformData[this.userFormId]
+        const mainSelectData = currentControlsData[mainSelect]
+        const mainSelectX = mainSelectData.properties.Left
+        const mainSelectY = mainSelectData.properties.Top
+        const containerX = event.clientX - this.$el.getClientRects()[0].x
+        const containerY = event.clientY - this.$el.getClientRects()[0].y
+        if (typeof mainSelectX === 'number' && typeof mainSelectY === 'number') {
+          selectedSelect.forEach((id) => {
+            const targetData = currentControlsData[id].properties
+            const targetLeft = targetData.Left
+            const targetTop = targetData.Top
+            if (typeof targetTop === 'number' && typeof targetLeft === 'number') {
+              this.updateControl({
+                userFormId: this.userFormId,
+                controlId: id,
+                propertyName: 'Left',
+                value: containerX + targetLeft - mainSelectX - moveValueX
+              })
+              this.updateControl({
+                userFormId: this.userFormId,
+                controlId: id,
+                propertyName: 'Top',
+                value: containerY + targetTop - mainSelectY - moveValueY
+              })
+            }
+          })
+        }
+
+        // remove
+        this.setChildControls({
+          userFormId: this.userFormId,
+          containerId: selectedContainer,
+          targetControls: fromContainerControls
+        })
+
+        // add
+        this.addChildControls({
+          userFormId: this.userFormId,
+          containerId: this.containerId,
+          targetControls: selectedSelect
+        })
+
+        this.selectControl({
+          userFormId: this.userFormId,
+          select: { container: [this.containerId], selected: selectedSelect }
+        })
+        event.stopPropagation()
+        document.onmouseup(event)
+      }
+    }
+  }
 
   @Emit('closeMenu')
   closeMenu () {
@@ -145,7 +230,7 @@ export default class Container extends Vue {
       cursor:
         this.propControlData.properties.MousePointer !== 0 ||
         this.propControlData.properties.MouseIcon !== ''
-          ? `${(this as any).$parent.getMouseCursorData} !important`
+          ? `${this.mouseCursorData} !important`
           : 'default !important'
     }
   }
@@ -169,6 +254,14 @@ export default class Container extends Vue {
    */
   openContextMenu (e: MouseEvent, parentID: string, controlID: string) {
     this.$emit('openMenu', e, parentID, controlID)
+  }
+  created () {
+    EventBus.$on('handleName', (handler: string) => {
+      this.handler = handler
+    })
+  }
+  destroyed () {
+    EventBus.$off('handleName')
   }
 }
 </script>

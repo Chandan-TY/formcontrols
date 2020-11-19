@@ -18,7 +18,7 @@
     ></label>
     <div>
       <div ref="divAutoSize" :style="divcssStyleProperty">
-        <span v-if="!syncIsEditMode || isRunMode" @click="makeChecked">
+        <span v-if="!syncIsEditMode || isRunMode" @click="isRunMode && makeChecked($event)">
           <span>{{ computedCaption.afterbeginCaption }}</span>
           <span class="spanStyle">{{
             computedCaption.acceleratorCaption
@@ -77,11 +77,8 @@ export default class FDCheckBox extends Mixins(FdControlVue) {
    * @function makeChecked
    */
   makeChecked () {
-    /* istanbul ignore else */
-    if (this.isRunMode) {
-      const checkDiv = this.checkboxInput
-      checkDiv.checked = !checkDiv.checked
-    }
+    const checkDiv = this.checkboxInput
+    checkDiv.checked = !checkDiv.checked
   }
 
   /**
@@ -206,7 +203,6 @@ export default class FDCheckBox extends Mixins(FdControlVue) {
     deep: true
   })
   updateAutoSize (newVal: boolean, oldVal: boolean) {
-    /* istanbul ignore else */
     if (this.properties.AutoSize) {
       this.$nextTick(() => {
         let divRef: HTMLDivElement = this.autoSizecheckbox
@@ -224,6 +220,8 @@ export default class FDCheckBox extends Mixins(FdControlVue) {
           value: 10 + 4 + offsetHeight + 1
         })
       })
+    } else {
+      return undefined
     }
   }
 
@@ -251,6 +249,7 @@ export default class FDCheckBox extends Mixins(FdControlVue) {
   box-shadow: -1px -1px gray;
   overflow: hidden;
   align-items: center;
+  box-sizing: border-box;
 }
 
 .visually-hidden {

@@ -107,9 +107,9 @@ export const controlContextMenu = [
     icon: '',
     text: '<u>M</u>ake Same Size',
     values: [
-      { icon: 'size-width.svg', text: '<u>W</u>idth', values: [], disabled: false },
-      { icon: 'size-height.svg', text: '<u>H</u>eight', values: [], disabled: false },
-      { icon: 'size-both.svg', text: '<u>B</u>oth', values: [], disabled: false }
+      { id: 'ID_WIDTH', icon: 'size-width.svg', text: '<u>W</u>idth', values: [], disabled: false },
+      { id: 'ID_HEIGHT', icon: 'size-height.svg', text: '<u>H</u>eight', values: [], disabled: false },
+      { id: 'ID_BOTH', icon: 'size-both.svg', text: '<u>B</u>oth', values: [], disabled: false }
     ],
     disabled: false
   },

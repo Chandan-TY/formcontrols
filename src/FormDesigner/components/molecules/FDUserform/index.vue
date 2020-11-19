@@ -34,6 +34,7 @@
         :isEditMode="true"
         ref="containerRef"
         @closeMenu="closeMenu"
+        :mouseCursorData="getMouseCursorData"
         @openMenu="(e, parentID, controlID) => showContextMenu(e, parentID, controlID)"
       >
       </Container>
@@ -93,11 +94,11 @@ export default class UserForm extends FdContainerVue {
     if (typeof data === 'object' && data !== null) {
       return `url(${this.properties.Picture})`
     }
-    return this.getSampleDotPattern
+    return this.getSampleDotPattern.backgroundImage
     // return `linear-gradient(-90deg, ${this.properties.ForeColor} 1px, transparent 1px), linear-gradient(${this.properties.ForeColor} 1px, transparent 1px)`
   }
 
-  protected get getSampleDotPattern (): any {
+  protected get getSampleDotPattern () {
     const dotSize = 1
     const dotSpace = 10
     return {
@@ -146,7 +147,6 @@ export default class UserForm extends FdContainerVue {
         FontName: 'Arial',
         FontSize: 10
       }
-    console.log((this as any).containerRef)
     const scale = (this.properties.Zoom! * 10) / 100
     return {
       ...this.getSampleDotPattern,
@@ -211,9 +211,8 @@ export default class UserForm extends FdContainerVue {
   }
 
   dragSelectorControl (event: MouseEvent) {
-    console.log(this.containerId)
     this.selectedControlArray = []
-    this.selectedAreaStyle = (this as any).containerRef.dragSelector.selectAreaStyle
+    this.selectedAreaStyle = this.containerRef.dragSelector.selectAreaStyle
     this.calSelectedAreaStyle(event)
   }
 

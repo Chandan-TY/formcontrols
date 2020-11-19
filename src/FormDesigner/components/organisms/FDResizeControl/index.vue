@@ -2,10 +2,10 @@
   <div>
     <div
       :class="mainSelected && isEditMode && !isRunMode
-          ? 'mainDiv2'
-          : mainSelected && !isEditMode && !isRunMode
-          ? 'mainDiv'
-          : 'mainDiv1'
+          ? 'controlEditStyle'
+          : canDragMainDiv
+          ? 'controlSelectStyle'
+          : 'controlStyle'
       "
       :style="resizeControlStyle"
       :ref="'draRef'.concat(controlId)"
@@ -21,6 +21,7 @@
         controlType="control"
         @createGroup="createGroup"
         @muldragControl="muldragControl"
+        :size="{width: propControlData.properties.Width, height: propControlData.properties.Height}"
       />
       <component
         :is="propControlData.type"
@@ -124,6 +125,11 @@ export default class ResizeControl extends FdSelectVue {
       controlID
     }
   }
+
+  get canDragMainDiv (): boolean {
+    return this.mainSelected && !this.isEditMode && !this.isRunMode
+  }
+
   get propControlData (): controlData {
     return this.userformData[this.userFormId][this.controlId]
   }
@@ -152,28 +158,12 @@ export default class ResizeControl extends FdSelectVue {
         tempOrientBoolean = true
       }
     }
-    console.log('Height Spin', currentProperties.Height)
-    console.log('Width Spin', currentProperties.Width)
     return {
-      paddingRight:
-        (type === 'Label' && (bs ? '4px' : '2px')) ||
-        (type === 'TextBox' && (bs ? '6px' : '4px')) ||
-        (type === 'FDImage' && (bs ? '2px' : '1px')) ||
-        (type === 'Frame' && (bs ? '20px' : '18px')) ||
-        (type === 'ComboBox' && (bs ? '27px' : '25px')) ||
-        ((type === 'ScrollBar' && (tempOrientBoolean === false)) ? '43px' : '0px'),
-      paddingBottom:
-        (type === 'Label' && (bs ? '2px' : '0px')) ||
-        (type === 'TextBox' && (bs ? '6px' : '4px')) ||
-        (type === 'FDImage' && (bs ? '2px' : '1px')) ||
-        (type === 'Frame' && (bs ? '13px' : '18px')) ||
-        (type === 'ComboBox' && (bs ? '7px' : '5px')) ||
-        ((type === 'ScrollBar' && (tempOrientBoolean === true) ? '42px' : '0px')),
-
       left: `${currentProperties.Left}px`,
       top: `${currentProperties.Top}px`,
-      width: `${currentProperties.Width!}px`,
-      height: `${currentProperties.Height!}px`,
+      /* border width(5) * 2 = 10 */
+      width: `${currentProperties.Width! + 10}px`,
+      height: `${currentProperties.Height! + 10}px`,
       display:
         this.isRunMode && currentProperties.Visible === false
           ? 'none'
@@ -274,7 +264,7 @@ export default class ResizeControl extends FdSelectVue {
     })
   }
   get getModeStyle () {
-    return this.mainSelected ? 'mainDiv' : 'mainDiv1'
+    return this.mainSelected ? 'controlSelectStyle' : 'controlStyle'
   }
 
   @Watch('selectedControls', { deep: true })
@@ -296,7 +286,8 @@ export default class ResizeControl extends FdSelectVue {
 </script>
 
 <style scoped>
-.mainDiv {
+.controlSelectStyle {
+  box-sizing: border-box;
   position: absolute;
   --border-width: 5;
   --stripe-distance: 2px;
@@ -310,7 +301,8 @@ export default class ResizeControl extends FdSelectVue {
     )
     var(--border-width);
 }
-.mainDiv2 {
+.controlEditStyle {
+  box-sizing: border-box;
   position: absolute;
   --border-width: 5;
   --stripe-distance: 2px;
@@ -324,7 +316,8 @@ export default class ResizeControl extends FdSelectVue {
     )
     var(--border-width);
 }
-.mainDiv1 {
+.controlStyle {
+  box-sizing: border-box;
   position: absolute;
 }
 :focus {

@@ -61,8 +61,7 @@ import { IupdateControlExtraData } from '@/storeModules/fd/actions'
 import FdDialogDragVue from '@/api/abstract/FormDesigner/FdDialogDragVue'
 
 @Component({
-  name: 'TabStripTabOrderModal',
-  components: {}
+  name: 'TabStripTabOrderModal'
 })
 export default class TabStripTabOrderModal extends FdDialogDragVue {
   @State((state) => state.fd.userformData) userformData!: userformData;

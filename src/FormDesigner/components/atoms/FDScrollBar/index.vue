@@ -128,15 +128,23 @@ export default class FDScrollBar extends Mixins(FdControlVue) {
   disableScrolling (e: Event) {
     this.tempEvent = e
     this.tempScroll = true
-    const targetElement = e.target as HTMLDivElement
-    if (this.isRunMode) {
-      if (!this.properties.Enabled) {
+    if (e.target instanceof HTMLDivElement) {
+      const targetElement = e.target
+      if (this.isRunMode) {
+        if (!this.properties.Enabled) {
+          targetElement.scrollTop = 0
+          targetElement.scrollLeft = 0
+        } else {
+          return undefined
+        }
+      } else if (!this.isEditMode) {
         targetElement.scrollTop = 0
         targetElement.scrollLeft = 0
+      } else {
+        return undefined
       }
-    } else if (!this.isEditMode) {
-      targetElement.scrollTop = 0
-      targetElement.scrollLeft = 0
+    } else {
+      return undefined
     }
   }
   mounted () {
@@ -164,7 +172,7 @@ export default class FDScrollBar extends Mixins(FdControlVue) {
    * @function getForeColorValue
    *
    */
-  @Watch('properties', { deep: true })
+  @Watch('properties.ForeColor', { deep: true })
   changeForeColor (newVal: controlData, oldVal: controlData) {
     this.$el.querySelectorAll('.foreColor').forEach((e) => {
       (e as SVGGElement).style.fill = this.getForeColorValue
@@ -180,9 +188,6 @@ export default class FDScrollBar extends Mixins(FdControlVue) {
   protected get styleObj (): Partial<CSSStyleDeclaration> {
     const controlProp = this.properties
     return {
-      //  position: 'relative',
-      // width: this.checkOtherOrientations() ? `${controlProp.Width! - 1}px` : `${this.initialWidth}px`,
-      // height: this.checkOtherOrientations() ? `${this.initialHeight}px` : `${controlProp.Height! - 1}px`,
       width: this.checkOtherOrientations()
         ? `${controlProp.Width! - 1}px`
         : `${controlProp.Width!}px`,
@@ -299,6 +304,7 @@ export default class FDScrollBar extends Mixins(FdControlVue) {
   display: grid;
   grid-template-rows: 21px 1fr 21px;
   grid-template-columns: 22px;
+  box-sizing: border-box;
   /* position:absolute; */
 }
 .outer-scroll-div-oriented{

@@ -192,13 +192,6 @@ export default class FDSpinButton extends Mixins(FdControlVue) {
           : 'none'
         : 'none',
       outlineOffset: this.isClicked ? '-5px' : '-5px',
-      // paddingLeft: controlProp.Width! < 46 ? '0px' : '',
-      // paddingRight: controlProp.Width! < 46 ? '0px' : '',
-      // paddingTop: controlProp.Height! < 46 ? '0px' : '',
-      // paddingBottom: controlProp.Height! < 46 ? '0px' : '',
-      // width: controlProp.Width! < 46 ? `${controlProp.Width! + 6}px` : '100%',
-      // height:
-      //   controlProp.Height! < 46 ? `${controlProp.Height! + 6}px` : '100%'
       width: '100%',
       height: '100%'
     }
@@ -209,7 +202,7 @@ export default class FDSpinButton extends Mixins(FdControlVue) {
    * @function getForeColorValue
    *
    */
-  @Watch('properties', { deep: true })
+  @Watch('properties.ForeColor', { deep: true })
   changeForeColor (newVal: string, oldVal: string) {
     this.$el.querySelectorAll('.foreColor').forEach((e) => {
       (e as SVGGElement).style.fill = this.getForeColorValue
@@ -266,22 +259,17 @@ export default class FDSpinButton extends Mixins(FdControlVue) {
 .spin {
   display: grid;
   grid-template-columns: 1fr;
+  box-sizing: border-box;
 }
 .spin-oriented {
   display: grid;
   grid-template-columns: 1fr 1fr;
 }
 .button-element-top {
-  // background-size: 40%;
-  // background-position: center;
-  // background-repeat: no-repeat;
   border-color: lightgrey;
 }
 
 .button-element-bottom {
-  // background-size: 40%;
-  // background-position: center;
-  // background-repeat: no-repeat;
   border-color: lightgrey;
 }
 :focus {

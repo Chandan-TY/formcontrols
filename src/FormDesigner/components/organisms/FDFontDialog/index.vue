@@ -234,7 +234,6 @@ export default class FDFontDialog extends Vue {
   @Prop() value: font;
   @Ref('fontDialogDrag') readonly fontDialogDrag!: HTMLDivElement;
   @Prop() isOpen: boolean;
-  // @Ref('fontStyleRef') readonly fontStyleRef! : HTMLDivElement
   isFontStrikeOut: boolean = false;
   isFontUnderline: boolean = false;
   fontDialogInitialStyle: IFontDialogInitialStyle = {
@@ -338,13 +337,19 @@ export default class FDFontDialog extends Vue {
   }
   changeStyle (value: string) {
     const refName = 'fontStyleRef'.concat(value)
-    const fontRef: IChangeStyle = (this.$refs as IRef)[refName][0 as number]
-    this.fontStyle = value
-    this.fontStyle1 = fontRef.style.fontStyle
-    this.fontWeight = fontRef.style.fontWeight
-    this.fontStretch = fontRef.style.fontStretch
-    this.tempVal.FontName = fontRef.style.fontFamily
-    this.tempVal.FontStyle = this.fontStyle
+    const targetRef = this.$refs[refName]
+    let fontRef = null
+    if (targetRef instanceof Array) {
+      fontRef = targetRef[0]
+    }
+    if (fontRef instanceof HTMLDivElement) {
+      this.fontStyle = value
+      this.fontStyle1 = fontRef.style.fontStyle
+      this.fontWeight = fontRef.style.fontWeight
+      this.fontStretch = fontRef.style.fontStretch
+      this.tempVal.FontName = fontRef.style.fontFamily
+      this.tempVal.FontStyle = this.fontStyle
+    }
   }
   updateFont () {
     if (this.fontWeight === 'bold' && this.fontStyle1 === 'italic') {

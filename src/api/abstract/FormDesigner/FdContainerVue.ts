@@ -183,6 +183,12 @@ export default abstract class FdContainerVue extends FdControlVue {
             this.selectedControls[this.userFormId].selected.length <= 1
           }
         }
+        if (val.id === 'ID_ALIGN') {
+          debugger
+          for (let index = 0; index < val.values.length; index++) {
+            val.values[index].disabled = this.selectedControls[this.userFormId].selected.length <= 1
+          }
+        }
       }
     }
 

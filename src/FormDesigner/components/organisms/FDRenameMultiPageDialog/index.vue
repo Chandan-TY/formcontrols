@@ -1,9 +1,8 @@
 <template>
   <div id="popup1" class="overlay" :style="tabOrderStyleObj">
-    <div class="rename-div-1 popup">
+    <div class="rename-div-1 popup" :style="tabOrderDialogInitialStyle">
       <div class="remane-header-div" @mousedown.stop="dragTabOrderDialog">
         Rename
-        <a class="close" href="#">
           <button class="ui-btn close" @click="closeDialog">
             <svg viewBox="0 0 10 10">
               <polygon
@@ -11,7 +10,6 @@
               />
             </svg>
           </button>
-        </a>
       </div>
       <hr class="hr" />
       <br />
@@ -64,11 +62,11 @@
 </template>
 
 <script lang="ts">
-import FdDialogDragVue from '@/api/abstract/FormDesigner/FdDialogDragVue'
 import { IupdateControlExtraData } from '@/storeModules/fd/actions'
-import { Component, Prop, Emit, Watch, Vue } from 'vue-property-decorator'
+import { Component, Vue } from 'vue-property-decorator'
 import { State, Action } from 'vuex-class'
 import { EventBus } from '@/FormDesigner/event-bus'
+import FdDialogDragVue from '@/api/abstract/FormDesigner/FdDialogDragVue'
 
 @Component({
   name: 'FDRenameMultiPageDialog'
@@ -89,14 +87,20 @@ export default class FDRenameMultiPageDialog extends FdDialogDragVue {
   };
 
   handleRename (e: KeyboardEvent) {
-    this.selectedTabData.Caption = (e.target as HTMLInputElement).value
+    if (e.target instanceof HTMLInputElement) {
+      this.selectedTabData.Caption = e.target.value
+    }
   }
 
   updateAccelerator (e: KeyboardEvent) {
-    this.selectedTabData.Accelerator = (e.target as HTMLInputElement).value
+    if (e.target instanceof HTMLInputElement) {
+      this.selectedTabData.Accelerator = e.target.value
+    }
   }
   handleTip (e: KeyboardEvent) {
-    this.selectedTabData.ToolTip = (e.target as HTMLInputElement).value
+    if (e.target instanceof HTMLInputElement) {
+      this.selectedTabData.ToolTip = e.target.value
+    }
   }
   updateChanges () {
     if (this.selectedTabData.Accelerator) {
@@ -114,7 +118,6 @@ export default class FDRenameMultiPageDialog extends FdDialogDragVue {
     EventBus.$on(
       'renamePage',
       (userFormId: string, controlId: string, selectedTab: number) => {
-        console.log('==========>', controlId)
         const tabOrderControlData = this.userformData[userFormId][controlId]
           .extraDatas!.Tabs!
         if (tabOrderControlData.length > 0) {

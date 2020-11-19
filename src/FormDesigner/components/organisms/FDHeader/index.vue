@@ -221,7 +221,6 @@ export default class Header extends Vue {
     this.displaySubMenu = !this.displaySubMenu
   }
   clickChangeMode () {
-    debugger
     this.changeRunMode(!this.isRunMode)
   }
 }

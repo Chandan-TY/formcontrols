@@ -254,6 +254,7 @@ export default class FDListBox extends Mixins(FdControlVue) {
   background-color: lightgray;
   border: 1px solid gray;
   overflow: auto;
+  box-sizing: border-box;
   /* box-shadow: -1px -1px lightgray; */
 }
 .list-outer {

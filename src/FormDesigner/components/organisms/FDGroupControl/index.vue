@@ -16,6 +16,13 @@
       <div class="handle handle-br" @mousedown.stop="handleMouseDown($event,'br')"></div>
       <div class="handle handle-bm" @mousedown.stop="handleMouseDown($event,'bm')"></div>
     </div>
+    <!-- <div v-for="handlerName in handlers" :key="handlerName"> -->
+        <!-- :style="handlerStyle" :class="[getMainSelected ? `handle handle-${handlerName}` : null]"-->
+     <!--   <div
+          :class="[`handle handle-${handlerName}`]"
+          @mousedown.stop="handleMouseDown($event, handlerName)"
+        ></div>
+      </div> -->
   </div>
 </template>
 
@@ -286,7 +293,7 @@ export default class GroupControl extends Vue {
     }
     for (let k of this.selectedControls[this.userFormId].selected) {
       if (!k.startsWith('ID_USERFORM') && !k.startsWith('group')) {
-        let dragResizeReffer: any = ''
+        let dragResizeReffer: IdragResizeRefStyle = {}
         const control: controlProperties = this.userformData[this.userFormId][k].properties
         for (const key in this.controlRef.resizeControl) {
           if (this.controlRef.resizeControl[key].$refs['draRef'.concat(control.ID)] !== undefined) {

@@ -201,6 +201,7 @@ export default class FDCommandButton extends Mixins(FdControlVue) {
 .commandbutton {
   overflow: hidden;
   display: inline-block;
+  box-sizing: border-box;
 }
 .commandbutton[runmode]:active {
   border-style: outset !important;

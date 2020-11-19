@@ -40,6 +40,44 @@ describe('FDScrollBar.vue', () => {
     it('ButtonClick()', () => {
       expect(testWrapper.vm.isClicked).toBe(false)
     })
+    it('Scroll BY Class()', () => {
+      const x = testWrapper.find('.outer-scroll')
+      testWrapper.vm.isRunMode = true
+      testWrapper.props().data.properties.Enabled = false
+      x.trigger('scroll')
+    })
+    it('Scroll BY Class Two()', () => {
+      const x = testWrapper.find('.outer-scroll')
+      testWrapper.vm.isRunMode = false
+      testWrapper.vm.isEditMode = false
+      x.trigger('scroll')
+    })
+    it('Enabled check()', () => {
+      this.isRunMode = true
+      testWrapper.props().data.properties.Enabled = false
+    })
+    it('isClicked check()', () => {
+      this.isRunMode = true
+      testWrapper.vm.isClicked = true
+    })
+    it('WidthHeight check()', () => {
+      testWrapper.props().data.properties.Width = 5
+      testWrapper.props().data.properties.Height = 6
+      expect(testWrapper.vm.checkOtherOrientations()).toBe(true)
+    })
+    it('WidthHeight check Two()', () => {
+      testWrapper.props().data.properties.Width = 7
+      testWrapper.props().data.properties.Height = 6
+      expect(testWrapper.vm.checkOtherOrientations()).toBe(false)
+    })
+    it('Visible check()', () => {
+      testWrapper.vm.isRunMode = true
+      testWrapper.props().data.properties.Visible = true
+    })
+    it('Set Interval check()', () => {
+      testWrapper.vm.tempScroll = true
+      setInterval(testWrapper.vm.setIntervalCheck(), 3000)
+    })
   })
 })
 describe('button prop test', () => {
@@ -50,11 +88,7 @@ describe('button prop test', () => {
     expect(testWrapper.props().controlId).not.toBeNull()
   })
   const otherScrollBar = { ...scrollBar1 }
-  // otherScrollBar.properties.ControlTipText = 'ScrollBar'
   otherScrollBar.properties.Enabled = !otherScrollBar.properties.Enabled
   otherScrollBar.properties.Visible = !otherScrollBar.properties.Visible
   testWrapper.setProps({ data: otherScrollBar })
-  // it('ControlTipText test', () => {
-  //   expect(testWrapper.props().ControlTipText).toBe('ScrollBar')
-  // })
 })

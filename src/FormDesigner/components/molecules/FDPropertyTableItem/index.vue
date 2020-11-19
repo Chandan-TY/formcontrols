@@ -75,7 +75,6 @@ export default class PropertyTableItem extends Vue {
 
   updateSelect (event: Event) {
     this.viewValue = (event.target as HTMLSelectElement).value
-
     this.updateValue(null)
   }
 

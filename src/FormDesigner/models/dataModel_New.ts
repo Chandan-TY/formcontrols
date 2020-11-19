@@ -49,7 +49,8 @@ export const userDataNew = {
         WhatsThisHelp: false,
         Zoom: 100
       },
-      controls: ['ID_TabStrip1', 'ID_Label3', 'ID_Label4'],
+      // controls: ['ID_TabStrip1', 'ID_Label3', 'ID_Label4'],
+      controls: ['ID_Frame1', 'ID_Label3', 'ID_Label4'],
       extraDatas: {
         display: 'block'
       },
@@ -552,7 +553,7 @@ export const userDataNew = {
         Height: 144,
         HelpContextID: 0,
         KeepScrollBarsVisible: 0,
-        Left: 0,
+        Left: 100,
         MouseIcon: '',
         MousePointer: 0,
         Name: 'Frame1',
@@ -570,7 +571,7 @@ export const userDataNew = {
         TabIndex: 12,
         TabStop: true,
         Tag: '',
-        Top: 0,
+        Top: 100,
         Visible: true,
         Width: 400,
         Zoom: 100,
@@ -790,7 +791,7 @@ export const userDataNew = {
         Delay: 50,
         Enabled: true,
         ForeColor: '#000000',
-        Height: 0,
+        Height: 180,
         HelpContextID: 0,
         Left: 0,
         Max: 32767,
@@ -807,7 +808,7 @@ export const userDataNew = {
         Top: 0,
         Value: 0,
         Visible: true,
-        Width: 0,
+        Width: 72,
         GroupID: ''
       },
       controls: [],

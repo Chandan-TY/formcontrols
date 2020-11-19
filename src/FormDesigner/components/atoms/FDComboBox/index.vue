@@ -182,8 +182,10 @@ export default class FDComboBox extends Mixins(FdControlVue) {
     this.tempEvent = e
   }
   handleTextInput (e: Event) {
-    const tempEvent = e.target as HTMLTextAreaElement
-    this.tempInputValue = tempEvent!.value
+    if (e.target instanceof HTMLTextAreaElement) {
+      const tempEvent = e.target
+      this.tempInputValue = tempEvent!.value
+    }
   }
   setSelection () {
     const setSelectionRef = this.textareaRef
@@ -292,17 +294,20 @@ export default class FDComboBox extends Mixins(FdControlVue) {
    * @event click
    */
   divHide (event: MouseEvent, textareaRef: HTMLTextAreaElement) {
-    (event.target as HTMLDivElement).style.display = 'none'
-    textareaRef.style.display = 'block'
-    if (
-      (event.target as HTMLDivElement).tagName === 'SPAN' &&
-      (event.target as HTMLDivElement).parentNode!.nodeName === 'DIV'
-    ) {
-      ((event.target as HTMLDivElement)
-        .parentNode as HTMLElement).style.display = 'none'
+    debugger
+    if (event.target instanceof HTMLSpanElement || event.target instanceof HTMLDivElement) {
+      (event.target).style.display = 'none'
+      textareaRef.style.display = 'block'
+      if (
+        (event.target).tagName === 'SPAN' &&
+      (event.target).parentNode!.nodeName === 'DIV'
+      ) {
+        ((event.target)
+          .parentNode as HTMLElement).style.display = 'none'
+      }
+      textareaRef.focus()
+      textareaRef.selectionStart = textareaRef.selectionEnd
     }
-    textareaRef.focus()
-    textareaRef.selectionStart = textareaRef.selectionEnd
   }
   /**
    * @description dragBehavior - if true when dragging
@@ -644,6 +649,7 @@ export default class FDComboBox extends Mixins(FdControlVue) {
   text-align: left;
   outline: none;
   height: 47px;
+  box-sizing: border-box;
   /* line-height: 10px; specify the drop down height */
 }
 .selectionSpan {

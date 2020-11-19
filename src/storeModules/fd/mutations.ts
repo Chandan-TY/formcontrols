@@ -42,6 +42,19 @@ interface IMdeleteControl {
   targetId: string
 }
 
+/* set child controls on data model */
+interface IMsetChildControls {
+  userFormId: string
+  containerId: string
+  targetControls: string[]
+}
+
+interface IMaddChildControls {
+  userFormId: string
+  containerId: string
+  targetControls: string[]
+}
+
 // interface IMselectControl extends selectedControls {}
 interface IMselectControl {
   userFormId: string
@@ -74,6 +87,8 @@ export type FdMutations<S = fdState> = {
   updateControl(state: S, payload: IMupdateControl): void;
   updateControlExtraData(state: S, payload: IMupdateControlExtraData): void;
   deleteControl(state: S, payload: IMdeleteControl): void;
+  setChildControls(state: S, payload: IMsetChildControls): void;
+  addChildControls(state: S, payload: IMaddChildControls): void;
   selectControl(state: S, payload: IMselectControl): void;
   fdEmitAction(state: S, payload: IMfdEmitAction): void;
   ideEmitAction(state: S, payload: IMideEmitAction): void;
@@ -165,6 +180,15 @@ const mutations: MutationTree<fdState> & FdMutations = {
     /* if (selectedControl.length === 0) {
       selectedControl.push(payload.parentId)
     } */
+  },
+  setChildControls (state, payload) {
+    const userFormData = state.userformData[payload.userFormId]
+    userFormData[payload.containerId].controls = payload.targetControls
+  },
+  addChildControls (state, payload) {
+    const userFormData = state.userformData[payload.userFormId]
+    const containerData = userFormData[payload.containerId]
+    containerData.controls = containerData.controls.concat(payload.targetControls)
   },
   updateCopyControlList (state, payload) {
     state.copyControlList.userFormId = payload.userFormId

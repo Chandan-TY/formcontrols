@@ -46,6 +46,18 @@ export interface IdeleteControl {
   targetId: string
 }
 
+export interface IsetChildControls {
+  userFormId: string
+  containerId: string
+  targetControls: string[]
+}
+
+export interface IaddChildControls {
+  userFormId: string
+  containerId: string
+  targetControls: string[]
+}
+
 export interface IupdateCopyControlList {
   userFormId: string
   parentId: string
@@ -98,6 +110,8 @@ interface FdActions {
   updateControlExtraData(context: AugmentedActionContext, payload: IupdateControlExtraData): void
   updateUserFormProp(context: AugmentedActionContext, payload: IupdateUserform): void
   deleteControl(context: AugmentedActionContext, payload: IdeleteControl): void
+  setChildControls(state: AugmentedActionContext, payload: IsetChildControls): void;
+  addChildControls(state: AugmentedActionContext, payload: IaddChildControls): void;
   selectControl(context: AugmentedActionContext, payload: IselectControl): void
   updateGroup(context: AugmentedActionContext, payload: IupdateGroup): void
   fdEmitAction(context: AugmentedActionContext, payload: IfdEmitAction): void
@@ -129,6 +143,12 @@ const actions: ActionTree<fdState, rootState> & FdActions = {
   },
   deleteControl (context, payload) {
     context.commit('deleteControl', payload)
+  },
+  setChildControls (context, payload) {
+    context.commit('setChildControls', payload)
+  },
+  addChildControls (context, payload) {
+    context.commit('addChildControls', payload)
   },
   selectControl (context, payload) {
     context.commit('selectControl', payload)

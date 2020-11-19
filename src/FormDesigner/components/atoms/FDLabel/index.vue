@@ -78,8 +78,8 @@ export default class FDLabel extends Mixins(FdControlVue) {
       border: this.getBorderStyle,
       background: controlProp.BackStyle ? controlProp.BackColor : 'transparent',
       boxShadow: controlProp.SpecialEffect ? this.getSpecialEffectData : 'none',
-      whiteSpace: controlProp.WordWrap ? 'pre-wrap' : 'pre',
-      wordBreak: controlProp.WordWrap ? 'break-all' : 'normal',
+      whiteSpace: controlProp.WordWrap ? 'pre' : 'pre-wrap',
+      wordBreak: controlProp.WordWrap ? 'break-word' : 'normal',
       color:
         controlProp.Enabled === true ? controlProp.ForeColor : this.getEnabled,
       cursor:
@@ -155,6 +155,7 @@ export default class FDLabel extends Mixins(FdControlVue) {
   padding-left: 2px;
   overflow: hidden;
   outline: none;
+  box-sizing: border-box;
 }
 .spanClass {
   text-decoration: underline;

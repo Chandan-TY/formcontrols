@@ -44,6 +44,32 @@ describe('FDSpinButton.vue', () => {
       testWrapper.vm.orientedValue = true
       expect(testWrapper.vm.classStyle).toMatch('spin')
     })
+    it('getDiablevalue check', () => {
+      testWrapper.vm.isRunMode = true
+    })
+    it('heightWidthChange check', () => {
+      testWrapper.props().data.properties.Width = 6
+      testWrapper.props().data.properties.Height = 7
+      expect(testWrapper.vm.checkOtherOrientations()).toBe(true)
+    })
+    it('svgLeftRightStyle check', () => {
+      testWrapper.props().data.properties.Width = 55
+      testWrapper.props().data.properties.Height = 52
+      expect(testWrapper.vm.checkOtherOrientations()).toBe(false)
+    })
+    it('isClicked check', () => {
+      testWrapper.vm.isClicked = true
+    })
+    it('ChangeForeColor check', () => {
+      this.getForeColorvalue = '#eeeeee'
+      testWrapper.vm.changeForeColor('#eeeeee', '#ffffff')
+    })
+    it('CheckOrientation check', () => {
+      testWrapper.vm.checkOrientation({ orientation: 0, width: 55, height: 52 }, { orientation: -1, width: 55, height: 7 })
+    })
+    it('CheckOrientation check', () => {
+      testWrapper.vm.checkOrientation({ orientation: 1, width: 55, height: 52 }, { orientation: -1, width: 55, height: 7 })
+    })
   })
 })
 describe('button prop test', () => {

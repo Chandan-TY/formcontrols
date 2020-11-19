@@ -27,8 +27,8 @@
             class="set-context"
             v-html="value.text"
             :style="{ opacity: value.disabled ? 0.5 : 1 }"
-            >{{ value.text }}</span
-          >
+            >{{ value.text }}
+          </span>
         </button>
         <button class="wrapper1-context wrapper21" v-else>
           <div></div>
@@ -47,6 +47,7 @@
                     'padding-top': subVal.text === 'none' ? '0px' : '',
                     outline: subVal.text === 'none' ? 'none' : '',
                   }"
+                   @mousedown.stop="value.disabled === false ? controlAction(value.id, subVal.id) : ''"
                 >
                   <div>
                     <FDSVGImage v-if="subVal.icon" :name="subVal.icon" />
@@ -54,7 +55,7 @@
                   <a v-if="subVal.text === 'none'">
                     <hr />
                   </a>
-                  <a v-else href="#" v-html="subVal.text">{{ subVal.text }}</a>
+                  <a v-else href="#" v-html="subVal.text" :style="{ opacity: subVal.disabled ? 0.5 : 1 }">{{ subVal.text }}</a>
                 </li>
               </ul>
             </li>
@@ -118,7 +119,7 @@ export default class ContextMenu extends Vue {
   ) => void;
   @Action('fd/updateControl') updateControl!: (payload: IupdateControl) => void;
 
-  controlAction (controlActionName: string) {
+  controlAction (controlActionName: string, subVal: string) {
     if (controlActionName === 'ID_COPY') {
       this.copyControl()
     } else if (controlActionName === 'ID_DELETE') {
@@ -147,9 +148,9 @@ export default class ContextMenu extends Vue {
     } else if (controlActionName === 'ID_MOVE') {
       EventBus.$emit('tabStripTabOrder', this.userFormId, this.controlId)
     } else if (controlActionName === 'ID_TABORDER') {
-      debugger
-      console.log(this.userFormId, this.containerId)
       EventBus.$emit('userFormTabOrder', this.userFormId, this.containerId)
+    } else if (controlActionName === 'ID_ALIGN' || controlActionName === 'ID_MAKESAMESIZE') {
+      this.controlAlignMent(subVal)
     }
     this.closeMenu()
   }
@@ -558,7 +559,65 @@ export default class ContextMenu extends Vue {
     } else if (event.keyCode && event.code === 'KeyX') {
       controlActionName = 'ID_CUT'
     }
-    this.controlAction(controlActionName)
+    this.controlAction(controlActionName, '')
+  }
+  updatePropVal (propName: string, propValue: number) {
+    const ctrlSel = this.selectedControls[this.userFormId].selected
+    const usrFrmData = this.userformData[this.userFormId]
+    for (let index = 1; index < ctrlSel.length; index++) {
+      const curProp = usrFrmData[ctrlSel[index]].properties
+      if (!ctrlSel[index].startsWith('group')) {
+        if (propName === 'selRight') {
+          const curRight = curProp.Width! + curProp.Left!
+          const value = curProp.Left! + (propValue - curRight)
+          this.updateControlProperty('Left', value, ctrlSel[index])
+        } else if (propName === 'selBottom') {
+          const curBottom = curProp.Height! + curProp.Top!
+          const value = curProp.Top! + (propValue - curBottom)
+          this.updateControlProperty('Top', value, ctrlSel[index])
+        } if (propName === 'selCenter') {
+          const curCenter = curProp.Width! / 2
+          const value = propValue - curCenter
+          this.updateControlProperty('Left', value, ctrlSel[index])
+        } if (propName === 'selMiddle') {
+          const curMiddle = curProp.Height! / 2
+          const value = propValue - curMiddle
+          this.updateControlProperty('Top', value, ctrlSel[index])
+        } else {
+          const propertyname: keyof controlProperties = propName as keyof controlProperties
+          this.updateControlProperty(propertyname, propValue, ctrlSel[index])
+        }
+      }
+    }
+  }
+  controlAlignMent (subVal: string) {
+    const mainSel = this.selectedControls[this.userFormId].selected[0]
+    const usrFrmData = this.userformData[this.userFormId]
+    const ctrlProp = usrFrmData[mainSel].properties
+    if (subVal === 'ID_ALIGNLEFT') {
+      this.updatePropVal('Left', ctrlProp.Left!)
+    } else if (subVal === 'ID_ALIGNTOP') {
+      this.updatePropVal('Top', ctrlProp.Top!)
+    } else if (subVal === 'ID_ALIGNRIGHT') {
+      const selRight = ctrlProp.Width! + ctrlProp.Left!
+      this.updatePropVal('selRight', selRight)
+    } else if (subVal === 'ID_ALIGNBOTTOM') {
+      const selBottom = ctrlProp.Height! + ctrlProp.Top!
+      this.updatePropVal('selBottom', selBottom)
+    } else if (subVal === 'ID_ALIGNCENTER') {
+      const selCenter = ctrlProp.Left! + (ctrlProp.Width! / 2)
+      this.updatePropVal('selCenter', selCenter)
+    } else if (subVal === 'ID_ALIGNMIDDLE') {
+      const selMiddle = ctrlProp.Top! + (ctrlProp.Height! / 2)
+      this.updatePropVal('selMiddle', selMiddle)
+    } else if (subVal === 'ID_WIDTH') {
+      this.updatePropVal('Width', ctrlProp.Width!)
+    } else if (subVal === 'ID_HEIGHT') {
+      this.updatePropVal('Height', ctrlProp.Height!)
+    } else if (subVal === 'ID_BOTH') {
+      this.updatePropVal('Height', ctrlProp.Height!)
+      this.updatePropVal('Width', ctrlProp.Width!)
+    }
   }
 }
 </script>

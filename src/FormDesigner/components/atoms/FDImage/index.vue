@@ -34,7 +34,6 @@ export default class FDImage extends Mixins(FdControlVue) {
    */
   @Watch('properties.AutoSize', { deep: true })
   updateAutoSize (newVal: boolean, oldVal: boolean) {
-    /* istanbul ignore else */
     if (newVal && this.properties.Picture) {
       const img = new Image()
       img.src = this.properties.Picture[0]
@@ -46,6 +45,8 @@ export default class FDImage extends Mixins(FdControlVue) {
         propertyName: 'Width',
         value: img.width
       })
+    } else {
+      return undefined
     }
   }
   /**
@@ -86,5 +87,6 @@ export default class FDImage extends Mixins(FdControlVue) {
 .picture {
   /* position: relative; */
   overflow: hidden;
+  box-sizing: border-box;
 }
 </style>

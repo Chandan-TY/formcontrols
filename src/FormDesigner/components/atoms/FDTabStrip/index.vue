@@ -468,6 +468,7 @@ export default class FDTabStrip extends FdControlVue {
   background-color: rgb(238, 238, 238);
   overflow-y: hidden;
   overflow-x: hidden;
+  box-sizing: border-box;
 }
 .tabs {
   display: grid;

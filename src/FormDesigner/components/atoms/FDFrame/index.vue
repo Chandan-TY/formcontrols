@@ -74,16 +74,16 @@ export default class FDFrame extends FdContainerVue {
    * @function createBackgroundString
    *
    */
-  protected get createBackgroundString (): string {
+  protected get createBackgroundString () {
     const data = this.properties.Picture
     if (typeof data === 'object' && data !== null) {
       return `url(${this.properties.Picture})`
     }
-    return this.getSampleDotPattern
+    return this.getSampleDotPattern.backgroundImage
     // return `linear-gradient(-90deg, ${this.properties.ForeColor} 1px, transparent 1px), linear-gradient(${this.properties.ForeColor} 1px, transparent 1px)`
   }
 
-  protected get getSampleDotPattern (): any {
+  protected get getSampleDotPattern () {
     const dotSize = 1
     const dotSpace = 10
     return {
@@ -185,8 +185,6 @@ export default class FDFrame extends FdContainerVue {
     const pw = controlProp.Width!
     const sh = controlProp.ScrollHeight!
     const sw = controlProp.ScrollWidth!
-    const scrollpropWidth = (this as any).$parent.getScrollBarX
-    const scrollpropHeight = (this as any).$parent.getScrollBarY
     return {
       height: ph > sh ? `100%` : `${sh!}px`,
       width: pw > sw ? `100%` : `${sw!}px`
@@ -216,9 +214,9 @@ export default class FDFrame extends FdContainerVue {
   }
 
   dragSelectorControl (event: MouseEvent) {
+    console.warn('dragSelectorControl', this.containerId)
     this.selectedControlArray = []
-    const refName = 'dragSelector'
-    this.selectedAreaStyle = (this as any).containerRef[refName].selectAreaStyle
+    this.selectedAreaStyle = (this as any).containerRef.dragSelector.selectAreaStyle
     this.calSelectedAreaStyle(event)
   }
 
@@ -239,6 +237,9 @@ export default class FDFrame extends FdContainerVue {
     rgb(0, 0, 0) 0.5px,
     rgba(0, 0, 0, 0) 0.2px
   ); */
+  box-sizing: border-box;
+  margin: 0px;
+  /* padding: 0px; */
   user-select: none;
 }
 </style>

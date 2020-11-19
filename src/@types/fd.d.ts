@@ -202,10 +202,12 @@ interface IControlContextMenu {
   disabled: boolean
 }
 interface IMousePosition {
-  clientX: number,
-  clientY: number,
-  movementX: number,
+  clientX: number
+  clientY: number
+  movementX: number
   movementY: number
+  offsetX?: number
+  offsetY?: number
 }
 interface IResizeValue{
 x: number,
@@ -239,8 +241,8 @@ interface IdragResizeRef
 [RefName: string]: []
 }
 interface IdragResizeRefStyle{
-  offsetTop: number
-  offsetLeft: number
+  offsetTop?: number
+  offsetLeft?: number
 }
 interface IupdateDataModel {
   propertyName: keyof controlProperties
