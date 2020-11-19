@@ -122,23 +122,29 @@ interface Iscrolling {
     ContextMenu
   },
   filters: {
-    afterbeginCaption: (value: string, acc: string = '') => {
+    afterbeginCaption (value: string, acc: string = '') {
       if (acc !== '') {
         acc = acc[0]
+      } else {
+        return undefined
       }
       const data = controlProperties.acceleratorProp(value, acc)
       return data.afterbeginCaption
     },
-    acceleratorCaption: (value: string, acc: string = '') => {
+    acceleratorCaption (value: string, acc: string = '') {
       if (acc !== '') {
         acc = acc[0]
+      } else {
+        return undefined
       }
       const data = controlProperties.acceleratorProp(value, acc)
       return data.acceleratorCaption
     },
-    beforeendCaption: (value: string, acc: string = '') => {
+    beforeendCaption (value: string, acc: string = '') {
       if (acc !== '') {
         acc = acc[0]
+      } else {
+        return undefined
       }
       const data = controlProperties.acceleratorProp(value, acc)
       return data.beforeendCaption
@@ -175,6 +181,7 @@ export default class FDTabStrip extends FdControlVue {
     this.updateDataModel({ propertyName: 'Value', value: value })
   }
   contextMenuVisible (e: MouseEvent, selected: number) {
+    console.log('Selected value', selected)
     if (this.isEditMode) {
       if (selected !== -1) {
         this.top = `${e.offsetY}px`
@@ -190,6 +197,8 @@ export default class FDTabStrip extends FdControlVue {
       const controlTop: number = this.userformData['ID_USERFORM1'][this.controlId].properties.Top!
       this.viewMenu = true
       Vue.nextTick(() => this.tabstripContextMenu.focus())
+    } else {
+      return undefined
     }
   }
 
@@ -343,7 +352,11 @@ export default class FDTabStrip extends FdControlVue {
       ? controlProp.Font
       : {
         FontName: 'Arial',
-        FontSize: 10
+        FontSize: 10,
+        FontItalic: true,
+        FontBold: true,
+        FontUnderline: true,
+        FontStrikethrough: true
       }
     return {
       color: controlProp.Enabled ? controlProp.ForeColor : this.getEnabled,

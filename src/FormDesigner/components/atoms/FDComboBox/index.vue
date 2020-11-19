@@ -36,6 +36,7 @@
 
         <div
           ref="hideSelectionDiv"
+          id="div1"
           @click="divHide($event, textareaRef)"
           :style="divcssStyleProperty"
           :title="properties.ControlTipText"
@@ -150,7 +151,7 @@ export default class FDComboBox extends Mixins(FdControlVue) {
   tempArray: Array<Array<string>> = [];
   open: boolean = false;
   isVisible: boolean = false;
-  selected = this.options.length > 0 ? '' : null;
+  // selected = this.options.length > 0 ? '' : null;
   //  matchIndex: number = 0;
   multiselect = [];
   //  selectionData: Array<string> = [];
@@ -185,6 +186,8 @@ export default class FDComboBox extends Mixins(FdControlVue) {
     if (e.target instanceof HTMLTextAreaElement) {
       const tempEvent = e.target
       this.tempInputValue = tempEvent!.value
+    } else {
+      throw new Error('target is not instance of div element')
     }
   }
   setSelection () {
@@ -195,13 +198,6 @@ export default class FDComboBox extends Mixins(FdControlVue) {
   // MatchEntryComplete
   clearMatchEntry () {
     this.updateDataModelExtraData({ propertyName: 'MatchData', value: '' })
-  }
-
-  checkMaxLength () {
-    if (this.properties.MaxLength === 0) {
-    } else {
-      return this.properties.MaxLength
-    }
   }
 
   protected get selectionSpanObj (): Partial<CSSStyleDeclaration> {
@@ -261,6 +257,8 @@ export default class FDComboBox extends Mixins(FdControlVue) {
       )
       if (arrayCheck === -1) {
         this.textareaRef.focus()
+      } else {
+        return undefined
       }
     }
   }
@@ -278,11 +276,15 @@ export default class FDComboBox extends Mixins(FdControlVue) {
   ) {
     if (!this.properties.HideSelection) {
       hideSelectionDiv.style.display = 'none'
+    } else {
+      return undefined
     }
     if (this.properties.EnterFieldBehavior === 0) {
       this.textareaRef.focus()
       this.textareaRef.select()
     } else if (this.properties.EnterFieldBehavior === 1) {
+    } else {
+      return undefined
     }
   }
   /**
@@ -307,6 +309,8 @@ export default class FDComboBox extends Mixins(FdControlVue) {
       }
       textareaRef.focus()
       textareaRef.selectionStart = textareaRef.selectionEnd
+    } else {
+      throw new Error('event.target is not an instance of Span or Div Element')
     }
   }
   /**
@@ -355,6 +359,8 @@ export default class FDComboBox extends Mixins(FdControlVue) {
         tempLabel.style.display = 'none'
         this.selectionData[0] = this.tempInputValue
       })
+    } else {
+      return undefined
     }
   }
 
@@ -364,7 +370,11 @@ export default class FDComboBox extends Mixins(FdControlVue) {
       ? controlProp.Font
       : {
         FontName: 'Arial',
-        FontSize: 10
+        FontSize: 20,
+        FontItalic: true,
+        FontBold: true,
+        FontUnderline: true,
+        FontStrikethrough: true
       }
     return {
       borderCollapse: 'collapse',
@@ -398,7 +408,11 @@ export default class FDComboBox extends Mixins(FdControlVue) {
       ? controlProp.Font
       : {
         FontName: 'Arial',
-        FontSize: 10
+        FontSize: 20,
+        FontItalic: true,
+        FontBold: true,
+        FontUnderline: true,
+        FontStrikethrough: true
       }
     return {
       height: `${controlProp.Height}px`,
@@ -499,11 +513,11 @@ export default class FDComboBox extends Mixins(FdControlVue) {
     }
   }
   // ListRows
-  get computedOptions () {
-    return this.properties.ListRows! < 1
-      ? this.options
-      : this.options.slice(0, this.properties.ListRows!)
-  }
+  // get computedOptions () {
+  //   return this.properties.ListRows! < 1
+  //     ? this.options
+  //     : this.options.slice(0, this.properties.ListRows!)
+  // }
   expandWidth () {
     if (this.properties.ShowDropButtonWhen === 0) {
       return 'none'
@@ -532,7 +546,11 @@ export default class FDComboBox extends Mixins(FdControlVue) {
       ? controlProp.Font
       : {
         FontName: 'Arial',
-        FontSize: 10
+        FontSize: 20,
+        FontItalic: true,
+        FontBold: true,
+        FontUnderline: true,
+        FontStrikethrough: true
       }
     return {
       fontFamily: font.FontStyle ? font.FontStyle : font.FontName,
@@ -549,39 +567,7 @@ export default class FDComboBox extends Mixins(FdControlVue) {
       fontWeight: font.FontBold ? 'bold' : ''
     }
   }
-  protected get inputStyleObj (): Partial<CSSStyleDeclaration> {
-    const controlProp = this.properties
-    const font: font = controlProp.Font
-      ? controlProp.Font
-      : {
-        FontName: 'Arial',
-        FontSize: 10
-      }
-    return {
-      outline: 'none',
-      border: 'none',
-      fontFamily: font.FontStyle ? font.FontStyle : font.FontName,
-      fontSize: `${font.FontSize}px`,
-      fontStyle: font.FontItalic ? 'italic' : '',
-      textDecoration:
-        font.FontStrikethrough === true && font.FontUnderline === true
-          ? 'underline line-through'
-          : font.FontUnderline
-            ? 'underline'
-            : font.FontStrikethrough
-              ? 'line-through'
-              : '',
-      fontWeight: font.FontBold ? 'bold' : '',
-      cursor:
-        controlProp.MousePointer !== 0 || controlProp.MouseIcon !== ''
-          ? this.getMouseCursorData
-          : 'default',
-      color: controlProp.ForeColor,
-      width: `${controlProp.Width!}px`,
-      background: controlProp.BackStyle ? controlProp.BackColor : 'transparent',
-      height: `${controlProp.Height}px`
-    }
-  }
+
   protected get boxStyleObj (): Partial<CSSStyleDeclaration> {
     const controlProp = this.properties
     return {

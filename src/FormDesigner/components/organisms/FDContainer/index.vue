@@ -98,7 +98,7 @@ export default class Container extends Vue {
 
   controlContextMenu: Array<IcontextMenu> = controlContextMenu;
   userformContextMenu: Array<IcontextMenu> = userformContextMenu;
-  handler=''
+  handler: string = ''
 
   onMouseUp (event: MouseEvent) {
     if (document.onmousemove && document.onmouseup && this.handler === 'drag') {
@@ -174,6 +174,7 @@ export default class Container extends Vue {
         event.stopPropagation()
         document.onmouseup(event)
       }
+      // this.handler = 'notDrag'
     }
   }
 
@@ -219,7 +220,6 @@ export default class Container extends Vue {
    *
    */
   get dragSelectorStyle () {
-    console.log()
     const ph = this.propControlData.properties.Height!
     const pw = this.propControlData.properties.Width!
     const sh = this.propControlData.properties.ScrollHeight!

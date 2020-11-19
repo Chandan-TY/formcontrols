@@ -56,10 +56,23 @@ describe('FDListBox.vue', () => {
       testWrapper.vm.textColumnChange()
     })
     it('multiSelectCheck()', () => {
-      testWrapper.vm.multiSelectCheck()
+      testWrapper.props().data.properties.MultiSelect = 1
+      // testWrapper.vm.multiSelectCheck()
     })
     it('listCheck()', () => {
-      testWrapper.vm.listCheck()
+      testWrapper.props().data.properties.ListStyle = 1
+      // testWrapper.vm.listCheck()
+    })
+    it('isRunMode true()', () => {
+      testWrapper.vm.isRunMode = true
+    })
+    it('Value check()', () => {
+      testWrapper.props().data.properties.Value = 'true'
+      // testWrapper.vm.tempData![0][this.properties.BoundColumn! - 1] = 'true'
+    })
+    it('RowSourceData check()', () => {
+      testWrapper.props().data.extraDatas.RowSourceData = ''
+      testWrapper.props().data.extraDatas.RowSourceData.length = 0
     })
   })
   describe('button prop test', () => {
@@ -69,5 +82,18 @@ describe('FDListBox.vue', () => {
       expect(testWrapper.props().controlId).toBeDefined()
       expect(testWrapper.props().controlId).not.toBeNull()
     })
+  })
+  describe('prop data test', () => {
+    const testWrapper = factory({ data: controlObj.data.OptionButton })
+    const optionButton = { ...listBox1 }
+    testWrapper.vm.isRunMode = true
+    delete optionButton.properties.Font
+    optionButton.properties.Visible = !optionButton.properties.Visible
+    optionButton.properties.BorderStyle = !optionButton.properties.BorderStyle
+    optionButton.properties.SpecialEffect = 1
+    optionButton.properties.TextAlign = 2
+    optionButton.properties.ColumnWidths = ''
+
+    testWrapper.setProps({ data: optionButton })
   })
 })

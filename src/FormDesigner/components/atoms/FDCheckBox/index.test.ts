@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { shallowMount, createLocalVue } from '@vue/test-utils'
+import { shallowMount } from '@vue/test-utils'
 import FDCheckBox from './index.vue'
 import store from '@/store/index.ts'
 import { ControlPropertyData } from '../../../models/ControlsTableProperties/ControlPropertyData'
@@ -132,7 +132,8 @@ describe('FDCheckBox.vue', () => {
 
     testWrapper.setProps({ data: checkBox })
     it('autoSize test', () => {
-      expect(testWrapper.props().data.properties.AutoSize).toBe(true)
+      checkBox.properties.AutoSize = !checkbox1.properties.AutoSize
+      expect(testWrapper.props().data.properties.AutoSize).toBe(false)
     })
     it('autoTab test', () => {
       expect(testWrapper.props().data.properties.AutoTab).toBe(true)

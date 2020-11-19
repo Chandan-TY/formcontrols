@@ -515,7 +515,6 @@ export default class ContextMenu extends Vue {
    * @function pasteControl
    */
   clickDelete () {
-    this.closeMenu()
     const selControl = []
     const selected = this.selectedControls[this.userFormId].selected
     for (const control of selected) {

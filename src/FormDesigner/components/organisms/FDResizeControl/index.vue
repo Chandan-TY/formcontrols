@@ -21,6 +21,7 @@
         controlType="control"
         @createGroup="createGroup"
         @muldragControl="muldragControl"
+        @updateEditMode="updateEditMode"
         :size="{width: propControlData.properties.Width, height: propControlData.properties.Height}"
       />
       <component
@@ -223,7 +224,6 @@ export default class ResizeControl extends FdSelectVue {
   selectedItem () {
     const groupId = this.propControlData.properties.GroupID ? this.propControlData.properties.GroupID : ''
     const currentSelect = this.selectedControls[this.userFormId].selected
-    console.log('this.selectedControl', this.selectedControls[this.userFormId], currentSelect)
     if (currentSelect.length === 1 && currentSelect[0] === this.controlId) {
       if (this.isMoveWhenMouseDown !== true && this.propControlData.type !== 'FDImage') {
         this.isEditMode = true
@@ -269,7 +269,11 @@ export default class ResizeControl extends FdSelectVue {
 
   @Watch('selectedControls', { deep: true })
   updateSelectedControls () {
-    this.isEditMode = false
+    if (this.isMoving === false) {
+      this.isEditMode = false
+    } else {
+      this.isMoving = false
+    }
   }
 
   get getUserFormId () {

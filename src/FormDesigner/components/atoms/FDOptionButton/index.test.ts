@@ -132,7 +132,8 @@ describe('FDOptionButton.vue', () => {
 
     testWrapper.setProps({ data: optionButton })
     it('autoSize test', () => {
-      expect(testWrapper.props().data.properties.AutoSize).toBe(true)
+      optionButton.properties.AutoSize = !optionbutton1.properties.AutoSize
+      expect(testWrapper.props().data.properties.AutoSize).toBe(false)
     })
     it('autoTab test', () => {
       expect(testWrapper.props().data.properties.AutoTab).toBe(true)

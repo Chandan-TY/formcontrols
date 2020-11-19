@@ -52,7 +52,11 @@ export default class FDLabel extends Mixins(FdControlVue) {
       ? controlProp.Font
       : {
         FontName: 'Arial',
-        FontSize: 10
+        FontSize: 10,
+        FontItalic: true,
+        FontBold: true,
+        FontUnderline: true,
+        FontStrikethrough: true
       }
     let display = ''
     if (this.isRunMode) {
@@ -121,12 +125,6 @@ export default class FDLabel extends Mixins(FdControlVue) {
     this.updateAutoSize()
   }
 
-  // @Watch('properties.Visible', { deep: true })
-  // visible (newVal:boolean, oldVal:boolean) {
-  //   checkVisible () {
-
-  //   }
-  // }
   /**
    * @description updateAutoSize calls Vuex Actions to update object
    * @function updateAutoSize
@@ -144,6 +142,8 @@ export default class FDLabel extends Mixins(FdControlVue) {
           value: (this.$el.childNodes[0] as HTMLSpanElement).offsetWidth
         })
       })
+    } else {
+      return undefined
     }
   }
 }

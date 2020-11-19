@@ -42,6 +42,7 @@ export default class FdControlVue extends Vue {
 
   preventClickOnce: boolean = false
   addEventCustomCallback (e: CustomMouseEvent) {
+    this.controlEditMode(e)
     const self = this
     e.customCallBack = () => {
       self.preventClickOnce = true

@@ -1,5 +1,6 @@
 <template>
-  <div :class="getMainSelected ? 'resize-area' : null">
+  <div>
+    <!-- <div :class="getMainSelected ? 'resize-area' : null"> -->
     <div v-for="handlerName in handlers" :key="handlerName">
       <div
         v-if="controlType === 'control'"
@@ -71,6 +72,11 @@ export default class Resizehandler extends Vue {
     return groupId
   }
 
+  @Emit('updateEditMode')
+  updateEditMode (val: boolean) {
+    return val
+  }
+
   isMove = false
   isMainSelect = false
   currentELPosition: any = null
@@ -86,22 +92,28 @@ export default class Resizehandler extends Vue {
     EventBus.$off('moveControl', this.moveControl)
     EventBus.$off('endMoveControl', this.endMoveControl)
   }
+
   getMoveValue (callBack: Function) {
     if (this.isMainSelect) {
       callBack(this.positions.offsetX, this.positions.offsetY, this.controlId)
     }
   }
   startMoveControl (event: MouseEvent) {
+    EventBus.$emit('handleName', 'notDrag')
     if (this.getIsMoveTarget) {
       this.positions.clientX = event.clientX
       this.positions.clientY = event.clientY
-      this.isMove = true
     }
   }
+
   moveControl (event: MouseEvent) {
-    EventBus.$emit('handleName', 'drag')
     if (this.getIsMoveTarget) {
       this.moveBorder(event)
+      if (event.movementX !== 0 && event.movementY !== 0) {
+        EventBus.$emit('handleName', 'drag')
+        this.isMove = true
+        this.updateEditMode(true)
+      }
     }
   }
   endMoveControl () {
@@ -119,7 +131,7 @@ export default class Resizehandler extends Vue {
    * @param controlType To differentiate between userform and control resize logic
    */
   handleMouseDown (event: CustomMouseEvent, handler: string, controlType: string) {
-    EventBus.$emit('handleName', '')
+    this.updateEditMode(false)
     this.isGroupActivated = this.selectedControls[this.userFormId].selected.findIndex((val: string) => val.startsWith('group'))
     if (this.controlId === this.selectedControls[this.userFormId].container[0] || this.isGroupActivated === -1 || (this.userformData[this.userFormId][this.controlId].properties.GroupID !== '' && this.selectedControl.includes(this.controlId))) {
       this.resizeDiv = handler
@@ -127,7 +139,8 @@ export default class Resizehandler extends Vue {
       this.positions.clientY = event.clientY
       this.currentMouseDownEvent = event
       if (controlType === 'control') {
-        if (handler !== 'drag') {
+        const containerType = this.userformData[this.userFormId][this.controlId].type
+        if (handler !== 'drag' || containerType === 'Frame' || containerType === 'MultiPage') {
           document.onmousemove = this.elementDrag
         } else {
           this.positions.offsetX = event.offsetX
@@ -217,7 +230,6 @@ export default class Resizehandler extends Vue {
     this.positions.clientX = event.clientX - diffGridX
     this.positions.clientY = event.clientY - diffGridY
     if (this.currentMouseDownEvent && (x !== 0 || y !== 0)) {
-      debugger
       this.currentMouseDownEvent.customCallBack && this.currentMouseDownEvent.customCallBack()
     }
     this.updateResize({ x: x, y: y, handler: this.resizeDiv })

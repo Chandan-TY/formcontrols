@@ -30,7 +30,7 @@ export default class FdSelectVue extends Vue {
     movementY: 0
   };
   resizeDiv: string = '';
-
+  isMoving: boolean = false
   @Emit('createGroup')
   createGroup (groupId: string) {
     return groupId
@@ -55,6 +55,10 @@ export default class FdSelectVue extends Vue {
     if (this.isEditMode) {
       e.stopPropagation()
     }
+  }
+
+  updateEditMode (value: boolean) {
+    this.isMoving = value
   }
   @Emit('updateUserFormResize')
   private updateUserFormResize (value: IResizeValue) {

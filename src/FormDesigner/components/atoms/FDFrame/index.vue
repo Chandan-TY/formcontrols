@@ -4,7 +4,7 @@
     :style="cssStyleProperty"
     :title="properties.ControlTipText"
     :tabindex="properties.TabIndex"
-    @keydown.delete="deleteItem"
+    @keydown.delete.stop="deleteItem"
     @keydown.enter="setContentEditable($event, true)"
     @click.stop="!isEditMode ? selectedItem : addControlObj($event)"
     @contextmenu.stop="showContextMenu($event, userFormId, controlId)"
@@ -216,7 +216,7 @@ export default class FDFrame extends FdContainerVue {
   dragSelectorControl (event: MouseEvent) {
     console.warn('dragSelectorControl', this.containerId)
     this.selectedControlArray = []
-    this.selectedAreaStyle = (this as any).containerRef.dragSelector.selectAreaStyle
+    this.selectedAreaStyle = this.containerRef.dragSelector.selectAreaStyle
     this.calSelectedAreaStyle(event)
   }
 

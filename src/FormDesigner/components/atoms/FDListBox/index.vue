@@ -96,14 +96,6 @@ export default class FDListBox extends Mixins(FdControlVue) {
     this.tempEvent = e
   }
 
-  get getDisableValue () {
-    if (this.isRunMode || this.isEditMode) {
-      return this.properties.Enabled === false
-    } else {
-      return true
-    }
-  }
-
   /**
    * @description style object is passed to :style attribute in div tag
    * dynamically changing the styles of the component based on properties
@@ -145,7 +137,11 @@ export default class FDListBox extends Mixins(FdControlVue) {
       ? controlProp.Font
       : {
         FontName: 'Arial',
-        FontSize: 10
+        FontSize: 10,
+        FontItalic: true,
+        FontBold: true,
+        FontUnderline: true,
+        FontStrikethrough: true
       }
     return {
       borderCollapse: 'collapse',
@@ -207,6 +203,8 @@ export default class FDListBox extends Mixins(FdControlVue) {
       } else {
         this.updateDataModel({ propertyName: 'Value', value: '' })
       }
+    } else {
+      return undefined
     }
   }
 
@@ -215,6 +213,7 @@ export default class FDListBox extends Mixins(FdControlVue) {
    */
   mounted () {
     const initialRowSourceData = this.extraDatas.RowSourceData!
+    console.log('Initial RowSource Data', initialRowSourceData)
     this.updateDataModel({ propertyName: 'ControlSource', value: '' })
     if (initialRowSourceData && initialRowSourceData.length === 0) {
       this.updateDataModel({ propertyName: 'TopIndex', value: -1 })

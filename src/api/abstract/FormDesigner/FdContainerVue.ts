@@ -184,7 +184,6 @@ export default abstract class FdContainerVue extends FdControlVue {
           }
         }
         if (val.id === 'ID_ALIGN') {
-          debugger
           for (let index = 0; index < val.values.length; index++) {
             val.values[index].disabled = this.selectedControls[this.userFormId].selected.length <= 1
           }
@@ -207,7 +206,6 @@ export default abstract class FdContainerVue extends FdControlVue {
       const bottom =
     parseInt(this.selectedAreaStyle!.top) +
     parseInt(this.selectedAreaStyle!.height)
-      console.log(left, right, top, bottom)
       const leftArray: Array<number> = []
       if (left !== right || top !== bottom) {
         for (let i in this.data.controls) {

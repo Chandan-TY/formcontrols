@@ -45,11 +45,17 @@ describe('FDScrollBar.vue', () => {
       testWrapper.vm.isRunMode = true
       testWrapper.props().data.properties.Enabled = false
       x.trigger('scroll')
+      testWrapper.vm.isRunMode = true
+      testWrapper.props().data.properties.Enabled = true
+      x.trigger('scroll')
     })
     it('Scroll BY Class Two()', () => {
       const x = testWrapper.find('.outer-scroll')
       testWrapper.vm.isRunMode = false
       testWrapper.vm.isEditMode = false
+      x.trigger('scroll')
+      testWrapper.vm.isRunMode = false
+      testWrapper.vm.isEditMode = true
       x.trigger('scroll')
     })
     it('Enabled check()', () => {
@@ -73,10 +79,6 @@ describe('FDScrollBar.vue', () => {
     it('Visible check()', () => {
       testWrapper.vm.isRunMode = true
       testWrapper.props().data.properties.Visible = true
-    })
-    it('Set Interval check()', () => {
-      testWrapper.vm.tempScroll = true
-      setInterval(testWrapper.vm.setIntervalCheck(), 3000)
     })
   })
 })

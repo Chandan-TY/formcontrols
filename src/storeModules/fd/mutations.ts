@@ -165,21 +165,12 @@ const mutations: MutationTree<fdState> & FdMutations = {
       }
     }
     for (let i = 0, limit = parentData.controls.length; i < limit; i++) {
-      /* for (let j = 0, limit = selectedControl.length; j < limit; j++) {
-        if (selectedControl[j] === parentData.controls[i]) {
-          selectedControl.splice(j, 1)
-        }
-      } */
       if (payload.targetId === parentData.controls[i]) {
         deleteAll(payload.targetId)
         parentData.controls.splice(i, 1)
         delete userFormData[payload.targetId]
-        // Vue.delete(userFormData, payload.targetId)
       }
     }
-    /* if (selectedControl.length === 0) {
-      selectedControl.push(payload.parentId)
-    } */
   },
   setChildControls (state, payload) {
     const userFormData = state.userformData[payload.userFormId]

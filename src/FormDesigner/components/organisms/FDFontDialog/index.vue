@@ -3,10 +3,9 @@
     <div id="" class="overlay" :style="fontStyleObj">
       <div
         class="font-div popup"
-        :style="fontDialogInitialStyle"
-        ref="fontDialogDrag"
+        :style="tabOrderDialogInitialStyle"
       >
-        <div class="font-header" @mousedown.stop="dragFontDialogBox">
+        <div class="font-header" @mousedown.stop="dragTabOrderDialog">
           <span class="span-style">Font</span>
           <button class="ui-btn close" @click="setFontDialogVisiblilty(false)">
             <FDSVGImage name="close-button.svg" />
@@ -186,63 +185,29 @@ import { newFont } from '../../../models/newFont'
 import { Component, Vue, Prop, Emit, Ref } from 'vue-property-decorator'
 import { tableData } from '../../molecules/FDPropertyTableItem/index.vue'
 import FDSVGImage from '@/FormDesigner/components/atoms/FDSVGImage/index.vue'
-export interface ImousePosition {
-  clientX: number;
-  clientY: number;
-  movementX: number;
-  movementY: number;
-}
-export interface IFontDialogInitialStyle {
-  left: string;
-  top: string;
-}
+import FdDialogDragVue from '@/api/abstract/FormDesigner/FdDialogDragVue'
+
 export interface INewFont {
   [key: string]: Array<string>;
-}
-export interface IDragEvent {
-  clientX: number;
-  clientY: number;
-}
-interface IRef {
-  [refName: string]: [];
-}
-export interface IChangeStyle {
-  style: {
-    color: string;
-    cursor: string;
-    fontWeight: string;
-    fontStretch: string;
-    fontFamily: string;
-    fontStyle: string;
-    backgroundColor: string;
-  };
 }
 @Component({
   name: 'FDFontDialog',
   components: {
-    FDSVGImage
+    FDSVGImage,
+    FdDialogDragVue
   }
 })
-export default class FDFontDialog extends Vue {
-  positions: ImousePosition = {
-    clientX: 0,
-    clientY: 0,
-    movementX: 0,
-    movementY: 0
-  };
-
+export default class FDFontDialog extends FdDialogDragVue {
   @Prop() value: font;
-  @Ref('fontDialogDrag') readonly fontDialogDrag!: HTMLDivElement;
   @Prop() isOpen: boolean;
   isFontStrikeOut: boolean = false;
   isFontUnderline: boolean = false;
-  fontDialogInitialStyle: IFontDialogInitialStyle = {
-    left: '290px',
-    top: '50px'
+  tabOrderDialogInitialStyle: ITabOrderDialogInitialStyle = {
+    left: '450px',
+    top: '20px'
   };
   size: number = 8;
   fontDataValue: font = { FontName: '' };
-  // isOpen: boolean = false;
   font: string = this.fontDataValue.FontName;
   fontWeight: string = 'normal';
   fontStyle: string | undefined = 'Regular';
@@ -278,41 +243,9 @@ export default class FDFontDialog extends Vue {
     FontStrikethrough: false,
     FontStyle: 'Arial Narrow Italic'
   };
-  dragFontDialogBox (event: MouseEvent) {
-    this.positions.clientX = event.clientX
-    this.positions.clientY = event.clientY
-    document.onmousemove = this.elementDrag
-    document.onmouseup = this.closeDragElement
-  }
-  elementDrag (event: MouseEvent): void {
-    event.preventDefault()
-    const refName = this.fontDialogDrag
-    this.positions.movementX = this.positions.clientX - event.clientX
-    this.positions.movementY = this.positions.clientY - event.clientY
-    this.positions.clientX = event.clientX
-    this.positions.clientY = event.clientY
-    this.fontDialogInitialStyle.top =
-      parseInt(this.fontDialogInitialStyle.top) -
-      this.positions.movementY +
-      'px'
-    this.fontDialogInitialStyle.left =
-      parseInt(this.fontDialogInitialStyle.left) -
-      this.positions.movementX +
-      'px'
-  }
-  closeDragElement (): void {
-    document.onmouseup = null
-    document.onmousemove = null
-  }
   sizeValue (data: number) {
     this.size = data
     this.tempVal.FontSize = this.size
-  }
-  fontValue (data: string) {
-    this.font = data
-  }
-  styleValue (data: string) {
-    this.fontStyle = data
   }
   fontEffects () {
     if (this.isFontStrikeOut === true && this.isFontUnderline === true) {
@@ -341,14 +274,18 @@ export default class FDFontDialog extends Vue {
     let fontRef = null
     if (targetRef instanceof Array) {
       fontRef = targetRef[0]
-    }
-    if (fontRef instanceof HTMLDivElement) {
-      this.fontStyle = value
-      this.fontStyle1 = fontRef.style.fontStyle
-      this.fontWeight = fontRef.style.fontWeight
-      this.fontStretch = fontRef.style.fontStretch
-      this.tempVal.FontName = fontRef.style.fontFamily
-      this.tempVal.FontStyle = this.fontStyle
+      if (fontRef instanceof HTMLDivElement) {
+        this.fontStyle = value
+        this.fontStyle1 = fontRef.style.fontStyle
+        this.fontWeight = fontRef.style.fontWeight
+        this.fontStretch = fontRef.style.fontStretch
+        this.tempVal.FontName = fontRef.style.fontFamily
+        this.tempVal.FontStyle = this.fontStyle
+      } else {
+        throw new Error('Expected div element but found different element')
+      }
+    } else {
+      return undefined
     }
   }
   updateFont () {
@@ -379,8 +316,8 @@ export default class FDFontDialog extends Vue {
   }
   get fontStyleObj () {
     return {
-      visibility: this.isOpen === true ? 'visible' : 'hidden',
-      opacity: this.isOpen === true ? '1' : '0'
+      opacity: this.isOpen === true ? '1' : '0',
+      visibility: this.isOpen === true ? 'visible' : 'hidden'
     }
   }
   get sampleStyleObj () {
