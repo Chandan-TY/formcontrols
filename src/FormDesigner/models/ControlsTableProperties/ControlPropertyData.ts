@@ -405,7 +405,7 @@ export class ControlPropertyData {
           Left: 20,
           ListStyle: 0,
           Locked: false,
-          MatchEntry: 1,
+          MatchEntry: 0,
           MouseIcon: '',
           MousePointer: 0,
           MultiSelect: 0,
@@ -736,6 +736,8 @@ export class ControlPropertyData {
           BorderStyle: 1,
           ControlSource: '',
           ControlTipText: 'helptext',
+          CursorStartPosition: 0,
+          CursorEndPosition: 0,
           DragBehavior: 0,
           Enabled: true,
           EnterFieldBehavior: 0,
@@ -782,9 +784,7 @@ export class ControlPropertyData {
         },
         controls: [],
         extraDatas: {
-          ControlSourceValue: 'hi',
-          CursorStartPosition: '',
-          CursorEndPosition: ''
+          ControlSourceValue: 'hi'
         },
         type: 'TextBox'
       }

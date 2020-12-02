@@ -49,7 +49,7 @@ export const controlProperties = {
       7: 'ns-resize',
       8: 'nwse-resize',
       9: 'ew-resize',
-      10: 'ns-resize',
+      10: 'n-resize',
       11: 'wait',
       12: 'no-drop',
       13: 'progress',
@@ -70,11 +70,7 @@ export const controlProperties = {
 * @returns string value
 */
   enabledProp: (controlData: controlData): string => {
-  // if (controlData.properties.Enabled === false) {
     return 'rgba(220, 220, 220, 1)'
-  // } else {
-  //   return `${controlData.properties.ForeColor}`
-  // }
   },
   /**
 * @description extraDataRepeatProp returns background-repeat css style value
@@ -83,10 +79,32 @@ export const controlProperties = {
 * @returns string value
 */
   extraDataRepeatProp: (controlData: controlData): string => {
-    if (controlData.properties.Picture !== '') {
-      return 'no-repeat'
+    const picture = controlData.properties.Picture!
+    const pictureTiling = controlData.properties.PictureTiling!
+    const pictureSizeMode = controlData.properties.PictureSizeMode!
+
+    return controlProperties.getRepeatDataProp(picture, pictureTiling, pictureSizeMode)
+    // if (controlData.properties.Picture !== '') {
+    //   return 'no-repeat'
+    // }
+    // return ''
+  },
+  getRepeatDataProp: (picture: string, pictureTiling: boolean, pictureSizeMode: number) => {
+    if (picture === '') {
+      if (picture !== '') {
+        return 'no-repeat'
+      }
+      return ''
+    } else {
+      if (pictureTiling === true) {
+        if (pictureSizeMode === 1) {
+          return 'no-repeat'
+        }
+        return 'repeat'
+      } else {
+        return 'no-repeat'
+      }
     }
-    return ''
   },
   /**
 * @description picturePositionProp returns background-position css style value
@@ -95,17 +113,23 @@ export const controlProperties = {
 * @returns string value
 */
   picturePositionProp: (controlData: controlData): string => {
-    if (controlData.properties.Picture !== '' && controlData.properties.PictureSizeMode === 3) {
+    const picture = controlData.properties.Picture!
+    const pictureAlignment = controlData.properties.PictureAlignment!
+    const pictureSizeMode = controlData.properties.PictureSizeMode!
+    return controlProperties.getPositionProp(picture, pictureAlignment, pictureSizeMode)
+  },
+  getPositionProp: (picture: string, pictureAlignment: number, pictureSizeMode: number) => {
+    if (picture !== '' && pictureSizeMode === 3) {
       return 'center'
-    } else if (controlData.properties.PictureAlignment === 0) {
+    } else if (pictureAlignment === 0) {
       return 'top left'
-    } else if (controlData.properties.PictureAlignment === 1) {
+    } else if (pictureAlignment === 1) {
       return 'top right'
-    } else if (controlData.properties.PictureAlignment === 2) {
+    } else if (pictureAlignment === 2) {
       return 'center'
-    } else if (controlData.properties.PictureAlignment === 3) {
+    } else if (pictureAlignment === 3) {
       return 'bottom left'
-    } else if (controlData.properties.PictureAlignment === 4) {
+    } else if (pictureAlignment === 4) {
       return 'bottom right'
     } else {
       return ''
@@ -167,13 +191,16 @@ export const controlProperties = {
 * @returns string value
 */
   pictureSizeModeProp: (controlData: controlData): string => {
+    const index:number = controlData.properties.PictureSizeMode!
+    return controlProperties.getSizeModeProp(index)
+  },
+  getSizeModeProp: (index: number) => {
     const propData:KeyValueProp = {
       0: 'initial',
       1: '100% 100%',
       3: 'contain'
     }
-    const index:number = controlData.properties.PictureSizeMode!
-    if (controlData.properties.PictureSizeMode !== undefined) {
+    if (index !== undefined) {
       return propData[index]
     }
     return propData[0]
@@ -184,16 +211,16 @@ export const controlProperties = {
 * @param controlData propControlData passed as input
 * @returns string value
 */
-  pictureTilingProp: (controlData: controlData): string => {
-    if (controlData.properties.PictureTiling === true) {
-      if (controlData.properties.PictureSizeMode === 1) {
-        return 'no-repeat'
-      }
-      return 'repeat'
-    } else {
-      return 'no-repeat'
-    }
-  },
+  // pictureTilingProp: (controlData: controlData): string => {
+  //   if (controlData.properties.PictureTiling === true) {
+  //     if (controlData.properties.PictureSizeMode === 1) {
+  //       return 'no-repeat'
+  //     }
+  //     return 'repeat'
+  //   } else {
+  //     return 'no-repeat'
+  //   }
+  // },
   /**
 * @description scrollBarProp returns overflow css style value
 * @function scrollBarProp
@@ -201,15 +228,18 @@ export const controlProperties = {
 * @returns ScrollBarData object value
 */
   scrollBarProp: (controlData: controlData): ScrollBarData => {
+    const keepScrollBar:number = controlData.properties.KeepScrollBarsVisible!
+    const scrollBar:number = controlData.properties.ScrollBars!
+    return controlProperties.setScrollBarProp(keepScrollBar, scrollBar)
+  },
+
+  setScrollBarProp: (keepScrollBar:number, scrollBar:number) => {
     const propData:ScrollBarProp = {
       'hide': { overflowX: 'hidden', overflowY: 'hidden' },
       'horizontal': { overflowX: 'scroll', overflowY: 'hidden' },
       'vertical': { overflowX: 'hidden', overflowY: 'scroll' },
       'show': { overflowX: 'scroll', overflowY: 'scroll' }
     }
-    const keepScrollBar:number = controlData.properties.KeepScrollBarsVisible!
-    const scrollBar:number = controlData.properties.ScrollBars!
-
     if (keepScrollBar === 0 || scrollBar === 0) {
       return propData['hide']
     } else if (keepScrollBar === 1 && (scrollBar === 1 || scrollBar === 3)) {

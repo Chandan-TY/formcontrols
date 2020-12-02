@@ -118,8 +118,6 @@ export default class FDScrollBar extends Mixins(FdControlVue) {
   isClicked: boolean = false;
   tempScroll: boolean = false;
   tempEvent: Event;
-  initialWidth: number = 0;
-  initialHeight: number = 0;
   /**
    * @description disable scroll on edit mode and select mode
    * @function disableScrolling
@@ -148,8 +146,6 @@ export default class FDScrollBar extends Mixins(FdControlVue) {
     }
   }
   mounted () {
-    this.initialWidth = this.properties.Width!
-    this.initialHeight = this.properties.Height!
     setInterval(() => {
       if (this.tempScroll) {
         this.tempScroll = false
@@ -305,25 +301,27 @@ export default class FDScrollBar extends Mixins(FdControlVue) {
   grid-template-rows: 21px 1fr 21px;
   grid-template-columns: 22px;
   box-sizing: border-box;
-  /* position:absolute; */
+  left: 0px;
+  top: 0px;
 }
 .outer-scroll-div-oriented{
   display: grid;
   grid-template-columns: 21px 1fr 21px;
   grid-template-rows: 22px;
-  /* position:absolute; */
+  left: 0px;
+  top: 0px;
 }
 .outer-scroll {
   border: none;
-  height: 100px;
-  width: 22px;
+  height: 0px;
+  width: 0px;
   overflow-y: scroll;
   overflow-x: hidden;
 }
 .outer-scroll-oriented {
   border: none;
-  height: 22px;
-  width: 100px;
+  height: 0px;
+  width: 0px;
   overflow-x: scroll;
   overflow-y: hidden;
 }

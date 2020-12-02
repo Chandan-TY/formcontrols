@@ -1,6 +1,7 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import { storiesOf } from '@storybook/vue'
 import store from '@/store/index.ts'
+import { EventBus } from '@/FormDesigner/event-bus'
 
 import FDRenameMultiPageDialog from '.'
 import SpecNote from './index.spec.md'
@@ -18,10 +19,19 @@ storiesOf('dialogs|FDRenameMultiPageDialog', module).add(
     },
     template: `
         <div :style="styled">
-          <FDRenameMultiPageDialog>
-          </FDRenameMultiPageDialog>
+          <FDRenameMultiPageDialog />
+          <div style="position: absolute; bottom: 0;">
+          <button @click="openTabOrder">
+            Show Rename Dialog
+          </button>
+          </div>
         </div>
       `,
+    methods: {
+      openTabOrder () {
+        EventBus.$emit('renamePage', 'ID_USERFORM1', 'ID_TabStrip1', 0)
+      }
+    },
     computed: {
 
       styled () {

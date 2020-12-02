@@ -18,6 +18,7 @@
     <FDEditableText
       v-else
       :editable="isRunMode === false && syncIsEditMode"
+      :style="editCssObj"
       :caption="properties.Caption"
       @updateCaption="updateCaption"
       @releaseEditMode="setContentEditable($event, false)"
@@ -39,7 +40,6 @@ import FdControlVue from '@/api/abstract/FormDesigner/FdControlVue'
 })
 export default class FDLabel extends Mixins(FdControlVue) {
   $el!: HTMLLabelElement;
-
   /**
    * @description style object is passed to :style attribute in label tag
    * dynamically changing the styles of the component based on propControlData
@@ -71,7 +71,7 @@ export default class FDLabel extends Mixins(FdControlVue) {
       width: `${controlProp.Width}px`,
       height: `${controlProp.Height}px`,
       top: `${controlProp.Top}px`,
-      backgroundColor: controlProp.BackColor,
+      backgroundColor: controlProp.BackStyle ? controlProp.BackColor : 'transparent',
       borderColor: controlProp.BorderColor,
       textAlign:
         controlProp.TextAlign === 0
@@ -80,10 +80,9 @@ export default class FDLabel extends Mixins(FdControlVue) {
             ? 'center'
             : 'right',
       border: this.getBorderStyle,
-      background: controlProp.BackStyle ? controlProp.BackColor : 'transparent',
       boxShadow: controlProp.SpecialEffect ? this.getSpecialEffectData : 'none',
-      whiteSpace: controlProp.WordWrap ? 'pre' : 'pre-wrap',
-      wordBreak: controlProp.WordWrap ? 'break-word' : 'normal',
+      whiteSpace: controlProp.WordWrap ? 'pre-wrap' : 'pre',
+      wordBreak: controlProp.WordWrap ? 'break-all' : 'normal',
       color:
         controlProp.Enabled === true ? controlProp.ForeColor : this.getEnabled,
       cursor:
@@ -91,9 +90,9 @@ export default class FDLabel extends Mixins(FdControlVue) {
           ? this.getMouseCursorData
           : 'default',
       // Fix Font.FontSize, Font.FontItalic ...
-      fontFamily: font.FontStyle ? font.FontStyle : font.FontName,
+      fontFamily: (font.FontStyle! !== '') ? this.setFontStyle : font.FontName!,
       fontSize: `${font.FontSize}px`,
-      fontStyle: font.FontItalic ? 'italic' : '',
+      fontStyle: font.FontItalic || this.isItalic ? 'italic' : '',
       textDecoration:
         font.FontStrikethrough === true && font.FontUnderline === true
           ? 'underline line-through'
@@ -102,7 +101,9 @@ export default class FDLabel extends Mixins(FdControlVue) {
             : font.FontStrikethrough
               ? 'line-through'
               : '',
-      fontWeight: font.FontBold ? 'bold' : '',
+      textUnderlinePosition: 'under',
+      fontWeight: font.FontBold ? 'bold' : (font.FontStyle !== '') ? this.tempWeight : '',
+      fontStretch: (font.FontStyle !== '') ? this.tempStretch : '',
       //  position: 'relative',
       backgroundImage: `url(${controlProp.Picture})`,
       backgroundRepeat: this.getRepeat,
@@ -110,6 +111,18 @@ export default class FDLabel extends Mixins(FdControlVue) {
       backgroundPositionX: this.getPositionX,
       backgroundPositionY: this.getPositionY,
       display: display
+    }
+  }
+  /**
+   * @description style object is passed to :style attribute in tag
+   * dynamically changing the styles of the component based on properties
+   * @function editCssObj
+   *
+   */
+  protected get editCssObj (): Partial<CSSStyleDeclaration> {
+    const controlProp = this.properties
+    return {
+      backgroundImage: 'none'
     }
   }
 
@@ -156,8 +169,13 @@ export default class FDLabel extends Mixins(FdControlVue) {
   overflow: hidden;
   outline: none;
   box-sizing: border-box;
+  width: 0px;
+  height: 0px;
+  left: 0px;
+  top: 0px;
 }
 .spanClass {
   text-decoration: underline;
+  text-underline-position: under;
 }
 </style>

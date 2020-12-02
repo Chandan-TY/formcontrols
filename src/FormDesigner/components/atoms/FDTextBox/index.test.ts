@@ -1,21 +1,20 @@
 // @ts-nocheck
-import { shallowMount, createLocalVue } from '@vue/test-utils'
-import FDLabel from './index.vue'
+import { shallowMount } from '@vue/test-utils'
+import FDTextBox from './index.vue'
 import store from '@/store/index.ts'
 import { ControlPropertyData } from '../../../models/ControlsTableProperties/ControlPropertyData'
 
 const controlObj = new ControlPropertyData()
-
+const textBox1 = controlObj.data.TextBox
 const propsObj = {
   userFormId: 'ID_USERFORM1',
   controlId: 'ID_TextBox1',
-  containerId: 'ID_USERFORM1'
+  containerId: 'ID_USERFORM1',
+  isRunMode: false
 }
 
-const textbox1 = controlObj.data.TextBox
-
 const factory = (propsArg: Object) => {
-  return shallowMount(FDLabel, {
+  return shallowMount(FDTextBox, {
     propsData: {
       ...propsObj,
       ...propsArg
@@ -26,188 +25,167 @@ const factory = (propsArg: Object) => {
 
 describe('FDTextBox.vue', () => {
   describe('render and default test', () => {
-    const testWrapper = factory({ data: controlObj.data.TextBox })
+    const testWrapper = factory({ data: textBox1 })
     it('instance test', () => {
       expect(testWrapper.isVueInstance()).toBe(true)
     })
   })
   describe('necessary things check test', () => {
-    const testWrapper = factory({ data: controlObj.data.TextBox })
+    const testWrapper = factory({ data: textBox1 })
     it('name test', () => {
       expect(testWrapper.name()).toBe('FDTextBox')
     })
+    it('data test', () => {
+      expect(testWrapper.props().data).not.toBeUndefined()
+    })
   })
   describe('event test', () => {
-    const testWrapper = factory({ data: controlObj.data.TextBox })
-    it('keydown test', () => {
-      testWrapper.trigger('keydown')
-    })
+    const testWrapper = factory({ data: textBox1 })
+    const b = testWrapper.vm.$el.querySelector('textarea')
     it('click test', () => {
-      testWrapper.trigger('click')
-    })
-    it('keydown.tab test', () => {
-      testWrapper.trigger('keydown', {
-        key: 'a'
-      })
-    })
-    it('keydown.enter test', () => {
-      testWrapper.trigger('keydown', {
-        key: 'enter'
-      })
-    })
-    it('blur test', () => {
-      testWrapper.trigger('blur')
+      b.dispatchEvent(new MouseEvent('click'))
+      testWrapper.props().data.properties.HideSelection = false
+      b.dispatchEvent(new MouseEvent('click'))
     })
     it('input test', () => {
-      testWrapper.trigger('input')
+      testWrapper.props().data.properties.PasswordChar = ''
+      testWrapper.props().data.properties.ControlSource = 'a'
+      b.dispatchEvent(new KeyboardEvent('input'))
+      testWrapper.props().data.properties.PasswordChar = ''
+      testWrapper.props().data.properties.ControlSource = ''
+      b.dispatchEvent(new KeyboardEvent('input'))
+      testWrapper.props().data.properties.PasswordChar = 'a'
+      testWrapper.props().data.properties.CursorStartPosition = '0'
+      testWrapper.props().data.properties.CursorEndPosition = '3'
+      b.dispatchEvent(new KeyboardEvent('input'))
+      testWrapper.props().data.properties.CursorStartPosition = ''
+      testWrapper.props().data.properties.CursorEndPosition = ''
+      testWrapper.props().data.properties.Text = 'c'
+      b.dispatchEvent(new KeyboardEvent('input'))
+      testWrapper.props().data.properties.CursorStartPosition = ''
+      testWrapper.props().data.properties.CursorEndPosition = ''
+      testWrapper.props().data.properties.Text = 'hello world'
+      b.dispatchEvent(new KeyboardEvent('input'))
+    })
+    it('keydown test', () => {
+      testWrapper.props().data.properties.PasswordChar = 'a'
+      b.dispatchEvent(new KeyboardEvent('keydown', {
+        keyCode: 8
+      }))
+      b.dispatchEvent(new KeyboardEvent('keydown'))
+      try {
+        testWrapper.vm.handleDelete(new KeyboardEvent('keydown'))
+      } catch (error) {
+        expect(error).toBe(error)
+      }
+    })
+    it('keydown.tab test', () => {
+      b.dispatchEvent(new KeyboardEvent('keydown', {
+        key: 'Tab',
+        keyCode: 9
+      }))
+    })
+    it('keydown.tab test with TabKeyBehavior true', () => {
+      testWrapper.props().data.properties.TabKeyBehavior = true
+      b.dispatchEvent(new KeyboardEvent('keydown', {
+        key: 'Tab',
+        keyCode: 9
+      }))
+    })
+    it('keydown.enter test', () => {
+      b.dispatchEvent(new KeyboardEvent('keydown', {
+        key: 'Enter'
+      }))
+    })
+    it('keydown.enter test with EnterKeyBehavior true', () => {
+      testWrapper.props().data.properties.EnterKeyBehavior = true
+      b.dispatchEvent(new KeyboardEvent('keydown', {
+        key: 'Enter'
+      }))
+    })
+    it('keydown.enter test with EnterKeyBehavior false', () => {
+      testWrapper.props().data.properties.EnterKeyBehavior = false
+      b.dispatchEvent(new KeyboardEvent('keydown', {
+        key: 'Enter'
+      }))
+    })
+    it('blur test', () => {
+      testWrapper.props().data.properties.HideSelection = false
+      b.dispatchEvent(new MouseEvent('blur'))
+      testWrapper.props().data.properties.HideSelection = true
+      b.dispatchEvent(new MouseEvent('blur'))
     })
     it('dragstart test', () => {
-      testWrapper.trigger('dragstart')
+      testWrapper.props().data.properties.DragStart = true
+      b.dispatchEvent(new MouseEvent('dragstart'))
+    })
+    it('dragstart test with DragBehavior true', () => {
+      testWrapper.props().data.properties.DragStart = true
+      testWrapper.props().data.properties.DragBehavior = true
+      b.dispatchEvent(new MouseEvent('dragstart'))
+    })
+    it('dragstart test with DragBehavior false', () => {
+      testWrapper.props().data.properties.DragStart = true
+      testWrapper.props().data.properties.DragBehavior = false
+      b.dispatchEvent(new MouseEvent('dragstart'))
+    })
+    it('getDisableValue test', () => {
+      testWrapper.vm.isRunMode = true
+      testWrapper.props().data.properties.Enabled = true
+      testWrapper.props().data.properties.Locked = false
+      expect(testWrapper.props().data.properties.Locked).toBe(false)
+    })
+    it('divHide click test', () => {
+      const a = testWrapper.vm.$el.querySelector('div')
+      a.dispatchEvent(new MouseEvent('click'))
     })
   })
-  describe('TextBox prop test', () => {
-    const testWrapper = factory({ data: controlObj.data.TextBox })
+  describe('prop test', () => {
+    const testWrapper = factory({ data: textBox1 })
     it('controlId test', () => {
       expect(testWrapper.props().controlId).toMatch(`ID_TextBox1`)
       expect(testWrapper.props().controlId).toBeDefined()
       expect(testWrapper.props().controlId).not.toBeNull()
     })
-    it('data test', () => {
-      expect(testWrapper.props().data).toStrictEqual(controlObj.data.TextBox)
-      expect(testWrapper.props().data).toBeDefined()
-      expect(testWrapper.props().data).not.toBeNull()
-    })
-  })
-
-  describe('method test', () => {
-    const testWrapper = factory({ data: textbox1 })
-    it('instance test', () => {
-      expect(testWrapper.isVueInstance()).toBe(true)
-    })
-    it('updateCaption test', () => {
-      const textbox = testWrapper.find('textarea')
-      textbox.element.innerText = 'Hi'
-      textbox.trigger('input')
-    })
-  })
-
-  describe('prop data test', () => {
-    const testWrapper = factory({ data: controlObj.data.TextBox })
-    const textbox = { ...textbox1 }
-    textbox.properties.TabKeyBehavior = !textbox1.properties.TabKeyBehavior
-    textbox.properties.AutoSize = !textbox1.properties.AutoSize
-    textbox.properties.AutoTab = !textbox1.properties.AutoTab
-    textbox.properties.TabStop = !textbox1.properties.TabStop
-    textbox.properties.EnterKeyBehavior = !textbox1.properties.EnterKeyBehavior
-    textbox.properties.Locked = !textbox1.properties.Locked
-    textbox.properties.MultiLine = !textbox1.properties.MultiLine
-    textbox.properties.Value = 'text'
-    textbox.properties.Text = 'text'
-    testWrapper.setProps({ data: textbox })
+    const otherTextBox = { ...textBox1 }
+    testWrapper.props().isRunMode = true
+    otherTextBox.properties.BackStyle = !otherTextBox.properties.BackStyle
+    otherTextBox.properties.BackColor = '#eeeeee'
+    otherTextBox.properties.WordWrap = !otherTextBox.properties.WordWrap
+    otherTextBox.properties.TextAlign = 1
+    otherTextBox.properties.SpecialEffect = 0
+    otherTextBox.properties.Enabled = !otherTextBox.properties.Enabled
+    otherTextBox.properties.Visible = !otherTextBox.properties.Visible
+    otherTextBox.properties.AutoSize = !otherTextBox.properties.AutoSize
+    otherTextBox.properties.Locked = !otherTextBox.properties.Locked
+    otherTextBox.properties.ControlSource = 'a2'
+    otherTextBox.properties.Value = 'test'
+    otherTextBox.properties.PasswordChar = 'h'
+    testWrapper.setProps({ data: otherTextBox })
     it('autoSize test', () => {
       expect(testWrapper.props().data.properties.AutoSize).toBe(true)
     })
-    it('autoTab test', () => {
-      expect(testWrapper.props().data.properties.AutoTab).toBe(true)
-    })
-    it('autoWordSelect test', () => {
-      expect(testWrapper.props().data.properties.AutoWordSelect).toBe(true)
-    })
-    it('enterKeyBehavior test', () => {
-      expect(testWrapper.props().data.properties.EnterKeyBehavior).toBe(true)
-    })
-    it('hideSelection test', () => {
-      expect(testWrapper.props().data.properties.HideSelection).toBe(true)
-    })
-    it('integralHeight test', () => {
-      expect(testWrapper.props().data.properties.IntegralHeight).toBe(true)
-    })
-    it('locked test', () => {
-      expect(testWrapper.props().data.properties.Locked).toBe(true)
-    })
-    it('MultiLine test', () => {
-      expect(testWrapper.props().data.properties.MultiLine).toBe(true)
-    })
-    it('selectionMargin test', () => {
-      expect(testWrapper.props().data.properties.SelectionMargin).toBe(true)
-    })
-    it('TabStop test', () => {
-      expect(testWrapper.props().data.properties.TabStop).toBe(false)
-    })
-    it('TabKeyBehavior test', () => {
-      expect(testWrapper.props().data.properties.TabKeyBehavior).toBe(true)
+    it('autoSize test false', () => {
+      testWrapper.props().data.properties.AutoSize = false
+      expect(testWrapper.props().data.properties.AutoSize).toBe(false)
     })
     it('Visible test', () => {
-      expect(testWrapper.props().data.properties.Visible).toBe(true)
+      testWrapper.props().isRunMode = false
+      testWrapper.props().data.properties.Visible = false
+      expect(testWrapper.props().data.properties.Visible).toBe(false)
     })
-    it('wordWrap test', () => {
-      expect(testWrapper.props().data.properties.WordWrap).toBe(true)
-    })
-    it('Name test', () => {
-      expect(testWrapper.props().data.properties.Name).toMatch('TextBox')
-    })
-    it('BackColor test', () => {
-      expect(testWrapper.props().data.properties.BackColor).toMatch('#ffffff')
-    })
-    it('BorderColor test', () => {
-      expect(testWrapper.props().data.properties.BorderColor).toMatch('#ffffff')
-    })
-    it('ForeColor test', () => {
-      expect(testWrapper.props().data.properties.ForeColor).toMatch('#000000')
-    })
-    it('Value test', () => {
-      expect(testWrapper.props().data.properties.Value).toMatch('text')
-    })
-    it('Text test', () => {
-      expect(testWrapper.props().data.properties.Text).toMatch('text')
+    it('PasswordChar, Val test', () => {
+      testWrapper.props().data.properties.PasswordChar = 'a'
     })
   })
-
-  describe('value test', () => {
-    const testWrapper = factory({ data: textbox1 })
-    const textbox = { ...textbox1 }
-    textbox.properties.PasswordChar = 'A'
-    textbox.properties.FontStyle = true
-    testWrapper.setProps({ data: textbox })
-    it('textbox value test', () => {
-      const textbox = testWrapper.find('textarea')
-      textbox.element.value = 'AAAA'
-      expect(textbox.element.value).toEqual('AAAA')
-    })
-    it('textbox font test', () => {
-      const textbox = testWrapper.find('textarea')
-      textbox.element.style.fontFamily = 'arial'
-      expect(textbox.element.style.fontFamily).toEqual('arial')
-    })
-  })
-
-  describe('created() test', () => {
-    const testWrapper = factory({ data: textbox1 })
-
-    it('created() test', () => {
-      const textbox = { ...textbox1 }
-      textbox.properties.ControlSource = 'a1'
-      textbox.extraDatas.ControlSourceValue = 'hi'
-      textbox.properties.PasswordChar = ''
-      testWrapper.setProps({ data: textbox })
-      const textarea = testWrapper.find('textarea')
-      expect(textbox.properties.ControlSource).toEqual('a1')
-      expect(textarea.element.value).toEqual('text')
-    })
-  })
-
-  describe(' test', () => {
-    const testWrapper = factory({ data: textbox1 })
-
-    it('created() test', () => {
-      const textbox = { ...textbox1 }
-      textbox.properties.ControlSource = 'a1'
-      textbox.extraDatas.ControlSourceValue = 'hi'
-      textbox.properties.PasswordChar = ''
-      testWrapper.setProps({ data: textbox })
-      const textarea = testWrapper.find('textarea')
-      expect(textbox.properties.ControlSource).toEqual('a1')
-      expect(textarea.element.value).toEqual('text')
-    })
+  describe('Text Value prop test ', () => {
+    const testWrapper = factory({ data: textBox1 })
+    const otherTextBox = { ...textBox1 }
+    delete otherTextBox.properties.Font
+    otherTextBox.properties.Text = ''
+    otherTextBox.properties.ControlSource = ''
+    otherTextBox.properties.Value = ''
+    otherTextBox.properties.PasswordChar = ''
+    testWrapper.setProps({ data: otherTextBox })
   })
 })

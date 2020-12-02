@@ -10,6 +10,7 @@
       class="combobox"
       :style="boxStyleObj"
       @mousedown="controlEditMode"
+      tabindex="1"
       @click="toFocus"
     >
       <div :class="properties.SelectionMargin ? 'selectionDiv' : ''">
@@ -25,18 +26,17 @@
           wrap="off"
           :tabindex="properties.TabIndex"
           :readonly="getDisableValue || properties.Style === 2"
+          :maxlength="properties.MaxLength !==0 ? properties.MaxLength : ''"
           @blur="handleBlur($event, textareaRef, hideSelectionDiv)"
           @click="handleClick($event, textareaRef, hideSelectionDiv)"
           @input="handleTextInput($event)"
-          :maxlength="properties.MaxLength !== 0 ? properties.MaxLength : ''"
           class="text-box-design"
           :value="selectionData[0]"
           @dragstart="dragBehavior"
+          @focus="makeTextAreaFocus"
         />
-
         <div
           ref="hideSelectionDiv"
-          id="div1"
           @click="divHide($event, textareaRef)"
           :style="divcssStyleProperty"
           :title="properties.ControlTipText"
@@ -47,12 +47,12 @@
         <label
           ref="autoSizeTextarea"
           class="labelStyle"
-          :class="[labelStyleObj]"
+          :class="labelStyleObj"
         ></label>
       </div>
       <div
         class="selected"
-        @click="enabledCheck"
+        @click.stop="enabledCheck($event)"
         :style="selectedStyleObj"
       ></div>
       <div class="items" :class="{ selectHide: !open }" :style="itemsStyleObj">
@@ -145,22 +145,16 @@ export default class FDComboBox extends Mixins(FdControlVue) {
   @Ref('textareaRef') textareaRef: HTMLTextAreaElement;
   @Ref('autoSizeTextarea') readonly autoSizeTextarea!: HTMLLabelElement;
   @Ref('hideSelectionDiv') readonly hideSelectionDiv!: HTMLDivElement;
-  @Ref('comboRef') comboRef!: HTMLDivElement
+  @Ref('comboRef') comboRef!: HTMLTableElement
   private options = ['hello'];
   private tabindex = 0;
   tempArray: Array<Array<string>> = [];
   open: boolean = false;
-  isVisible: boolean = false;
-  // selected = this.options.length > 0 ? '' : null;
-  //  matchIndex: number = 0;
   multiselect = [];
-  //  selectionData: Array<string> = [];
   selectionStart: number = 0;
   selectionEnd: number = 0;
-  //  matchEntry: Array<number> = [];
   tempInputValue: string = '';
-  tempEvent: Event;
-
+  tempWidth: string = '0px';
   get getDisableValue () {
     if (this.isRunMode || this.isEditMode) {
       return this.properties.Enabled === false || this.properties.Locked
@@ -170,32 +164,40 @@ export default class FDComboBox extends Mixins(FdControlVue) {
   }
 
   toBlur () {
-    // this.isDropdownVisible = false
-    // if (!this.isDropdownVisible) {
     this.open = false
-    // }
   }
+
   toFocus () {
-    //
-    this.comboRef.focus()
+    this.isVisible = true
+    // Vue.nextTick(() => this.comboRef.focus())
+    // this.textareaRef.focus()
   }
   tableClick (e: Event) {
-    this.tempEvent = e
+    this.tempListBoxComboBoxEvent = e
   }
   handleTextInput (e: Event) {
     if (e.target instanceof HTMLTextAreaElement) {
       const tempEvent = e.target
       this.tempInputValue = tempEvent!.value
+      this.selectionData[0] = this.tempInputValue
     } else {
       throw new Error('target is not instance of div element')
     }
   }
+
+  makeTextAreaFocus () {
+    if (!this.getDisableValue) {
+      if (this.properties.ShowDropButtonWhen !== 0) {
+        this.open = true
+      }
+    }
+  }
+
   setSelection () {
     const setSelectionRef = this.textareaRef
     setSelectionRef.focus()
     setSelectionRef.select()
   }
-  // MatchEntryComplete
   clearMatchEntry () {
     this.updateDataModelExtraData({ propertyName: 'MatchData', value: '' })
   }
@@ -203,7 +205,7 @@ export default class FDComboBox extends Mixins(FdControlVue) {
   protected get selectionSpanObj (): Partial<CSSStyleDeclaration> {
     const controlProp = this.properties
     return {
-      background: controlProp.BackStyle ? controlProp.BackColor : 'transparent'
+      backgroundColor: controlProp.BackStyle ? controlProp.BackColor : 'transparent'
     }
   }
   protected get tableBodyObj (): Partial<CSSStyleDeclaration> {
@@ -225,6 +227,7 @@ export default class FDComboBox extends Mixins(FdControlVue) {
     textareaRef: HTMLTextAreaElement,
     hideSelectionDiv: HTMLDivElement
   ) {
+    this.open = false
     if (this.properties.EnterFieldBehavior === 1 && event.target instanceof HTMLTextAreaElement) {
       const eventTarget = event.target
       let tempField = this.tempInputValue.slice(
@@ -296,7 +299,6 @@ export default class FDComboBox extends Mixins(FdControlVue) {
    * @event click
    */
   divHide (event: MouseEvent, textareaRef: HTMLTextAreaElement) {
-    debugger
     if (event.target instanceof HTMLSpanElement || event.target instanceof HTMLDivElement) {
       (event.target).style.display = 'none'
       textareaRef.style.display = 'block'
@@ -344,12 +346,12 @@ export default class FDComboBox extends Mixins(FdControlVue) {
         tempLabel.style.whiteSpace = textareaRef.style.whiteSpace
         tempLabel.style.wordBreak = textareaRef.style.wordBreak
         tempLabel.style.fontWeight = textareaRef.style.fontWeight
-        tempLabel.style.width = textareaRef.style.width
+        tempLabel.style.width = ((this.textareaRef.value.length + 1) * parseInt(textareaRef.style.fontSize)) + 'px'
         tempLabel.style.height = textareaRef.style.height
         tempLabel.innerText = textareaRef.value
         this.updateDataModel({
           propertyName: 'Width',
-          value: tempLabel.offsetWidth + 5
+          value: tempLabel.offsetWidth > 20 ? tempLabel.offsetWidth + 21 : tempLabel.offsetWidth + 25
         })
         this.updateDataModel({
           propertyName: 'Height',
@@ -379,11 +381,11 @@ export default class FDComboBox extends Mixins(FdControlVue) {
     return {
       borderCollapse: 'collapse',
       tableLayout: 'fixed',
-      background: controlProp.BackStyle ? controlProp.BackColor : 'transparent',
+      backgroundColor: controlProp.BackStyle ? controlProp.BackColor : 'transparent',
       color: controlProp.ForeColor,
-      fontFamily: font.FontStyle ? font.FontStyle : font.FontName,
+      fontFamily: (font.FontStyle! !== '') ? this.setFontStyle : font.FontName!,
       fontSize: `${font.FontSize}px`,
-      fontStyle: font.FontItalic ? 'italic' : '',
+      fontStyle: font.FontItalic || this.isItalic ? 'italic' : '',
       textDecoration:
         font.FontStrikethrough === true && font.FontUnderline === true
           ? 'underline line-through'
@@ -392,13 +394,16 @@ export default class FDComboBox extends Mixins(FdControlVue) {
             : font.FontStrikethrough
               ? 'line-through'
               : '',
-      fontWeight: font.FontBold ? 'bold' : '',
+      textUnderlinePosition: 'under',
+      fontWeight: font.FontBold ? 'bold' : (font.FontStyle !== '') ? this.tempWeight : '',
+      fontStretch: (font.FontStyle !== '') ? this.tempStretch : '',
       width:
         controlProp.ColumnWidths === ''
           ? `${controlProp.Width}px`
           : `${controlProp.Width}px` +
             parseInt(controlProp.ColumnWidths!) +
-            'px'
+            'px',
+      outline: 'none'
     }
   }
 
@@ -415,11 +420,14 @@ export default class FDComboBox extends Mixins(FdControlVue) {
         FontStrikethrough: true
       }
     return {
-      height: `${controlProp.Height}px`,
-      width: `${controlProp.Width}px`,
-      fontFamily: font.FontStyle ? font.FontStyle : font.FontName,
+      left: `${controlProp.Left}px`,
+      // width: controlProp.AutoSize ? `${controlProp.Width}px` : `${controlProp.Width! - 20}px`,
+      width: controlProp.ShowDropButtonWhen === 0 ? `${controlProp.Width! - 10}px` : controlProp.SelectionMargin ? `${controlProp.Width! - 30}px` : `${controlProp.Width! - 25}px`,
+      height: `${controlProp.Height! - 5}px`,
+      top: `${controlProp.Top}px`,
+      fontFamily: (font.FontStyle! !== '') ? this.setFontStyle : font.FontName!,
       fontSize: `${font.FontSize}px`,
-      fontStyle: font.FontItalic ? 'italic' : '',
+      fontStyle: font.FontItalic || this.isItalic ? 'italic' : '',
       textDecoration:
         font.FontStrikethrough === true && font.FontUnderline === true
           ? 'underline line-through'
@@ -428,9 +436,21 @@ export default class FDComboBox extends Mixins(FdControlVue) {
             : font.FontStrikethrough
               ? 'line-through'
               : '',
-      fontWeight: font.FontBold ? 'bold' : '',
-      background: controlProp.BackStyle ? controlProp.BackColor : 'transparent',
-      color: controlProp.ForeColor
+      fontWeight: font.FontBold ? 'bold' : (font.FontStyle !== '') ? this.tempWeight : '',
+      fontStretch: (font.FontStyle !== '') ? this.tempStretch : '',
+
+      backgroundColor: controlProp.BackStyle ? controlProp.BackColor : 'transparent',
+      color: controlProp.ForeColor,
+      textAlign:
+        controlProp.TextAlign === 0
+          ? 'left'
+          : controlProp.TextAlign === 1
+            ? 'center'
+            : 'right',
+      cursor:
+        controlProp.MousePointer !== 0 || controlProp.MouseIcon !== ''
+          ? this.getMouseCursorData
+          : 'default'
     }
   }
   /**
@@ -474,6 +494,10 @@ export default class FDComboBox extends Mixins(FdControlVue) {
             : 'center'
     }
   }
+  setWidth () {
+    this.tempWidth = `${this.properties.Width! + 20}px`
+    return this.tempWidth
+  }
   @Watch('properties.Value', { deep: true })
   ValueData (newVal: string, oldVal: string) {
     if (
@@ -481,6 +505,11 @@ export default class FDComboBox extends Mixins(FdControlVue) {
       this.properties.BoundColumn! < this.extraDatas.RowSourceData!.length
     ) {
       let tempData = [...this.extraDatas.RowSourceData!]
+      // if (this.properties.BoundColumn! > 1) {
+      //   if (newVal === tempData![0][this.properties.BoundColumn!]) {
+      //     this.setOptionBGColorAndChecked()
+      //   }
+      // }
       if (tempData![0][this.properties.BoundColumn! - 1] === newVal) {
         this.updateDataModel({ propertyName: 'Value', value: newVal })
       } else {
@@ -492,8 +521,12 @@ export default class FDComboBox extends Mixins(FdControlVue) {
   @Watch('properties.ListRows', { deep: true })
   ListRowsValue (newVal: number, oldVal: number) {
     this.tempArray = []
-    for (let i = 0; i < newVal; i++) {
-      this.tempArray[i] = this.extraDatas.RowSourceData![i]
+    if (this.properties.ListRows! > 0) {
+      for (let i = 0; i < newVal; i++) {
+        this.tempArray[i] = this.extraDatas.RowSourceData![i]
+      }
+    } else {
+      this.tempArray = this.extraDatas.RowSourceData!
     }
   }
   @Watch('properties.SelectionMargin', { deep: true })
@@ -512,12 +545,7 @@ export default class FDComboBox extends Mixins(FdControlVue) {
       this.updateDataModel({ propertyName: 'TopIndex', value: 0 })
     }
   }
-  // ListRows
-  // get computedOptions () {
-  //   return this.properties.ListRows! < 1
-  //     ? this.options
-  //     : this.options.slice(0, this.properties.ListRows!)
-  // }
+
   expandWidth () {
     if (this.properties.ShowDropButtonWhen === 0) {
       return 'none'
@@ -553,9 +581,9 @@ export default class FDComboBox extends Mixins(FdControlVue) {
         FontStrikethrough: true
       }
     return {
-      fontFamily: font.FontStyle ? font.FontStyle : font.FontName,
+      fontFamily: (font.FontStyle! !== '') ? this.setFontStyle : font.FontName!,
       fontSize: `${font.FontSize}px`,
-      fontStyle: font.FontItalic ? 'italic' : '',
+      fontStyle: font.FontItalic || this.isItalic ? 'italic' : '',
       textDecoration:
         font.FontStrikethrough === true && font.FontUnderline === true
           ? 'underline line-through'
@@ -564,7 +592,9 @@ export default class FDComboBox extends Mixins(FdControlVue) {
             : font.FontStrikethrough
               ? 'line-through'
               : '',
-      fontWeight: font.FontBold ? 'bold' : ''
+      fontWeight: font.FontBold ? 'bold' : (font.FontStyle !== '') ? this.tempWeight : '',
+      fontStretch: (font.FontStyle !== '') ? this.tempStretch : ''
+
     }
   }
 
@@ -575,7 +605,6 @@ export default class FDComboBox extends Mixins(FdControlVue) {
         controlProp.BorderStyle === 0
           ? 'none'
           : '1px solid ' + controlProp.BorderColor,
-      width: `${controlProp.Width! + 25}px`,
       cursor:
         controlProp.MousePointer !== 0 || controlProp.MouseIcon !== ''
           ? this.getMouseCursorData
@@ -583,15 +612,18 @@ export default class FDComboBox extends Mixins(FdControlVue) {
       boxShadow: controlProp.SpecialEffect
         ? this.getSpecialEffectData
         : '-1px -1px lightgray',
+      // width: controlProp.AutoSize ? `${controlProp.Width! + 20}px` : `${controlProp.Width}px`,
       display: 'grid',
-      gridTemplateColumns: `${controlProp.Width! + 5}px` + ' 20px'
+      gridTemplateColumns: `${controlProp.Width! - 20}px` + ' 20px',
+      gridTemplateRows: `${controlProp.Height!}px`,
+      outline: 'none'
     }
   }
 
   protected get itemsStyleObj (): Partial<CSSStyleDeclaration> {
     const controlProp = this.properties
     return {
-      width: `${controlProp.ListWidth}px`
+      width: (parseInt(controlProp.ListWidth!) > 0) ? `${controlProp.ListWidth}px` : `${controlProp.Width!}px`
     }
   }
   protected get selectedStyleObj (): Partial<CSSStyleDeclaration> {
@@ -611,11 +643,12 @@ export default class FDComboBox extends Mixins(FdControlVue) {
           : 'default'
     }
   }
-  enabledCheck () {
+  enabledCheck (e: MouseEvent) {
     if (this.isRunMode || this.isEditMode) {
       if (this.properties.Enabled) {
         if (!this.properties.Locked) {
           this.open = !this.open
+          this.textareaRef.focus()
         }
       } else {
         this.open = false
@@ -623,7 +656,7 @@ export default class FDComboBox extends Mixins(FdControlVue) {
     } else {
       this.open = false
     }
-    this.toFocus()
+    // this.toFocus()
   }
 }
 </script>
@@ -631,10 +664,8 @@ export default class FDComboBox extends Mixins(FdControlVue) {
 <style scoped>
 .custom-select {
   position: relative;
-  width: 100px;
   text-align: left;
   outline: none;
-  height: 47px;
   box-sizing: border-box;
   /* line-height: 10px; specify the drop down height */
 }
@@ -777,10 +808,6 @@ export default class FDComboBox extends Mixins(FdControlVue) {
   grid-template-columns: 100%;
 }
 .text-box-design {
-  /* border: 0.2px solid gray; */
-  /* box-shadow: -1px -1px gray; */
-  /* width: 100px; */
-  /* height: 20px; */
   resize: none;
   overflow: hidden;
   border: none;

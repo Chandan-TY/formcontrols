@@ -28,6 +28,26 @@ const FrameObj = {
       <button @click="releaseSelect">
         releaseSelect
       </button>
+      <br>
+      <label>
+        Check Value :
+        <span>{{curValue}}</span>
+      </label>
+      <br>
+      <label>
+        Check Text :
+        <span>{{curText}}</span>
+      </label>
+      <br>
+      <label>
+        Check Name :
+        <span>{{curName}}</span>
+      </label>
+      <br>
+      <label>
+        Check Tag :
+        <span>{{curTag}}</span>
+      </label>
     </div>
   </div>
     `,
@@ -57,8 +77,21 @@ const FrameObj = {
   },
   computed: {
     ...mapState({
-      isRunMode: state => state.fd.isRunMode
+      isRunMode: state => state.fd.isRunMode,
+      curData: state => state.fd.userformData
     }),
+    curValue () {
+      return this.curData[this.UserFormId][this.ControlId].properties.Value
+    },
+    curText () {
+      return this.curData[this.UserFormId][this.ControlId].properties.Text
+    },
+    curName () {
+      return this.curData[this.UserFormId][this.ControlId].properties.Name
+    },
+    curTag () {
+      return this.curData[this.UserFormId][this.ControlId].properties.Tag
+    },
     styled () {
       return {
         position: 'relative',

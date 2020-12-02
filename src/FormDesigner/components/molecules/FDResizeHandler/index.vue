@@ -6,7 +6,7 @@
         v-if="controlType === 'control'"
         :class="[getMainSelected ? `handle handle-${handlerName}`: null]"
         :style="handlerStyle"
-        @mousedown.stop="handleMouseDown($event, handlerName, controlType)"
+        @mousedown.stop="handleMouseDown($event, handlerName, controlType, controlId)"
       ></div>
 
       <div
@@ -79,6 +79,7 @@ export default class Resizehandler extends Vue {
 
   isMove = false
   isMainSelect = false
+  isSelctedControl: string = ''
   currentELPosition: any = null
   created () {
     EventBus.$on('getMoveValue', this.getMoveValue)
@@ -92,10 +93,13 @@ export default class Resizehandler extends Vue {
     EventBus.$off('moveControl', this.moveControl)
     EventBus.$off('endMoveControl', this.endMoveControl)
   }
-
   getMoveValue (callBack: Function) {
     if (this.isMainSelect) {
-      callBack(this.positions.offsetX, this.positions.offsetY, this.controlId)
+      if (this.userformData[this.userFormId][this.controlId].type === 'Frame') {
+        callBack(this.positions.offsetX, this.positions.offsetY, this.isSelctedControl, this.getContainerList(this.isSelctedControl)[0])
+      } else {
+        callBack(this.positions.offsetX, this.positions.offsetY, this.controlId)
+      }
     }
   }
   startMoveControl (event: MouseEvent) {
@@ -106,13 +110,21 @@ export default class Resizehandler extends Vue {
     }
   }
 
-  moveControl (event: MouseEvent) {
+  moveControl (event: MouseEvent, controltype: string) {
     if (this.getIsMoveTarget) {
       this.moveBorder(event)
       if (event.movementX !== 0 && event.movementY !== 0) {
-        EventBus.$emit('handleName', 'drag')
-        this.isMove = true
-        this.updateEditMode(true)
+        const containerType = this.userformData[this.userFormId][this.controlId].type
+        if (containerType === 'Frame') {
+          EventBus.$emit('handleName', 'frameDrag')
+          if (controltype === containerType) {
+            this.isMove = true
+          }
+        } else {
+          EventBus.$emit('handleName', 'drag')
+          this.isMove = true
+          this.updateEditMode(true)
+        }
       }
     }
   }
@@ -130,24 +142,31 @@ export default class Resizehandler extends Vue {
    * @param handler specifies handlerName(for example topLeft, BottomRight etc)
    * @param controlType To differentiate between userform and control resize logic
    */
-  handleMouseDown (event: CustomMouseEvent, handler: string, controlType: string) {
+  handleMouseDown (event: CustomMouseEvent, handler: string, controlType: string, controlID: string) {
+    this.isSelctedControl = controlID
     this.updateEditMode(false)
+    EventBus.$emit('handleName', 'notDrag')
+    const controlGroup = this.userformData[this.userFormId][this.controlId].properties.GroupID
     this.isGroupActivated = this.selectedControls[this.userFormId].selected.findIndex((val: string) => val.startsWith('group'))
-    if (this.controlId === this.selectedControls[this.userFormId].container[0] || this.isGroupActivated === -1 || (this.userformData[this.userFormId][this.controlId].properties.GroupID !== '' && this.selectedControl.includes(this.controlId))) {
+    if (this.isGroupActivated === -1 || (controlGroup === '' && !this.selectedControl.includes(this.controlId))) {
       this.resizeDiv = handler
       this.positions.clientX = event.clientX
       this.positions.clientY = event.clientY
       this.currentMouseDownEvent = event
       if (controlType === 'control') {
         const containerType = this.userformData[this.userFormId][this.controlId].type
-        if (handler !== 'drag' || containerType === 'Frame' || containerType === 'MultiPage') {
+        if (handler !== 'drag') {
           document.onmousemove = this.elementDrag
         } else {
           this.positions.offsetX = event.offsetX
           this.positions.offsetY = event.offsetY
           this.isMainSelect = true
           EventBus.$emit('startMoveControl', event)
-          document.onmousemove = (event: MouseEvent) => { EventBus.$emit('moveControl', event) }
+          if (containerType === 'Frame') {
+            document.onmousemove = (event: MouseEvent) => { this.moveControl(event, containerType) }
+          } else {
+            document.onmousemove = (event: MouseEvent) => { EventBus.$emit('moveControl', event) }
+          }
         }
       } else {
         document.onmousemove = this.userFormResize
@@ -288,7 +307,11 @@ export default class Resizehandler extends Vue {
   }
 
   get getMainSelected () {
-    return this.selectedControl.includes(this.controlId) || this.getContainerSelect
+    return (
+      this.selectedControls[this.userFormId].selected.includes(this.controlId) ||
+      (this.selectedControls[this.userFormId].container.includes(this.controlId) &&
+      this.selectedControls[this.userFormId].selected.includes(this.controlId) !== (this.selectedControls[this.userFormId].container.includes(this.controlId))
+      ))
   }
 
   get getContainerSelect () {
@@ -296,7 +319,39 @@ export default class Resizehandler extends Vue {
   }
 
   get getIsMoveTarget () {
-    return this.getMainSelected && !this.getContainerSelect
+    return this.getMainSelected
+  }
+
+  getContainerList (selectTarget: string) {
+    const containerList: string[] = []
+    const controlContainer = (selectTarget: string) => {
+      for (let i in this.userformData[this.userFormId]) {
+        const controlData = this.userformData[this.userFormId][i]
+        if (
+          controlData.controls.length > 0 &&
+              controlData.controls.includes(selectTarget)
+        ) {
+          containerList.push(i)
+          controlContainer(i)
+        }
+      }
+    }
+    const getControlId = (selectTarget: string) => {
+      const userData = this.userformData[this.userFormId]
+      for (let i in userData) {
+        const controlData = userData[i]
+        if (controlData.properties.GroupID === selectTarget) {
+          return i
+        }
+      }
+    }
+    if (selectTarget) {
+      const controlId = selectTarget.startsWith('group') ? getControlId(selectTarget) : selectTarget
+      if (controlId) {
+        controlContainer(controlId)
+      }
+    }
+    return containerList || [this.userFormId]
   }
 }
 </script>

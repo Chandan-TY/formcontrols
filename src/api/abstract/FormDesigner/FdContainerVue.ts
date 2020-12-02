@@ -10,12 +10,13 @@ import { ControlPropertyData } from '@/FormDesigner/models/ControlsTableProperti
 
 export default abstract class FdContainerVue extends FdControlVue {
     @Prop({ required: true, type: String }) public readonly userFormId! : string
-    // @Prop({ required: true, type: String }) public readonly containerId! : string
+    @Prop({ required: true, type: String }) public readonly containerId! : string
     @State((state: rootState) => state.fd.toolBoxSelect) toolBoxSelect!: fdState['toolBoxSelect'];
     @State((state) => state.fd.copyControlList) copyControl!: copyControl;
     @State((state) => state.fd.userformData) userformData!: userformData;
     @State((state) => state.fd.selectedControls) selectedControls!: fdState['selectedControls'];
     @State(state => state.fd.groupedControls) groupedControls!: fdState['groupedControls']
+    @State((state) => state.fd.copiedControl) copiedControl!: userformData;
 
     @Action('fd/changeToolBoxSelect') changeToolBoxSelect!: (payload: IchangeToolBoxSelect) => void;
     @Action('fd/selectControl') selectControl!: (payload: IselectControl) => void;
@@ -24,7 +25,7 @@ export default abstract class FdContainerVue extends FdControlVue {
     @Action('fd/deleteControl') deleteControl!: (payload: IdeleteControl) => void
     @Action('fd/updateGroup') updateGroup!: (payload: IupdateGroup) => void
 
-    containerId: string = this.controlId
+    // containerId: string = this.controlId
     contextMenuType: boolean = false;
     viewMenu?: boolean = false
     top: string= '0px'
@@ -44,6 +45,45 @@ export default abstract class FdContainerVue extends FdControlVue {
       this.viewMenu = false
     }
 
+    get selConatiner () {
+      return this.selectedControls[this.userFormId].container
+    }
+    /**
+   * @description  To get the selected ContainerList
+   * @function getContainerList
+   * @param selectTarget  - selcted control or group
+   */
+    getContainerList (selectTarget: string) {
+      const containerList: string[] = []
+      const controlContainer = (selectTarget: string) => {
+        for (let i in this.userformData[this.userFormId]) {
+          const controlData = this.userformData[this.userFormId][i]
+          if (
+            controlData.controls.length > 0 &&
+              controlData.controls.includes(selectTarget)
+          ) {
+            containerList.push(i)
+            controlContainer(i)
+          }
+        }
+      }
+      const getControlId = (selectTarget: string) => {
+        const userData = this.userformData[this.userFormId]
+        for (let i in userData) {
+          const controlData = userData[i]
+          if (controlData.properties.GroupID === selectTarget) {
+            return i
+          }
+        }
+      }
+      if (selectTarget) {
+        const controlId = selectTarget.startsWith('group') ? getControlId(selectTarget) : selectTarget
+        if (controlId) {
+          controlContainer(controlId)
+        }
+      }
+      return containerList || [this.userFormId]
+    }
     /**
    * @description  add the control to its respective  container
    * @function addControlObj
@@ -88,7 +128,7 @@ export default abstract class FdContainerVue extends FdControlVue {
         this.selectControl({
           userFormId: this.userFormId,
           select: {
-            container: [this.containerId],
+            container: this.getContainerList(item.properties.ID),
             selected: [item.properties.ID]
           }
         })
@@ -103,9 +143,10 @@ export default abstract class FdContainerVue extends FdControlVue {
    * @event mousedown
    */
     deActiveControl (this: this) {
+      const controlType: string = this.userformData[this.userFormId][this.controlId].type
       this.selectControl({
         userFormId: this.userFormId,
-        select: { container: [this.containerId], selected: [this.controlId] }
+        select: { container: controlType === 'Userform' ? [this.controlId] : this.getContainerList(this.controlId), selected: [this.controlId] }
       })
     }
 
@@ -130,7 +171,7 @@ export default abstract class FdContainerVue extends FdControlVue {
         if (!this.selectedControls[this.userFormId].selected.includes(groupId)) {
           this.selectControl({
             userFormId: this.userFormId,
-            select: { container: [parentID], selected: [groupId] }
+            select: { container: this.getContainerList(groupId), selected: [groupId] }
           })
         }
       }
@@ -158,8 +199,13 @@ export default abstract class FdContainerVue extends FdControlVue {
         if (val.id === 'ID_SELECTALL') {
           val.disabled = controlLength === 0
         }
+        if (val.id === 'ID_DELETE' && this.contextMenuType) {
+          val.disabled = !(this.selectedControls[this.userFormId].selected.length === 1 &&
+           this.userformData[this.userFormId][controlID].type === 'Frame' &&
+           controlID === this.selectedControls[this.userFormId].selected[0])
+        }
         if (val.id === 'ID_PASTE') {
-          val.disabled = this.copyControl.targetId.length === 0
+          val.disabled = Object.keys(this.copiedControl[this.userFormId]).length === 1
         }
         if (val.id === 'ID_GROUP' || val.id === 'ID_UNGROUP') {
           const selected = this.selectedControls[this.userFormId].selected
@@ -236,7 +282,7 @@ export default abstract class FdContainerVue extends FdControlVue {
           this.selectControl({
             userFormId: this.userFormId,
             select: {
-              container: [this.containerId],
+              container: this.getContainerList(selectedGroup[0]),
               selected: [...selectedGroup]
             }
           })

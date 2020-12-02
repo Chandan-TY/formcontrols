@@ -1,4 +1,5 @@
 import { MutationTree } from 'vuex'
+import { checkPropertyValue } from './checkValidation'
 import Vue from 'vue'
 
 type IMchangeToolBoxSelect = string
@@ -74,7 +75,7 @@ interface IMupdateCopyControlList{
   userFormId: string
   parentId: string
   targetId: Array<string>
-  targetObject: Array<controlData>
+  type: string
 }
 interface IMideEmitAction {
   actionId: string;
@@ -84,6 +85,7 @@ interface IMideEmitAction {
 export type FdMutations<S = fdState> = {
   addUserform(state: S, payload: IMaddUserform): void;
   addControl(state: S, payload: IMaddControl): void;
+  addCopiedControl(state: S, payload: IMaddControl): void;
   updateControl(state: S, payload: IMupdateControl): void;
   updateControlExtraData(state: S, payload: IMupdateControlExtraData): void;
   deleteControl(state: S, payload: IMdeleteControl): void;
@@ -104,7 +106,16 @@ const mutations: MutationTree<fdState> & FdMutations = {
   addControl (state, payload) {
     const userFormData = state.userformData[payload.userFormId]
     const targetData = userFormData[payload.controlId]
-    // todo id check
+    if (Object.keys(userFormData).includes(payload.addId) === false) {
+      targetData.controls.push(payload.addId)
+      Vue.set(userFormData, payload.addId, payload.item)
+    } else {
+      console.warn('duplicated control Id: ', payload.addId)
+    }
+  },
+  addCopiedControl (state, payload) {
+    const userFormData = state.copiedControl[payload.userFormId]
+    const targetData = userFormData[payload.controlId]
     if (Object.keys(userFormData).includes(payload.addId) === false) {
       targetData.controls.push(payload.addId)
       Vue.set(userFormData, payload.addId, payload.item)
@@ -122,13 +133,19 @@ const mutations: MutationTree<fdState> & FdMutations = {
   updateControl (state, payload) {
     const userFormData = state.userformData[payload.userFormId]
     const targetData = userFormData[payload.controlId]
-    if (payload.propertyName && targetData.properties) {
-      if (payload.propertyName.match(/font*/i)) {
-        // @ts-ignore
-        targetData.properties['Font'][payload.propertyName] = payload.value
+    const propName = payload.propertyName
+    const setValue = payload.value
+    if (propName && targetData.properties) {
+      if (checkPropertyValue(propName, setValue)) {
+        if (propName.match(/font*/i)) {
+          // @ts-ignore
+          targetData.properties['Font'][propName] = setValue
+        } else {
+          // @ts-ignore
+          targetData.properties[propName] = setValue
+        }
       } else {
-        // @ts-ignore
-        targetData.properties[payload.propertyName] = payload.value
+        throw new Error(`Unable to set the ${propName} property. The Value is ${setValue}`)
       }
     }
   },
@@ -185,7 +202,7 @@ const mutations: MutationTree<fdState> & FdMutations = {
     state.copyControlList.userFormId = payload.userFormId
     state.copyControlList.parentId = payload.parentId
     state.copyControlList.targetId = payload.targetId
-    state.copyControlList.targetObject = payload.targetObject
+    state.copyControlList.type = payload.type
   },
   /**
    * case 1: normal select

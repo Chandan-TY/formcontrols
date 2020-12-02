@@ -2,16 +2,20 @@
 import actions from './actions'
 import mutations from './mutations'
 import { userDataNew } from '../../FormDesigner/models/dataModel_New'
+import { copyControlList } from '../../FormDesigner/models/copyControlList'
 
 const userformData: userformData = userDataNew
+const copiedControl: userformData = copyControlList
+
 const copyControl: copyControl = {
   userFormId: '',
   parentId: '',
   targetId: [],
-  targetObject: []
+  type: ''
 }
 const state: fdState = {
   userformData: userformData,
+  copiedControl: copiedControl,
   selectedControls: {
     // If add or delete userForm, it should be updated
     // temporary data, It must be deleted later

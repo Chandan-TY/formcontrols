@@ -8,17 +8,25 @@
     <label class="control"
       ><input
         @change="handleChange($event, optionBtnRef)"
+        @click="SetValue()"
         ref="optBtnInput"
         :name="properties.Name"
         :tabindex="properties.TabIndex"
         :disabled="getDisableValue"
         type="radio"
         class="control-input visually-hidden" />
-      <span class="control-indicator" :style="controlIndicatorStyleObj"></span
+      <span
+        class="control-indicator"
+        :style="controlIndicatorStyleObj"
+        ref="spanRef"
+      ></span
     ></label>
-    <div>
+    <div :style="pictureDiv">
       <div ref="divAutoSize" :style="divcssStyleProperty">
-        <span v-if="!syncIsEditMode || isRunMode" @click="isRunMode && makeChecked($event)">
+        <span
+          v-if="!syncIsEditMode || isRunMode"
+          @click="isRunMode && makeChecked($event)"
+        >
           <span>{{ computedCaption.afterbeginCaption }}</span>
           <span class="spanClass">{{
             computedCaption.acceleratorCaption
@@ -28,6 +36,7 @@
         <FDEditableText
           v-else
           :editable="isRunMode === false && syncIsEditMode"
+          :style="editCssObj"
           :caption="properties.Caption"
           @updateCaption="updateCaption"
           @releaseEditMode="setContentEditable($event, false)"
@@ -50,8 +59,20 @@ import FDEditableText from '@/FormDesigner/components/atoms/FDEditableText/index
   }
 })
 export default class FDOptionButton extends Mixins(FdControlVue) {
-   @Ref('divAutoSize') readonly autoSizeOptionButton! : HTMLDivElement
-   @Ref('optBtnInput') optBtnInput! : HTMLInputElement
+  @Ref('divAutoSize') autoSizeOptionButton!: HTMLDivElement;
+  @Ref('optBtnInput') optBtnInput!: HTMLInputElement;
+  @Ref('spanRef') spanRef!: HTMLSpanElement;
+
+  /**
+   * @description  updates Value property and the sets the backGround in runMode
+   * @function verifyValue
+   */
+  SetValue () {
+    if (this.isRunMode) {
+      this.updateDataModel({ propertyName: 'Value', value: 'true' })
+      this.spanRef.style.backgroundColor = 'white'
+    }
+  }
 
   /**
    * @description  watches Value property and the sets the checked
@@ -60,17 +81,39 @@ export default class FDOptionButton extends Mixins(FdControlVue) {
   @Watch('properties.Value', {
     deep: true
   })
-   verifyValue (newVal: string, oldVal: string) {
-     if (!this.isRunMode) {
-       let tempValue = newVal.toLowerCase()
-       const checkDiv = this.optBtnInput
-       if (tempValue === 'true') {
-         checkDiv.checked = true
-       } else if (tempValue === 'false') {
-         checkDiv.checked = false
-       }
-     }
-   }
+  verifyValue (newVal: string, oldVal: string) {
+    if (this.properties.Enabled && !this.properties.Locked) {
+      if (!this.isRunMode) {
+        let tempValue = newVal.toLowerCase()
+        const checkDiv = this.optBtnInput
+        if (tempValue === 'true') {
+          this.spanRef.style.backgroundColor = 'white'
+          checkDiv.checked = true
+        } else if (tempValue === 'false') {
+          this.spanRef.style.backgroundColor = 'white'
+          checkDiv.checked = false
+        } else {
+          checkDiv.checked = true
+          this.spanRef.style.backgroundColor = 'rgba(220, 220, 220, 1)'
+        }
+      }
+    }
+  }
+
+  /**
+   * @description  watches Enabled property and the sets the backgroundColor
+   * @function checkEnabled
+   */
+  @Watch('properties.Enabled', {
+    deep: true
+  })
+  checkEnabled (newVal: boolean, oldVal: boolean) {
+    if (!this.properties.Enabled) {
+      this.spanRef.style.backgroundColor = 'rgba(220, 220, 220, 1)'
+    } else {
+      this.spanRef.style.backgroundColor = 'white'
+    }
+  }
 
   /**
    * @description getDisableValue checks for the RunMode of the control and then returns after checking for the Enabled
@@ -90,8 +133,16 @@ export default class FDOptionButton extends Mixins(FdControlVue) {
    * @function makeChecked
    */
   makeChecked () {
-    this.optBtnInput.checked = true
+    if (!this.getDisableValue) {
+      this.optBtnInput.checked = true
+      this.spanRef.style.backgroundColor = 'white'
+      this.updateDataModel({
+        propertyName: 'Value',
+        value: this.optBtnInput.checked
+      })
+    }
   }
+
   /**
    * @description style object is passed to :style attribute in label tag
    * dynamically changing the styles of the component based on properties
@@ -121,8 +172,11 @@ export default class FDOptionButton extends Mixins(FdControlVue) {
       width: `${controlProp.Width}px`,
       height: `${controlProp.Height}px`,
       top: `${controlProp.Top}px`,
-      backgroundColor: controlProp.BackColor,
-      background: controlProp.BackStyle ? controlProp.BackColor : 'transparent',
+      borderColor: controlProp.BorderColor,
+      border: this.getBorderStyle,
+      backgroundColor: controlProp.BackStyle
+        ? controlProp.BackColor
+        : 'transparent',
       whiteSpace: controlProp.WordWrap ? 'pre-wrap' : 'pre',
       wordBreak: controlProp.WordWrap ? 'break-all' : 'normal',
       color:
@@ -131,10 +185,9 @@ export default class FDOptionButton extends Mixins(FdControlVue) {
         controlProp.MousePointer !== 0 || controlProp.MouseIcon !== ''
           ? this.getMouseCursorData
           : 'default',
-      // Fix Font.FontSize, Font.FontItalic ...
-      fontFamily: font.FontStyle ? font.FontStyle : font.FontName,
+      fontFamily: font.FontStyle! !== '' ? this.setFontStyle : font.FontName!,
       fontSize: `${font.FontSize}px`,
-      fontStyle: font.FontItalic ? 'italic' : '',
+      fontStyle: font.FontItalic || this.isItalic ? 'italic' : '',
       textDecoration:
         font.FontStrikethrough === true && font.FontUnderline === true
           ? 'underline line-through'
@@ -143,16 +196,34 @@ export default class FDOptionButton extends Mixins(FdControlVue) {
             : font.FontStrikethrough
               ? 'line-through'
               : '',
-      fontWeight: font.FontBold ? 'bold' : '',
-      //  position: 'relative',
+      fontWeight: font.FontBold
+        ? 'bold'
+        : font.FontStyle !== ''
+          ? this.tempWeight
+          : '',
+      fontStretch: font.FontStyle !== '' ? this.tempStretch : '',
       display: display,
       direction: controlProp.Alignment ? 'ltr' : 'rtl',
       overflow: 'hidden',
       gridTemplateColumns: '14px auto ',
+      gridTemplateRows: '100%',
       gap: '2px',
       alignItems: font.FontSize! > 17 ? 'center' : '',
       alignContent: 'center',
       boxShadow: 'none'
+    }
+  }
+
+  /**
+   * @description style object is passed to :style attribute in tag
+   * dynamically changing the styles of the component based on properties
+   * @function editCssObj
+   *
+   */
+  protected get editCssObj (): Partial<CSSStyleDeclaration> {
+    const controlProp = this.properties
+    return {
+      backgroundImage: 'none'
     }
   }
 
@@ -166,8 +237,7 @@ export default class FDOptionButton extends Mixins(FdControlVue) {
     const controlProp = this.properties
     return {
       boxShadow:
-        controlProp.SpecialEffect === 0 ? '0px 0px gray' : '-1px -1px gray',
-      border: controlProp.SpecialEffect === 0 ? '1px solid gray' : ''
+        controlProp.SpecialEffect === 0 ? '0px 0px gray' : '-1px -1px gray'
     }
   }
 
@@ -181,12 +251,29 @@ export default class FDOptionButton extends Mixins(FdControlVue) {
     const controlProp = this.properties
     return {
       overflow: 'hidden',
-      textAlign:
+      height: '100%',
+      display: 'flex',
+      justifyContent:
         controlProp.TextAlign === 0
-          ? 'left'
+          ? 'flex-start'
           : controlProp.TextAlign === 1
             ? 'center'
-            : 'right',
+            : 'flex-end',
+      alignItems: 'center'
+    }
+  }
+
+  /**
+   * @description style object is passed to :style attribute in div tag
+   * dynamically changing the styles of the component based on properties
+   * @function pictureDiv
+   *
+   */
+  get pictureDiv () {
+    const controlProp = this.properties
+    return {
+      height: '100%',
+      display: 'table-cell',
       backgroundImage: `url(${controlProp.Picture})`,
       backgroundRepeat: this.getRepeat,
       backgroundPosition: this.getPosition,
@@ -207,14 +294,14 @@ export default class FDOptionButton extends Mixins(FdControlVue) {
           .offsetWidth
         const offsetHeight = (divRef.childNodes[0] as HTMLSpanElement)
           .offsetHeight
-        // Value 14 for OptionButton, 2 for Gap style value, and offsetHeight and offsetWidth + 3
+        // Value 11 for OptionButton, 2 for Gap style value, and offsetHeight and offsetWidth + 1
         this.updateDataModel({
           propertyName: 'Width',
-          value: 14 + 2 + offsetHeight + 1
+          value: 11 + 4 + offsetWidth + 1
         })
         this.updateDataModel({
           propertyName: 'Height',
-          value: 14 + 2 + offsetWidth + 1
+          value: 10 + 4 + offsetHeight + 1
         })
       })
     } else {
@@ -239,8 +326,10 @@ export default class FDOptionButton extends Mixins(FdControlVue) {
   box-sizing: border-box;
 }
 .outer-check {
-  height: 30px;
-  width: 150px;
+  height: 0px;
+  width: 0px;
+  left: 0px;
+  top: 0px;
   min-width: 14px;
   min-height: 15px;
   background-color: rgb(238, 238, 238);
@@ -307,6 +396,8 @@ export default class FDOptionButton extends Mixins(FdControlVue) {
 }
 
 .spanClass {
+  /* border-bottom: 1px solid black; */
   text-decoration: underline;
+  text-underline-position: under;
 }
 </style>

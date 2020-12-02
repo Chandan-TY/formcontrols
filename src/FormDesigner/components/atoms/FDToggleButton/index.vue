@@ -24,6 +24,7 @@
     <FDEditableText
       v-else
       :editable="isRunMode === false && syncIsEditMode"
+      :style="editCssObj"
       :caption="properties.Caption"
       @updateCaption="updateCaption"
       @releaseEditMode="setContentEditable($event, false)"
@@ -125,7 +126,6 @@ export default class FDToggleButton extends Mixins(FdControlVue) {
       width: `${controlProp.Width}px`,
       height: `${controlProp.Height}px`,
       top: `${controlProp.Top}px`,
-      backgroundColor: controlProp.BackColor,
       borderColor: controlProp.BorderColor,
       boxShadow: controlProp.Enabled
         ? controlProp.Value === 'False' || controlProp.Value === 'false'
@@ -134,7 +134,7 @@ export default class FDToggleButton extends Mixins(FdControlVue) {
             ? '-1px -1px black'
             : '1px 1px gray'
         : '1px 1px gray',
-      background: controlProp.BackStyle ? controlProp.BackColor : 'transparent',
+      backgroundColor: controlProp.BackStyle ? controlProp.BackColor : 'transparent',
       outline: controlProp.Enabled
         ? this.isFocus
           ? '1px dotted black'
@@ -154,9 +154,9 @@ export default class FDToggleButton extends Mixins(FdControlVue) {
         controlProp.MousePointer !== 0 || controlProp.MouseIcon !== ''
           ? this.getMouseCursorData
           : 'default',
-      fontFamily: font.FontStyle ? font.FontStyle : font.FontName,
+      fontFamily: (font.FontStyle! !== '') ? this.setFontStyle : font.FontName!,
       fontSize: `${font.FontSize}px`,
-      fontStyle: font.FontItalic ? 'italic' : '',
+      fontStyle: font.FontItalic || this.isItalic ? 'italic' : '',
       textDecoration:
         font.FontStrikethrough === true && font.FontUnderline === true
           ? 'underline line-through'
@@ -165,7 +165,8 @@ export default class FDToggleButton extends Mixins(FdControlVue) {
             : font.FontStrikethrough
               ? 'line-through'
               : '',
-      fontWeight: font.FontBold ? 'bold' : '',
+      fontWeight: font.FontBold ? 'bold' : (font.FontStyle !== '') ? this.tempWeight : '',
+      fontStretch: (font.FontStyle !== '') ? this.tempStretch : '',
       whiteSpace: controlProp.WordWrap ? 'pre-wrap' : 'pre',
       wordBreak: controlProp.WordWrap ? 'break-all' : 'normal',
       paddingLeft: controlProp.AutoSize ? '0px' : '0px',
@@ -181,6 +182,19 @@ export default class FDToggleButton extends Mixins(FdControlVue) {
       backgroundPosition: this.getPosition,
       backgroundPositionX: this.getPositionX,
       backgroundPositionY: this.getPositionY
+    }
+  }
+
+  /**
+   * @description style object is passed to :style attribute in tag
+   * dynamically changing the styles of the component based on properties
+   * @function editCssObj
+   *
+   */
+  protected get editCssObj (): Partial<CSSStyleDeclaration> {
+    const controlProp = this.properties
+    return {
+      backgroundImage: 'none'
     }
   }
 
@@ -232,8 +246,10 @@ export default class FDToggleButton extends Mixins(FdControlVue) {
 
 <style scoped>
 .toggle-button {
-  height: 60px;
-  width: 55px;
+  width: 0px;
+  height: 0px;
+  left: 0px;
+  top: 0px;
   box-shadow: 1px 1px gray;
   border: none;
   overflow: hidden;
@@ -242,6 +258,6 @@ export default class FDToggleButton extends Mixins(FdControlVue) {
 }
 
 .spanClass {
-  text-decoration: underline;
+  border-bottom: 1px solid black;
 }
 </style>

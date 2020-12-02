@@ -72,8 +72,8 @@ export default class FdSelectVue extends Vue {
     }
   }
   private updateResize (value: IResizeValue) {
-    const isContainer = this.selectedContainer[0] === this.controlId && !this.selectedControlArray.includes(this.controlId)
-    const dragResizectrlArray = isContainer ? this.selectedContainer : this.selectedControlArray
+    const controlType = this.userformData[this.userFormId][this.controlId].type
+    const dragResizectrlArray = controlType === 'Frame' ? [this.controlId] : this.selectedControlArray
     for (let i of dragResizectrlArray) {
       if (!i.startsWith('group')) {
         const dragResizeControl: controlProperties = this.userformData[this.userFormId][i].properties
@@ -146,5 +146,36 @@ export default class FdSelectVue extends Vue {
       propertyName: updateData.propertyName,
       value: updateData.value
     })
+  }
+  getContainerList (selectTarget: string) {
+    const containerList: string[] = []
+    const controlContainer = (selectTarget: string) => {
+      for (let i in this.userformData[this.userFormId]) {
+        const controlData = this.userformData[this.userFormId][i]
+        if (
+          controlData.controls.length > 0 &&
+              controlData.controls.includes(selectTarget)
+        ) {
+          containerList.push(i)
+          controlContainer(i)
+        }
+      }
+    }
+    const getControlId = (selectTarget: string) => {
+      const userData = this.userformData[this.userFormId]
+      for (let i in userData) {
+        const controlData = userData[i]
+        if (controlData.properties.GroupID === selectTarget) {
+          return i
+        }
+      }
+    }
+    if (selectTarget) {
+      const controlId = selectTarget.startsWith('group') ? getControlId(selectTarget) : selectTarget
+      if (controlId) {
+        controlContainer(controlId)
+      }
+    }
+    return containerList || [this.userFormId]
   }
 }

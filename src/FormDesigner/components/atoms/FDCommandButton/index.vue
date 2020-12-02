@@ -23,6 +23,7 @@
     <FDEditableText
       v-else
       :editable="isRunMode === false && syncIsEditMode"
+      :style="editCssObj"
       :caption="properties.Caption"
       @updateCaption="updateCaption"
       @releaseEditMode="setContentEditable($event, false)"
@@ -132,7 +133,6 @@ export default class FDCommandButton extends Mixins(FdControlVue) {
       width: `${controlProp.Width}px`,
       height: `${controlProp.Height}px`,
       top: `${controlProp.Top}px`,
-      backgroundColor: controlProp.BackColor,
       borderTopColor: controlProp.Default ? 'black' : controlProp.BackColor,
       borderBottomColor: controlProp.Default ? 'black' : controlProp.BackColor,
       borderLeftColor: controlProp.Default ? 'black' : controlProp.BackColor,
@@ -145,16 +145,16 @@ export default class FDCommandButton extends Mixins(FdControlVue) {
       outlineOffset:
         controlProp.TakeFocusOnClick && this.isClicked ? '-5px' : '0px',
       display: display,
-      background: controlProp.BackStyle ? controlProp.BackColor : 'transparent',
+      backgroundColor: controlProp.BackStyle ? controlProp.BackColor : 'transparent',
       color:
         controlProp.Enabled === true ? controlProp.ForeColor : this.getEnabled,
       cursor:
         controlProp.MousePointer !== 0 || controlProp.MouseIcon !== ''
           ? this.getMouseCursorData
           : 'default',
-      fontFamily: font.FontStyle ? font.FontStyle : font.FontName,
+      fontFamily: (font.FontStyle! !== '') ? this.setFontStyle : font.FontName!,
       fontSize: `${font.FontSize}px`,
-      fontStyle: font.FontItalic ? 'italic' : '',
+      fontStyle: font.FontItalic || this.isItalic ? 'italic' : '',
       textDecoration:
         font.FontStrikethrough === true && font.FontUnderline === true
           ? 'underline line-through'
@@ -163,7 +163,8 @@ export default class FDCommandButton extends Mixins(FdControlVue) {
             : font.FontStrikethrough
               ? 'line-through'
               : '',
-      fontWeight: font.FontBold ? 'bold' : '',
+      fontWeight: font.FontBold ? 'bold' : (font.FontStyle !== '') ? this.tempWeight : '',
+      fontStretch: (font.FontStyle !== '') ? this.tempStretch : '',
       whiteSpace: controlProp.WordWrap ? 'pre-wrap' : 'pre',
       wordBreak: controlProp.WordWrap ? 'break-all' : 'normal',
       paddingLeft: controlProp.AutoSize ? '0px' : '0px',
@@ -173,6 +174,18 @@ export default class FDCommandButton extends Mixins(FdControlVue) {
       backgroundPosition: this.getPosition,
       backgroundPositionX: this.getPositionX,
       backgroundPositionY: this.getPositionY
+    }
+  }
+  /**
+   * @description style object is passed to :style attribute in tag
+   * dynamically changing the styles of the component based on properties
+   * @function editCssObj
+   *
+   */
+  protected get editCssObj (): Partial<CSSStyleDeclaration> {
+    const controlProp = this.properties
+    return {
+      backgroundImage: 'none'
     }
   }
 
@@ -202,11 +215,15 @@ export default class FDCommandButton extends Mixins(FdControlVue) {
   overflow: hidden;
   display: inline-block;
   box-sizing: border-box;
+  width: 0px;
+  height: 0px;
+  left: 0px;
+  top: 0px;
 }
 .commandbutton[runmode]:active {
   border-style: outset !important;
 }
 .spanClass {
-  text-decoration: underline;
+  border-bottom: 1px solid black;
 }
 </style>

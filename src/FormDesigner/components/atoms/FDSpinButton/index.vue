@@ -1,6 +1,7 @@
 <template>
   <div @click="selectedItem" @mousedown="controlEditMode">
     <div
+      class="outerSpinDiv"
       :class="classStyle"
       :style="styleObj"
       :title="properties.ControlTipText"
@@ -264,6 +265,12 @@ export default class FDSpinButton extends Mixins(FdControlVue) {
 .spin-oriented {
   display: grid;
   grid-template-columns: 1fr 1fr;
+}
+.outerSpinDiv {
+  width: 0px;
+  height: 0px;
+  left: 0px;
+  top: 0px;
 }
 .button-element-top {
   border-color: lightgrey;

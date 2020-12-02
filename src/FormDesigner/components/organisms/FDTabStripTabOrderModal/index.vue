@@ -95,6 +95,8 @@ export default class TabStripTabOrderModal extends FdDialogDragVue {
           .extraDatas!.Tabs!
         if (tabOrderControlData.length > 0) {
           this.tabOrderList = JSON.parse(JSON.stringify(tabOrderControlData))
+        } else {
+          console.error('Empty Tab data')
         }
         this.isTabOrderOpen = true
         this.userFormId = userFormId
@@ -276,7 +278,7 @@ h1 {
   font-size: 12px;
 }
 .taborder-buttons {
-  width: 80px;
+  width: 90px;
   height: 23px;
   font-family: "Candara";
   font-weight: lighter;
@@ -284,6 +286,7 @@ h1 {
   box-shadow: 1px 1px;
   border: 0.5px solid gray;
   outline: none;
+  white-space: pre;
 }
 .ui-btn {
   /* margin: 2px; */

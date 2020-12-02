@@ -5,8 +5,10 @@
     :title="properties.ControlTipText"
     @click="selectedItem"
     @mousedown="controlEditMode"
+    tabindex="0"
+    @keydown.stop="forMatchEntry"
   >
-    <table class="table-style" :style="tableStyleObj" @click="tableClick">
+    <table class="table-style" :style="tableStyleObj" >
       <thead v-if="properties.ColumnHeads === true" class="theadClass">
         <tr>
           <td
@@ -26,16 +28,17 @@
         </tr>
       </thead>
       <thead v-else></thead>
-      <tbody ref="style" class="table-body">
+      <tbody class="table-body">
         <tr
           :tabindex="index"
           class="tr"
+          ref="listStyleRef"
           v-for="(item, index) of extraDatas.RowSourceData"
           :key="index"
-          @mouseenter="handleDrag"
-          @keydown="handleExtendArrowKeySelect"
-          @blur="clearMatchEntry"
-          @click="isRunMode || isEditMode ? handleMultiSelect($event) : ''"
+          @mouseenter.stop="handleDrag"
+          @keydown.stop="handleExtendArrowKeySelect"
+          @blur.stop="clearMatchEntry"
+          @mousedown.stop="isRunMode || isEditMode ? handleMultiSelect($event) : setInitial($event)"
         >
           <td
             :style="tdStyleObj"
@@ -82,18 +85,12 @@ import FdControlVue from '@/api/abstract/FormDesigner/FdControlVue'
   name: 'FDListBox'
 })
 export default class FDListBox extends Mixins(FdControlVue) {
-  // selectionData :Array<string> = [];
-  // matchEntry: Array<number> = [];
-  // matchIndex = -1;
-  tempEvent: Event;
+  @Ref('listStyleRef') listStyleRef : HTMLTableRowElement[]
+  $el: HTMLDivElement
+  clickCount: number = 0
 
   clearMatchEntry () {
     this.updateDataModelExtraData({ propertyName: 'MatchData', value: '' })
-  }
-
-  tableClick (e: Event) {
-    debugger
-    this.tempEvent = e
   }
 
   /**
@@ -120,8 +117,10 @@ export default class FDListBox extends Mixins(FdControlVue) {
           ? this.getMouseCursorData
           : 'default',
       boxShadow: controlProp.SpecialEffect ? this.getSpecialEffectData : 'none',
-      height: `${controlProp.Height}px`,
+      left: `${controlProp.Left}px`,
       width: `${controlProp.Width}px`,
+      height: `${controlProp.Height}px`,
+      top: `${controlProp.Top}px`,
       display: display
     }
   }
@@ -147,9 +146,9 @@ export default class FDListBox extends Mixins(FdControlVue) {
       borderCollapse: 'collapse',
       tableLayout: 'fixed',
       color: controlProp.ForeColor,
-      fontFamily: font.FontStyle ? font.FontStyle : font.FontName,
+      fontFamily: (font.FontStyle! !== '') ? this.setFontStyle : font.FontName!,
       fontSize: `${font.FontSize}px`,
-      fontStyle: font.FontItalic ? 'italic' : '',
+      fontStyle: font.FontItalic || this.isItalic ? 'italic' : '',
       textDecoration:
         font.FontStrikethrough === true && font.FontUnderline === true
           ? 'underline line-through'
@@ -158,7 +157,9 @@ export default class FDListBox extends Mixins(FdControlVue) {
             : font.FontStrikethrough
               ? 'line-through'
               : '',
-      fontWeight: font.FontBold ? 'bold' : '',
+      textUnderlinePosition: 'under',
+      fontWeight: font.FontBold ? 'bold' : (font.FontStyle !== '') ? this.tempWeight : '',
+      fontStretch: (font.FontStyle !== '') ? this.tempStretch : '',
       width:
         controlProp.ColumnWidths === ''
           ? `${controlProp.Width}px`
@@ -198,6 +199,14 @@ export default class FDListBox extends Mixins(FdControlVue) {
       this.properties.BoundColumn! < this.extraDatas.RowSourceData!.length
     ) {
       let tempData = [...this.extraDatas.RowSourceData!]
+      let tempBoundColumn = this.properties.BoundColumn! - 1
+      for (let i = 0; i < this.extraDatas.RowSourceData!.length; i++) {
+        if (tempData[i][tempBoundColumn] === newVal) {
+          this.clearOptionBGColorAndChecked(this.tempListBoxComboBoxEvent)
+          this.listStyleRef[i].style.backgroundColor = 'rgb(59, 122, 231)'
+          break
+        }
+      }
       if (tempData![0][this.properties.BoundColumn! - 1] === newVal) {
         this.updateDataModel({ propertyName: 'Value', value: newVal })
       } else {
@@ -212,8 +221,11 @@ export default class FDListBox extends Mixins(FdControlVue) {
    * @description mounted initializes the values which are required for the component
    */
   mounted () {
+    const target = this.listStyleRef[0]
+    var event = new MouseEvent('mousedown.stop')
+    this.setInitial(event)
+    console.log('temp event value', this.tempListBoxComboBoxEvent)
     const initialRowSourceData = this.extraDatas.RowSourceData!
-    console.log('Initial RowSource Data', initialRowSourceData)
     this.updateDataModel({ propertyName: 'ControlSource', value: '' })
     if (initialRowSourceData && initialRowSourceData.length === 0) {
       this.updateDataModel({ propertyName: 'TopIndex', value: -1 })
@@ -230,7 +242,9 @@ export default class FDListBox extends Mixins(FdControlVue) {
    */
   @Watch('properties.MultiSelect', { deep: true })
   multiSelectCheck (newVal: number, oldVal: number) {
-    this.clearOptionBGColorAndChecked(this.tempEvent)
+    if (this.tempListBoxComboBoxEvent) {
+      this.clearOptionBGColorAndChecked(this.tempListBoxComboBoxEvent)
+    }
   }
 
   /**
@@ -241,7 +255,20 @@ export default class FDListBox extends Mixins(FdControlVue) {
    */
   @Watch('properties.ListStyle', { deep: true })
   listCheck (newVal: number, oldVal: number) {
-    this.clearOptionBGColorAndChecked(this.tempEvent)
+    this.clearOptionBGColorAndChecked(this.tempListBoxComboBoxEvent)
+  }
+
+  @Watch('isEditMode', { deep: true })
+  isEditCheck (newVal: boolean, oldVal: boolean) {
+    if (this.isEditMode) {
+      this.$el.click()
+    }
+  }
+
+  forMatchEntry (event: KeyboardEvent) {
+    this.clickCount += 1
+    this.listStyleRef[0].click()
+    this.handleExtendArrowKeySelect(event)
   }
 }
 </script>

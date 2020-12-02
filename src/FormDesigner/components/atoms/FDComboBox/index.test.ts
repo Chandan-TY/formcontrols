@@ -138,7 +138,7 @@ describe('FDComboBox.vue', () => {
     })
     it('divHide trigger()', () => {
       testWrapper.props().data.properties.HideSelection = false
-      let y = testWrapper.find('#div1')
+      let y = testWrapper.find({ ref: 'hideSelectionDiv' })
       y.trigger('click')
     })
     it('divHide trigger()', () => {

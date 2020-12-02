@@ -52,7 +52,7 @@
           <input
             type="Button"
             value="Cancel"
-            class="btn-outline inputTwoClass"
+            class="btn-outline inputTwoClass cancelButtonStyle"
             @click="closeDialog"
           />
         </div>
@@ -89,22 +89,30 @@ export default class FDRenameMultiPageDialog extends FdDialogDragVue {
   handleRename (e: KeyboardEvent) {
     if (e.target instanceof HTMLInputElement) {
       this.selectedTabData.Caption = e.target.value
+    } else {
+      throw new Error('Expected HTMLInputElement but found different element')
     }
   }
 
   updateAccelerator (e: KeyboardEvent) {
     if (e.target instanceof HTMLInputElement) {
       this.selectedTabData.Accelerator = e.target.value
+    } else {
+      throw new Error('Expected HTMLInputElement but found different element')
     }
   }
   handleTip (e: KeyboardEvent) {
     if (e.target instanceof HTMLInputElement) {
       this.selectedTabData.ToolTip = e.target.value
+    } else {
+      throw new Error('Expected HTMLInputElement but found different element')
     }
   }
   updateChanges () {
     if (this.selectedTabData.Accelerator) {
       this.selectedTabData.Accelerator = this.selectedTabData.Accelerator[0]
+    } else {
+      console.error('Accelerator value empty')
     }
     this.updateControlExtraData({
       userFormId: this.userFormId,
@@ -302,11 +310,14 @@ h1 {
   margin: 1px;
 }
 .inputClass {
-  width: 10%;
+  width: 10% !important;
 }
 .inputTwoClass {
-  width: 60px;
-  box-shadow: 1px 1px;
-  border: 0.5px solid gray;
+  width: 55px !important;
+  box-shadow: 1px 1px !important;
+  border: 0.5px solid gray !important;
+}
+.cancelButtonStyle {
+  margin-left: 10px;
 }
 </style>

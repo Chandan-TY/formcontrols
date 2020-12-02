@@ -4,7 +4,7 @@
       ref="textareaRef"
       :style="cssStyleProperty"
       :tabindex="properties.TabIndex"
-      :maxlength="properties.MaxLength > 0 ? properties.MaxLength : null"
+      :maxlength="properties.MaxLength !==0 ? properties.MaxLength : ''"
       :disabled="getDisableValue"
       :title="properties.ControlTipText"
       :readonly="properties.Locked"
@@ -76,8 +76,9 @@ import { DirectiveBinding } from 'vue/types/options'
           filteredValue = filteredValue + password[0]
         }
         return filteredValue
+      } else {
+        return value
       }
-      return value
     }
   },
   directives: {
@@ -94,6 +95,8 @@ import { DirectiveBinding } from 'vue/types/options'
         if (vnode.value.pwdCharType !== '') {
           (event as HTMLFormElement).selectionStart = vnode.value.start;
           (event as HTMLFormElement).selectionEnd = vnode.value.end
+        } else {
+          return undefined
         }
       }
     }
@@ -103,7 +106,6 @@ export default class FDTextBox extends Mixins(FdControlVue) {
   @Ref('hideSelectionDiv') readonly hideSelectionDiv!: HTMLDivElement;
   @Ref('autoSizeTextarea') readonly autoSizeTextarea!: HTMLLabelElement;
   @Ref('textareaRef') textareaRef: HTMLTextAreaElement;
-
   get getDisableValue () {
     if (this.isRunMode || this.isEditMode) {
       return (
@@ -125,14 +127,18 @@ export default class FDTextBox extends Mixins(FdControlVue) {
       ? controlProp.Font
       : {
         FontName: 'Arial',
-        FontSize: 10
+        FontSize: 10,
+        FontItalic: true,
+        FontBold: true,
+        FontUnderline: true,
+        FontStrikethrough: true,
+        FontStyle: 'Arial'
       }
     return {
       left: `${controlProp.Left}px`,
       width: `${controlProp.Width}px`,
       height: `${controlProp.Height}px`,
       top: `${controlProp.Top}px`,
-      backgroundColor: controlProp.BackColor,
       borderColor: controlProp.BorderColor,
       textAlign:
         controlProp.TextAlign === 0
@@ -141,7 +147,7 @@ export default class FDTextBox extends Mixins(FdControlVue) {
             ? 'center'
             : 'right',
       border: this.getBorderStyle,
-      background: controlProp.BackStyle ? controlProp.BackColor : 'transparent',
+      backgroundColor: controlProp.BackStyle ? controlProp.BackColor : 'transparent',
       boxShadow: controlProp.SpecialEffect ? this.getSpecialEffectData : 'none',
       whiteSpace:
         controlProp.WordWrap && controlProp.MultiLine ? 'normal' : 'nowrap',
@@ -153,8 +159,9 @@ export default class FDTextBox extends Mixins(FdControlVue) {
         controlProp.MousePointer !== 0 || controlProp.MouseIcon !== ''
           ? this.getMouseCursorData
           : 'default',
+      fontFamily: (font.FontStyle! !== '') ? this.setFontStyle : font.FontName!,
       fontSize: `${font.FontSize}px`,
-      fontStyle: font.FontItalic ? 'italic' : '',
+      fontStyle: font.FontItalic || this.isItalic ? 'italic' : '',
       textDecoration:
         font.FontStrikethrough === true && font.FontUnderline === true
           ? 'underline line-through'
@@ -163,8 +170,8 @@ export default class FDTextBox extends Mixins(FdControlVue) {
             : font.FontStrikethrough
               ? 'line-through'
               : '',
-      fontWeight: font.FontBold ? 'bold' : '',
-      fontFamily: font.FontStyle ? font.FontStyle : font.FontName,
+      fontWeight: font.FontBold ? 'bold' : (font.FontStyle !== '') ? this.tempWeight : '',
+      fontStretch: (font.FontStyle !== '') ? this.tempStretch : '',
       display: controlProp.Visible ? 'block' : 'none',
       overflowX: this.getScrollBarX,
       overflowY: this.getScrollBarY
@@ -181,7 +188,6 @@ export default class FDTextBox extends Mixins(FdControlVue) {
    *
    */
   handlePasswordChar (event: TextEvent) {
-    debugger
     let newData
     let text = this.properties.Text!
     let selectionDiff =
@@ -189,14 +195,14 @@ export default class FDTextBox extends Mixins(FdControlVue) {
       (this.data.properties!.CursorEndPosition as number)
     if (event.target instanceof HTMLTextAreaElement) {
       if (selectionDiff) {
-      // selection
+        // selection
         newData =
         text.substring(0, this.data.properties!.CursorStartPosition as number) +
         text.substring(this.data.properties!.CursorEndPosition as number)
         this.updateDataModel({ propertyName: 'Text', value: newData })
         this.updateDataModel({ propertyName: 'Value', value: newData })
       } else if (text.length < event.target.value.length) {
-      // insertion
+        // insertion
         newData = [
           text.slice(0, event.target.selectionStart - 1),
           event.data,
@@ -205,7 +211,7 @@ export default class FDTextBox extends Mixins(FdControlVue) {
         this.updateDataModel({ propertyName: 'Text', value: newData })
         this.updateDataModel({ propertyName: 'Value', value: newData })
       } else if (text.length > event.target.value.length) {
-      // deletion
+        // deletion
         newData = [
           text.slice(0, event.target.selectionStart),
           text.slice(event.target.selectionStart + 1)
@@ -221,6 +227,8 @@ export default class FDTextBox extends Mixins(FdControlVue) {
         propertyName: 'CursorEndPosition',
         value: event.target.selectionEnd
       })
+    } else {
+      throw new Error('Expected HTMLTextAreaElement but found different element')
     }
   }
   /**
@@ -281,7 +289,9 @@ export default class FDTextBox extends Mixins(FdControlVue) {
         (event.target).selectionStart = selectionStart + 1;
         (event.target).selectionEnd = (event.target).selectionStart
         return false
-      } return false
+      } else {
+        throw new Error('Expected HTMLTextAreaElement but found different element')
+      }
     } else {
       return true
     }
@@ -296,7 +306,6 @@ export default class FDTextBox extends Mixins(FdControlVue) {
    */
   textAndValueUpdate (event: InputEvent) {
     const propData = this.properties
-    debugger
     if (event.target instanceof HTMLTextAreaElement) {
       this.updateDataModel({
         propertyName: 'Value',
@@ -311,7 +320,11 @@ export default class FDTextBox extends Mixins(FdControlVue) {
           propertyName: 'ControlSourceValue',
           value: (event.target).value
         })
+      } else {
+        return undefined
       }
+    } else {
+      throw new Error('Expected HTMLTextAreaElement but found different element')
     }
   }
 
@@ -334,34 +347,34 @@ export default class FDTextBox extends Mixins(FdControlVue) {
    */
   @Watch('properties.AutoSize', { deep: true })
   updateAutoSize (newVal: boolean, oldVal: boolean) {
-    if (this.data.type!.includes('TextBox')) {
-      if (this.properties.AutoSize === true) {
-        this.$nextTick(() => {
-          const textareaRef: HTMLTextAreaElement = this.textareaRef
-          // replication of stype attribute to Label tag for autoSize property to work
-          let tempLabel: HTMLLabelElement = this.autoSizeTextarea
-          tempLabel.style.display = 'inline'
-          tempLabel.style.fontStyle = textareaRef.style.fontStyle
-          tempLabel.style.fontSize =
+    if (this.properties.AutoSize === true) {
+      this.$nextTick(() => {
+        const textareaRef: HTMLTextAreaElement = this.textareaRef
+        // replication of stype attribute to Label tag for autoSize property to work
+        let tempLabel: HTMLLabelElement = this.autoSizeTextarea
+        tempLabel.style.display = 'inline'
+        tempLabel.style.fontStyle = textareaRef.style.fontStyle
+        tempLabel.style.fontSize =
             parseInt(textareaRef.style.fontSize) + 'px'
-          tempLabel.style.whiteSpace = textareaRef.style.whiteSpace
-          tempLabel.style.wordBreak = textareaRef.style.wordBreak
-          tempLabel.style.fontWeight = textareaRef.style.fontWeight
-          tempLabel.style.width = textareaRef.style.width
-          tempLabel.style.height = textareaRef.style.height
-          tempLabel.innerText = textareaRef.value
-          this.updateDataModel({
-            propertyName: 'Width',
-            value: tempLabel.offsetWidth + 5
-          })
-          this.updateDataModel({
-            propertyName: 'Height',
-            value: tempLabel.offsetHeight + 5
-          })
-          tempLabel.innerText = ''
-          tempLabel.style.display = 'none'
+        tempLabel.style.whiteSpace = textareaRef.style.whiteSpace
+        tempLabel.style.wordBreak = textareaRef.style.wordBreak
+        tempLabel.style.fontWeight = textareaRef.style.fontWeight
+        tempLabel.style.width = textareaRef.style.width
+        tempLabel.style.height = textareaRef.style.height
+        tempLabel.innerText = textareaRef.value
+        this.updateDataModel({
+          propertyName: 'Width',
+          value: tempLabel.offsetWidth + 5
         })
-      }
+        this.updateDataModel({
+          propertyName: 'Height',
+          value: tempLabel.offsetHeight + 5
+        })
+        tempLabel.innerText = ''
+        tempLabel.style.display = 'none'
+      })
+    } else {
+      return undefined
     }
   }
 
@@ -385,10 +398,8 @@ export default class FDTextBox extends Mixins(FdControlVue) {
    * @event keydown
    */
   handleDelete (event: KeyboardEvent) {
-    debugger
     if (event.target instanceof HTMLTextAreaElement) {
       if (event.keyCode === 8) {
-        console.log('HandleDelete', event.target)
         this.updateDataModel({
           propertyName: 'CursorStartPosition',
           value: (event.target).selectionStart!
@@ -397,7 +408,11 @@ export default class FDTextBox extends Mixins(FdControlVue) {
           propertyName: 'CursorEndPosition',
           value: (event.target).selectionEnd!
         })
+      } else {
+        return undefined
       }
+    } else {
+      throw new Error('Expected HTMLTextAreaElement but found different element')
     }
   }
   /**
@@ -429,7 +444,11 @@ export default class FDTextBox extends Mixins(FdControlVue) {
         "<span style='background-color:lightblue'>" +
         firstPart.slice(eventTarget.selectionStart + Math.abs(0))
         hideSelectionDiv.innerHTML = text
+      } else {
+        throw new Error('Expected HTMLTextAreaElement but found different element')
       }
+    } else {
+      return undefined
     }
   }
   /**
@@ -442,6 +461,8 @@ export default class FDTextBox extends Mixins(FdControlVue) {
   handleClick (hideSelectionDiv: HTMLDivElement) {
     if (!this.properties.HideSelection) {
       hideSelectionDiv.style.display = 'none'
+    } else {
+      return undefined
     }
   }
   /**
@@ -453,7 +474,6 @@ export default class FDTextBox extends Mixins(FdControlVue) {
    * @event click
    */
   divHide (event: MouseEvent, textareaRef: HTMLTextAreaElement) {
-    debugger
     if (event.target instanceof HTMLSpanElement || event.target instanceof HTMLDivElement) {
       (event.target).style.display = 'none'
       textareaRef.style.display = 'block'
@@ -476,8 +496,10 @@ export default class FDTextBox extends Mixins(FdControlVue) {
 .text-box-design {
   border: 0.2px solid gray;
   box-shadow: -1px -1px gray;
-  width: 100px;
-  height: 20px;
+  width: 0px;
+  height: 0px;
+  left: 0px;
+  top: 0px;
   resize: none;
   overflow: hidden;
   box-sizing: border-box;

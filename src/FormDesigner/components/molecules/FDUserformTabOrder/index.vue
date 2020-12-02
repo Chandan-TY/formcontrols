@@ -283,13 +283,14 @@ h1 {
   font-size: 12px;
 }
 .taborder-buttons {
-  width: 83px;
+  width: 90px;
   height: 23px;
   font-family: "Candara";
   font-weight: lighter;
   font-size: 13px;
   box-shadow: 1px 1px;
   outline: none;
+  white-space: pre;
 }
 .ui-btn {
   /* margin: 2px; */

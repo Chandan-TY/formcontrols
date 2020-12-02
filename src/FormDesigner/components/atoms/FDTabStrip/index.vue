@@ -15,7 +15,8 @@
             :key="key"
             :style="getTabStyle"
           >
-            <input
+          <FDControlTabs :data="data" :pageValue="value" :indexValue="key" :pageData="value" :isRunMode="isRunMode" :isEditMode="isEditMode"/>
+            <!-- <input
               v-if="properties.Value !== ''"
               name="properties.ID"
               :id="value.Name"
@@ -47,14 +48,14 @@
                 ><span>{{
                   value.Caption | afterbeginCaption(value.Accelerator)
                 }}</span>
-                <span style="text-decoration: underline">{{
+                <span class="spanClass">{{
                   value.Caption | acceleratorCaption(value.Accelerator)
                 }}</span>
                 <span>{{
                   value.Caption | beforeendCaption(value.Accelerator)
                 }}</span></span
               >
-            </label>
+            </label> -->
             <div
               class="content"
               :style="styleContentObj"
@@ -99,23 +100,9 @@ import { State, Action } from 'vuex-class'
 import ContextMenu from '../FDContextMenu/index.vue'
 import { tabsContextMenu } from '../../../models/tabsContextMenu'
 import { controlProperties } from '@/FormDesigner/controls-properties'
+import FDControlTabs from '@/FormDesigner/components/atoms/FDControlTabs/index.vue'
 import Vue from 'vue'
-interface IcontextMenu {
-  id: string;
-  icon: string;
-  text: string;
-  values: Array<IcontextMenu>;
-  disabled: boolean;
-}
-interface Iscrolling {
-  [scrolling: string]: {
-    offsetWidth?: number;
-    offsetHeight?: number;
-    scrollWidth?: number;
-    scrollLeft?: number;
-    scrollTop?: number;
-  };
-}
+
 @Component({
   name: 'FDTabStrip',
   components: {
@@ -248,10 +235,10 @@ export default class FDTabStrip extends FdControlVue {
     }
     return {
       // position: 'relative',
-      top: `${controlProp.Top}px`,
       left: `${controlProp.Left}px`,
-      height: `${controlProp.Height}px`,
       width: `${controlProp.Width}px`,
+      height: `${controlProp.Height}px`,
+      top: `${controlProp.Top}px`,
       cursor:
         controlProp.MousePointer !== 0 || controlProp.MouseIcon !== ''
           ? this.getMouseCursorData
@@ -320,7 +307,7 @@ export default class FDTabStrip extends FdControlVue {
   protected get styleTabsObj (): Partial<CSSStyleDeclaration> {
     const controlProp = this.properties
     return {
-      background: controlProp.BackColor,
+      backgroundColor: controlProp.BackColor,
       alignItems:
         controlProp.TabOrientation === 0 ||
         controlProp.TabOrientation === 3 ||
@@ -363,9 +350,9 @@ export default class FDTabStrip extends FdControlVue {
       height: controlProp.TabFixedHeight + 'px',
       width: controlProp.TabFixedWidth + 'px',
       top: controlProp.TabOrientation === 1 ? '10px' : '0px',
-      fontFamily: font.FontStyle ? font.FontStyle : font.FontName,
+      fontFamily: (font.FontStyle! !== '') ? this.setFontStyle : font.FontName!,
       fontSize: `${font.FontSize}px`,
-      fontStyle: font.FontItalic ? 'italic' : '',
+      fontStyle: font.FontItalic || this.isItalic ? 'italic' : '',
       textDecoration:
         font.FontStrikethrough === true && font.FontUnderline === true
           ? 'underline line-through'
@@ -374,7 +361,9 @@ export default class FDTabStrip extends FdControlVue {
             : font.FontStrikethrough
               ? 'line-through'
               : '',
-      fontWeight: font.FontBold ? 'bold' : '',
+      textUnderlinePosition: 'under',
+      fontWeight: font.FontBold ? 'bold' : (font.FontStyle !== '') ? this.tempWeight : '',
+      fontStretch: (font.FontStyle !== '') ? this.tempStretch : '',
       cursor:
         controlProp.MousePointer !== 0 || controlProp.MouseIcon !== ''
           ? this.getMouseCursorData
@@ -437,7 +426,6 @@ export default class FDTabStrip extends FdControlVue {
   }
 
   scrollCheck () {
-    // debugger
     const tabsLength = this.extraDatas.Tabs!.length * this.properties.TabFixedWidth! + (10 * this.extraDatas.Tabs!.length)
     if (
       tabsLength > this.properties.Width!
@@ -482,6 +470,10 @@ export default class FDTabStrip extends FdControlVue {
   overflow-y: hidden;
   overflow-x: hidden;
   box-sizing: border-box;
+  width: 0px;
+  height: 0px;
+  left: 0px;
+  top: 0px;
 }
 .tabs {
   display: grid;
@@ -685,5 +677,10 @@ export default class FDTabStrip extends FdControlVue {
 #right-click-menu li:hover {
   background: #1e88e5;
   color: #fafafa;
+}
+
+.spanClass {
+  text-decoration: underline;
+  text-underline-position: under;
 }
 </style>

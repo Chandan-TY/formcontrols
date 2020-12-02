@@ -10,6 +10,7 @@ interface fdState {
     [UserFromId: string]: groupedControls
   },
   isRunMode: boolean
+  copiedControl: userformData
 }
 
 interface userformData {
@@ -21,7 +22,7 @@ interface copyControl {
   userFormId: string,
   parentId: string,
   targetId: Array<string>
-  targetObject: Array<controlData>
+  type: string
 }
 interface controlData {
   properties: controlProperties,
@@ -33,6 +34,11 @@ interface controlData {
 interface selectedControls {
   container: string[],
   selected: string[]
+}
+
+interface selectedTab {
+  indexValue: number,
+  pageValue: string
 }
 
 interface groupedControls
@@ -268,4 +274,13 @@ interface CustomMouseEvent extends MouseEvent{
 interface IScrollRef{
   scrollLeft?: number
   scrollTop?: number
+}
+interface Iscrolling {
+  [scrolling: string]: {
+    offsetWidth?: number;
+    offsetHeight?: number;
+    scrollWidth?: number;
+    scrollLeft?: number;
+    scrollTop?: number;
+  };
 }

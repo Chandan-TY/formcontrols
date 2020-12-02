@@ -34,7 +34,7 @@ export default class FDLabelSample extends FdControlVue {
       borderColor: controlProp.BorderColor,
       textAlign: controlProp.TextAlign === 0 ? 'left' : controlProp.TextAlign === 1 ? 'center' : 'right',
       border: this.changeBorderStyle,
-      background: controlProp.BackStyle ? controlProp.BackColor : 'transparent',
+      backgroundColor: controlProp.BackStyle ? controlProp.BackColor : 'transparent',
       boxShadow: (controlProp.SpecialEffect! > 0) ? this.getSpecialEffectData : 'none',
       whiteSpace: controlProp.WordWrap ? 'normal' : 'nowrap',
       wordBreak: controlProp.WordWrap ? 'break-word' : 'normal',

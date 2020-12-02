@@ -47,7 +47,11 @@
                     'padding-top': subVal.text === 'none' ? '0px' : '',
                     outline: subVal.text === 'none' ? 'none' : '',
                   }"
-                   @mousedown.stop="value.disabled === false ? controlAction(value.id, subVal.id) : ''"
+                  @mousedown.stop="
+                    value.disabled === false
+                      ? controlAction(value.id, subVal.id)
+                      : ''
+                  "
                 >
                   <div>
                     <FDSVGImage v-if="subVal.icon" :name="subVal.icon" />
@@ -55,7 +59,13 @@
                   <a v-if="subVal.text === 'none'">
                     <hr />
                   </a>
-                  <a v-else href="#" v-html="subVal.text" :style="{ opacity: subVal.disabled ? 0.5 : 1 }">{{ subVal.text }}</a>
+                  <a
+                    v-else
+                    href="#"
+                    v-html="subVal.text"
+                    :style="{ opacity: subVal.disabled ? 0.5 : 1 }"
+                    >{{ subVal.text }}</a
+                  >
                 </li>
               </ul>
             </li>
@@ -74,9 +84,11 @@ import { Component, Vue, Prop, Emit } from 'vue-property-decorator'
 import FDSVGImage from '@/FormDesigner/components/atoms/FDSVGImage/index.vue'
 import { Action, State } from 'vuex-class'
 import {
+  IaddChildControls,
   IaddControl,
   IdeleteControl,
   IselectControl,
+  IsetChildControls,
   IupdateControl,
   IupdateControlExtraData,
   IupdateCopyControlList,
@@ -104,6 +116,7 @@ export default class ContextMenu extends Vue {
   @State((state: rootState) => state.fd.copyControlList)
   copyControlList!: fdState['copyControlList'];
   @State((state) => state.fd.userformData) userformData!: userformData;
+  @State((state) => state.fd.copiedControl) copiedControl!: userformData;
   @State((state) => state.fd.groupedControls)
   groupedControls!: fdState['groupedControls'];
 
@@ -112,16 +125,24 @@ export default class ContextMenu extends Vue {
     payload: IupdateCopyControlList
   ) => void;
   @Action('fd/addControl') addControl!: (payload: IaddControl) => void;
+  @Action('fd/addCopiedControl') addCopiedControl!: (
+    payload: IaddControl
+  ) => void;
   @Action('fd/selectControl') selectControl!: (payload: IselectControl) => void;
   @Action('fd/updateGroup') updateGroup!: (payload: IupdateGroup) => void;
   @Action('fd/updateControlExtraData') updateControlExtraData!: (
     payload: IupdateControlExtraData
   ) => void;
   @Action('fd/updateControl') updateControl!: (payload: IupdateControl) => void;
-
+  @Action('fd/setChildControls') setChildControls!: (
+    payload: IsetChildControls
+  ) => void;
+  @Action('fd/addChildControls') addChildControls!: (
+    payload: IaddChildControls
+  ) => void;
   controlAction (controlActionName: string, subVal: string) {
     if (controlActionName === 'ID_COPY') {
-      this.copyControl()
+      this.copyControl('copy')
     } else if (controlActionName === 'ID_DELETE') {
       this.clickDelete()
     } else if (controlActionName === 'ID_PASTE') {
@@ -149,7 +170,10 @@ export default class ContextMenu extends Vue {
       EventBus.$emit('tabStripTabOrder', this.userFormId, this.controlId)
     } else if (controlActionName === 'ID_TABORDER') {
       EventBus.$emit('userFormTabOrder', this.userFormId, this.containerId)
-    } else if (controlActionName === 'ID_ALIGN' || controlActionName === 'ID_MAKESAMESIZE') {
+    } else if (
+      controlActionName === 'ID_ALIGN' ||
+      controlActionName === 'ID_MAKESAMESIZE'
+    ) {
       this.controlAlignMent(subVal)
     }
     this.closeMenu()
@@ -158,6 +182,46 @@ export default class ContextMenu extends Vue {
   closeMenu () {
     return 0
   }
+
+  /**
+   * @description  To get the selected ContainerList
+   * @function getContainerList
+   * @param selectTarget  - selcted control or group
+   */
+  getContainerList (selectTarget: string) {
+    const containerList: string[] = []
+    const controlContainer = (selectTarget: string) => {
+      for (let i in this.userformData[this.userFormId]) {
+        const controlData = this.userformData[this.userFormId][i]
+        if (
+          controlData.controls.length > 0 &&
+          controlData.controls.includes(selectTarget)
+        ) {
+          containerList.push(i)
+          controlContainer(i)
+        }
+      }
+    }
+    const getControlId = (selectTarget: string) => {
+      const userData = this.userformData[this.userFormId]
+      for (let i in userData) {
+        const controlData = userData[i]
+        if (controlData.properties.GroupID === selectTarget) {
+          return i
+        }
+      }
+    }
+    if (selectTarget) {
+      const controlId = selectTarget.startsWith('group')
+        ? getControlId(selectTarget)
+        : selectTarget
+      if (controlId) {
+        controlContainer(controlId)
+      }
+    }
+    return containerList
+  }
+
   addNewPage () {
     const tabControlData = JSON.parse(
       JSON.stringify(this.userformData[this.userFormId][this.controlId])
@@ -246,7 +310,9 @@ export default class ContextMenu extends Vue {
     this.selectControl({
       userFormId: this.userFormId,
       select: {
-        container: [this.userFormId],
+        container: isGroup
+          ? this.getContainerList(controlList[0])
+          : this.getContainerList(selControl[0]),
         selected: isGroup ? controlList : [selControl]
       }
     })
@@ -331,7 +397,10 @@ export default class ContextMenu extends Vue {
     }
     this.selectControl({
       userFormId: this.userFormId,
-      select: { container: [this.containerId], selected: [updateGroupId] }
+      select: {
+        container: this.getContainerList(updateGroupId),
+        selected: [updateGroupId]
+      }
     })
     this.createGroup(updateGroupId)
   }
@@ -344,7 +413,7 @@ export default class ContextMenu extends Vue {
     const controlObjectList = [
       ...this.userformData[this.userFormId][this.containerId].controls
     ]
-    const selecedGroup = []
+    const selecedGroup: string[] = []
     for (const val of controlObjectList) {
       const controlGroupId: string = this.userformData[this.userFormId][val]
         .properties.GroupID!
@@ -360,7 +429,7 @@ export default class ContextMenu extends Vue {
       this.selectControl({
         userFormId: this.userFormId,
         select: {
-          container: [this.containerId],
+          container: this.getContainerList(selecedGroup[0]),
           selected: [...selecedGroup]
         }
       })
@@ -372,7 +441,7 @@ export default class ContextMenu extends Vue {
    * @function cutControl
    */
   cutControl () {
-    this.copyControl()
+    this.copyControl('cut')
     this.clickDelete()
   }
 
@@ -380,32 +449,70 @@ export default class ContextMenu extends Vue {
    * @description To update the copied controls in respective container present in respective userform
    * @function copyControl
    */
-  copyControl () {
-    const targetControlObj: Array<controlData> = []
-    const targetId: string[] = []
-    const selected = this.selectedControls[this.userFormId].selected
-    for (let i of selected) {
-      if (i.startsWith('group')) {
-        for (const j in this.userformData[this.userFormId]) {
-          if (
-            !i.startsWith('ID_USERFORM') &&
-            this.userformData[this.userFormId][j].properties.GroupID === i
-          ) {
-            targetControlObj.push(this.userformData[this.userFormId][j])
-            targetId.push(j)
-          }
-        }
-      } else {
-        targetControlObj.push(this.userformData[this.userFormId][i])
-        targetId.push(i)
-      }
-    }
+  copyControl (type: string) {
+    const selContainer = this.selectedControls[this.userFormId].container[0]
+    const selSelected = this.selectedControls[this.userFormId].selected
+    const userFormData = this.userformData[this.userFormId]
+
     this.updateCopyControlList({
       userFormId: this.userFormId,
-      parentId: this.selectedControls[this.userFormId].container[0],
-      targetId: targetId,
-      targetObject: JSON.parse(JSON.stringify(targetControlObj))
+      parentId: selContainer,
+      targetId: selSelected,
+      type: type
     })
+
+    const recCopyControl = (daTarget: string) => {
+      const daTargetControls = userFormData[daTarget].controls
+      if (daTargetControls.length > 0) {
+        for (let i = 0, limit = daTargetControls.length; i < limit; i++) {
+          const controlObject = JSON.parse(
+            JSON.stringify(userFormData[daTargetControls[i]])
+          )
+          const ctrlObj = { ...controlObject, controls: [] }
+          this.addCopiedControl({
+            userFormId: this.userFormId,
+            controlId: daTarget,
+            addId: daTargetControls[i],
+            item: ctrlObj
+          })
+          recCopyControl(daTargetControls[i])
+        }
+      }
+    }
+
+    for (const key of selSelected) {
+      if (!key.startsWith('group')) {
+        const controlObject = JSON.parse(JSON.stringify(userFormData[key]))
+        const ctrlObj = { ...controlObject, controls: [] }
+        this.addCopiedControl({
+          userFormId: this.userFormId,
+          controlId: this.userFormId,
+          addId: key,
+          item: ctrlObj
+        })
+        recCopyControl(key)
+      } else {
+        for (let ctrlId in userFormData) {
+          const controlProp = userFormData[ctrlId].properties.GroupID
+          if (controlProp) {
+            if (controlProp === key) {
+              const controlObject = JSON.parse(
+                JSON.stringify(userFormData[ctrlId])
+              )
+              const ctrlObj = { ...controlObject, controls: [] }
+              this.addCopiedControl({
+                userFormId: this.userFormId,
+                controlId: this.userFormId,
+                addId: ctrlId,
+                item: ctrlObj
+              })
+              recCopyControl(ctrlId)
+            }
+          }
+        }
+      }
+    }
+    console.log('add', this.copiedControl)
   }
 
   /**
@@ -413,106 +520,317 @@ export default class ContextMenu extends Vue {
    * @function pasteControl
    */
   pasteControl () {
-    let lastControlId = -1
-    let updateSeelctedControl: string[] = []
-    let oldGroupId: string[] = []
-    let newGroupId: string[] = []
-    for (let i = 0; i < this.copyControlList.targetObject.length; i++) {
-      if (
-        this.copyControlList.targetObject[i].properties.GroupID &&
-        !oldGroupId.includes(
-          this.copyControlList.targetObject[i].properties.GroupID!
-        )
-      ) {
-        oldGroupId.push(
-          this.copyControlList.targetObject[i].properties.GroupID!
-        )
-      }
-    }
-    for (let j in oldGroupId) {
-      const newId = this.createGroupId()
-      newGroupId.push(newId)
-      let groupArray: string[] = [
-        ...this.groupedControls[this.userFormId]!.groupArray!,
-        newId
-      ]
-      this.updateGroup({
-        userFormId: this.userFormId,
-        groupArray: groupArray!
-      })
-    }
+    if (this.copyControlList.type === 'copy') {
+      const selContainer = this.copyControlList.parentId
+      const selSelected = this.copyControlList.targetId
+      const userFormData = this.userformData[this.userFormId]
+      const presentGroupId: string[] = []
+      const newGroupId: string[] = []
+      const oldControlId: string[] = []
+      const newControlId: string[] = []
 
-    for (let i = 0; i < this.copyControlList.targetId.length; i++) {
-      let lastControlId = -1
-      const selectedControlName:
-        | string
-        | undefined = this.copyControlList.targetId[i]
-          .replace(/[0-9]/g, '')
-          .split('_')
-          .pop()
-      const userformControlIds = Object.keys(
-        this.userformData[this.userFormId]
-      )
-      for (let i = 0; i < userformControlIds.length; i++) {
-        if (userformControlIds[i].indexOf(selectedControlName!) !== -1) {
-          const IdNum =
-            userformControlIds[i].split(selectedControlName!).pop() || '-1'
-          const pasreId = parseInt(IdNum, 10)
-          if (!isNaN(pasreId) && lastControlId < pasreId) {
-            lastControlId = pasreId
+      for (const key in this.copiedControl[this.userFormId]) {
+        const controlProp = this.copiedControl[this.userFormId][key].properties
+          .GroupID
+        if (controlProp && !presentGroupId.includes(controlProp)) {
+          presentGroupId.push(controlProp)
+        }
+      }
+      for (let j in presentGroupId) {
+        const newId = this.createGroupId()
+        newGroupId.push(newId)
+      }
+
+      const recCopyControl = (daTarget: string) => {
+        const daTargetControls = userFormData[daTarget].controls
+        if (daTargetControls.length > 0) {
+          for (let i = 0, limit = daTargetControls.length; i < limit; i++) {
+            const key = daTargetControls[i]
+            let lastControlId = -1
+            const selectedControlName: string | undefined = key
+              .replace(/[0-9]/g, '')
+              .split('_')
+              .pop()
+            const userformControlIds = Object.keys(userFormData)
+            for (let i = 0; i < userformControlIds.length; i++) {
+              if (userformControlIds[i].indexOf(selectedControlName!) !== -1) {
+                const IdNum =
+                  userformControlIds[i].split(selectedControlName!).pop() ||
+                  '-1'
+                const pasreId = parseInt(IdNum, 10)
+                if (!isNaN(pasreId) && lastControlId < pasreId) {
+                  lastControlId = pasreId
+                }
+              }
+            }
+            const controlObj = this.copiedControl[this.userFormId][key]
+            lastControlId += 1
+            const controlID:
+              | string
+              | undefined = `ID_${selectedControlName}${lastControlId}`
+            let groupIdIndex = -1
+            groupIdIndex = presentGroupId.findIndex(
+              (val) => controlObj.properties.GroupID
+            )
+            const item: controlData = {
+              ...controlObj,
+              properties: {
+                ...controlObj.properties,
+                ID: controlID!,
+                GroupID: groupIdIndex !== -1 ? newGroupId[groupIdIndex] : ''
+              }
+            }
+            const removeControl = [
+              ...this.userformData[this.userFormId][daTarget].controls
+            ]
+            const removeIndex = removeControl.findIndex((val) => val === key)
+            removeControl.splice(removeIndex, 1)
+            this.setChildControls({
+              userFormId: this.userFormId,
+              containerId: daTarget,
+              targetControls: removeControl
+            })
+            this.addControl({
+              userFormId: this.userFormId,
+              controlId: daTarget,
+              addId: controlID,
+              item: item
+            })
+            recCopyControl(controlID)
           }
         }
       }
 
-      const controlObj = this.copyControlList.targetObject[i]
-      const selCtrlIndex = oldGroupId.findIndex(
-        (val) => val === controlObj.properties.GroupID
-      )
-      lastControlId += 1
-      const controlID:
-        | string
-        | undefined = `ID_${selectedControlName}${lastControlId}`
-      const item: controlData = {
-        ...controlObj,
-        properties: {
-          ...controlObj.properties,
-          ID: controlID!,
-          Left: controlObj.properties.Left! + 10,
-          Top: controlObj.properties.Top! + 10,
-          GroupID: selCtrlIndex !== -1 ? newGroupId[selCtrlIndex] : ''
+      for (const key of selSelected) {
+        if (!key.startsWith('group')) {
+          oldControlId.push(key)
+          let lastControlId = -1
+          const selectedControlName: string | undefined = key
+            .replace(/[0-9]/g, '')
+            .split('_')
+            .pop()
+          const userformControlIds = Object.keys(userFormData)
+          for (let i = 0; i < userformControlIds.length; i++) {
+            if (userformControlIds[i].indexOf(selectedControlName!) !== -1) {
+              const IdNum =
+                userformControlIds[i].split(selectedControlName!).pop() || '-1'
+              const pasreId = parseInt(IdNum, 10)
+              if (!isNaN(pasreId) && lastControlId < pasreId) {
+                lastControlId = pasreId
+              }
+            }
+          }
+          const controlObj = this.copiedControl[this.userFormId][key]
+          lastControlId += 1
+          const controlID:
+            | string
+            | undefined = `ID_${selectedControlName}${lastControlId}`
+          newControlId.push(controlID)
+          let groupIdIndex = -1
+          groupIdIndex = presentGroupId.findIndex(
+            (val) => controlObj.properties.GroupID
+          )
+          const item: controlData = {
+            ...controlObj,
+            properties: {
+              ...controlObj.properties,
+              ID: controlID!,
+              Left: controlObj.properties.Left! + 10,
+              Top: controlObj.properties.Top! + 10,
+              GroupID: groupIdIndex !== -1 ? newGroupId[groupIdIndex] : ''
+            }
+          }
+          this.addControl({
+            userFormId: this.userFormId,
+            controlId: this.containerId,
+            addId: controlID,
+            item: item
+          })
+          recCopyControl(controlID)
+        } else {
+          for (let ctrlId in this.copiedControl[this.userFormId]) {
+            const controlProp = this.copiedControl[this.userFormId][ctrlId]
+              .properties.GroupID
+            if (controlProp) {
+              if (controlProp === key) {
+                let lastControlId = -1
+                const selectedControlName: string | undefined = ctrlId
+                  .replace(/[0-9]/g, '')
+                  .split('_')
+                  .pop()
+                const userformControlIds = Object.keys(userFormData)
+                for (let i = 0; i < userformControlIds.length; i++) {
+                  if (
+                    userformControlIds[i].indexOf(selectedControlName!) !== -1
+                  ) {
+                    const IdNum =
+                      userformControlIds[i].split(selectedControlName!).pop() ||
+                      '-1'
+                    const pasreId = parseInt(IdNum, 10)
+                    if (!isNaN(pasreId) && lastControlId < pasreId) {
+                      lastControlId = pasreId
+                    }
+                  }
+                }
+                const controlObj = this.copiedControl[this.userFormId][ctrlId]
+                lastControlId += 1
+                const controlID:
+                  | string
+                  | undefined = `ID_${selectedControlName}${lastControlId}`
+                let groupIdIndex = -1
+                groupIdIndex = presentGroupId.findIndex(
+                  (val) => controlObj.properties.GroupID
+                )
+                const item: controlData = {
+                  ...controlObj,
+                  properties: {
+                    ...controlObj.properties,
+                    ID: controlID!,
+                    Left: controlObj.properties.Left! + 10,
+                    Top: controlObj.properties.Top! + 10,
+                    GroupID:
+                      groupIdIndex !== -1 ? newGroupId[groupIdIndex] : ''
+                  }
+                }
+                this.addControl({
+                  userFormId: this.userFormId,
+                  controlId: this.containerId,
+                  addId: controlID,
+                  item: item
+                })
+                recCopyControl(controlID)
+              }
+            }
+          }
         }
       }
-      if (item.properties.GroupID === '') {
-        updateSeelctedControl.push(controlID)
-      } else {
-        if (!updateSeelctedControl.includes(item.properties.GroupID!)) {
-          updateSeelctedControl.push(item.properties.GroupID!)
-        }
+      for (let j in presentGroupId) {
+        const newId = this.createGroupId()
+        let groupArray: string[] = [
+          ...this.groupedControls[this.userFormId]!.groupArray!,
+          newId
+        ]
+        this.updateGroup({
+          userFormId: this.userFormId,
+          groupArray: groupArray!
+        })
       }
-      this.addControl({
-        userFormId: this.userFormId,
-        controlId: this.containerId,
-        addId: controlID,
-        item: item
-      })
-    }
-    for (let j of updateSeelctedControl) {
-      if (j.startsWith('group')) {
+      for (let j of newGroupId) {
         this.createGroup(j)
       }
-    }
-    this.selectControl({
-      userFormId: this.userFormId,
-      select: {
-        container: [this.containerId],
-        selected: updateSeelctedControl
+      const newSelected: string[] = []
+      for (const control of selSelected) {
+        if (control.startsWith('group')) {
+          const index = presentGroupId.findIndex((val) => val === control)
+          newSelected.push(newGroupId[index])
+        } else {
+          const index = oldControlId.findIndex((val) => val === control)
+          newSelected.push(newControlId[index])
+        }
       }
-    })
+      this.selectControl({
+        userFormId: this.userFormId,
+        select: {
+          container: this.getContainerList(newSelected[0]),
+          selected: newSelected
+        }
+      })
+    } else if (this.copyControlList.type === 'cut') {
+      const selContainer = this.copyControlList.parentId
+      const selSelected = this.copyControlList.targetId
+      if (this.containerId === selContainer) {
+        const userFormData = this.copiedControl[this.userFormId]
+        const recCopyControl = (daTarget: string) => {
+          const daTargetControls = userFormData[daTarget].controls
+          if (daTargetControls.length > 0) {
+            for (let i = 0, limit = daTargetControls.length; i < limit; i++) {
+              const key = daTargetControls[i]
+              const controlObj = JSON.parse(
+                JSON.stringify(this.copiedControl[this.userFormId][key])
+              )
+              const item: controlData = {
+                ...controlObj
+              }
+              const removeControl = [
+                ...this.userformData[this.userFormId][daTarget].controls
+              ]
+              const removeIndex = removeControl.findIndex((val) => val === key)
+              removeControl.splice(removeIndex, 1)
+              this.setChildControls({
+                userFormId: this.userFormId,
+                containerId: daTarget,
+                targetControls: removeControl
+              })
+              this.addControl({
+                userFormId: this.userFormId,
+                controlId: daTarget,
+                addId: key,
+                item: item
+              })
+              recCopyControl(key)
+            }
+          }
+        }
+        for (const key of selSelected) {
+          if (!key.startsWith('group')) {
+            const controlObj = JSON.parse(
+              JSON.stringify(this.copiedControl[this.userFormId][key])
+            )
+            const item: controlData = {
+              ...controlObj
+            }
+            this.addControl({
+              userFormId: this.userFormId,
+              controlId: this.containerId,
+              addId: key,
+              item: item
+            })
+            recCopyControl(key)
+          } else {
+            for (let ctrlId in userFormData) {
+              const controlProp = userFormData[ctrlId].properties.GroupID
+              if (controlProp) {
+                if (controlProp === key) {
+                  const controlObj = JSON.parse(
+                    JSON.stringify(this.copiedControl[this.userFormId][ctrlId])
+                  )
+                  const item: controlData = {
+                    ...controlObj
+                  }
+                  this.addControl({
+                    userFormId: this.userFormId,
+                    controlId: this.containerId,
+                    addId: ctrlId,
+                    item: item
+                  })
+                  recCopyControl(ctrlId)
+                }
+              }
+            }
+          }
+        }
+        this.selectControl({
+          userFormId: this.userFormId,
+          select: {
+            container: this.getContainerList(selSelected[0]),
+            selected: selSelected
+          }
+        })
+      } else {
+        this.updateCopyControlList({
+          userFormId: this.userFormId,
+          parentId: this.containerId,
+          targetId: selSelected,
+          type: 'copy'
+        })
+        this.pasteControl()
+      }
+    }
   }
 
   /**
    * @description To delete controls in respective container present in respective userform
-   * @function pasteControl
+   * @function clickDelete
    */
   clickDelete () {
     const selControl = []
@@ -542,15 +860,26 @@ export default class ContextMenu extends Vue {
     }
     this.selectControl({
       userFormId: this.userFormId,
-      select: { container: [this.containerId], selected: [this.containerId] }
+      select: {
+        container: this.getContainerList(
+          this.selectedControls[this.userFormId].container[0]
+        ),
+        selected: [this.selectedControls[this.userFormId].container[0]]
+      }
     })
+    console.log('thisdata', this.userformData)
   }
   updateAction (event: KeyboardEvent) {
+    console.log('enetred the context menu')
     let controlActionName = ''
     if (event.ctrlKey && event.code === 'KeyA') {
       controlActionName = 'ID_SELECTALL'
     } else if (event.ctrlKey && event.code === 'KeyC') {
-      controlActionName = 'ID_COPY'
+      if (
+        this.selectedControls[this.userFormId].selected[0] !== this.userFormId
+      ) {
+        controlActionName = 'ID_COPY'
+      }
     } else if (event.keyCode === 46) {
       controlActionName = 'ID_DELETE'
     } else if (event.ctrlKey && event.code === 'KeyV') {
@@ -574,11 +903,13 @@ export default class ContextMenu extends Vue {
           const curBottom = curProp.Height! + curProp.Top!
           const value = curProp.Top! + (propValue - curBottom)
           this.updateControlProperty('Top', value, ctrlSel[index])
-        } if (propName === 'selCenter') {
+        }
+        if (propName === 'selCenter') {
           const curCenter = curProp.Width! / 2
           const value = propValue - curCenter
           this.updateControlProperty('Left', value, ctrlSel[index])
-        } if (propName === 'selMiddle') {
+        }
+        if (propName === 'selMiddle') {
           const curMiddle = curProp.Height! / 2
           const value = propValue - curMiddle
           this.updateControlProperty('Top', value, ctrlSel[index])
@@ -604,10 +935,10 @@ export default class ContextMenu extends Vue {
       const selBottom = ctrlProp.Height! + ctrlProp.Top!
       this.updatePropVal('selBottom', selBottom)
     } else if (subVal === 'ID_ALIGNCENTER') {
-      const selCenter = ctrlProp.Left! + (ctrlProp.Width! / 2)
+      const selCenter = ctrlProp.Left! + ctrlProp.Width! / 2
       this.updatePropVal('selCenter', selCenter)
     } else if (subVal === 'ID_ALIGNMIDDLE') {
-      const selMiddle = ctrlProp.Top! + (ctrlProp.Height! / 2)
+      const selMiddle = ctrlProp.Top! + ctrlProp.Height! / 2
       this.updatePropVal('selMiddle', selMiddle)
     } else if (subVal === 'ID_WIDTH') {
       this.updatePropVal('Width', ctrlProp.Width!)

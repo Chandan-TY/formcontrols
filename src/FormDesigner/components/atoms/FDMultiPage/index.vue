@@ -1,52 +1,350 @@
 <template>
-  <div class="outer-page" :style="outerArea">
-    <div class="pages">
-      <div id="container" class="move" ref="scrolling">
-        <div class="page" v-for="(value,key) in values" :key="key" >
-          <input name="page-group-1" :id="value.id" type="radio" ref="check1"/>
-          <label :for="value.id">{{value.tabLabel}}</label>
-          <div class="content"></div>
+<div>
+  <div class="outer-page" :style="pageStyleObj"
+      @click.stop="selectedItem"
+      @mousedown="controlEditMode">
+    <div class="pages" :style="styleTabsObj">
+      <div class="move" ref="scrolling" :style="styleMoveObj">
+        <div class="page" v-for="(value, key) in controls" :key="key" :style="getTabStyle">
+          <FDControlTabs @setValue="setValue" @isChecked="isChecked" :getMouseCursorData="getMouseCursorData" :setFontStyle="setFontStyle" @tempStretch="tempStretch" :data="data" :pageValue="value" :indexValue="key" :pageData="pageData(value)" :isRunMode="isRunMode" :isEditMode="isEditMode" :isItalic="isItalic" :tempStretch="tempStretch" :tempWeight="tempWeight"/>
         </div>
       </div>
+        <div class="content"
+          :style="styleContentObj"
+          ref="contentRef"
+          :title="properties.ControlTipText">
+          <div :style="containerDivStyle">
+            <Container
+              :contextMenuType="contextMenuType"
+              :viewMenu="viewMenu"
+              :userFormId="userFormId"
+              :controlId="selectedPageID"
+              :containerId="selectedPageID"
+              :isEditMode="isEditMode"
+              :left="left"
+              :top="top"
+              ref="containerRef"
+              @closeMenu="closeMenu"
+              @openMenu="(e, parentID, controlID) => showContextMenu(e, parentID, controlID)" />
+            </div>
+          </div>
+          <!-- </div> -->
+      <!-- </div> -->
       <div></div>
-      <div :style="{display:isScroll?'block':'none'}">
-        <button class="left-button" ></button>
-        <button class="right-button" ></button>
+      <div :style="getScrollButtonStyleObj">
+          <button class="left-button" @click="leftmove"></button>
+          <button class="right-button" @click="rightmove"></button>
       </div>
+    </div>
+  </div>
+  <div
+      id="right-click-menu"
+      tabindex="0"
+      @blur.stop="closeMenu"
+      :style="{ top: top, left: left, display: viewMenu ? 'block' : 'none' }"
+    >
+    <ContextMenu
+        :values="contextMenuValue"
+        :controlId="controlId"
+        :selectedTab="updatedValue"
+        :data="data"
+        :userFormId="userFormId"
+        @closeMenu="closeMenu"
+      />
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import { Component, Prop, Model, Emit } from 'vue-property-decorator'
+import { Component, Prop, Ref, Watch } from 'vue-property-decorator'
 import FdControlVue from '@/api/abstract/FormDesigner/FdControlVue'
-import {
-  IupdateControl,
-  IselectControl,
-  IupdateUserform
-} from '@/storeModules/fd/actions'
 import { State, Action } from 'vuex-class'
+import FdContainerVue from '@/api/abstract/FormDesigner/FdContainerVue'
+import { controlProperties } from '@/FormDesigner/controls-properties'
+import ContextMenu from '../FDContextMenu/index.vue'
+import { tabsContextMenu } from '../../../models/tabsContextMenu'
+import Vue from 'vue'
+import { KeyValueProp, ScrollBarProp } from '@/FormDesigner/controls-properties-types'
+import FDControlTabs from '@/FormDesigner/components/atoms/FDControlTabs/index.vue'
 
 @Component({
-  name: 'FDMultiPage'
+  name: 'FDMultiPage',
+  components: {
+    ContextMenu,
+    FDControlTabs,
+    Container: () =>
+      import('@/FormDesigner/components/organisms/FDContainer/index.vue')
+  }
 })
-export default class FDMultiPage extends FdControlVue {
-  propControlData: controlData;
-  isScroll=true
-    outerArea={ width: '285px',
-      height: '140px' }
-  values = [
-    {
-      id: 'page-1',
-      tabLabel: 'Page One',
-      tabContent: 'Label'
-    },
-    {
-      id: 'page-2',
-      tabLabel: 'Page Two',
-      tabContent: 'ToggleButton'
+export default class FDMultiPage extends FdContainerVue {
+  @State((state) => state.fd.userformData) userformData!: userformData;
+  @Prop() isEditMode: boolean;
+  @Prop({ required: true, type: String }) public userFormId!: string;
+  @Ref('scrolling') scrolling:HTMLDivElement
+  @Ref('contentRef') contentRef:HTMLDivElement
+
+  viewMenu?: boolean = false;
+  top: string = '0px';
+  left: string = '0px';
+  contextMenuValue: Array<IcontextMenu> = tabsContextMenu;
+  updatedValue: number = 0;
+  selectedPageID: string = ''
+  tempTabWidth: number = 0
+
+  pageData (value: string): controlData {
+    return this.userformData[this.userFormId][value]
+  }
+
+  get pageStyleObj () {
+    const controlProp = this.properties
+    let display = ''
+    if (this.isRunMode) {
+      display = controlProp.Visible ? 'inline-block' : 'none'
+    } else {
+      display = 'inline-block'
     }
-  ];
+    return {
+      left: `${controlProp.Left}px`,
+      width: `${controlProp.Width}px`,
+      height: `${controlProp.Height}px`,
+      top: `${controlProp.Top}px`,
+      cursor:
+        controlProp.MousePointer !== 0 || controlProp.MouseIcon !== ''
+          ? this.getMouseCursorData
+          : 'default',
+      display: display
+    }
+  }
+
+  /**
+   * @description style object is passed to :style attribute in div tag
+   * dynamically changing the styles of the component based on propControlData
+   * @function styleTabsObj
+   *
+   */
+  protected get styleTabsObj (): Partial<CSSStyleDeclaration> {
+    const controlProp = this.properties
+    return {
+      backgroundColor: controlProp.BackColor,
+      cursor:
+        controlProp.MousePointer !== 0 || controlProp.MouseIcon !== ''
+          ? this.getMouseCursorData
+          : 'default'
+    }
+  }
+
+  /**
+   * @description style object is passed to :style attribute in div tag
+   * dynamically changing the styles of the component based on propControlData
+   * @function styleMoveObj
+   *
+   */
+  protected get styleMoveObj (): Partial<CSSStyleDeclaration> {
+    const controlProp = this.properties
+    return {
+      whiteSpace: controlProp.MultiRow === true ? 'break-spaces' : 'nowrap',
+      zIndex: controlProp.MultiRow === true ? '100' : '',
+      display: controlProp.Style === 2 ? 'none' : 'inline-block',
+      height: controlProp.TabOrientation === 2 || controlProp.TabOrientation === 3 ? '100%' : '',
+      overflow: 'hidden'
+    }
+  }
+
+  get containerDivStyle () {
+    let zoomVal = this.selectedPageData.properties.Zoom! / 100
+    return {
+      height: '100%',
+      width: '100%',
+      position: 'relative',
+      backgroundImage: `url(${this.selectedPageData.properties.Picture})`,
+      backgroundSize: this.selectedPageData.properties.Picture === '' ? '' : this.getSizeMode,
+      backgroundRepeat: this.getRepeatData,
+      backgroundPosition: this.selectedPageData.properties.Picture === '' ? '' : this.getPosition,
+      zoom: zoomVal + ''
+    }
+  }
+  /**
+   * @description style object is passed to :style attribute in button tags
+   * dynamically changing the styles of the component based on propControlData
+   * @function getScrollButtonStyleObj
+   *
+   */
+  protected get getScrollButtonStyleObj (): Partial<CSSStyleDeclaration> {
+    const controlProp = this.properties
+    const tabsLength = this.properties.TabFixedWidth! > 0 ? this.controls.length * this.properties.TabFixedWidth! + (10 * this.controls!.length) : this.controls.length * 30 + (10 * this.controls!.length)
+    const tabsHeight = this.properties.TabFixedHeight! > 0 ? this.controls.length * this.properties.TabFixedHeight! + (10 * this.controls!.length) : this.controls.length * 20 + (10 * this.controls!.length)
+
+    return {
+      zIndex: '3',
+      marginTop:
+        controlProp.TabOrientation === 2 || controlProp.TabOrientation === 3
+          ? `${controlProp.Height! - 161}px` : controlProp.TabOrientation === 1 ? `${controlProp.Height! - 22}px` : '0px',
+      transform:
+        controlProp.TabOrientation === 2
+          ? 'rotate(90deg)'
+          : this.transformScrollButtonStyle,
+      display: controlProp.TabOrientation === 0 || controlProp.TabOrientation === 1 ? ((this.properties.Width! > 44) ? ((tabsLength > this.properties.Width!) ? 'block' : 'none') : 'none') : controlProp.TabOrientation === 2 || controlProp.TabOrientation === 3 ? ((this.properties.Height! > 44) ? ((tabsHeight > this.properties.Height!) ? 'block' : 'none') : 'none') : 'none',
+      position: controlProp.TabOrientation === 0 || controlProp.TabOrientation === 1 ? 'absolute' : '',
+      right: '-14px',
+      top: '0px'
+    }
+  }
+
+  isChecked (value: selectedTab) {
+    this.updatedValue = value.indexValue
+    this.selectedPageID = value.pageValue
+    this.updateDataModel({ propertyName: 'Value', value: value.indexValue })
+  }
+  leftmove () {
+    const scrollRef = this.scrolling
+    if (this.properties.TabOrientation === 0 || this.properties.TabOrientation === 1) {
+    scrollRef.scrollLeft! -= 50
+    } else {
+    scrollRef.scrollTop! -= 50
+    }
+  }
+  rightmove () {
+    const scrollRef = this.scrolling
+    let tempScrollTop = scrollRef.scrollTop!
+    if (this.properties.TabOrientation === 0 || this.properties.TabOrientation === 1) {
+    scrollRef.scrollLeft! += 50
+    } else {
+      tempScrollTop += 50
+      scrollRef.scrollTop = tempScrollTop
+    }
+  }
+  setValue (value: number) {
+    this.updatedValue = value
+    this.updateDataModel({ propertyName: 'Value', value: value })
+    return true
+  }
+  /**
+   * @description style object is passed to :style attribute in div tag
+   * dynamically changing the styles of the component based on propControlData
+   * @function getTabStyle
+   *
+   */
+  protected get getTabStyle (): Partial<CSSStyleDeclaration> {
+    const controlProp = this.properties
+    return {
+      display:
+        controlProp.TabOrientation === 0 || controlProp.TabOrientation === 1
+          ? 'inline-block'
+          : 'block',
+      cursor:
+        controlProp.MousePointer !== 0 || controlProp.MouseIcon !== ''
+          ? this.getMouseCursorData
+          : 'default'
+    }
+  }
+
+  /**
+   * @description getRepeat returns string value from
+   * controlProperties.extraDataRepeatProp
+   * @function getRepeat
+   */
+  protected get getRepeatData (): string {
+    const picture = this.selectedPageData.properties.Picture!
+    const pictureTiling = this.selectedPageData.properties.PictureTiling!
+    const pictureSizeMode = this.selectedPageData.properties.PictureSizeMode!
+    return controlProperties.getRepeatDataProp(picture, pictureTiling, pictureSizeMode)
+  }
+
+  /**
+   * @description style object is passed to :style attribute in div tag
+   * dynamically changing the styles of the component based on propControlData
+   * @function styleContentObj
+   *
+   */
+  protected get styleContentObj (): Partial<CSSStyleDeclaration> {
+    const controlProp = this.properties
+    // let zoomVal = this.selectedPageData.properties.Zoom! / 100
+    return {
+      zIndex: controlProp.MultiRow === true ? '-1' : '',
+      display:
+      controlProp.Height! < controlProp.TabFixedHeight! ? 'none' : controlProp.Width! < controlProp.TabFixedWidth! ? 'none'
+        : controlProp.Style === 1
+          ? 'none'
+          : controlProp.Width! < 30 || controlProp.Height! < 30
+            ? 'none'
+            : 'block',
+      top: controlProp.TabOrientation === 0 ? controlProp.TabFixedHeight! > 0 ? (controlProp.TabFixedHeight! + 12) + 'px' : '23px' : '0px',
+      height: controlProp.TabOrientation === 0 || controlProp.TabOrientation === 1
+        ? controlProp.TabFixedHeight! > 0 ? (controlProp.Height! - controlProp.TabFixedHeight! - 5) + 'px' : `${controlProp.Height! - 35}px`
+        : `${controlProp.Height! - 12}px`,
+      width:
+        controlProp.TabOrientation === 0 || controlProp.TabOrientation === 1
+          ? 'calc(100% - 3px)'
+          : controlProp.TabFixedWidth! > 0 ? (controlProp.Width! - controlProp.TabFixedWidth! - 15) + 'px' : 'calc(100% - 44px)',
+      left: controlProp.TabOrientation === 2 ? controlProp.TabFixedWidth! > 0 ? (controlProp.TabFixedWidth! + 12) + 'px' : '40px' : '0px',
+      cursor:
+        controlProp.MousePointer !== 0 || controlProp.MouseIcon !== ''
+          ? this.getMouseCursorData
+          : 'default',
+      padding: '0px',
+      overflow: 'hidden',
+      overflowX: this.getScrollBarPage.overflowX,
+      overflowY: this.getScrollBarPage.overflowY
+    }
+  }
+
+  /**
+   * @description getPosition returns string value from
+   * controlProperties.picturePositionProp
+   * @function getPosition
+   * @returns string value
+   */
+  protected get getPosition (): string {
+    const picture = this.selectedPageData.properties.Picture!
+    const pictureAlignment = this.selectedPageData.properties.PictureAlignment!
+    const pictureSizeMode = this.selectedPageData.properties.PictureSizeMode!
+    return controlProperties.getPositionProp(picture, pictureAlignment, pictureSizeMode)
+  }
+
+  /**
+   * @description getSizeMode returns string value from
+   * controlProperties.pictureSizeModeProp
+   * @function getSizeMode
+   * @returns string value
+   */
+  protected get getSizeMode (): string {
+    const index:number = this.selectedPageData.properties.PictureSizeMode!
+    return controlProperties.getSizeModeProp(index)
+  }
+
+  get getScrollBarPage () {
+    const keepScrollBar:number = this.selectedPageData.properties.KeepScrollBarsVisible!
+    const scrollBar:number = this.selectedPageData.properties.ScrollBars!
+    return controlProperties.setScrollBarProp(keepScrollBar, scrollBar)
+  }
+
+  get selectedPageData () {
+    if (this.selectedPageID) {
+      return this.userformData[this.userFormId][this.selectedPageID]
+    } else {
+      return this.userformData[this.userFormId][this.controls[0]]
+    }
+  }
+
+  mounted () {
+    this.selectedPageID = this.controls[0]
+    const divElement = this.scrolling.children
+    let width = 0
+    if (this.contentRef) {
+      const scrollRef = this.contentRef
+    scrollRef.scrollLeft! = 20
+    }
+    if (divElement && this.properties.TabFixedWidth === 0) {
+      for (let i = 0; i < divElement.length; i++) {
+        if (divElement[i].children[1] instanceof HTMLElement) {
+          let offsetWidth = (divElement[i].children[1] as HTMLElement).offsetWidth
+          if (offsetWidth > width) {
+            width = offsetWidth
+          }
+        }
+      }
+    }
+  }
 }
 </script>
 
@@ -55,29 +353,33 @@ export default class FDMultiPage extends FdControlVue {
   background-color: rgb(238, 238, 238);
   overflow-y: hidden;
   overflow-x: hidden;
+  box-sizing: border-box;
+  width: 0px;
+  height: 0px;
+  left: 0px;
+  top: 0px;
 }
 .pages {
-  display: grid;
-  grid-template-columns: 1fr 40px 30px;
-  position: relative;
-  clear: both;
+  /* display: grid; */
   margin: 0;
-  /* margin-left: 10px; */
   width: calc(100%);
-  height: calc(100% + 22px);
+  height: calc(100%);
   white-space: nowrap;
   overflow-x: hidden;
   overflow-y: hidden;
 }
 .left-button {
   position: relative;
+  outline: none;
   background-image: url("../../../../assets/left-arrow-img.png");
   background-size: 30%;
   background-position: center;
   background-repeat: no-repeat;
-  border: 1px solid gray;
+  border: 2px solid white;
+  border-right-color: gray;
+  border-bottom-color: gray;
   top: 3px;
-  right: 19px;
+  right: 15px;
   width: 22px;
   height: 18px;
   padding: 0;
@@ -87,13 +389,16 @@ export default class FDMultiPage extends FdControlVue {
 }
 .right-button {
   position: relative;
+  outline: none;
   background-image: url("../../../../assets/right-arrow-img.png");
   background-size: 30%;
   background-position: center;
   background-repeat: no-repeat;
-  border: 1px solid gray;
+  border: 2px solid white;
+  border-right-color: gray;
+  border-bottom-color: gray;
   top: 3px;
-  right: 19px;
+  right: 15px;
   width: 22px;
   height: 18px;
   padding: 0;
@@ -102,16 +407,15 @@ export default class FDMultiPage extends FdControlVue {
   z-index: 5;
 }
 .move {
-  height: -webkit-fill-available;
   width: 100%;
-  display: inline-block;
-  overflow-x: auto;
-  overflow-y: hidden;
+  display: grid;
+  /* grid-template-columns: 1fr; */
 }
 .page {
-  display: inline-block;
+  /* display: inline-block; */
   vertical-align: top;
   z-index: 1;
+  overflow: hidden;
 }
 .scroll-page {
   z-index: 2;
@@ -119,16 +423,23 @@ export default class FDMultiPage extends FdControlVue {
 .page label {
   border: 0.1px solid white;
   background-color: rgb(238, 238, 238);
-  display: inline-block;
-  padding: 5px 5px 1px 5px;
+  /* display: inline-block; */
+  padding: 5px 5px 5px 5px;
   margin: 0;
   cursor: pointer;
   position: relative;
+  top: 0px;
 }
 .page [type="radio"] {
   display: none;
 }
-::-webkit-scrollbar {
+::-webkit-scrollbar.move {
+  display: none;
+  width: 0;
+  height: 1em;
+  background-color: rgb(238, 238, 238);
+}
+::-webkit-scrollbar.content {
   width: 0;
   height: 1em;
   background-color: rgb(238, 238, 238);
@@ -165,12 +476,12 @@ export default class FDMultiPage extends FdControlVue {
   width: 0px;
 }
 
-/* ::-webkit-scrollbar-thumb {
-        background: #eee;
-        border: 1px solid lightgray;
-        border-right-color: gray;
-        border-bottom-color: gray;
-    } */
+::-webkit-scrollbar-thumb {
+  background-color: darkgrey;
+  outline: 1px solid slategrey;
+  height: 5px;
+}
+
 .page .content {
   position: absolute;
   white-space: normal;
@@ -194,16 +505,44 @@ export default class FDMultiPage extends FdControlVue {
   border: 0.1px solid white;
   box-shadow: 2px 1px gray;
 }
-.page [type="radio"]:checked ~ label {
-  border-right: 2px solid gray;
-  border-bottom: none;
-  border-radius: 3px;
-  z-index: 2;
-}
+
 .page [type="radio"]:checked ~ label ~ .content {
   z-index: 1;
 }
 .content {
   overflow: auto;
+}
+#right-click-menu {
+  background: #fafafa;
+  border: 1px solid #bdbdbd;
+  box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 3px 1px -2px rgba(0, 0, 0, 0.2),
+    0 1px 5px 0 rgba(0, 0, 0, 0.12);
+  display: block;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  position: absolute;
+  width: 100px;
+  z-index: 999999;
+}
+
+#right-click-menu li {
+  border-bottom: 1px solid #e0e0e0;
+  margin: 0;
+  padding: 5px 5px;
+}
+
+#right-click-menu li:last-child {
+  border-bottom: none;
+}
+
+#right-click-menu li:hover {
+  background: #1e88e5;
+  color: #fafafa;
+}
+
+.spanClass {
+  text-decoration: underline;
+  text-underline-position: under;
 }
 </style>

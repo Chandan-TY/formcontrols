@@ -1,4 +1,5 @@
 import { label1, label2, label3, label4 } from '../models/LabelDataSample'
+import { Page1, Page2, Page3, Page4, Page5, Page6 } from '../models/Page'
 
 export const userDataNew = {
   ID_USERFORM1: {
@@ -71,6 +72,8 @@ export const userDataNew = {
         BorderStyle: 1,
         ControlSource: '',
         ControlTipText: 'helptext',
+        CursorStartPosition: 0,
+        CursorEndPosition: 0,
         DragBehavior: 0,
         Enabled: true,
         EnterFieldBehavior: 0,
@@ -117,9 +120,7 @@ export const userDataNew = {
       },
       controls: [],
       extraDatas: {
-        ControlSourceValue: 'hi',
-        CursorStartPosition: '',
-        CursorEndPosition: ''
+        ControlSourceValue: 'hi'
       },
       type: 'TextBox'
     },
@@ -134,6 +135,8 @@ export const userDataNew = {
         BorderStyle: 1,
         ControlSource: 'a1',
         ControlTipText: 'helptext',
+        CursorStartPosition: 0,
+        CursorEndPosition: 0,
         DragBehavior: 0,
         Enabled: true,
         EnterFieldBehavior: 0,
@@ -180,9 +183,7 @@ export const userDataNew = {
       },
       controls: [],
       extraDatas: {
-        ControlSourceValue: 'hi',
-        CursorStartPosition: '',
-        CursorEndPosition: ''
+        ControlSourceValue: 'hi'
       },
       type: 'Textbox'
     },
@@ -233,6 +234,7 @@ export const userDataNew = {
         ID: 'ID_ComboBox1',
         RowSource: 'a1:c9',
         SelectionMargin: true,
+        ShowDropButtonWhen: 2,
         SpecialEffect: 2,
         Style: 0,
         TabIndex: 6,
@@ -568,7 +570,7 @@ export const userDataNew = {
         ScrollTop: 0,
         ScrollWidth: 0,
         SpecialEffect: 3,
-        TabIndex: 12,
+        TabIndex: 0,
         TabStop: true,
         Tag: '',
         Top: 100,
@@ -577,7 +579,7 @@ export const userDataNew = {
         Zoom: 100,
         GroupID: ''
       },
-      controls: ['ID_Label1', 'ID_Label2'],
+      controls: [],
       extraDatas: {
       },
       type: 'Frame'
@@ -657,8 +659,8 @@ export const userDataNew = {
         Style: 0,
         Name: 'TabStrip1',
         ID: 'ID_TabStrip1',
-        TabFixedHeight: 30,
-        TabFixedWidth: 30,
+        TabFixedHeight: 0,
+        TabFixedWidth: 0,
         TabIndex: 4,
         TabOrientation: 0,
         TabStop: true,
@@ -707,11 +709,55 @@ export const userDataNew = {
       },
       type: 'TabStrip'
     },
+    ID_TabStrip2: {
+      properties: {
+        BackColor: '#eeeeee',
+        ControlTipText: 'TabStrip',
+        Enabled: true,
+        Font: {
+          FontName: 'Arial',
+          FontSize: 15,
+          FontBold: false,
+          FontItalic: false,
+          FontUnderline: false,
+          FontStrikethrough: false,
+          FontStyle: 'Arial Narrow Italic'
+        },
+        ForeColor: '#111111',
+        Height: 300,
+        HelpContextID: 0,
+        Left: 50,
+        MouseIcon: '',
+        MousePointer: 0,
+        MultiRow: false,
+        Style: 0,
+        Name: 'TabStrip1',
+        ID: 'ID_TabStrip2',
+        TabFixedHeight: 0,
+        TabFixedWidth: 0,
+        TabIndex: 4,
+        TabOrientation: 0,
+        TabStop: true,
+        Tag: '',
+        Top: 20,
+        // ListIndex
+        Value: 0,
+        Visible: true,
+        Width: 300,
+        GroupID: ''
+      },
+      controls: [],
+      extraDatas: {
+        Tabs: [
+        ]
+      },
+      type: 'TabStrip'
+    },
     ID_MultiPage1: {
       properties: {
         ID: 'MultiPage1',
         Name: 'MultiPage1',
-        BackColor: '#111111',
+        BackColor: '#eeeeee',
         ControlTipText: '',
         Enabled: true,
         Font: {
@@ -720,13 +766,13 @@ export const userDataNew = {
           FontBold: false,
           FontItalic: false,
           FontUnderline: false,
-          FontStrikethrough: true,
+          FontStrikethrough: false,
           FontStyle: 'Arial Narrow Italic'
         },
         ForeColor: '#111111',
-        Height: 40,
+        Height: 200,
         HelpcontextID: 0,
-        Left: 20,
+        Left: 40,
         MultiRow: false,
         Style: 0,
         TabFixedHeight: 0,
@@ -735,18 +781,24 @@ export const userDataNew = {
         TabOrientation: 0,
         TabStop: true,
         Tag: '',
-        Top: 0,
-        // ListIndex
+        Top: 20,
         Value: 0,
         Visible: true,
-        Width: 100,
-        GroupID: ''
+        Width: 400,
+        GroupID: '',
+        Index: 0
       },
-      controls: ['Page1', 'Page2'],
+      controls: ['Page1', 'Page2', 'Page3', 'Page4', 'Page5', 'Page6'],
       extraDatas: {
       },
       type: 'MultiPage'
     },
+    Page1: Page1,
+    Page2: Page2,
+    Page3: Page3,
+    Page4: Page4,
+    Page5: Page5,
+    Page6: Page6,
     ID_ScrollBar1: {
       properties: {
         BackColor: '#eeeeee',

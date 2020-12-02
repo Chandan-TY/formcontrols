@@ -14,11 +14,18 @@
         :disabled="getDisableValue"
         type="checkbox"
         class="control-input visually-hidden" />
-      <span class="control-indicator" :style="controlIndicatorStyleObj"></span
+      <span
+        class="control-indicator"
+        :style="controlIndicatorStyleObj"
+        ref="spanRef"
+      ></span
     ></label>
-    <div>
+    <div :style="pictureDivStyle">
       <div ref="divAutoSize" :style="divcssStyleProperty">
-        <span v-if="!syncIsEditMode || isRunMode" @click="isRunMode && makeChecked($event)">
+        <span
+          v-if="!syncIsEditMode || isRunMode"
+          @click="isRunMode && makeChecked($event)"
+        >
           <span>{{ computedCaption.afterbeginCaption }}</span>
           <span class="spanStyle">{{
             computedCaption.acceleratorCaption
@@ -29,6 +36,7 @@
           v-else
           :editable="isRunMode === false && syncIsEditMode"
           :caption="properties.Caption"
+          :style="editCssObj"
           @updateCaption="updateCaption"
           @releaseEditMode="setContentEditable($event, false)"
         >
@@ -52,6 +60,22 @@ import FDEditableText from '@/FormDesigner/components/atoms/FDEditableText/index
 export default class FDCheckBox extends Mixins(FdControlVue) {
   @Ref('checkboxInput') checkboxInput!: HTMLInputElement;
   @Ref('divAutoSize') autoSizecheckbox!: HTMLDivElement;
+  @Ref('spanRef') spanRef!: HTMLSpanElement;
+
+  /**
+   * @description  watches Enabled property and the sets the backgroundColor
+   * @function checkEnabled
+   */
+  @Watch('properties.Enabled', {
+    deep: true
+  })
+  checkEnabled (newVal: boolean, oldVal: boolean) {
+    if (!this.properties.Enabled) {
+      this.spanRef.style.backgroundColor = 'rgba(220, 220, 220, 1)'
+    } else {
+      this.spanRef.style.backgroundColor = 'white'
+    }
+  }
 
   /**
    * @description  watches Value property and the sets the checked
@@ -61,13 +85,20 @@ export default class FDCheckBox extends Mixins(FdControlVue) {
     deep: true
   })
   verifyValue (newVal: string, oldVal: string) {
-    if (!this.isRunMode) {
-      let tempValue = newVal.toLowerCase()
-      const checkDiv = this.checkboxInput
-      if (tempValue === 'true') {
-        checkDiv.checked = true
-      } else if (tempValue === 'false') {
-        checkDiv.checked = false
+    if (this.properties.Enabled && !this.properties.Locked) {
+      if (!this.isRunMode) {
+        let tempValue = newVal.toLowerCase()
+        const checkDiv = this.checkboxInput
+        if (tempValue === 'true') {
+          this.spanRef.style.backgroundColor = 'white'
+          checkDiv.checked = true
+        } else if (tempValue === 'false') {
+          this.spanRef.style.backgroundColor = 'white'
+          checkDiv.checked = false
+        } else {
+          checkDiv.checked = true
+          this.spanRef.style.backgroundColor = 'rgba(220, 220, 220, 1)'
+        }
       }
     }
   }
@@ -77,8 +108,27 @@ export default class FDCheckBox extends Mixins(FdControlVue) {
    * @function makeChecked
    */
   makeChecked () {
-    const checkDiv = this.checkboxInput
-    checkDiv.checked = !checkDiv.checked
+    if (!this.getDisableValue) {
+      this.tripleState += 1
+      const checkDiv = this.checkboxInput
+      if (!this.properties.TripleState) {
+        checkDiv.checked = !checkDiv.checked
+        const tempval = checkDiv.checked
+        this.updateDataModel({ propertyName: 'Value', value: tempval })
+      } else {
+        if (this.tripleState % 3 === 0) {
+          checkDiv.checked = true
+          this.spanRef.style.backgroundColor = 'rgba(220, 220, 220, 1)'
+        } else {
+          this.spanRef.style.backgroundColor = 'white'
+          checkDiv.checked = !checkDiv.checked
+          this.updateDataModel({
+            propertyName: 'Value',
+            value: checkDiv.checked
+          })
+        }
+      }
+    }
   }
 
   /**
@@ -103,7 +153,8 @@ export default class FDCheckBox extends Mixins(FdControlVue) {
   get controlIndicatorStyleObj () {
     const controlProp = this.properties
     return {
-      boxShadow: controlProp.SpecialEffect === 0 ? '0px 0px gray' : '-1px -1px gray'
+      boxShadow:
+        controlProp.SpecialEffect === 0 ? '0px 0px gray' : '-1px -1px gray'
     }
   }
 
@@ -137,10 +188,11 @@ export default class FDCheckBox extends Mixins(FdControlVue) {
       width: `${controlProp.Width}px`,
       height: `${controlProp.Height}px`,
       top: `${controlProp.Top}px`,
-      backgroundColor: controlProp.BackColor,
+      backgroundColor: controlProp.BackStyle
+        ? controlProp.BackColor
+        : 'transparent',
       borderColor: controlProp.BorderColor,
       border: this.getBorderStyle,
-      background: controlProp.BackStyle ? controlProp.BackColor : 'transparent',
       whiteSpace: controlProp.WordWrap ? 'pre-wrap' : 'pre',
       wordBreak: controlProp.WordWrap ? 'break-all' : 'normal',
       color:
@@ -149,9 +201,9 @@ export default class FDCheckBox extends Mixins(FdControlVue) {
         controlProp.MousePointer !== 0 || controlProp.MouseIcon !== ''
           ? this.getMouseCursorData
           : 'default',
-      fontFamily: font.FontStyle ? font.FontStyle : font.FontName,
+      fontFamily: font.FontStyle! !== '' ? this.setFontStyle : font.FontName!,
       fontSize: `${font.FontSize}px`,
-      fontStyle: font.FontItalic ? 'italic' : '',
+      fontStyle: font.FontItalic || this.isItalic ? 'italic' : '',
       textDecoration:
         font.FontStrikethrough === true && font.FontUnderline === true
           ? 'underline line-through'
@@ -160,11 +212,18 @@ export default class FDCheckBox extends Mixins(FdControlVue) {
             : font.FontStrikethrough
               ? 'line-through'
               : '',
-      fontWeight: font.FontBold ? 'bold' : '',
+      fontWeight: font.FontBold
+        ? 'bold'
+        : font.FontStyle !== ''
+          ? this.tempWeight
+          : '',
+      fontStretch: font.FontStyle !== '' ? this.tempStretch : '',
+
       display: display,
       direction: controlProp.Alignment ? 'ltr' : 'rtl',
       overflow: 'hidden',
       gridTemplateColumns: '12px auto ',
+      gridTemplateRows: '100%',
       gap: '2px',
       alignItems: font.FontSize! > 17 ? 'center' : '',
       alignContent: 'center',
@@ -182,17 +241,47 @@ export default class FDCheckBox extends Mixins(FdControlVue) {
     const controlProp = this.properties
     return {
       overflow: 'hidden',
-      textAlign:
+      height: '100%',
+      display: 'flex',
+      justifyContent:
         controlProp.TextAlign === 0
-          ? 'left'
+          ? 'flex-start'
           : controlProp.TextAlign === 1
             ? 'center'
-            : 'right',
+            : 'flex-end',
+      alignItems: 'center'
+    }
+  }
+
+  /**
+   * @description style object is passed to :style attribute in div tag
+   * dynamically changing the styles of the component based on properties
+   * @function pictureDivStyle
+   *
+   */
+  get pictureDivStyle () {
+    const controlProp = this.properties
+    return {
+      height: '100%',
+      display: 'table-cell',
       backgroundImage: `url(${controlProp.Picture})`,
       backgroundRepeat: this.getRepeat,
       backgroundPosition: this.getPosition,
       backgroundPositionX: this.getPositionX,
       backgroundPositionY: this.getPositionY
+    }
+  }
+
+  /**
+   * @description style object is passed to :style attribute in tag
+   * dynamically changing the styles of the component based on properties
+   * @function editCssObj
+   *
+   */
+  protected get editCssObj (): Partial<CSSStyleDeclaration> {
+    const controlProp = this.properties
+    return {
+      backgroundImage: 'none'
     }
   }
 
@@ -241,8 +330,10 @@ export default class FDCheckBox extends Mixins(FdControlVue) {
 }
 
 .outer-check {
-  height: 30px;
-  width: 150px;
+  height: 0px;
+  width: 0px;
+  left: 0px;
+  top: 0px;
   min-width: 12px;
   min-height: 13px;
   background-color: rgb(238, 238, 238);
@@ -284,6 +375,7 @@ export default class FDCheckBox extends Mixins(FdControlVue) {
 
 .spanStyle {
   text-decoration: underline;
+  text-underline-position: under;
 }
 
 .menu {

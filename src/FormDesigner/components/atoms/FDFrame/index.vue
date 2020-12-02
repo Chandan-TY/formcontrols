@@ -4,8 +4,9 @@
     :style="cssStyleProperty"
     :title="properties.ControlTipText"
     :tabindex="properties.TabIndex"
-    @keydown.delete.stop="deleteItem"
-    @keydown.enter="setContentEditable($event, true)"
+    @keydown.ctrl.exact.stop="handleKeyDown"
+    @keydown.delete.stop.exact="deleteFrame"
+    @keydown.enter.exact="setContentEditable($event, true)"
     @click.stop="!isEditMode ? selectedItem : addControlObj($event)"
     @contextmenu.stop="showContextMenu($event, userFormId, controlId)"
     @mousedown="frameMouseDown"
@@ -61,13 +62,14 @@ import { controlProperties } from '@/FormDesigner/controls-properties'
 export default class FDFrame extends FdContainerVue {
   @Ref('containerRef') readonly containerRef!: Container;
   @Ref('frame') readonly frame!: FDFrame;
-  @Prop({ required: true, type: Boolean }) public readonly isEditMode : boolean
+  @Prop({ required: true, type: Boolean }) public readonly isEditMode: boolean;
   get dragSelectorStyle () {
     return {
       height: `${this.data.properties.Height}px`,
       width: `${this.data.properties.Width}px`
     }
   }
+  mode: boolean = false;
 
   /**
    * @description Returns string value for CSS background style
@@ -142,9 +144,9 @@ export default class FDFrame extends FdContainerVue {
         controlProp.MousePointer !== 0 || controlProp.MouseIcon !== ''
           ? `${this.getMouseCursorData} !important`
           : 'default !important',
-      fontFamily: font.FontStyle ? font.FontStyle : font.FontName,
+      fontFamily: font.FontStyle! !== '' ? this.setFontStyle : font.FontName!,
       fontSize: `${font.FontSize}px`,
-      fontStyle: font.FontItalic ? 'italic' : '',
+      fontStyle: font.FontItalic || this.isItalic ? 'italic' : '',
       textDecoration:
         font.FontStrikethrough === true && font.FontUnderline === true
           ? 'underline line-through'
@@ -153,7 +155,12 @@ export default class FDFrame extends FdContainerVue {
             : font.FontStrikethrough
               ? 'line-through'
               : '',
-      fontWeight: font.FontBold ? 'bold' : '',
+      fontWeight: font.FontBold
+        ? 'bold'
+        : font.FontStyle !== ''
+          ? this.tempWeight
+          : '',
+      fontStretch: font.FontStyle !== '' ? this.tempStretch : '',
       border: controlProp.BorderStyle
         ? `1px solid ${controlProp.BorderColor}`
         : '2px solid gray',
@@ -221,10 +228,33 @@ export default class FDFrame extends FdContainerVue {
   }
 
   frameMouseDown (e: MouseEvent) {
-    if (this.isEditMode) {
-      e.stopPropagation()
+    this.selectedItem(e)
+    const selContainer = this.selectedControls[this.userFormId].container[0]
+    if (selContainer === this.controlId) {
+      this.deActiveControl()
     }
-    this.deActiveControl()
+  }
+
+  // @Watch('isEditMode', { deep: true })
+  // updateEditModeValue (newValue: boolean, oldValue: boolean) {
+  //   this.mode = newValue
+  //   console.log('isEditMode', oldValue, newValue, this.isEditMode)
+  // }
+  /**
+   * @description To perform ContextMenu actions(for example: selectAll, paste etc.) on UserForm  and Control
+   * @function handleKeyDown
+   * @param event  - it is of type MouseEvent
+   * @event keydown
+   */
+  handleKeyDown (event: KeyboardEvent) {
+    this.containerRef.refContextMenu.updateAction(event)
+  }
+  deleteFrame (event: KeyboardEvent) {
+    if (this.controlId === this.selectedControls[this.userFormId].selected[0]) {
+      this.deleteItem(event)
+    } else {
+      this.handleKeyDown(event)
+    }
   }
 }
 </script>

@@ -62,7 +62,7 @@ export interface IupdateCopyControlList {
   userFormId: string
   parentId: string
   targetId: Array<string>
-  targetObject: Array<controlData>
+  type: string
 }
 
 // export interface IselectControl extends selectedControls {}
@@ -105,6 +105,7 @@ type AugmentedActionContext = {
 
 interface FdActions {
   addControl(context: AugmentedActionContext, payload: IaddControl): void
+  addCopiedControl(context: AugmentedActionContext, payload: IaddControl): void
   addUserform(context: AugmentedActionContext, payload: IaddUserform): void
   updateControl(context: AugmentedActionContext, payload: IupdateControl): void
   updateControlExtraData(context: AugmentedActionContext, payload: IupdateControlExtraData): void
@@ -128,6 +129,9 @@ const actions: ActionTree<fdState, rootState> & FdActions = {
   },
   addControl (context, payload) {
     context.commit('addControl', payload)
+  },
+  addCopiedControl (context, payload) {
+    context.commit('addCopiedControl', payload)
   },
   updateUserFormProp (context, payload) {
     context.commit('updateUserFormProp', payload)

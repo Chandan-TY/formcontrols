@@ -88,5 +88,9 @@ export default class FDImage extends Mixins(FdControlVue) {
   /* position: relative; */
   overflow: hidden;
   box-sizing: border-box;
+  width: 0px;
+  height: 0px;
+  left: 0px;
+  top: 0px;
 }
 </style>
