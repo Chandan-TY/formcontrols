@@ -1,62 +1,23 @@
 <template>
   <div>
     <div
-      class="outer"
-      :style="styleOuterObj"
+      class="outer-page"
+      :style="pageStyleObj"
       @contextmenu="contextMenuVisible($event, -1)"
       @click.stop="selectedItem"
       @mousedown="controlEditMode"
+      :title="properties.ControlTipText"
     >
-      <div class="tabs" :style="styleTabsObj">
-        <div id="container" class="move" ref="scrolling" :style="styleMoveObj">
+      <div class="pages" :style="styleTabsObj" :title="properties.ControlTipText">
+        <div class="move" ref="scrolling" :style="styleMoveObj">
           <div
-            class="tab"
+            class="page"
             v-for="(value, key) in extraDatas.Tabs"
             :key="key"
             :style="getTabStyle"
           >
-          <FDControlTabs :data="data" :pageValue="value" :indexValue="key" :pageData="value" :isRunMode="isRunMode" :isEditMode="isEditMode"/>
-            <!-- <input
-              v-if="properties.Value !== ''"
-              name="properties.ID"
-              :id="value.Name"
-              type="radio"
-              :checked="key === properties.Value ? setValue(key) : false"
-              :disabled="getDisableValue"
-              @click.right="rightClickSelect(key)"
-            />
-            <label
-              @click="!getDisableValue?isChecked(key):''"
-              @contextmenu.stop="contextMenuVisible($event, key)"
-              :class="[
-                properties.Style === 1
-                  ? properties.TabOrientation === 2
-                    ? 'forLeft forButton'
-                    : 'forButton'
-                  : properties.Style === 0
-                  ? properties.TabOrientation === 2
-                    ? 'forLeft'
-                    : 'forTab'
-                  : '',
-              ]"
-              :for="value.Name"
-              :title="extraDatas.Tabs[key].ToolTip"
-              :style="styleLabelObj"
-            >
-              <span v-if="value.Accelerator === ''">{{ value.Caption }}</span>
-              <span v-else
-                ><span>{{
-                  value.Caption | afterbeginCaption(value.Accelerator)
-                }}</span>
-                <span class="spanClass">{{
-                  value.Caption | acceleratorCaption(value.Accelerator)
-                }}</span>
-                <span>{{
-                  value.Caption | beforeendCaption(value.Accelerator)
-                }}</span></span
-              >
-            </label> -->
-            <div
+          <FDControlTabs @setValue="setValue" @isChecked="isChecked" :getMouseCursorData="getMouseCursorData" :setFontStyle="setFontStyle" :data="data" @tempStretch="tempStretch" :pageValue="value" :indexValue="key" :pageData="value" :isRunMode="isRunMode" :isEditMode="isEditMode"  :isItalic="isItalic" :tempStretch="tempStretch" :tempWeight="tempWeight"/>
+                      <div
               class="content"
               :style="styleContentObj"
               :title="properties.ControlTipText"
@@ -65,9 +26,7 @@
         </div>
         <div></div>
         <div
-          :style="[
-            getScrollButtonStyleObj
-          ]"
+          :style="getScrollButtonStyleObj"
         >
           <button class="left-button" @click="leftmove"></button>
           <button class="right-button" @click="rightmove"></button>
@@ -106,36 +65,8 @@ import Vue from 'vue'
 @Component({
   name: 'FDTabStrip',
   components: {
-    ContextMenu
-  },
-  filters: {
-    afterbeginCaption (value: string, acc: string = '') {
-      if (acc !== '') {
-        acc = acc[0]
-      } else {
-        return undefined
-      }
-      const data = controlProperties.acceleratorProp(value, acc)
-      return data.afterbeginCaption
-    },
-    acceleratorCaption (value: string, acc: string = '') {
-      if (acc !== '') {
-        acc = acc[0]
-      } else {
-        return undefined
-      }
-      const data = controlProperties.acceleratorProp(value, acc)
-      return data.acceleratorCaption
-    },
-    beforeendCaption (value: string, acc: string = '') {
-      if (acc !== '') {
-        acc = acc[0]
-      } else {
-        return undefined
-      }
-      const data = controlProperties.acceleratorProp(value, acc)
-      return data.beforeendCaption
-    }
+    ContextMenu,
+    FDControlTabs
   }
 })
 export default class FDTabStrip extends FdControlVue {
@@ -145,7 +76,6 @@ export default class FDTabStrip extends FdControlVue {
   @Ref('tabstripContextMenu') tabstripContextMenu: HTMLDivElement
   @Ref('scrolling') scrolling:HTMLDivElement
   isScroll = true;
-  // values: Array<tabsItems> = []
   viewMenu?: boolean = false;
   top: string = '0px';
   left: string = '0px';
@@ -153,16 +83,7 @@ export default class FDTabStrip extends FdControlVue {
   tempScrollWidth: number;
   tempScrollHeight: number;
   updatedValue: number = 0;
-
-  get getDisableValue () {
-    if (this.isRunMode || this.isEditMode) {
-      return (
-        this.properties.Enabled === false
-      )
-    } else {
-      return true
-    }
-  }
+  tempTabWidth: number = 0;
 
   rightClickSelect (value: number) {
     this.updateDataModel({ propertyName: 'Value', value: value })
@@ -173,7 +94,7 @@ export default class FDTabStrip extends FdControlVue {
       if (selected !== -1) {
         this.top = `${e.offsetY}px`
         this.left = `${e.offsetX}px`
-        this.isChecked(selected)
+        // this.isChecked(selected.indexValue)
       } else {
         this.top = `${e.offsetY + 30}px`
         this.left = `${e.offsetX}px`
@@ -189,12 +110,22 @@ export default class FDTabStrip extends FdControlVue {
     }
   }
 
+  /**
+   * @description takes the index Value and sets the Value property
+   * @function setValue
+   *
+   */
   setValue (value: number) {
     this.updatedValue = value
     this.updateDataModel({ propertyName: 'Value', value: value })
     return true
   }
 
+  /**
+   * @description takes the ref of the div and determines the scrollLeft and scrollTop
+   * @function leftmove
+   *
+   */
   leftmove () {
     const scrollRef = this.scrolling
     if (this.properties.TabOrientation === 0 || this.properties.TabOrientation === 1) {
@@ -203,9 +134,14 @@ export default class FDTabStrip extends FdControlVue {
     scrollRef.scrollTop! -= 50
     }
   }
+
+  /**
+   * @description takes the ref of the div and determines the scrollLeft and scrollTop
+   * @function rightmove
+   *
+   */
   rightmove () {
     const scrollRef = this.scrolling
-    // scrollRef.scrollLeft! = scrollRef.scrollLeft! + 50
     let tempScrollTop = scrollRef.scrollTop!
     if (this.properties.TabOrientation === 0 || this.properties.TabOrientation === 1) {
     scrollRef.scrollLeft! += 50
@@ -215,17 +151,23 @@ export default class FDTabStrip extends FdControlVue {
     }
   }
 
-  isChecked (value: number) {
-    this.updatedValue = value
-    this.updateDataModel({ propertyName: 'Value', value: value })
+  /**
+   * @description takes the index Value and pageValue and set the Value property
+   * @function isChecked
+   *
+   */
+  isChecked (value: selectedTab) {
+    this.updatedValue = value.indexValue
+    this.updateDataModel({ propertyName: 'Value', value: value.indexValue })
   }
+
   /**
    * @description style object is passed to :style attribute in div tag
    * dynamically changing the styles of the component based on propControlData
-   * @function styleOuterObj
+   * @function pageStyleObj
    *
    */
-  protected get styleOuterObj (): Partial<CSSStyleDeclaration> {
+  protected get pageStyleObj (): Partial<CSSStyleDeclaration> {
     const controlProp = this.properties
     let display = ''
     if (this.isRunMode) {
@@ -234,7 +176,6 @@ export default class FDTabStrip extends FdControlVue {
       display = 'inline-block'
     }
     return {
-      // position: 'relative',
       left: `${controlProp.Left}px`,
       width: `${controlProp.Width}px`,
       height: `${controlProp.Height}px`,
@@ -255,13 +196,23 @@ export default class FDTabStrip extends FdControlVue {
    */
   protected get styleMoveObj (): Partial<CSSStyleDeclaration> {
     const controlProp = this.properties
+    const a = ['bottom', 'top']
+    let bottomTopStyle = {}
+    if (controlProp.TabOrientation === 1) {
+      bottomTopStyle = { [a[0]]: '0px' }
+    } else if (controlProp.TabOrientation === 0) {
+      bottomTopStyle = { [a[1]]: '0px' }
+    }
     return {
+      position: controlProp.TabOrientation === 1 || controlProp.TabOrientation === 3 ? 'absolute' : 'inherit',
+      ...bottomTopStyle,
       whiteSpace: controlProp.MultiRow === true ? 'break-spaces' : 'nowrap',
       zIndex: controlProp.MultiRow === true ? '100' : '',
       display: controlProp.Style === 2 ? 'none' : 'inline-block',
       height: controlProp.TabOrientation === 2 || controlProp.TabOrientation === 3 ? '100%' : '',
-      overflowX: 'auto',
-      overflowY: 'auto'
+      width: controlProp.TabOrientation === 2 || controlProp.TabOrientation === 3 ? 'fit-content' : '100%',
+      right: controlProp.TabOrientation === 3 ? '0px' : '',
+      overflow: 'hidden'
     }
   }
 
@@ -273,28 +224,22 @@ export default class FDTabStrip extends FdControlVue {
    */
   protected get getScrollButtonStyleObj (): Partial<CSSStyleDeclaration> {
     const controlProp = this.properties
-    const tabsLength = this.extraDatas.Tabs!.length * this.properties.TabFixedWidth! + (10 * this.extraDatas.Tabs!.length)
-    const tabsHeight = this.extraDatas.Tabs!.length * this.properties.TabFixedHeight! + (10 * this.extraDatas.Tabs!.length)
+    const tabsLength = this.properties.TabFixedWidth! > 0 ? this.extraDatas.Tabs!.length * this.properties.TabFixedWidth! + (10 * this.extraDatas.Tabs!.length) : this.extraDatas.Tabs!.length * 30 + (10 * this.extraDatas.Tabs!.length)
+    const tabsHeight = this.properties.TabFixedHeight! > 0 ? this.extraDatas.Tabs!.length * this.properties.TabFixedHeight! + (10 * this.extraDatas.Tabs!.length) : this.extraDatas.Tabs!.length * 20 + (10 * this.extraDatas.Tabs!.length)
 
     return {
+      position: 'absolute',
       zIndex: '3',
       marginTop:
         controlProp.TabOrientation === 2 || controlProp.TabOrientation === 3
-          ? `${controlProp.Height! - 225}px` : controlProp.TabOrientation === 1 ? `${controlProp.Height! - 22}px` : '0px',
+          ? `${controlProp.Height! - 20}px` : controlProp.TabOrientation === 1 ? `${controlProp.Height! - 22}px` : '0px',
       transform:
         controlProp.TabOrientation === 2
           ? 'rotate(90deg)'
           : this.transformScrollButtonStyle,
-      // display: controlProp.Style === 2 ? 'none' : 'inline-block',
-      display: controlProp.TabOrientation === 0 || controlProp.TabOrientation === 1 ? ((this.properties.Width! > 44) ? ((tabsLength > this.properties.Width!) ? 'block' : 'none') : 'none') : controlProp.TabOrientation === 2 || controlProp.TabOrientation === 3 ? ((this.properties.Height! > 44) ? ((tabsHeight > this.properties.Height!) ? 'block' : 'none') : 'none') : 'none',
-      position: controlProp.TabOrientation === 0 || controlProp.TabOrientation === 1 ? 'absolute' : '',
-      right: '-14px'
-      // overflow: 'hidden'
-      // right:
-      //   controlProp.TabOrientation === 0 || controlProp.TabOrientation === 1
-      //     ? this.tempScrollWidth - controlProp.Width! + 30 + 'px'
-      //     : '0px'
-      // bottom: controlProp.TabOrientation === 2 || controlProp.TabOrientation === 3 ? ((this.tempScrollHeight - controlProp.Height!) - 30 + 'px') : '0px'
+      display: controlProp.Style === 2 ? 'none' : controlProp.TabOrientation === 0 || controlProp.TabOrientation === 1 ? ((this.properties.Width! > 44) ? ((tabsLength > this.properties.Width!) ? 'block' : 'none') : 'none') : controlProp.TabOrientation === 2 || controlProp.TabOrientation === 3 ? ((this.properties.Height! > 44) ? ((tabsHeight > this.properties.Height!) ? 'block' : 'none') : 'none') : 'none',
+      right: controlProp.TabOrientation === 3 ? '-14px' : controlProp.TabOrientation === 2 ? `${controlProp.Width! - 40}px` : '-14px',
+      top: '0px'
     }
   }
 
@@ -308,62 +253,6 @@ export default class FDTabStrip extends FdControlVue {
     const controlProp = this.properties
     return {
       backgroundColor: controlProp.BackColor,
-      alignItems:
-        controlProp.TabOrientation === 0 ||
-        controlProp.TabOrientation === 3 ||
-        controlProp.TabOrientation === 2
-          ? 'baseline'
-          : 'flex-end',
-      justifyContent:
-        controlProp.TabOrientation === 3 ? 'flex-end' : 'flex-start',
-      gridTemplateColumns:
-        controlProp.TabOrientation === 3 || controlProp.TabOrientation === 2
-          ? ''
-          : '1fr 0px 30px',
-      cursor:
-        controlProp.MousePointer !== 0 || controlProp.MouseIcon !== ''
-          ? this.getMouseCursorData
-          : 'default'
-    }
-  }
-
-  /**
-   * @description style object is passed to :style attribute in label tag
-   * dynamically changing the styles of the component based on propControlData
-   * @function styleLabelObj
-   *
-   */
-  protected get styleLabelObj (): Partial<CSSStyleDeclaration> {
-    const controlProp = this.properties
-    const font: font = controlProp.Font
-      ? controlProp.Font
-      : {
-        FontName: 'Arial',
-        FontSize: 10,
-        FontItalic: true,
-        FontBold: true,
-        FontUnderline: true,
-        FontStrikethrough: true
-      }
-    return {
-      color: controlProp.Enabled ? controlProp.ForeColor : this.getEnabled,
-      height: controlProp.TabFixedHeight + 'px',
-      width: controlProp.TabFixedWidth + 'px',
-      top: controlProp.TabOrientation === 1 ? '10px' : '0px',
-      fontFamily: (font.FontStyle! !== '') ? this.setFontStyle : font.FontName!,
-      fontSize: `${font.FontSize}px`,
-      fontStyle: font.FontItalic || this.isItalic ? 'italic' : '',
-      textDecoration:
-        font.FontStrikethrough === true && font.FontUnderline === true
-          ? 'underline line-through'
-          : font.FontUnderline
-            ? 'underline'
-            : font.FontStrikethrough
-              ? 'line-through'
-              : '',
-      textUnderlinePosition: 'under',
-      fontWeight: font.FontBold ? 'bold' : (font.FontStyle !== '') ? this.tempWeight : '',
-      fontStretch: (font.FontStyle !== '') ? this.tempStretch : '',
       cursor:
         controlProp.MousePointer !== 0 || controlProp.MouseIcon !== ''
           ? this.getMouseCursorData
@@ -400,23 +289,21 @@ export default class FDTabStrip extends FdControlVue {
   protected get styleContentObj (): Partial<CSSStyleDeclaration> {
     const controlProp = this.properties
     return {
-      zIndex: controlProp.MultiRow === true ? '-1' : '',
       display:
-        controlProp.Style === 1
+        controlProp.Style === 1 || controlProp.Style === 2
           ? 'none'
           : controlProp.Width! < 30 || controlProp.Height! < 30
             ? 'none'
-            : 'inline-block',
-      top: controlProp.TabOrientation === 0 ? '23px' : '0px',
-      height:
-        controlProp.TabOrientation === 0 || controlProp.TabOrientation === 1
-          ? 'calc(100% - 25px)'
-          : 'calc(100% - 2px)',
+            : 'block',
+      top: controlProp.TabOrientation === 0 ? controlProp.TabFixedHeight! > 0 ? (controlProp.TabFixedHeight! + 12) + 'px' : '33px' : controlProp.TabOrientation === 1 ? controlProp.TabFixedHeight! > 0 ? '-' + `${controlProp.Height! - 64}px` : '-' + `${controlProp.Height! - 43}px` : '0px',
+      height: controlProp.TabOrientation === 0 || controlProp.TabOrientation === 1
+        ? controlProp.TabFixedHeight! > 0 ? (controlProp.Height! - controlProp.TabFixedHeight! - 5) + 'px' : `${controlProp.Height! - 35}px`
+        : `${controlProp.Height! - 2}px`,
       width:
         controlProp.TabOrientation === 0 || controlProp.TabOrientation === 1
           ? 'calc(100% - 3px)'
-          : 'calc(100% - 44px)',
-      left: controlProp.TabOrientation === 2 ? '40px' : '0px',
+          : controlProp.TabOrientation === 3 ? `${controlProp.Width! - 30}px` : controlProp.TabFixedWidth! > 0 ? (controlProp.Width! - controlProp.TabFixedWidth! - 15) + 'px' : 'calc(100% - 44px)',
+      left: controlProp.TabOrientation === 2 ? controlProp.TabFixedWidth! > 0 ? (controlProp.TabFixedWidth! + 12) + 'px' : '40px' : controlProp.TabOrientation === 3 ? controlProp.TabFixedWidth! > 0 ? '-' + `${controlProp.Width! - 27}px` : '-' + `${controlProp.Width! - 26}px` : '0px',
       cursor:
         controlProp.MousePointer !== 0 || controlProp.MouseIcon !== ''
           ? this.getMouseCursorData
@@ -445,13 +332,22 @@ export default class FDTabStrip extends FdControlVue {
   @Watch('properties.Width', { deep: true })
   isScrollUsed (newVal: controlData, oldVal: controlData) {
     this.tempScrollWidth = this.scrolling.offsetWidth!
-    // this.tempScrollHeight = this.scrolling.offsetHeight!
     this.scrollCheck()
   }
   mounted () {
     this.tempScrollWidth = this.scrolling.offsetWidth!
-    // this.tempScrollHeight = this.scrolling.offsetHeight!
     this.scrollCheck()
+    const divElement = this.scrolling.children
+    let width = 0
+    if (divElement && this.properties.TabFixedWidth === 0) {
+      for (let i = 0; i < divElement.length; i++) {
+        let offsetWidth = (divElement[i].children[0].children[1] as HTMLElement).offsetWidth
+        if (offsetWidth > width) {
+          width = offsetWidth
+          this.tempTabWidth = width
+        }
+      }
+    }
   }
   @Emit('updateModel')
   updateDataModel (updateData: IupdateDataModel) {
@@ -465,7 +361,7 @@ export default class FDTabStrip extends FdControlVue {
 </script>
 
 <style scoped>
-.outer {
+.outer-page {
   background-color: rgb(238, 238, 238);
   overflow-y: hidden;
   overflow-x: hidden;
@@ -475,9 +371,7 @@ export default class FDTabStrip extends FdControlVue {
   left: 0px;
   top: 0px;
 }
-.tabs {
-  display: grid;
-  /* position: relative; */
+.pages {
   margin: 0;
   width: calc(100%);
   height: calc(100%);
@@ -525,32 +419,36 @@ export default class FDTabStrip extends FdControlVue {
 }
 .move {
   width: 100%;
-  display: inline-block;
+  display: grid;
 }
 
-.tab {
-  display: inline-block;
+.page {
   vertical-align: top;
   z-index: 1;
   overflow: hidden;
 }
-.scroll-tab {
+.scroll-page {
   z-index: 2;
 }
-.tab label {
+.page label {
   border: 0.1px solid white;
   background-color: rgb(238, 238, 238);
-  display: inline-block;
   padding: 5px 5px 5px 5px;
   margin: 0;
   cursor: pointer;
   position: relative;
   top: 0px;
 }
-.tab [type="radio"] {
+.page [type="radio"] {
   display: none;
 }
 ::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 1em;
+  background-color: rgb(238, 238, 238);
+}
+::-webkit-scrollbar.move {
   display: none;
   width: 0;
   height: 1em;
@@ -586,7 +484,7 @@ export default class FDTabStrip extends FdControlVue {
   width: 0px;
 }
 
-.tab .content {
+.page .content {
   position: absolute;
   white-space: normal;
   top: 23px;
@@ -608,7 +506,7 @@ export default class FDTabStrip extends FdControlVue {
   z-index: 2;
   border: 2px outset;
 }
-.tab [type="radio"]:checked ~ label.forButton {
+.page [type="radio"]:checked ~ label.forButton {
   margin: 3px;
   border-right: 2px solid gray;
   border-bottom: none;
@@ -621,7 +519,7 @@ export default class FDTabStrip extends FdControlVue {
   border-bottom: none;
   border-radius: 3px;
 }
-.tab [type="radio"]:checked ~ label.forTab {
+.page [type="radio"]:checked ~ label.forTab {
   border-right: 2px solid gray;
   border-bottom: none;
   border-radius: 3px;
@@ -631,7 +529,7 @@ export default class FDTabStrip extends FdControlVue {
   border-bottom: none;
   border-radius: 3px;
 }
-.tab [type="radio"]:checked ~ label.forLeft {
+.page [type="radio"]:checked ~ label.forLeft {
   border-bottom: 2px solid gray;
   border-radius: 3px;
   z-index: 2;
@@ -644,7 +542,7 @@ export default class FDTabStrip extends FdControlVue {
   border: 1px outset !important;
   background-color: gray !important;
 }
-.tab [type="radio"]:checked ~ label ~ .content {
+.page [type="radio"]:checked ~ label ~ .content {
   z-index: 1;
 }
 .content {

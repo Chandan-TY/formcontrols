@@ -2,18 +2,19 @@
 <div>
   <div class="outer-page" :style="pageStyleObj"
       @click.stop="selectedItem"
-      @mousedown="controlEditMode">
-    <div class="pages" :style="styleTabsObj">
+      @mousedown="controlEditMode"
+      :title="properties.ControlTipText">
+    <div class="pages" :style="styleTabsObj" :title="properties.ControlTipText">
       <div class="move" ref="scrolling" :style="styleMoveObj">
         <div class="page" v-for="(value, key) in controls" :key="key" :style="getTabStyle">
-          <FDControlTabs @setValue="setValue" @isChecked="isChecked" :getMouseCursorData="getMouseCursorData" :setFontStyle="setFontStyle" @tempStretch="tempStretch" :data="data" :pageValue="value" :indexValue="key" :pageData="pageData(value)" :isRunMode="isRunMode" :isEditMode="isEditMode" :isItalic="isItalic" :tempStretch="tempStretch" :tempWeight="tempWeight"/>
+          <FDControlTabs @setValue="setValue" @isChecked="isChecked" :getMouseCursorData="getMouseCursorData" :setFontStyle="setFontStyle" @tempStretch="tempStretch" :data="data" :pageValue="value" :indexValue="key" :pageData="pageData(value).properties" :isRunMode="isRunMode" :isEditMode="isEditMode" :isItalic="isItalic" :tempStretch="tempStretch" :tempWeight="tempWeight" :tempTabWidth="tempTabWidth" />
         </div>
       </div>
         <div class="content"
           :style="styleContentObj"
           ref="contentRef"
           :title="properties.ControlTipText">
-          <div :style="containerDivStyle">
+          <div :style="containerDivStyle" :title="properties.ControlTipText">
             <Container
               :contextMenuType="contextMenuType"
               :viewMenu="viewMenu"
@@ -21,6 +22,7 @@
               :controlId="selectedPageID"
               :containerId="selectedPageID"
               :isEditMode="isEditMode"
+              :title="properties.ControlTipText"
               :left="left"
               :top="top"
               ref="containerRef"
@@ -28,8 +30,6 @@
               @openMenu="(e, parentID, controlID) => showContextMenu(e, parentID, controlID)" />
             </div>
           </div>
-          <!-- </div> -->
-      <!-- </div> -->
       <div></div>
       <div :style="getScrollButtonStyleObj">
           <button class="left-button" @click="leftmove"></button>
@@ -91,10 +91,21 @@ export default class FDMultiPage extends FdContainerVue {
   selectedPageID: string = ''
   tempTabWidth: number = 0
 
+  /**
+   * @description takes a single page value based on the value of the control
+   * @function pageData
+   *
+   */
   pageData (value: string): controlData {
     return this.userformData[this.userFormId][value]
   }
 
+  /**
+   * @description style object is passed to :style attribute in div tag
+   * dynamically changing the styles of the component based on data
+   * @function pageStyleObj
+   *
+   */
   get pageStyleObj () {
     const controlProp = this.properties
     let display = ''
@@ -118,7 +129,7 @@ export default class FDMultiPage extends FdContainerVue {
 
   /**
    * @description style object is passed to :style attribute in div tag
-   * dynamically changing the styles of the component based on propControlData
+   * dynamically changing the styles of the component based on data
    * @function styleTabsObj
    *
    */
@@ -135,21 +146,38 @@ export default class FDMultiPage extends FdContainerVue {
 
   /**
    * @description style object is passed to :style attribute in div tag
-   * dynamically changing the styles of the component based on propControlData
+   * dynamically changing the styles of the component based on data
    * @function styleMoveObj
    *
    */
   protected get styleMoveObj (): Partial<CSSStyleDeclaration> {
     const controlProp = this.properties
+    const a = ['bottom', 'top']
+    let bottomTopStyle = {}
+    if (controlProp.TabOrientation === 1) {
+      bottomTopStyle = { [a[0]]: '0px' }
+    } else if (controlProp.TabOrientation === 0) {
+      bottomTopStyle = { [a[1]]: '0px' }
+    }
     return {
+      position: controlProp.TabOrientation === 1 || controlProp.TabOrientation === 3 ? 'absolute' : 'inherit',
+      ...bottomTopStyle,
       whiteSpace: controlProp.MultiRow === true ? 'break-spaces' : 'nowrap',
       zIndex: controlProp.MultiRow === true ? '100' : '',
       display: controlProp.Style === 2 ? 'none' : 'inline-block',
       height: controlProp.TabOrientation === 2 || controlProp.TabOrientation === 3 ? '100%' : '',
+      width: controlProp.TabOrientation === 2 || controlProp.TabOrientation === 3 ? 'fit-content' : '100%',
+      right: controlProp.TabOrientation === 3 ? '0px' : '',
       overflow: 'hidden'
     }
   }
 
+  /**
+   * @description style object is passed to :style attribute in div tag
+   * dynamically changing the styles of the component based on data
+   * @function containerDivStyle
+   *
+   */
   get containerDivStyle () {
     let zoomVal = this.selectedPageData.properties.Zoom! / 100
     return {
@@ -165,7 +193,7 @@ export default class FDMultiPage extends FdContainerVue {
   }
   /**
    * @description style object is passed to :style attribute in button tags
-   * dynamically changing the styles of the component based on propControlData
+   * dynamically changing the styles of the component based on data
    * @function getScrollButtonStyleObj
    *
    */
@@ -175,26 +203,37 @@ export default class FDMultiPage extends FdContainerVue {
     const tabsHeight = this.properties.TabFixedHeight! > 0 ? this.controls.length * this.properties.TabFixedHeight! + (10 * this.controls!.length) : this.controls.length * 20 + (10 * this.controls!.length)
 
     return {
+      position: 'absolute',
       zIndex: '3',
       marginTop:
         controlProp.TabOrientation === 2 || controlProp.TabOrientation === 3
-          ? `${controlProp.Height! - 161}px` : controlProp.TabOrientation === 1 ? `${controlProp.Height! - 22}px` : '0px',
+          ? `${controlProp.Height! - 30}px` : controlProp.TabOrientation === 1 ? `${controlProp.Height! - 22}px` : '0px',
       transform:
         controlProp.TabOrientation === 2
           ? 'rotate(90deg)'
           : this.transformScrollButtonStyle,
       display: controlProp.TabOrientation === 0 || controlProp.TabOrientation === 1 ? ((this.properties.Width! > 44) ? ((tabsLength > this.properties.Width!) ? 'block' : 'none') : 'none') : controlProp.TabOrientation === 2 || controlProp.TabOrientation === 3 ? ((this.properties.Height! > 44) ? ((tabsHeight > this.properties.Height!) ? 'block' : 'none') : 'none') : 'none',
-      position: controlProp.TabOrientation === 0 || controlProp.TabOrientation === 1 ? 'absolute' : '',
-      right: '-14px',
+      right: controlProp.TabOrientation === 3 ? '-14px' : controlProp.TabOrientation === 2 ? `${controlProp.Width! - 40}px` : '-14px',
       top: '0px'
     }
   }
 
+  /**
+   * @description takes the index Value and pageValue and set the Value property
+   * @function isChecked
+   *
+   */
   isChecked (value: selectedTab) {
     this.updatedValue = value.indexValue
     this.selectedPageID = value.pageValue
     this.updateDataModel({ propertyName: 'Value', value: value.indexValue })
   }
+
+  /**
+   * @description takes the ref of the div and determines the scrollLeft and scrollTop
+   * @function leftmove
+   *
+   */
   leftmove () {
     const scrollRef = this.scrolling
     if (this.properties.TabOrientation === 0 || this.properties.TabOrientation === 1) {
@@ -203,6 +242,12 @@ export default class FDMultiPage extends FdContainerVue {
     scrollRef.scrollTop! -= 50
     }
   }
+
+  /**
+   * @description takes the ref of the div and determines the scrollLeft and scrollTop
+   * @function rightmove
+   *
+   */
   rightmove () {
     const scrollRef = this.scrolling
     let tempScrollTop = scrollRef.scrollTop!
@@ -213,6 +258,12 @@ export default class FDMultiPage extends FdContainerVue {
       scrollRef.scrollTop = tempScrollTop
     }
   }
+
+  /**
+   * @description takes the index Value and sets the Value property
+   * @function setValue
+   *
+   */
   setValue (value: number) {
     this.updatedValue = value
     this.updateDataModel({ propertyName: 'Value', value: value })
@@ -220,7 +271,7 @@ export default class FDMultiPage extends FdContainerVue {
   }
   /**
    * @description style object is passed to :style attribute in div tag
-   * dynamically changing the styles of the component based on propControlData
+   * dynamically changing the styles of the component based on data
    * @function getTabStyle
    *
    */
@@ -252,31 +303,30 @@ export default class FDMultiPage extends FdContainerVue {
 
   /**
    * @description style object is passed to :style attribute in div tag
-   * dynamically changing the styles of the component based on propControlData
+   * dynamically changing the styles of the component based on data
    * @function styleContentObj
    *
    */
   protected get styleContentObj (): Partial<CSSStyleDeclaration> {
     const controlProp = this.properties
-    // let zoomVal = this.selectedPageData.properties.Zoom! / 100
     return {
-      zIndex: controlProp.MultiRow === true ? '-1' : '',
+      position: 'absolute',
       display:
       controlProp.Height! < controlProp.TabFixedHeight! ? 'none' : controlProp.Width! < controlProp.TabFixedWidth! ? 'none'
-        : controlProp.Style === 1
+        : controlProp.Style === 1 || controlProp.Style === 2
           ? 'none'
           : controlProp.Width! < 30 || controlProp.Height! < 30
             ? 'none'
             : 'block',
-      top: controlProp.TabOrientation === 0 ? controlProp.TabFixedHeight! > 0 ? (controlProp.TabFixedHeight! + 12) + 'px' : '23px' : '0px',
+      top: controlProp.TabOrientation === 0 ? controlProp.TabFixedHeight! > 0 ? (controlProp.TabFixedHeight! + 12) + 'px' : '33px' : '0px',
       height: controlProp.TabOrientation === 0 || controlProp.TabOrientation === 1
-        ? controlProp.TabFixedHeight! > 0 ? (controlProp.Height! - controlProp.TabFixedHeight! - 5) + 'px' : `${controlProp.Height! - 35}px`
-        : `${controlProp.Height! - 12}px`,
+        ? controlProp.TabFixedHeight! > 0 ? (controlProp.Height! - controlProp.TabFixedHeight! - 5) + 'px' : controlProp.TabOrientation === 1 ? `${controlProp.Height! - 21}px` : `${controlProp.Height! - 35}px`
+        : `${controlProp.Height! - 2}px`,
       width:
         controlProp.TabOrientation === 0 || controlProp.TabOrientation === 1
           ? 'calc(100% - 3px)'
-          : controlProp.TabFixedWidth! > 0 ? (controlProp.Width! - controlProp.TabFixedWidth! - 15) + 'px' : 'calc(100% - 44px)',
-      left: controlProp.TabOrientation === 2 ? controlProp.TabFixedWidth! > 0 ? (controlProp.TabFixedWidth! + 12) + 'px' : '40px' : '0px',
+          : controlProp.TabFixedWidth! > 0 ? (controlProp.Width! - controlProp.TabFixedWidth! - 15) + 'px' : controlProp.TabFixedWidth! === 0 ? (controlProp.Width! - this.tempTabWidth - 15) + 'px' : 'calc(100% - 44px)',
+      left: controlProp.TabOrientation === 2 ? controlProp.TabFixedWidth! > 0 ? (controlProp.TabFixedWidth! + 12) + 'px' : controlProp.TabFixedWidth! === 0 ? (controlProp.Width! - this.tempTabWidth - 41) + 'px' : '40px' : '0px',
       cursor:
         controlProp.MousePointer !== 0 || controlProp.MouseIcon !== ''
           ? this.getMouseCursorData
@@ -312,12 +362,22 @@ export default class FDMultiPage extends FdContainerVue {
     return controlProperties.getSizeModeProp(index)
   }
 
+  /**
+   * @description getScrollBarPage returns propData based on keepScrollBar and scrollBar values
+   * @function getScrollBarPage
+   */
   get getScrollBarPage () {
     const keepScrollBar:number = this.selectedPageData.properties.KeepScrollBarsVisible!
     const scrollBar:number = this.selectedPageData.properties.ScrollBars!
     return controlProperties.setScrollBarProp(keepScrollBar, scrollBar)
   }
 
+  /**
+   * @description returns the selected page
+   * dynamically based on the selectedPageID
+   * @function selectedPageData
+   *
+   */
   get selectedPageData () {
     if (this.selectedPageID) {
       return this.userformData[this.userFormId][this.selectedPageID]
@@ -332,15 +392,14 @@ export default class FDMultiPage extends FdContainerVue {
     let width = 0
     if (this.contentRef) {
       const scrollRef = this.contentRef
-    scrollRef.scrollLeft! = 20
+      scrollRef.scrollLeft! = 20
     }
     if (divElement && this.properties.TabFixedWidth === 0) {
       for (let i = 0; i < divElement.length; i++) {
-        if (divElement[i].children[1] instanceof HTMLElement) {
-          let offsetWidth = (divElement[i].children[1] as HTMLElement).offsetWidth
-          if (offsetWidth > width) {
-            width = offsetWidth
-          }
+        let offsetWidth = (divElement[i].children[0].children[1] as HTMLElement).offsetWidth
+        if (offsetWidth > width) {
+          width = offsetWidth
+          this.tempTabWidth = width
         }
       }
     }

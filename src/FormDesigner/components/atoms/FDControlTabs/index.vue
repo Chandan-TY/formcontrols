@@ -6,7 +6,7 @@
         :checked="indexValue === data.properties.Value ? setValueEmit(indexValue) : false"
     />
     <label
-        @click="!getDisableValue(pageData.properties.Enabled) && isChecked(indexValue,pageValue)"
+        @click="!getDisableValue(pageData.Enabled) && isChecked(indexValue,pageValue)"
             :class="[
                 data.properties.Style === 1
                   ? data.properties.TabOrientation === 2
@@ -18,22 +18,24 @@
                     : 'forTab'
                   : '',
             ]"
-            :for="pageData.properties.ID"
-            :title="pageData.properties.ControlTipText"
-            :style="[styleLabelObj, { color : setForeColor(pageData.properties.Enabled), display: setVisible(pageData.properties.Visible)}]">
-          <span v-if="pageData.properties.Accelerator === ''">{{ pageData.properties.Caption }}</span>
+            :for="pageData.ID"
+            :title="pageData.ControlTipText"
+            :style="[styleLabelObj,{ color : data.type !== 'TabStrip' ? setForeColor(pageData.Enabled) : setForeColor(data.properties.Enabled), display: data.type !== 'TabStrip' ? setVisible(pageData.Visible) : ''}]">
+          <span v-if="pageData.Accelerator === ''">{{ pageData.Caption }}</span>
               <span v-else
                 ><span>{{
-                  pageData.properties.Caption | afterbeginCaption(pageData.properties.Accelerator)
+                  pageData.Caption | afterbeginCaption(pageData.Accelerator)
                 }}</span>
                 <span class="spanClass">{{
-                  pageData.properties.Caption | acceleratorCaption(pageData.properties.Accelerator)
+                  pageData.Caption | acceleratorCaption(pageData.Accelerator)
                 }}</span>
                 <span>{{
-                  pageData.properties.Caption | beforeendCaption(pageData.properties.Accelerator)
+                  pageData.Caption | beforeendCaption(pageData.Accelerator)
                 }}</span></span
     >
     </label>
+            <!-- :style="[styleLabelObj, { color : pageData.ID.includes('Page') ? setForeColor(pageData.Enabled) : '', display: pageData.ID.includes('Page') ? setVisible(pageData.Visible) : ''}]"> -->
+
 </div>
 </template>
 
@@ -85,7 +87,13 @@ export default class FDControlTabs extends Vue {
   @Prop() tempWeight: string;
   @Prop() getMouseCursorData: string;
   @Prop() setFontStyle: string;
+  @Prop() tempTabWidth: number;
 
+  /**
+   * @description getDisableValue checks for the RunMode of the control and then returns after checking for the Enabled
+   * and the Locked property
+   * @function getDisableValue
+   */
   getDisableValue (enabledValue: boolean) {
     if (this.isRunMode) {
       if (!this.data.properties.Enabled) {
@@ -110,6 +118,10 @@ export default class FDControlTabs extends Vue {
       pageValue }
   }
 
+  /**
+   * @description setVisible checks for the RunMode of the control and then returns after checking for the Visible property
+   * @function setVisible
+   */
   setVisible (visibleValue: boolean) {
     if (this.isRunMode) {
       if (visibleValue) {
@@ -122,6 +134,10 @@ export default class FDControlTabs extends Vue {
     }
   }
 
+  /**
+   * @description setVisible checks for the RunMode of the control and then returns after checking for the Enabled property
+   * @function setForeColor
+   */
   setForeColor (enabledValue: boolean) {
     if (this.isRunMode) {
       if (this.data.properties.Enabled) {
@@ -142,6 +158,12 @@ export default class FDControlTabs extends Vue {
     }
   }
 
+  /**
+   * @description style object is passed to :style attribute in div tag
+   * dynamically changing the styles of the component based on data
+   * @function styleLabelObj
+   *
+   */
   protected get styleLabelObj (): Partial<CSSStyleDeclaration> {
     const controlProp = this.data.properties
     const font: font = controlProp.Font
@@ -155,8 +177,9 @@ export default class FDControlTabs extends Vue {
         FontStrikethrough: true
       }
     return {
+      // color: this.data.type === 'TabStrip' ? controlProp.ForeColor : '',
       height: controlProp.TabFixedHeight! > 0 ? controlProp.TabFixedHeight + 'px' : '',
-      width: controlProp.TabFixedWidth! > 0 ? controlProp.TabFixedWidth + 'px' : '',
+      width: controlProp.TabFixedWidth! > 0 ? controlProp.TabFixedWidth + 'px' : controlProp.TabOrientation === 2 || controlProp.TabOrientation === 3 ? this.tempTabWidth + 'px' : '',
       top: controlProp.TabOrientation === 1 ? '10px' : '0px',
       fontFamily: (font.FontStyle! !== '') ? this.setFontStyle : font.FontName!,
       fontSize: `${font.FontSize}px`,
@@ -175,7 +198,8 @@ export default class FDControlTabs extends Vue {
       cursor:
         controlProp.MousePointer !== 0 || controlProp.MouseIcon !== ''
           ? this.getMouseCursorData
-          : 'default'
+          : 'default',
+      zIndex: controlProp.MultiRow ? '3' : ''
     }
   }
 }
