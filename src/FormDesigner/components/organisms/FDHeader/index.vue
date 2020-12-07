@@ -43,20 +43,16 @@
                 </li>
                 <hr />
                 <li class="sub-menu-li">
-                  <UseSvgImage />
                   <span><u>I</u>mmediate Window</span>
                 </li>
                 <li class="sub-menu-li">
-                  <UseSvgImage />
                   <span>Local<u>s</u> Window</span>
                 </li>
                 <hr />
                 <li class="sub-menu-li">
-                  <UseSvgImage />
                   <span>Watc<u>h</u> Window</span>
                 </li>
                 <li class="sub-menu-li">
-                  <UseSvgImage />
                   <span>Call Stac<u>k</u></span>
                 </li>
                 <hr />
@@ -74,12 +70,10 @@
                   <span>ToolBo<u>x</u></span>
                 </li>
                 <li class="sub-menu-li">
-                  <UseSvgImage />
                   <span>T<u>a</u>b Order</span>
                 </li>
                 <hr />
                 <li class="sub-menu-li">
-                  <UseSvgImage />
                   <span>Microscoft Excel</span>
                 </li>
               </ul>
@@ -90,7 +84,6 @@
             <div class="sub-menu-1" v-if="displaySubMenu === true">
               <ul class="sub-menu-ul">
                 <li class="sub-menu-li">
-                  <UseSvgImage />
                   <span><u>P</u>rocedure</span>
                 </li>
                 <li class="sub-menu-li" @click="insertUserForm()">
@@ -98,22 +91,66 @@
                   <span><u>U</u>serform</span>
                 </li>
                 <li class="sub-menu-li">
-                  <UseSvgImage />
                   <span><u>M</u>odule</span>
                 </li>
                 <li class="sub-menu-li">
-                  <UseSvgImage />
                   <span><u>C</u>lass Module</span>
                 </li>
                 <hr />
                 <li class="sub-menu-li">
-                  <UseSvgImage />
                   <span>F<u>i</u>le</span>
                 </li>
               </ul>
             </div>
           </li>
-          <li><u>F</u>ormat</li>
+          <li @click="subMenuDisplay">
+            <u>F</u>ormat
+            <div class="sub-menu-1" v-if="displaySubMenu === true">
+              <ul class="sub-menu-ul">
+                <li class="sub-menu-li">
+                  <span><u>A</u>lign</span>
+                </li>
+                <li class="sub-menu-li" @click="insertUserForm()">
+                  <UserFormLogo class="fa padding" />
+                  <span><u>M</u>ake Same Size</span>
+                </li>
+                <li class="sub-menu-li">
+                  <span><u>S</u>ize to Fit</span>
+                </li>
+                <li class="sub-menu-li">
+                  <span><u>S</u>ize to Grid</span>
+                </li>
+                <hr />
+                <li class="sub-menu-li">
+                  <span><u>H</u>orizontal Spacing</span>
+                </li>
+                <li class="sub-menu-li">
+                  <span><u>V</u>ertical Spacing</span>
+                </li>
+                <li class="sub-menu-li">
+                  <span><u>C</u>ertre in Form</span>
+                </li>
+                <li class="sub-menu-li">
+                  <span>A<u>r</u>range Buttons</span>
+                </li>
+                <li class="sub-menu-li">
+                  <span><u>G</u>roup</span>
+                </li>
+                <li class="sub-menu-li">
+                  <span><u>U</u>nGroup</span>
+                </li>
+                <li class="sub-menu-li">
+                  <span><u>O</u>rder</span>
+                </li>
+                <li class="sub-menu-li" @click="bringFront">
+                  <span><u>B</u>ring to Front</span>
+                </li>
+                <li class="sub-menu-li" @click="sendBack">
+                  <span><u>S</u>end to Back</span>
+                </li>
+              </ul>
+            </div>
+          </li>
           <li><u>D</u>ebug</li>
           <li @click="clickChangeMode"><u>R</u>un</li>
           <li><u>T</u>ools</li>
@@ -146,7 +183,10 @@
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator'
 import { State, Action } from 'vuex-class'
-import { IaddUserform } from '@/storeModules/fd/actions'
+import {
+  IaddUserform,
+  IupdateControlExtraData
+} from '@/storeModules/fd/actions'
 import { ControlPropertyData } from '@/FormDesigner/models/ControlsTableProperties/ControlPropertyData'
 import CutLogo from '../../../../assets/cut.svg'
 import FileSaveLogo from '../../../../assets/file-save.svg'
@@ -191,16 +231,25 @@ export default class Header extends Vue {
   displaySubMenu: boolean = false;
   @Action('fd/addUserform') addControl!: (payload: IaddUserform) => void;
   @Action('fd/changeRunMode') changeRunMode!: (payload: boolean) => void;
-  @State((state) => state.fd.userformData) usrFrmData!: userformData;
+
+  @State((state) => state.fd.selectedControls)
+  selectedControls!: fdState['selectedControls'];
+  @State((state) => state.fd.userformData) userformData!: userformData;
   @State((state) => state.fd.isRunMode) isRunMode!: boolean;
+  @Action('fd/updateControlExtraData') updateControlExtraData!: (
+    payload: IupdateControlExtraData
+  ) => void;
   propControlData = {};
+  userFormId = 'ID_USERFORM1';
   insertUserForm () {
-    this.propControlData = this.usrFrmData
+    this.propControlData = this.userformData
     const userform = new ControlPropertyData()
-    const userFormId = `ID_USERFORM${Object.keys(this.usrFrmData).length + 1}`
-    const Name = `UserForm${Object.keys(this.usrFrmData).length + 1}`
-    const Caption = `UserForm${Object.keys(this.usrFrmData).length + 1}`
-    const ID = Object.keys(this.usrFrmData).length + 1
+    const userFormId = `ID_USERFORM${
+      Object.keys(this.userformData).length + 1
+    }`
+    const Name = `UserForm${Object.keys(this.userformData).length + 1}`
+    const Caption = `UserForm${Object.keys(this.userformData).length + 1}`
+    const ID = Object.keys(this.userformData).length + 1
     this.addControl({
       target: this,
       key: userFormId,
@@ -222,6 +271,39 @@ export default class Header extends Vue {
   }
   clickChangeMode () {
     this.changeRunMode(!this.isRunMode)
+  }
+  updateZIndex (id: string, value: number) {
+    this.updateControlExtraData({
+      userFormId: this.userFormId,
+      controlId: id,
+      propertyName: 'zIndex',
+      value: value
+    })
+  }
+  swapZIndex (tempZIndex: number) {
+    const userData = this.userformData[this.userFormId]
+    const container = this.selectedControls[this.userFormId].container[0]
+    const selected = this.selectedControls[this.userFormId].selected[0]
+    const swapTabIndex = userData[selected].extraDatas!.zIndex!
+    if (tempZIndex <= userData[container].controls.length && tempZIndex > 0) {
+      const index = userData[container].controls.findIndex(
+        (val) => userData[val].extraDatas!.zIndex === tempZIndex
+      )
+      this.updateZIndex(userData[container].controls[index], swapTabIndex)
+      this.updateZIndex(selected, tempZIndex)
+    }
+  }
+  bringFront () {
+    const userData = this.userformData[this.userFormId]
+    const selected = this.selectedControls[this.userFormId].selected[0]
+    const container = this.selectedControls[this.userFormId].container[0]
+    const tempZIndex = userData[selected].extraDatas!.zIndex!
+    this.swapZIndex(
+      this.userformData[this.userFormId][container].controls.length
+    )
+  }
+  sendBack () {
+    this.swapZIndex(1)
   }
 }
 </script>

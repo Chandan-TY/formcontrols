@@ -111,7 +111,8 @@ export class ControlPropertyData {
           backgroundPositionY: '',
           autoSizeWidth: '',
           autoSizeHeight: '',
-          acceleratorValue: ''
+          acceleratorValue: '',
+          zIndex: -1
         },
         type: 'Label'
       },
@@ -158,6 +159,7 @@ export class ControlPropertyData {
         },
         controls: [],
         extraDatas: {
+          zIndex: -1
         },
         type: 'CommandButton'
       },
@@ -208,7 +210,8 @@ export class ControlPropertyData {
         },
         controls: [],
         extraDatas: {
-          ControlSourceValue: 'true'
+          ControlSourceValue: 'true',
+          zIndex: -1
         },
         type: 'CheckBox'
       },
@@ -289,7 +292,8 @@ export class ControlPropertyData {
             ['g', 'awe', 'g7'],
             ['h', 'rty', 'h8'],
             ['i', 'qqq', 'i9']
-          ]
+          ],
+          zIndex: -1
         },
         type: 'ComboBox'
       },
@@ -341,6 +345,7 @@ export class ControlPropertyData {
         },
         controls: [],
         extraDatas: {
+          zIndex: -1
         },
         type: 'Frame'
       },
@@ -372,6 +377,7 @@ export class ControlPropertyData {
         },
         controls: [],
         extraDatas: {
+          zIndex: -1
         },
         type: 'FDImage'
       },
@@ -430,6 +436,7 @@ export class ControlPropertyData {
         extraDatas: {
           // it can be different from value
           ControlSourceValue: 'd4',
+          zIndex: -1,
           ColumnHeadsValues: ['a', 'f', 'a1'],
           // ListBox.List
           RowSourceData: [
@@ -479,6 +486,7 @@ export class ControlPropertyData {
         },
         controls: ['ID_Page1', 'ID_Page2'],
         extraDatas: {
+          zIndex: -1
         },
         type: 'MultiPage'
       },
@@ -529,7 +537,8 @@ export class ControlPropertyData {
         },
         controls: [],
         extraDatas: {
-          ControlSourceValue: 'true'
+          ControlSourceValue: 'true',
+          zIndex: -1
         },
         type: 'OptionButton'
       },
@@ -565,7 +574,8 @@ export class ControlPropertyData {
         },
         controls: [],
         extraDatas: {
-          ControlSourceValue: '0'
+          ControlSourceValue: '0',
+          zIndex: -1
         },
         type: 'ScrollBar'
       },
@@ -599,7 +609,8 @@ export class ControlPropertyData {
         },
         controls: [],
         extraDatas: {
-          ControlSourceValue: ''
+          ControlSourceValue: '',
+          zIndex: -1
         },
         type: 'SpinButton'
       },
@@ -673,7 +684,8 @@ export class ControlPropertyData {
               ToolTip: 'Select Tab5',
               Accelerator: '5'
             }
-          ]
+          ],
+          zIndex: -1
         },
         type: 'TabStrip'
       },
@@ -721,7 +733,8 @@ export class ControlPropertyData {
         },
         controls: [],
         extraDatas: {
-          ControlSourceValue: 'True'
+          ControlSourceValue: 'True',
+          zIndex: -1
         },
         type: 'ToggleButton'
       },
@@ -752,6 +765,7 @@ export class ControlPropertyData {
           Zoom: 100
         },
         extraDatas: {
+          zIndex: -1
         },
         controls: [],
         type: 'Page'
@@ -815,7 +829,8 @@ export class ControlPropertyData {
         },
         controls: [],
         extraDatas: {
-          ControlSourceValue: 'hi'
+          ControlSourceValue: 'hi',
+          zIndex: -1
         },
         type: 'TextBox'
       }

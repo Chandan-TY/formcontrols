@@ -161,6 +161,10 @@ export default class ContextMenu extends Vue {
       this.addNewPage()
     } else if (controlActionName === 'ID_DELETEPAGE') {
       this.deleteCurrentPage()
+    } else if (controlActionName === 'ID_CONTROLFORWARD') {
+      this.bringForward()
+    } else if (controlActionName === 'ID_CONTROLBACKWARD') {
+      this.bringBackward()
     } else if (controlActionName === 'ID_RENAME') {
       const selectedPageID = this.selectedControls[this.userFormId].selected[0]
       EventBus.$emit(
@@ -175,7 +179,7 @@ export default class ContextMenu extends Vue {
       if (type === 'MultiPage') {
         EventBus.$emit('userFormTabOrder', this.userFormId, this.controlId, type)
       } else {
-        EventBus.$emit('tabStripTabOrder', this.userFormId, this.containerId)
+        EventBus.$emit('tabStripTabOrder', this.userFormId, this.containerId, type)
       }
     } else if (controlActionName === 'ID_TABORDER') {
       EventBus.$emit('userFormTabOrder', this.userFormId, this.containerId, '')
@@ -289,6 +293,7 @@ export default class ContextMenu extends Vue {
       item.properties.ID = `ID_${controlName}${lastControlId}`
       item.properties.Caption = `Page${lastControlId}`
       item.properties.Name = `Page${lastControlId}`
+      item.properties.Index = this.userformData[this.userFormId][this.controlId].controls.length
       this.addControl({
         userFormId: this.userFormId,
         controlId: this.controlId,
@@ -304,18 +309,57 @@ export default class ContextMenu extends Vue {
       })
     }
   }
-  updateTabIndex (id: string) {
-    let newTabIndex = -1
-    const containerControls = this.userformData[this.userFormId][id].controls
-    for (const index in containerControls) {
-      const cntrlData = this.userformData[this.userFormId][containerControls[index]]
-      if ('TabIndex' in cntrlData.properties) {
-        newTabIndex = newTabIndex + 1
+  updateZIndex (id: string, value: number) {
+    this.updateControlExtraData({
+      userFormId: this.userFormId,
+      controlId: id,
+      propertyName: 'zIndex',
+      value: value
+    })
+  }
+  swapZIndex (tempZIndex: number) {
+    const userData = this.userformData[this.userFormId]
+    const container = this.selectedControls[this.userFormId].container[0]
+    const selected = this.selectedControls[this.userFormId].selected[0]
+    const swapTabIndex = userData[selected].extraDatas!.zIndex!
+    if (tempZIndex <= userData[container].controls.length && tempZIndex > 0) {
+      const index = userData[container].controls.findIndex(val => userData[val].extraDatas!.zIndex === tempZIndex)
+      this.updateZIndex(userData[container].controls[index], swapTabIndex)
+      this.updateZIndex(selected, tempZIndex)
+    }
+  }
+  bringForward () {
+    const userData = this.userformData[this.userFormId]
+    const selected = this.selectedControls[this.userFormId].selected[0]
+    const tempZIndex = userData[selected].extraDatas!.zIndex!
+    this.swapZIndex(tempZIndex + 1)
+  }
+  bringBackward () {
+    const userData = this.userformData[this.userFormId]
+    const selected = this.selectedControls[this.userFormId].selected[0]
+    const tempZIndex = userData[selected].extraDatas!.zIndex!
+    this.swapZIndex(tempZIndex - 1)
+  }
+  updateTabIndex (id: string, value: number) {
+    this.updateControl({
+      userFormId: this.userFormId,
+      controlId: id,
+      propertyName: 'TabIndex',
+      value: value
+    })
+  }
+  deletePageIndex (id: string) {
+    const userData = this.userformData[this.userFormId]
+    const container = this.selectedControls[this.userFormId].container[0]
+    const tempIndex = userData[id].properties!.Index!
+    for (const key in userData[container].controls) {
+      const controlZIndex = userData[userData[container].controls[key]].properties!.Index!
+      if (controlZIndex > tempIndex) {
         this.updateControl({
           userFormId: this.userFormId,
-          controlId: containerControls[index],
-          propertyName: 'TabIndex',
-          value: newTabIndex
+          controlId: userData[container].controls[key],
+          propertyName: 'Index',
+          value: controlZIndex - 1
         })
       }
     }
@@ -338,6 +382,7 @@ export default class ContextMenu extends Vue {
     } else if (type === 'MultiPage') {
       const controls = this.userformData[this.userFormId][this.controlId].controls
       if (controls.length > 0) {
+        this.deletePageIndex(this.selectedControls[this.userFormId].selected[0])
         this.deleteControl({
           userFormId: this.userFormId,
           parentId: this.selectedControls[this.userFormId].container[0],
@@ -589,7 +634,17 @@ export default class ContextMenu extends Vue {
       }
     }
   }
-
+  updateNewControl (parentId: string, ctrlId: string, ctrlObj: controlData) {
+    this.addControl({
+      userFormId: this.userFormId,
+      controlId: parentId,
+      addId: ctrlId,
+      item: ctrlObj
+    })
+    const newTabIndex = this.userformData[this.userFormId][parentId].controls.length
+    this.updateTabIndex(ctrlId, newTabIndex - 1)
+    this.updateZIndex(ctrlId, newTabIndex)
+  }
   /**
    * @description To paste controls in respective container present in respective userform
    * @function pasteControl
@@ -665,13 +720,7 @@ export default class ContextMenu extends Vue {
               containerId: daTarget,
               targetControls: removeControl
             })
-            this.addControl({
-              userFormId: this.userFormId,
-              controlId: daTarget,
-              addId: controlID,
-              item: item
-            })
-            this.updateTabIndex(daTarget)
+            this.updateNewControl(daTarget, controlID, item)
             recCopyControl(controlID)
           }
         }
@@ -716,13 +765,7 @@ export default class ContextMenu extends Vue {
               GroupID: groupIdIndex !== -1 ? newGroupId[groupIdIndex] : ''
             }
           }
-          this.addControl({
-            userFormId: this.userFormId,
-            controlId: this.containerId,
-            addId: controlID,
-            item: item
-          })
-          this.updateTabIndex(this.containerId)
+          this.updateNewControl(this.containerId, controlID, item)
           recCopyControl(controlID)
         } else {
           for (let ctrlId in this.copiedControl[this.userFormId]) {
@@ -769,13 +812,7 @@ export default class ContextMenu extends Vue {
                       groupIdIndex !== -1 ? newGroupId[groupIdIndex] : ''
                   }
                 }
-                this.addControl({
-                  userFormId: this.userFormId,
-                  controlId: this.containerId,
-                  addId: controlID,
-                  item: item
-                })
-                this.updateTabIndex(this.containerId)
+                this.updateNewControl(this.containerId, controlID, item)
                 recCopyControl(controlID)
               }
             }
@@ -839,13 +876,7 @@ export default class ContextMenu extends Vue {
                 containerId: daTarget,
                 targetControls: removeControl
               })
-              this.addControl({
-                userFormId: this.userFormId,
-                controlId: daTarget,
-                addId: key,
-                item: item
-              })
-              this.updateTabIndex(this.containerId)
+              this.updateNewControl(daTarget, key, item)
               recCopyControl(key)
             }
           }
@@ -858,13 +889,7 @@ export default class ContextMenu extends Vue {
             const item: controlData = {
               ...controlObj
             }
-            this.addControl({
-              userFormId: this.userFormId,
-              controlId: this.containerId,
-              addId: key,
-              item: item
-            })
-            this.updateTabIndex(this.containerId)
+            this.updateNewControl(this.containerId, key, item)
             recCopyControl(key)
           } else {
             for (let ctrlId in userFormData) {
@@ -877,13 +902,7 @@ export default class ContextMenu extends Vue {
                   const item: controlData = {
                     ...controlObj
                   }
-                  this.addControl({
-                    userFormId: this.userFormId,
-                    controlId: this.containerId,
-                    addId: ctrlId,
-                    item: item
-                  })
-                  this.updateTabIndex(this.containerId)
+                  this.updateNewControl(this.containerId, ctrlId, item)
                   recCopyControl(ctrlId)
                 }
               }
@@ -933,13 +952,15 @@ export default class ContextMenu extends Vue {
       }
     }
     for (let i = 0; i < selControl.length; i++) {
+      this.deleteZIndex(selControl[i])
+      this.deleteTabIndex(selControl[i])
       this.deleteControl({
         userFormId: this.userFormId,
         parentId: this.selectedControls[this.userFormId].container[0],
         targetId: selControl[i]
       })
     }
-    this.updateTabIndex(this.selectedControls[this.userFormId].container[0])
+
     this.selectControl({
       userFormId: this.userFormId,
       select: {
@@ -949,6 +970,28 @@ export default class ContextMenu extends Vue {
         selected: [this.selectedControls[this.userFormId].container[0]]
       }
     })
+  }
+  deleteTabIndex (id: string) {
+    const userData = this.userformData[this.userFormId]
+    const container = this.selectedControls[this.userFormId].container[0]
+    const tempIndex: number = userData[id].properties!.TabIndex!
+    for (const key in userData[container].controls) {
+      const controlTabIndex = userData[userData[container].controls[key]].properties!.TabIndex!
+      if (controlTabIndex > tempIndex) {
+        this.updateTabIndex(userData[container].controls[key], controlTabIndex - 1)
+      }
+    }
+  }
+  deleteZIndex (id: string) {
+    const userData = this.userformData[this.userFormId]
+    const container = this.selectedControls[this.userFormId].container[0]
+    const tempIndex = userData[id].extraDatas!.zIndex!
+    for (const key in userData[container].controls) {
+      const controlZIndex = userData[userData[container].controls[key]].extraDatas!.zIndex!
+      if (controlZIndex > tempIndex) {
+        this.updateZIndex(userData[container].controls[key], controlZIndex - 1)
+      }
+    }
   }
   updateAction (event: KeyboardEvent) {
     let controlActionName = ''

@@ -19,9 +19,9 @@
         @input="updateAppearance"
         :controlPropertyData="value"
         :propertyName="propertyName"
+        @FontProp="fontProp"
+        @colorPaletteProp="colorPaletteProp"
       />
-        <!-- @FontProp="fontProp"
-        @colorPaletteProp="colorPaletteProp" -->
         <!-- @change="handleChange" -->
         <!-- @change="updateAppearance" -->
     </div>
@@ -63,19 +63,18 @@ export default class FDTable extends Vue {
   }
   @Emit('updateProperty')
   emitUpdateProperty (
-    proprtyName: string,
+    propertyName: string,
     value: string | number | object | null | undefined | boolean
   ) {
-    // debugger
-    return { target: null, proprtyName: proprtyName, value: value }
+    return { target: null, propertyName: propertyName, value: value }
   }
 
   @Emit('updateExtraProperty')
   emitUpdateExtraProperty (
-    proprtyName: string,
+    propertyName: string,
     value: string | number | object | null | undefined | boolean
   ) {
-    return { target: null, proprtyName: proprtyName, value: value }
+    return { target: null, propertyName: propertyName, value: value }
   }
 
   updateAppearance (e: Event) {
@@ -192,6 +191,7 @@ export default class FDTable extends Vue {
     this.emitUpdateProperty('Font', tempVal)
   }
   colorPaletteProp (selectedValue: string, name: string) {
+    debugger
     this.emitUpdateProperty(name, selectedValue)
   }
 }

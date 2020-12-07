@@ -92,7 +92,7 @@ export default class PropertyTableItem extends Vue {
     }
     return {
       target: null,
-      proprtyName: this.propertyName,
+      propertyName: this.propertyName,
       value: this.currentValue
     }
   }

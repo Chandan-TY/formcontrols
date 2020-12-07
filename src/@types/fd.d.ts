@@ -176,6 +176,7 @@ interface extraDatas {
   ColumnHeadsValues?: Array <string>,
   RowSourceData?: Array <Array<string>>,
   MatchData? : string
+  zIndex?: number
 }
 
 interface tabsItems {

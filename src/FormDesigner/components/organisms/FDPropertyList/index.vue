@@ -43,7 +43,7 @@ import FDTable from '@/FormDesigner/components/organisms/FDTable/index.vue'
 import FDPropertyTable, { tableDatas } from '@/FormDesigner/components/organisms/FDPropertyTable/index.vue'
 import { LabelData } from '../../../models/ControlsTableProperties/LabelTableProperties'
 import { PropertyListDefine } from '@/FormDesigner/models/ControlsTableProperties/propertyList'
-import { IupdateControl, IupdatedSelectedControl } from '@/storeModules/fd/actions'
+import { IupdateControl, IupdateControlExtraData, IupdatedSelectedControl } from '@/storeModules/fd/actions'
 
 @Component({
   name: 'PropertiesList',
@@ -53,8 +53,10 @@ import { IupdateControl, IupdatedSelectedControl } from '@/storeModules/fd/actio
   }
 })
 export default class PropertiesList extends Vue {
-  @Action('fd/updateControl') updateControl!: (payload: IupdatedSelectedControl) => void
-  @Action('fd/updateControlExtraData') updateControlExtraData!: (payload: IupdatedSelectedControl) => void
+  @Action('fd/updateControl') updateControl!: (payload: IupdateControl) => void;
+ @Action('fd/updateControlExtraData') updateControlExtraData!: (
+    payload: IupdateControlExtraData
+  ) => void;
   @State(state => state.fd.userformData) userformData!: userformData
   @State((state) => state.fd.selectedControls) selectedControls!: fdState['selectedControls'];
   @State(state => state.fd.groupedControls) groupedControls!: fdState['groupedControls']
@@ -72,50 +74,46 @@ export default class PropertiesList extends Vue {
   get getSelectedControlsDatas () {
     return this.selectedControls[this.userFormId]
   }
-  updateProperty (arg: IupdatedSelectedControl) {
-    // debugger
+  updateProperty (arg: IupdateControl) {
+    debugger
     const selected = this.getSelectedControlsDatas.selected
-    console.log(selected)
-    console.log(arg)
-    // for (let i = 0; i < selected.length; i++) {
-    //   this.updateControl({
-    //     userFormId: this.userFormId,
-    //     controlId: selected[i],
-    //     propertyName: this.testPropName,
-    //     value: this.testPropValue
-    //   })
-    // }
-    if (arg.target === null) {
-      if (this.selectedControls.main instanceof Array) {
-        for (const vueInstance of this.selectedControls.main) {
-          arg.target = vueInstance
-          this.updateControl(arg)
-        }
-      } else {
-        arg.target = this.selectedControls.main
-        this.updateControl(arg)
-      }
+    for (let i = 0; i < selected.length; i++) {
+      this.updateControl({
+        userFormId: this.userFormId,
+        controlId: selected[i],
+        propertyName: arg.propertyName,
+        value: arg.value
+      })
     }
+    // if (arg.target === null) {
+    //   if (this.selectedControls.main instanceof Array) {
+    //     for (const vueInstance of this.selectedControls.main) {
+    //       arg.target = vueInstance
+    //       this.updateControl(arg)
+    //     }
+    //   } else {
+    //     arg.target = this.selectedControls.main
+    //     this.updateControl(arg)
+    //   }
+    // }
   }
 
-  updateExtraProperty (arg: IupdatedSelectedControl) {
-    if (arg.target === null) {
-      if (this.selectedControls.main instanceof Array) {
-        for (const vueInstance of this.selectedControls.main) {
-          arg.target = vueInstance
-          this.updateControlExtraData(arg)
-        }
-      } else {
-        arg.target = this.selectedControls.main
-        this.updateControlExtraData(arg)
-      }
+  updateExtraProperty (arg: IupdateControlExtraData) {
+    const selected = this.getSelectedControlsDatas.selected
+    for (let i = 0; i < selected.length; i++) {
+      this.updateControlExtraData({
+        userFormId: this.userFormId,
+        controlId: selected[i],
+        propertyName: arg.propertyName,
+        value: arg.value
+      })
     }
   }
 
   get propertyTableData () : tableDatas {
     // debugger
-    console.log('SSS', this.getSelectedControlsDatas.selected)
-    console.log('GGG', this.groupedControls[this.userFormId])
+    // console.log('SSS', this.getSelectedControlsDatas.selected)
+    // console.log('GGG', this.groupedControls[this.userFormId])
     const result : tableDatas = {}
     for (const controlType in this.propList.data) {
       if (this.getSelectedControlsDatas.selected.length === 1) {

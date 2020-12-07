@@ -156,6 +156,7 @@ export default class ResizeControl extends FdSelectVue {
   }
   get resizeControlStyle () {
     const currentProperties = this.propControlData.properties
+    const extraData = this.propControlData.extraDatas!
     const bs = currentProperties.BorderStyle!
     const isRotate = currentProperties.Width! > currentProperties.Height!
     const type = this.propControlData.type
@@ -194,7 +195,8 @@ export default class ResizeControl extends FdSelectVue {
         this.isRunMode && currentProperties.Visible === false
           ? 'none'
           : 'block',
-      cursor: !this.isRunMode ? 'move' : 'default'
+      cursor: !this.isRunMode ? 'move' : 'default',
+      zIndex: extraData.zIndex!
     }
   }
   get mainSelected () {
@@ -213,30 +215,15 @@ export default class ResizeControl extends FdSelectVue {
           ))
     )
   }
-  updateTabIndex (id: string) {
-    let newTabIndex = -1
-    const containerControls = this.userformData[this.userFormId][id].controls
-    for (const index in containerControls) {
-      const cntrlData = this.userformData[this.userFormId][containerControls[index]]
-      if ('TabIndex' in cntrlData.properties) {
-        newTabIndex = newTabIndex + 1
-        this.updateControl({
-          userFormId: this.userFormId,
-          controlId: containerControls[index],
-          propertyName: 'TabIndex',
-          value: newTabIndex
-        })
-      }
-    }
-  }
   deleteItem (event: KeyboardEventInit) {
     if (event.key !== 'Backspace') {
+      this.deleteZIndex(this.controlId)
+      this.deleteTabIndex(this.controlId)
       this.deleteControl({
         userFormId: this.userFormId,
         parentId: this.containerId!,
         targetId: this.controlId
       })
-      this.updateTabIndex(this.containerId)
     }
   }
   selectedItem (e: MouseEvent) {

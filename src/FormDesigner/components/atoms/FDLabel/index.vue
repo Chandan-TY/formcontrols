@@ -5,7 +5,6 @@
     :name="properties.Name"
     :tabindex="properties.TabIndex"
     :title="properties.ControlTipText"
-    @keydown.delete.exact="deleteItem"
     @mousedown="addEventCustomCallback"
     @keydown.enter="setContentEditable($event, true)"
     @click.stop="selectedItem"

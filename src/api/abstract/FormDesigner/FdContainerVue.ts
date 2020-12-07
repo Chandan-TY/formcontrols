@@ -2,7 +2,7 @@ import { Prop, Vue } from 'vue-property-decorator'
 import { controlProperties } from '@/FormDesigner/controls-properties'
 import FdControlVue from './FdControlVue'
 import { Action, State } from 'vuex-class'
-import { IaddControl, IchangeToolBoxSelect, IdeleteControl, IselectControl, IupdateControl, IupdateCopyControlList, IupdateGroup } from '@/storeModules/fd/actions'
+import { IaddControl, IchangeToolBoxSelect, IdeleteControl, IselectControl, IupdateControl, IupdateControlExtraData, IupdateCopyControlList, IupdateGroup } from '@/storeModules/fd/actions'
 
 import { controlContextMenu } from '@/FormDesigner/models/controlContextMenuData'
 import { userformContextMenu } from '@/FormDesigner/models/userformContextMenuData'
@@ -25,6 +25,7 @@ export default abstract class FdContainerVue extends FdControlVue {
     @Action('fd/deleteControl') deleteControl!: (payload: IdeleteControl) => void
     @Action('fd/updateGroup') updateGroup!: (payload: IupdateGroup) => void
     @Action('fd/updateControl') updateControl!: (payload: IupdateControl) => void;
+    @Action('fd/updateControlExtraData') updateControlExtraData!: (payload: IupdateControlExtraData) => void;
 
     // containerId: string = this.controlId
     contextMenuType: boolean = false;
@@ -117,21 +118,25 @@ export default abstract class FdContainerVue extends FdControlVue {
         item: newControlData
       })
     }
+    updateZIndex (id: string) {
+      const container = this.getContainerList(id)[0]
+      const userData = this.userformData[this.userFormId]
+      this.updateControlExtraData({
+        userFormId: this.userFormId,
+        controlId: id,
+        propertyName: 'zIndex',
+        value: userData[container].controls.length
+      })
+    }
     updateTabIndex (id: string) {
-      let newTabIndex = -1
-      const containerControls = this.userformData[this.userFormId][id].controls
-      for (const index in containerControls) {
-        const cntrlData = this.userformData[this.userFormId][containerControls[index]]
-        if ('TabIndex' in cntrlData.properties) {
-          newTabIndex = newTabIndex + 1
-          this.updateControl({
-            userFormId: this.userFormId,
-            controlId: containerControls[index],
-            propertyName: 'TabIndex',
-            value: newTabIndex
-          })
-        }
-      }
+      const container = this.getContainerList(id)[0]
+      const userData = this.userformData[this.userFormId]
+      this.updateControl({
+        userFormId: this.userFormId,
+        controlId: id,
+        propertyName: 'TabIndex',
+        value: userData[container].controls.length - 1
+      })
     }
     /**
    * @description  add the control to its respective  container
@@ -155,7 +160,8 @@ export default abstract class FdContainerVue extends FdControlVue {
         item.controls = item.type === 'MultiPage' ? [] : item.controls
         const newControlId = type === 'MultiPage' ? pageId : this.controlId
         this.updateNewControl(newControlId, item.properties.ID, item)
-        this.updateTabIndex(newControlId)
+        this.updateTabIndex(item.properties.ID)
+        this.updateZIndex(item.properties.ID)
 
         if (item.type === 'MultiPage' && controls.length > 0) {
           for (let i = 0; i < controls.length; i++) {

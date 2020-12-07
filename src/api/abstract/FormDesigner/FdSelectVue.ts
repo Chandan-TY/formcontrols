@@ -178,4 +178,42 @@ export default class FdSelectVue extends Vue {
     }
     return containerList || [this.userFormId]
   }
+  updateZIndex (id: string, value: number) {
+    this.updateControlExtraData({
+      userFormId: this.userFormId,
+      controlId: id,
+      propertyName: 'zIndex',
+      value: value
+    })
+  }
+  updateTabIndex (id: string, value: number) {
+    this.updateControl({
+      userFormId: this.userFormId,
+      controlId: id,
+      propertyName: 'TabIndex',
+      value: value
+    })
+  }
+  deleteTabIndex (id: string) {
+    const userData = this.userformData[this.userFormId]
+    const container = this.selectedControls[this.userFormId].container[0]
+    const tempIndex: number = userData[id].properties!.TabIndex!
+    for (const key in userData[container].controls) {
+      const controlTabIndex = userData[userData[container].controls[key]].properties!.TabIndex!
+      if (controlTabIndex > tempIndex) {
+        this.updateTabIndex(userData[container].controls[key], controlTabIndex - 1)
+      }
+    }
+  }
+  deleteZIndex (id: string) {
+    const userData = this.userformData[this.userFormId]
+    const container = this.selectedControls[this.userFormId].container[0]
+    const tempIndex = userData[id].extraDatas!.zIndex!
+    for (const key in userData[container].controls) {
+      const controlZIndex = userData[userData[container].controls[key]].extraDatas!.zIndex!
+      if (controlZIndex > tempIndex) {
+        this.updateZIndex(userData[container].controls[key], controlZIndex - 1)
+      }
+    }
+  }
 }

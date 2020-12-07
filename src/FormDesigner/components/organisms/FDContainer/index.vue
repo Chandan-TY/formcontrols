@@ -69,7 +69,8 @@ import {
   IaddChildControls,
   IselectControl,
   IupdateControl,
-  IupdateGroup
+  IupdateGroup,
+  IupdateControlExtraData
 } from '@/storeModules/fd/actions'
 import { EventBus } from '../../../event-bus'
 @Component({
@@ -97,6 +98,7 @@ export default class Container extends Vue {
   groupedControls!: fdState['groupedControls'];
 
   @Action('fd/updateGroup') updateGroup!: (payload: IupdateGroup) => void;
+  @Action('fd/updateControlExtraData') updateControlExtraData!: (payload: IupdateControlExtraData) => void;
   @Action('fd/updateControl') updateControl!: (payload: IupdateControl) => void;
   @Action('fd/setChildControls') setChildControls!: (
     payload: IsetChildControls
@@ -177,19 +179,43 @@ export default class Container extends Vue {
     }
     return fromContainerControls
   }
-  updateTabIndex (id: string) {
-    let newTabIndex = -1
-    const containerControls = this.userformData[this.userFormId][id].controls
-    for (const index in containerControls) {
-      const cntrlData = this.userformData[this.userFormId][containerControls[index]]
-      if ('TabIndex' in cntrlData.properties) {
-        newTabIndex = newTabIndex + 1
-        this.updateControl({
-          userFormId: this.userFormId,
-          controlId: containerControls[index],
-          propertyName: 'TabIndex',
-          value: newTabIndex
-        })
+  updateTabIndex (id: string, value: number) {
+    this.updateControl({
+      userFormId: this.userFormId,
+      controlId: id,
+      propertyName: 'TabIndex',
+      value: value
+    })
+  }
+  updateZIndex (id: string, value: number) {
+    const container = this.getContainerList(id)[0]
+    const userData = this.userformData[this.userFormId]
+    this.updateControlExtraData({
+      userFormId: this.userFormId,
+      controlId: id,
+      propertyName: 'zIndex',
+      value: value
+    })
+  }
+  deleteZIndex (id: string) {
+    const userData = this.userformData[this.userFormId]
+    const container = this.selectedControls[this.userFormId].container[0]
+    const tempIndex = userData[id].extraDatas!.zIndex!
+    for (const key in userData[container].controls) {
+      const controlZIndex = userData[userData[container].controls[key]].extraDatas!.zIndex!
+      if (controlZIndex > tempIndex) {
+        this.updateZIndex(userData[container].controls[key], controlZIndex - 1)
+      }
+    }
+  }
+  deleteTabIndex (id: string) {
+    const userData = this.userformData[this.userFormId]
+    const container = this.selectedControls[this.userFormId].container[0]
+    const tempIndex: number = userData[id].properties!.TabIndex!
+    for (const key in userData[container].controls) {
+      const controlTabIndex = userData[userData[container].controls[key]].properties!.TabIndex!
+      if (controlTabIndex > tempIndex) {
+        this.updateTabIndex(userData[container].controls[key], controlTabIndex - 1)
       }
     }
   }
@@ -199,12 +225,19 @@ export default class Container extends Vue {
    * @param selectedSelect  - control array to be deleted
    */
   removeChildControl (id: string, controls: string[]) {
+    const userData = this.userformData[this.userFormId]
+    const beforeControls = userData[id].controls
+    const deleteControls = beforeControls.filter(x => !controls.includes(x))
+    for (const key of deleteControls) {
+      this.deleteZIndex(key)
+      this.deleteTabIndex(key)
+    }
+
     this.setChildControls({
       userFormId: this.userFormId,
       containerId: id,
       targetControls: controls
     })
-    this.updateTabIndex(id)
   }
 
   /**
@@ -218,7 +251,10 @@ export default class Container extends Vue {
       containerId: this.containerId,
       targetControls: selectedSelect
     })
-    this.updateTabIndex(this.containerId)
+    for (const id of selectedSelect) {
+      this.updateTabIndex(id, this.userformData[this.userFormId][this.containerId].controls.length - 1)
+      this.updateZIndex(id, this.userformData[this.userFormId][this.containerId].controls.length)
+    }
   }
 
   /**
