@@ -213,7 +213,22 @@ export default class ResizeControl extends FdSelectVue {
           ))
     )
   }
-
+  updateTabIndex (id: string) {
+    let newTabIndex = -1
+    const containerControls = this.userformData[this.userFormId][id].controls
+    for (const index in containerControls) {
+      const cntrlData = this.userformData[this.userFormId][containerControls[index]]
+      if ('TabIndex' in cntrlData.properties) {
+        newTabIndex = newTabIndex + 1
+        this.updateControl({
+          userFormId: this.userFormId,
+          controlId: containerControls[index],
+          propertyName: 'TabIndex',
+          value: newTabIndex
+        })
+      }
+    }
+  }
   deleteItem (event: KeyboardEventInit) {
     if (event.key !== 'Backspace') {
       this.deleteControl({
@@ -221,6 +236,7 @@ export default class ResizeControl extends FdSelectVue {
         parentId: this.containerId!,
         targetId: this.controlId
       })
+      this.updateTabIndex(this.containerId)
     }
   }
   selectedItem (e: MouseEvent) {
@@ -275,7 +291,7 @@ export default class ResizeControl extends FdSelectVue {
         this.syncCurrentSelectedGroup = currentGroup
       }
     }
-    if (this.propControlData.type === 'Frame' && currentSelect.length === 1) {
+    if ((this.propControlData.type === 'Frame' || this.propControlData.type === 'MultiPage') && currentSelect.length === 1) {
       this.isMoving = true
       this.isEditMode = true
       e.stopPropagation()

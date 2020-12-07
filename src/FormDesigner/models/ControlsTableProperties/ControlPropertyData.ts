@@ -444,9 +444,9 @@ export class ControlPropertyData {
       },
       MultiPage: {
         properties: {
-          ID: 'MultiPage1',
+          ID: 'ID_MultiPage1',
           Name: 'MultiPage1',
-          BackColor: '#111111',
+          BackColor: '#eeeeee',
           ControlTipText: '',
           Enabled: true,
           Font: {
@@ -455,13 +455,13 @@ export class ControlPropertyData {
             FontBold: false,
             FontItalic: false,
             FontUnderline: false,
-            FontStrikethrough: true,
+            FontStrikethrough: false,
             FontStyle: 'Arial Narrow Italic'
           },
           ForeColor: '#111111',
-          Height: 40,
+          Height: 200,
           HelpcontextID: 0,
-          Left: 20,
+          Left: 40,
           MultiRow: false,
           Style: 0,
           TabFixedHeight: 0,
@@ -470,14 +470,14 @@ export class ControlPropertyData {
           TabOrientation: 0,
           TabStop: true,
           Tag: '',
-          Top: 0,
-          // ListIndex
+          Top: 20,
           Value: 0,
           Visible: true,
-          Width: 100,
-          GroupID: ''
+          Width: 400,
+          GroupID: '',
+          Index: 0
         },
-        controls: ['Page1', 'Page2'],
+        controls: ['ID_Page1', 'ID_Page2'],
         extraDatas: {
         },
         type: 'MultiPage'
@@ -724,6 +724,37 @@ export class ControlPropertyData {
           ControlSourceValue: 'True'
         },
         type: 'ToggleButton'
+      },
+      Page: {
+        properties: {
+          ID: 'Page1',
+          Name: 'Page1',
+          Accelerator: '1',
+          Caption: 'Page1',
+          ControlTipText: 'Select the Page1',
+          Cycle: 0,
+          Enabled: true,
+          Index: 0,
+          KeepScrollBarsVisible: 3,
+          Picture: '',
+          PictureAlignment: 2,
+          PictureSizeMode: 0,
+          PictureTiling: false,
+          ScrollBars: 0,
+          ScrollHeight: 0,
+          ScrollLeft: 0,
+          ScrollTop: 0,
+          ScrollWidth: 0,
+          Tag: '',
+          TransitionEffect: 0,
+          TransitionPeriod: 0,
+          Visible: true,
+          Zoom: 100
+        },
+        extraDatas: {
+        },
+        controls: [],
+        type: 'Page'
       },
       TextBox: {
         properties: {

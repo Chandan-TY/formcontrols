@@ -95,7 +95,7 @@ export default class Resizehandler extends Vue {
   }
   getMoveValue (callBack: Function) {
     if (this.isMainSelect) {
-      if (this.userformData[this.userFormId][this.controlId].type === 'Frame') {
+      if (this.userformData[this.userFormId][this.controlId].type === 'Frame' || this.userformData[this.userFormId][this.controlId].type === 'MultiPage') {
         callBack(this.positions.offsetX, this.positions.offsetY, this.isSelctedControl, this.getContainerList(this.isSelctedControl)[0])
       } else {
         callBack(this.positions.offsetX, this.positions.offsetY, this.controlId)
@@ -115,7 +115,7 @@ export default class Resizehandler extends Vue {
       this.moveBorder(event)
       if (event.movementX !== 0 && event.movementY !== 0) {
         const containerType = this.userformData[this.userFormId][this.controlId].type
-        if (containerType === 'Frame') {
+        if (containerType === 'Frame' || containerType === 'MultiPage') {
           EventBus.$emit('handleName', 'frameDrag')
           if (controltype === containerType) {
             this.isMove = true
@@ -162,7 +162,7 @@ export default class Resizehandler extends Vue {
           this.positions.offsetY = event.offsetY
           this.isMainSelect = true
           EventBus.$emit('startMoveControl', event)
-          if (containerType === 'Frame') {
+          if (containerType === 'Frame' || containerType === 'MultiPage') {
             document.onmousemove = (event: MouseEvent) => { this.moveControl(event, containerType) }
           } else {
             document.onmousemove = (event: MouseEvent) => { EventBus.$emit('moveControl', event) }

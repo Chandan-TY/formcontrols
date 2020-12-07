@@ -40,8 +40,9 @@
               </SplitArea>
 
               <SplitArea class="innersplit">
-                <!-- <PropertiesList /> -->
-                <label>Prop Name</label>
+                <PropertiesList
+                :userFormId="userFormId"/>
+                <!-- <label>Prop Name</label>
                 <input type="text" v-model="testPropName" />
                 <br />
                 <label>Prop Value</label>
@@ -49,7 +50,7 @@
                 <br />
                 <button @click="clickUpdate">Update selected Control</button>
                 <br /><br />
-                <button @click="clickDelete">Delete selected Control</button>
+                <button @click="clickDelete">Delete selected Control</button> -->
               </SplitArea>
             </Split>
           </SplitArea>

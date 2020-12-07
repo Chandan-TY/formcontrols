@@ -111,6 +111,8 @@ export default class Container extends Vue {
   @Prop({ required: true, type: String }) top: string;
   @Prop({ required: true, type: String }) left: string;
   @Prop() isEditMode: boolean;
+  @Prop() width: number
+  @Prop() height: number
 
   @Ref('groupRef') readonly groupRef!: GroupControl;
   @Ref('refContextMenu') readonly refContextMenu!: ContextMenu;
@@ -175,7 +177,22 @@ export default class Container extends Vue {
     }
     return fromContainerControls
   }
-
+  updateTabIndex (id: string) {
+    let newTabIndex = -1
+    const containerControls = this.userformData[this.userFormId][id].controls
+    for (const index in containerControls) {
+      const cntrlData = this.userformData[this.userFormId][containerControls[index]]
+      if ('TabIndex' in cntrlData.properties) {
+        newTabIndex = newTabIndex + 1
+        this.updateControl({
+          userFormId: this.userFormId,
+          controlId: containerControls[index],
+          propertyName: 'TabIndex',
+          value: newTabIndex
+        })
+      }
+    }
+  }
   /**
    * @description To remove chilControls of selected Container
    * @function removeChildControl
@@ -187,6 +204,7 @@ export default class Container extends Vue {
       containerId: id,
       targetControls: controls
     })
+    this.updateTabIndex(id)
   }
 
   /**
@@ -200,6 +218,7 @@ export default class Container extends Vue {
       containerId: this.containerId,
       targetControls: selectedSelect
     })
+    this.updateTabIndex(this.containerId)
   }
 
   /**
@@ -293,7 +312,6 @@ export default class Container extends Vue {
    */
   onMouseUp (event: MouseEvent) {
     if (document.onmousemove && document.onmouseup && (this.handler === 'drag' || this.handler === 'frameDrag' || this.grouphandler === 'groupdrag')) {
-      debugger
       let moveValueX: number = 0
       let moveValueY: number = 0
       let mainSelect: string = ''
@@ -369,25 +387,26 @@ export default class Container extends Vue {
             event.stopPropagation()
             document.onmouseup(event)
           } else {
-          // remove
-            this.removeChildControl(this.selectedContainer, this.fromContainerControls)
-            // add
-            this.addChildControl(selectedSelect)
-            if (this.grouphandler === 'groupdrag') {
-              for (let k = 0; k < this.selectedGroup.length; k++) {
-                if (this.selectedGroup[k].startsWith('group')) {
-                  this.createGroup(this.selectedGroup[k])
+            if (this.selectedContainer !== this.containerId) {
+            // remove
+              this.removeChildControl(this.selectedContainer, this.fromContainerControls)
+              // add
+              this.addChildControl(selectedSelect)
+              if (this.grouphandler === 'groupdrag') {
+                for (let k = 0; k < this.selectedGroup.length; k++) {
+                  if (this.selectedGroup[k].startsWith('group')) {
+                    this.createGroup(this.selectedGroup[k])
+                  }
                 }
               }
-            }
 
-            if (this.grouphandler === 'groupdrag') {
-              const selected = this.selectedControls[this.userFormId].selected
-              this.updatedSelect(this.getContainerList(selected[0]), selected)
-            } else {
-              this.updatedSelect(this.getContainerList(this.selectedSelect[0]), selectedSelect)
+              if (this.grouphandler === 'groupdrag') {
+                const selected = this.selectedControls[this.userFormId].selected
+                this.updatedSelect(this.getContainerList(selected[0]), selected)
+              } else {
+                this.updatedSelect(this.getContainerList(this.selectedSelect[0]), selectedSelect)
+              }
             }
-
             event.stopPropagation()
             document.onmouseup(event)
           }
@@ -478,8 +497,9 @@ export default class Container extends Vue {
    *
    */
   get dragSelectorStyle () {
-    const ph = this.propControlData.properties.Height!
-    const pw = this.propControlData.properties.Width!
+    const type = this.propControlData.type
+    const ph = type && type === 'Page' ? this.height! : this.propControlData.properties.Height!
+    const pw = type && type === 'Page' ? this.width! : this.propControlData.properties.Width!
     const sh = this.propControlData.properties.ScrollHeight!
     const sw = this.propControlData.properties.ScrollWidth!
     return {

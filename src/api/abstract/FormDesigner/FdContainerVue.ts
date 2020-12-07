@@ -2,7 +2,7 @@ import { Prop, Vue } from 'vue-property-decorator'
 import { controlProperties } from '@/FormDesigner/controls-properties'
 import FdControlVue from './FdControlVue'
 import { Action, State } from 'vuex-class'
-import { IaddControl, IchangeToolBoxSelect, IdeleteControl, IselectControl, IupdateCopyControlList, IupdateGroup } from '@/storeModules/fd/actions'
+import { IaddControl, IchangeToolBoxSelect, IdeleteControl, IselectControl, IupdateControl, IupdateCopyControlList, IupdateGroup } from '@/storeModules/fd/actions'
 
 import { controlContextMenu } from '@/FormDesigner/models/controlContextMenuData'
 import { userformContextMenu } from '@/FormDesigner/models/userformContextMenuData'
@@ -24,6 +24,7 @@ export default abstract class FdContainerVue extends FdControlVue {
     @Action('fd/updateCopyControlList') updateCopyControlList!: (payload: IupdateCopyControlList) => void
     @Action('fd/deleteControl') deleteControl!: (payload: IdeleteControl) => void
     @Action('fd/updateGroup') updateGroup!: (payload: IupdateGroup) => void
+    @Action('fd/updateControl') updateControl!: (payload: IupdateControl) => void;
 
     // containerId: string = this.controlId
     contextMenuType: boolean = false;
@@ -84,6 +85,54 @@ export default abstract class FdContainerVue extends FdControlVue {
       }
       return containerList || [this.userFormId]
     }
+
+    generateControlId (controlName: string) {
+      let lastControlId = 0
+      const userformControlIds = Object.keys(this.userformData[this.userFormId])
+      for (let i = 0; i < userformControlIds.length; i++) {
+        if (userformControlIds[i].indexOf(controlName) !== -1) {
+          const IdNum =
+          userformControlIds[i].split(controlName).pop() || '-1'
+          const pasreId = parseInt(IdNum, 10)
+          if (!isNaN(pasreId) && lastControlId < pasreId) {
+            lastControlId = pasreId
+          }
+        }
+      }
+      const controlPropData = new ControlPropertyData()
+      let controlObj = controlName.startsWith('Page') ? controlPropData.data['Page'] : controlPropData.data[controlName]
+      const item = JSON.parse(JSON.stringify(controlObj!))
+      lastControlId += 1
+      item.properties.ID = `ID_${controlName}${lastControlId}`
+      item.properties.Caption = `${controlName}${lastControlId}`
+      item.properties.Name = `${controlName}${lastControlId}`
+      return item
+    }
+
+    updateNewControl (parentId: string, newControlId: string, newControlData: controlData) {
+      this.addControl({
+        userFormId: this.userFormId,
+        controlId!: parentId,
+        addId: newControlId,
+        item: newControlData
+      })
+    }
+    updateTabIndex (id: string) {
+      let newTabIndex = -1
+      const containerControls = this.userformData[this.userFormId][id].controls
+      for (const index in containerControls) {
+        const cntrlData = this.userformData[this.userFormId][containerControls[index]]
+        if ('TabIndex' in cntrlData.properties) {
+          newTabIndex = newTabIndex + 1
+          this.updateControl({
+            userFormId: this.userFormId,
+            controlId: containerControls[index],
+            propertyName: 'TabIndex',
+            value: newTabIndex
+          })
+        }
+      }
+    }
     /**
    * @description  add the control to its respective  container
    * @function addControlObj
@@ -91,26 +140,10 @@ export default abstract class FdContainerVue extends FdControlVue {
    * @param userFormId - selected Userform
    * @event click
    */
-    addControlObj (e: MouseEvent) {
-      const controlPropData = new ControlPropertyData()
+    addControlObj (e: MouseEvent, pageId: string) {
       if (this.toolBoxSelect !== 'Select' && this.toolBoxSelect !== '') {
-        let lastControlId = -1
-        const userformControlIds = Object.keys(this.userformData[this.userFormId])
-        const selectStringLen = this.toolBoxSelect.length
-        for (let i = 0; i < userformControlIds.length; i++) {
-          if (userformControlIds[i].indexOf(this.toolBoxSelect) !== -1) {
-            const IdNum =
-            userformControlIds[i].split(this.toolBoxSelect).pop() || '-1'
-            const pasreId = parseInt(IdNum, 10)
-            if (!isNaN(pasreId) && lastControlId < pasreId) {
-              lastControlId = pasreId
-            }
-          }
-        }
-        let controlObj = controlPropData.data[this.toolBoxSelect]
-        const item = JSON.parse(JSON.stringify(controlObj!))
-        lastControlId += 1
-        item.properties.ID = `ID_${this.toolBoxSelect}${lastControlId}`
+        const type = this.userformData[this.userFormId][this.controlId].type
+        const item = this.generateControlId(this.toolBoxSelect)
         const sw = parseInt(this.selectedAreaStyle!.width!)
         const sh = parseInt(this.selectedAreaStyle!.height)
 
@@ -118,13 +151,23 @@ export default abstract class FdContainerVue extends FdControlVue {
         item.properties.Top = sw! === 0 ? e.offsetY : parseInt(this.selectedAreaStyle!.top)
         item.properties.Width = sw! === 0 ? item.properties.Width : sw
         item.properties.Height = sw! === 0 ? item.properties.Height : sh
+        const controls = item.controls
+        item.controls = item.type === 'MultiPage' ? [] : item.controls
+        const newControlId = type === 'MultiPage' ? pageId : this.controlId
+        this.updateNewControl(newControlId, item.properties.ID, item)
+        this.updateTabIndex(newControlId)
 
-        this.addControl({
-          userFormId: this.userFormId,
-          controlId!: this.controlId,
-          addId: item.properties.ID,
-          item: item
-        })
+        if (item.type === 'MultiPage' && controls.length > 0) {
+          for (let i = 0; i < controls.length; i++) {
+            const parentId = item.properties.ID.split('MultiPage').pop()
+            const controlName = `Page${parentId}_`
+            const pageObj = this.generateControlId(controlName)
+            pageObj.properties.Caption = `Page${i + 1}`
+            pageObj.properties.Name = `Page${i + 1}`
+            pageObj.properties.Index = i
+            this.updateNewControl(item.properties.ID, pageObj.properties.ID, pageObj)
+          }
+        }
         this.selectControl({
           userFormId: this.userFormId,
           select: {
@@ -179,7 +222,8 @@ export default abstract class FdContainerVue extends FdControlVue {
       const containerType = this.userformData[this.userFormId][this.containerId].type
       if (
         controlType === 'Userform' ||
-        controlType === 'Frame'
+        controlType === 'Frame' ||
+        controlType === 'MultiPage'
       ) {
         this.contextMenuType = true
       } else {
@@ -187,8 +231,8 @@ export default abstract class FdContainerVue extends FdControlVue {
       }
       const controlLeft: number | undefined = this.userformData[this.userFormId][controlID].properties.Left
       const controlTop: number | undefined = this.userformData[this.userFormId][controlID].properties.Top
-      this.top = controlType === 'Frame' ? `${e.offsetY}px` : containerType === 'Frame' ? `${e.offsetY + controlTop!}px` : `${e.offsetY + controlTop! + 30}px`
-      this.left = controlType === 'Frame' ? `${e.offsetX}px` : `${e.offsetX + controlLeft!}px`
+      this.top = controlType === 'Frame' || controlType === 'MultiPage' ? `${e.offsetY}px` : (containerType === 'Frame' || containerType === 'MultiPage') ? `${e.offsetY + controlTop!}px` : `${e.offsetY + controlTop! + 30}px`
+      this.left = controlType === 'Frame' || controlType === 'MultiPage' ? `${e.offsetX}px` : `${e.offsetX + controlLeft!}px`
       this.viewMenu = true
       const controlLength = this.userformData[this.userFormId][parentID].controls
         .length
@@ -243,7 +287,9 @@ export default abstract class FdContainerVue extends FdControlVue {
    * @param event  - it is of type MouseEvent
    * @event mouseup
    */
-    calSelectedAreaStyle (event: MouseEvent) {
+    calSelectedAreaStyle (event: MouseEvent, pageData: controlData) {
+      const type = this.userformData[this.userFormId][this.controlId].type
+      const controlData: controlData = type === 'MultiPage' ? pageData : this.data
       const left = parseInt(this.selectedAreaStyle!.left)
       const right =
     parseInt(this.selectedAreaStyle!.left) +
@@ -254,8 +300,8 @@ export default abstract class FdContainerVue extends FdControlVue {
     parseInt(this.selectedAreaStyle!.height)
       const leftArray: Array<number> = []
       if (left !== right || top !== bottom) {
-        for (let i in this.data.controls) {
-          const key: string = this.data.controls[i]
+        for (let i in controlData.controls) {
+          const key: string = controlData.controls[i]
           const controlProp: controlProperties = this.userformData[this.userFormId][key].properties
           if (
             left <= controlProp!.Left! + controlProp!.Width! &&
@@ -265,7 +311,6 @@ export default abstract class FdContainerVue extends FdControlVue {
           ) {
             this.selectedControlArray.push(key)
           }
-          // leftArray.push(controlProp!.Left!)
         }
         const selectedGroup = []
         for (const val of this.selectedControlArray) {

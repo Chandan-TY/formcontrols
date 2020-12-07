@@ -213,7 +213,7 @@ export default class UserForm extends FdContainerVue {
   dragSelectorControl (event: MouseEvent) {
     this.selectedControlArray = []
     this.selectedAreaStyle = this.containerRef.dragSelector.selectAreaStyle
-    this.calSelectedAreaStyle(event)
+    this.calSelectedAreaStyle(event, this.data)
   }
 
   showContextMenu (e: MouseEvent, parentID: string, controlID: string) {

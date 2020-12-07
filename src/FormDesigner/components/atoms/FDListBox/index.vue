@@ -221,10 +221,8 @@ export default class FDListBox extends Mixins(FdControlVue) {
    * @description mounted initializes the values which are required for the component
    */
   mounted () {
-    const target = this.listStyleRef[0]
     var event = new MouseEvent('mousedown.stop')
     this.setInitial(event)
-    console.log('temp event value', this.tempListBoxComboBoxEvent)
     const initialRowSourceData = this.extraDatas.RowSourceData!
     this.updateDataModel({ propertyName: 'ControlSource', value: '' })
     if (initialRowSourceData && initialRowSourceData.length === 0) {

@@ -3,7 +3,7 @@
     <div>
       <div class="sideheader">
         <span class="sideheader1">
-          <span>Properties - VBAProject</span>
+          <span>Properties - {{userformData[userFormId][userFormId].properties.Name}}</span>
           <div id="mdiv" v-on:click="hideShowTable">
             <div class="mdiv">
               <div class="md"></div>
@@ -13,21 +13,18 @@
       </div>
     </div>
     <div class="form-group">
-      <label for="userForm"></label>
-
        <select
         class="form-control"
         name="selectedUserForm"
         id="selectedUserForm"
-        v-model="selectedOption"
-        v-if="Object.keys(selectedUserForm).length>0"
+        v-if="userFormId"
       >
         <option
-          :value="selectedUserForm"
+          :value="userFormId"
           :selected="true"
-        >{{ selectedUserForm.properties.Name}} {{selectedUserForm.type}}</option>
-         <option v-for="control in selectedUserForm.controls" :value="control" :key="control.id">
-          <b>{{ control.properties.Name }} {{control.type}}</b>
+        >{{ userformData[userFormId][userFormId].properties.Name}} {{userformData[userFormId][userFormId].type}}</option>
+         <option v-for="control in userformData[userFormId][userFormId].controls" :value="control" :key="userformData[userFormId][control].properties.Name">
+          <b>{{ userformData[userFormId][control].properties.Name }} {{userformData[userFormId][control].type}}</b>
         </option>
       </select>
 
@@ -35,26 +32,18 @@
     <!-- <FDPropertyTable
       :tableData="propertyTableData"
       @updateProperty="updateProperty"/> -->
-    <FDTable  @FontProp="fontProp" :tableData="propertyTableData" @updateProperty="updateProperty" @updateExtraProperty="updateExtraProperty"/>
+    <FDTable :tableData="propertyTableData" @updateProperty="updateProperty" @updateExtraProperty="updateExtraProperty" />
   </div>
 </template>
 
 <script lang="ts">
-import { Component, Vue } from 'vue-property-decorator'
+import { Component, Prop, Vue } from 'vue-property-decorator'
 import { Action, State } from 'vuex-class'
 import FDTable from '@/FormDesigner/components/organisms/FDTable/index.vue'
 import FDPropertyTable, { tableDatas } from '@/FormDesigner/components/organisms/FDPropertyTable/index.vue'
-// import { EventBus } from '../../../event-bus'
 import { LabelData } from '../../../models/ControlsTableProperties/LabelTableProperties'
 import { PropertyListDefine } from '@/FormDesigner/models/ControlsTableProperties/propertyList'
 import { IupdateControl, IupdatedSelectedControl } from '@/storeModules/fd/actions'
-
-interface SelectedUserForm{
-  controls: Array<string>,
-  extraDatas: Object,
-  properties: Object,
-  type : string
-}
 
 @Component({
   name: 'PropertiesList',
@@ -67,7 +56,10 @@ export default class PropertiesList extends Vue {
   @Action('fd/updateControl') updateControl!: (payload: IupdatedSelectedControl) => void
   @Action('fd/updateControlExtraData') updateControlExtraData!: (payload: IupdatedSelectedControl) => void
   @State(state => state.fd.userformData) userformData!: userformData
-  @State(state => state.fd.selectedControls) selectedControls!: updatedSelectedControls
+  @State((state) => state.fd.selectedControls) selectedControls!: fdState['selectedControls'];
+  @State(state => state.fd.groupedControls) groupedControls!: fdState['groupedControls']
+  @Prop({ required: true, type: String }) public readonly userFormId! : string
+
   propList = new PropertyListDefine();
 
   isTableVisible = false;
@@ -75,19 +67,24 @@ export default class PropertiesList extends Vue {
     this.isTableVisible = true
   }
 
-  selectedUserForm: Object = {}
   selectedOption: Object= {}
-  // created () {
-  //   EventBus.$on('userFormClicked', (selectedUserForm: Object, selectedOption: Object) => {
-  //     this.selectedUserForm = selectedUserForm
-  //     this.selectedOption = selectedOption
 
-  //     console.log('SUF', this.selectedUserForm)
-  //     console.log('SO', this.selectedOption)
-  //   })
-  // }
-
+  get getSelectedControlsDatas () {
+    return this.selectedControls[this.userFormId]
+  }
   updateProperty (arg: IupdatedSelectedControl) {
+    // debugger
+    const selected = this.getSelectedControlsDatas.selected
+    console.log(selected)
+    console.log(arg)
+    // for (let i = 0; i < selected.length; i++) {
+    //   this.updateControl({
+    //     userFormId: this.userFormId,
+    //     controlId: selected[i],
+    //     propertyName: this.testPropName,
+    //     value: this.testPropValue
+    //   })
+    // }
     if (arg.target === null) {
       if (this.selectedControls.main instanceof Array) {
         for (const vueInstance of this.selectedControls.main) {
@@ -115,32 +112,31 @@ export default class PropertiesList extends Vue {
     }
   }
 
-  // get selCtrl () {
-  //   return this.userformData['ID_USERFORM1']['ID_Label1'].properties
-  // }
-
-  // get propertyTableData () : tableDatas {
-  //   const result : tableDatas = {}
-  //   for (const controlType in this.propList.data) {
-  //     if (this.selCtrl.selected[0].controlData.type === controlType) {
-  //       const defineList = this.propList.data[controlType]
-  //       for (const propName in defineList) {
-  //         const propValue = this.selCtrl.selected[0].controlData.properties[propName]
-  //         if (propValue !== undefined) {
-  //           result[propName] = {
-  //             ...defineList[propName],
-  //             value: propValue
-  //           }
-  //         }
-  //       }
-  //       break
-  //     }
-  //   }
-  //   return result
-  // }
-  // destoryed () {
-  //   EventBus.$off('userFormClicked')
-  // }
+  get propertyTableData () : tableDatas {
+    // debugger
+    console.log('SSS', this.getSelectedControlsDatas.selected)
+    console.log('GGG', this.groupedControls[this.userFormId])
+    const result : tableDatas = {}
+    for (const controlType in this.propList.data) {
+      if (this.getSelectedControlsDatas.selected.length === 1) {
+        const controlData = this.userformData[this.userFormId][this.getSelectedControlsDatas.selected[0]]
+        if (controlData.type === controlType) {
+          const defineList = this.propList.data[controlType]
+          for (const propName in defineList) {
+            const propValue = controlData.properties[propName]
+            if (propValue !== undefined) {
+              result[propName] = {
+                ...defineList[propName],
+                value: propValue
+              }
+            }
+          }
+          break
+        }
+      }
+    }
+    return result
+  }
 }
 </script>
 

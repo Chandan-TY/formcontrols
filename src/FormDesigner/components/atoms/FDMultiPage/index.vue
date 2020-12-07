@@ -1,20 +1,66 @@
 <template>
-<div>
-  <div class="outer-page" :style="pageStyleObj"
-      @click.stop="selectedItem"
-      @mousedown="controlEditMode"
-      :title="properties.ControlTipText">
-    <div class="pages" :style="styleTabsObj" :title="properties.ControlTipText">
-      <div class="move" ref="scrolling" :style="styleMoveObj">
-        <div class="page" v-for="(value, key) in controls" :key="key" :style="getTabStyle">
-          <FDControlTabs @setValue="setValue" @isChecked="isChecked" :getMouseCursorData="getMouseCursorData" :setFontStyle="setFontStyle" @tempStretch="tempStretch" :data="data" :pageValue="value" :indexValue="key" :pageData="pageData(value).properties" :isRunMode="isRunMode" :isEditMode="isEditMode" :isItalic="isItalic" :tempStretch="tempStretch" :tempWeight="tempWeight" :tempTabWidth="tempTabWidth" />
+  <div>
+    <div
+      class="outer-page"
+      :style="pageStyleObj"
+      :title="properties.ControlTipText"
+      @mousedown="multiPageMouseDown"
+      @click.stop="!isEditMode ? selectedItem : addControlObj($event, selectedPageID)"
+      @mouseup="dragSelectorControl($event)"
+      @contextmenu.stop="handleContextMenu"
+      @keydown.delete.stop.exact="deleteMultiPage"
+    >
+      <div
+        class="pages"
+        :style="styleTabsObj"
+        :title="properties.ControlTipText"
+        v-if="controls.length > 0"
+      >
+        <div
+          class="move"
+          ref="scrolling"
+          :style="styleMoveObj"
+        >
+          <div
+            class="page"
+            v-for="(value, key) in controls"
+            :key="key"
+            :style="getTabStyle"
+          >
+            <FDControlTabs
+              @setValue="setValue"
+              @isChecked="isChecked"
+              :getMouseCursorData="getMouseCursorData"
+              :setFontStyle="setFontStyle"
+              @tempStretch="tempStretch"
+              :data="data"
+              :pageValue="value"
+              :indexValue="key"
+              :pageData="pageData(value).properties"
+              :isRunMode="isRunMode"
+              :isEditMode="isEditMode"
+              :isItalic="isItalic"
+              :tempStretch="tempStretch"
+              :tempWeight="tempWeight"
+              :tempTabWidth="tempTabWidth"
+            />
+          </div>
         </div>
-      </div>
-        <div class="content"
+        <div
+          class="content"
           :style="styleContentObj"
           ref="contentRef"
-          :title="properties.ControlTipText">
-          <div :style="containerDivStyle" :title="properties.ControlTipText">
+          :title="properties.ControlTipText"
+        >
+          <div
+            v-if="controls.includes(selectedPageID)"
+            :style="containerDivStyle"
+            :title="properties.ControlTipText"
+            :tabindex="properties.TabIndex"
+            @keydown.ctrl.exact.stop="handleKeyDown"
+            @keydown.enter.exact="setContentEditable($event, true)"
+            @contextmenu.stop="showContextMenu($event, userFormId, controlId)"
+          >
             <Container
               :contextMenuType="contextMenuType"
               :viewMenu="viewMenu"
@@ -25,31 +71,35 @@
               :title="properties.ControlTipText"
               :left="left"
               :top="top"
+              :width="properties.Width"
+              :height="properties.Height"
               ref="containerRef"
               @closeMenu="closeMenu"
-              @openMenu="(e, parentID, controlID) => showContextMenu(e, parentID, controlID)" />
-            </div>
+              @openMenu="(e, parentID, controlID) =>showContextMenu(e, parentID, controlID)"
+            />
           </div>
-      <div></div>
-      <div :style="getScrollButtonStyleObj">
+        </div>
+        <div></div>
+        <div :style="getScrollButtonStyleObj">
           <button class="left-button" @click="leftmove"></button>
           <button class="right-button" @click="rightmove"></button>
+        </div>
       </div>
     </div>
-  </div>
-  <div
+    <div
       id="right-click-menu"
-      tabindex="0"
-      @blur.stop="closeMenu"
-      :style="{ top: top, left: left, display: viewMenu ? 'block' : 'none' }"
+      ref="multipage"
+      :tabindex="0"
+      @blur.stop="closeContextMenu"
+      :style="{ top: top, left: left, display: multiPageContextMenu ? 'block' : 'none' }"
     >
-    <ContextMenu
+      <ContextMenu
         :values="contextMenuValue"
         :controlId="controlId"
         :selectedTab="updatedValue"
         :data="data"
         :userFormId="userFormId"
-        @closeMenu="closeMenu"
+        @closeMenu="closeContextMenu"
       />
     </div>
   </div>
@@ -64,8 +114,12 @@ import { controlProperties } from '@/FormDesigner/controls-properties'
 import ContextMenu from '../FDContextMenu/index.vue'
 import { tabsContextMenu } from '../../../models/tabsContextMenu'
 import Vue from 'vue'
-import { KeyValueProp, ScrollBarProp } from '@/FormDesigner/controls-properties-types'
+import {
+  KeyValueProp,
+  ScrollBarProp
+} from '@/FormDesigner/controls-properties-types'
 import FDControlTabs from '@/FormDesigner/components/atoms/FDControlTabs/index.vue'
+import Container from '@/FormDesigner/components/organisms/FDContainer/index.vue'
 
 @Component({
   name: 'FDMultiPage',
@@ -80,17 +134,28 @@ export default class FDMultiPage extends FdContainerVue {
   @State((state) => state.fd.userformData) userformData!: userformData;
   @Prop() isEditMode: boolean;
   @Prop({ required: true, type: String }) public userFormId!: string;
-  @Ref('scrolling') scrolling:HTMLDivElement
-  @Ref('contentRef') contentRef:HTMLDivElement
+  @Ref('scrolling') scrolling: HTMLDivElement;
+  @Ref('contentRef') contentRef: HTMLDivElement;
+  @Ref('containerRef') readonly containerRef!: Container;
+  @Ref('multipage') multipage: HTMLDivElement
 
   viewMenu?: boolean = false;
   top: string = '0px';
   left: string = '0px';
   contextMenuValue: Array<IcontextMenu> = tabsContextMenu;
   updatedValue: number = 0;
-  selectedPageID: string = ''
-  tempTabWidth: number = 0
+  selectedPageID: string = '';
+  tempTabWidth: number = 0;
+  multiPageContextMenu: boolean = false
+  selectedPageIndex: number = -1
 
+  closeMenu () {
+    this.viewMenu = false
+  }
+
+  closeContextMenu () {
+    this.multiPageContextMenu = false
+  }
   /**
    * @description takes a single page value based on the value of the control
    * @function pageData
@@ -160,13 +225,22 @@ export default class FDMultiPage extends FdContainerVue {
       bottomTopStyle = { [a[1]]: '0px' }
     }
     return {
-      position: controlProp.TabOrientation === 1 || controlProp.TabOrientation === 3 ? 'absolute' : 'inherit',
+      position:
+        controlProp.TabOrientation === 1 || controlProp.TabOrientation === 3
+          ? 'absolute'
+          : 'inherit',
       ...bottomTopStyle,
       whiteSpace: controlProp.MultiRow === true ? 'break-spaces' : 'nowrap',
       zIndex: controlProp.MultiRow === true ? '100' : '',
       display: controlProp.Style === 2 ? 'none' : 'inline-block',
-      height: controlProp.TabOrientation === 2 || controlProp.TabOrientation === 3 ? '100%' : '',
-      width: controlProp.TabOrientation === 2 || controlProp.TabOrientation === 3 ? 'fit-content' : '100%',
+      height:
+        controlProp.TabOrientation === 2 || controlProp.TabOrientation === 3
+          ? '100%'
+          : '',
+      width:
+        controlProp.TabOrientation === 2 || controlProp.TabOrientation === 3
+          ? 'fit-content'
+          : '100%',
       right: controlProp.TabOrientation === 3 ? '0px' : '',
       overflow: 'hidden'
     }
@@ -179,16 +253,26 @@ export default class FDMultiPage extends FdContainerVue {
    *
    */
   get containerDivStyle () {
-    let zoomVal = this.selectedPageData.properties.Zoom! / 100
-    return {
-      height: '100%',
-      width: '100%',
-      position: 'relative',
-      backgroundImage: `url(${this.selectedPageData.properties.Picture})`,
-      backgroundSize: this.selectedPageData.properties.Picture === '' ? '' : this.getSizeMode,
-      backgroundRepeat: this.getRepeatData,
-      backgroundPosition: this.selectedPageData.properties.Picture === '' ? '' : this.getPosition,
-      zoom: zoomVal + ''
+    if (this.selectedPageData) {
+      let zoomVal = this.selectedPageData
+        ? this.selectedPageData.properties.Zoom! / 100
+        : ''
+      return {
+        height: '100%',
+        width: '100%',
+        position: 'relative',
+        backgroundImage: `url(${this.selectedPageData.properties.Picture})`,
+        backgroundSize:
+          this.selectedPageData.properties.Picture === ''
+            ? ''
+            : this.getSizeMode,
+        backgroundRepeat: this.getRepeatData,
+        backgroundPosition:
+          this.selectedPageData.properties.Picture === ''
+            ? ''
+            : this.getPosition,
+        zoom: zoomVal + ''
+      }
     }
   }
   /**
@@ -199,21 +283,50 @@ export default class FDMultiPage extends FdContainerVue {
    */
   protected get getScrollButtonStyleObj (): Partial<CSSStyleDeclaration> {
     const controlProp = this.properties
-    const tabsLength = this.properties.TabFixedWidth! > 0 ? this.controls.length * this.properties.TabFixedWidth! + (10 * this.controls!.length) : this.controls.length * 30 + (10 * this.controls!.length)
-    const tabsHeight = this.properties.TabFixedHeight! > 0 ? this.controls.length * this.properties.TabFixedHeight! + (10 * this.controls!.length) : this.controls.length * 20 + (10 * this.controls!.length)
+    const tabsLength =
+      this.properties.TabFixedWidth! > 0
+        ? this.controls.length * this.properties.TabFixedWidth! +
+          10 * this.controls!.length
+        : this.controls.length * 30 + 10 * this.controls!.length
+    const tabsHeight =
+      this.properties.TabFixedHeight! > 0
+        ? this.controls.length * this.properties.TabFixedHeight! +
+          10 * this.controls!.length
+        : this.controls.length * 20 + 10 * this.controls!.length
 
     return {
       position: 'absolute',
       zIndex: '3',
       marginTop:
         controlProp.TabOrientation === 2 || controlProp.TabOrientation === 3
-          ? `${controlProp.Height! - 30}px` : controlProp.TabOrientation === 1 ? `${controlProp.Height! - 22}px` : '0px',
+          ? `${controlProp.Height! - 30}px`
+          : controlProp.TabOrientation === 1
+            ? `${controlProp.Height! - 22}px`
+            : '0px',
       transform:
         controlProp.TabOrientation === 2
           ? 'rotate(90deg)'
           : this.transformScrollButtonStyle,
-      display: controlProp.TabOrientation === 0 || controlProp.TabOrientation === 1 ? ((this.properties.Width! > 44) ? ((tabsLength > this.properties.Width!) ? 'block' : 'none') : 'none') : controlProp.TabOrientation === 2 || controlProp.TabOrientation === 3 ? ((this.properties.Height! > 44) ? ((tabsHeight > this.properties.Height!) ? 'block' : 'none') : 'none') : 'none',
-      right: controlProp.TabOrientation === 3 ? '-14px' : controlProp.TabOrientation === 2 ? `${controlProp.Width! - 40}px` : '-14px',
+      display:
+        controlProp.TabOrientation === 0 || controlProp.TabOrientation === 1
+          ? this.properties.Width! > 44
+            ? tabsLength > this.properties.Width!
+              ? 'block'
+              : 'none'
+            : 'none'
+          : controlProp.TabOrientation === 2 || controlProp.TabOrientation === 3
+            ? this.properties.Height! > 44
+              ? tabsHeight > this.properties.Height!
+                ? 'block'
+                : 'none'
+              : 'none'
+            : 'none',
+      right:
+        controlProp.TabOrientation === 3
+          ? '-14px'
+          : controlProp.TabOrientation === 2
+            ? `${controlProp.Width! - 40}px`
+            : '-14px',
       top: '0px'
     }
   }
@@ -227,6 +340,13 @@ export default class FDMultiPage extends FdContainerVue {
     this.updatedValue = value.indexValue
     this.selectedPageID = value.pageValue
     this.updateDataModel({ propertyName: 'Value', value: value.indexValue })
+    this.selectControl({
+      userFormId: this.userFormId,
+      select: {
+        container: this.getContainerList(this.selectedPageID),
+        selected: [this.selectedPageID]
+      }
+    })
   }
 
   /**
@@ -236,10 +356,13 @@ export default class FDMultiPage extends FdContainerVue {
    */
   leftmove () {
     const scrollRef = this.scrolling
-    if (this.properties.TabOrientation === 0 || this.properties.TabOrientation === 1) {
-    scrollRef.scrollLeft! -= 50
+    if (
+      this.properties.TabOrientation === 0 ||
+      this.properties.TabOrientation === 1
+    ) {
+      scrollRef.scrollLeft! -= 50
     } else {
-    scrollRef.scrollTop! -= 50
+      scrollRef.scrollTop! -= 50
     }
   }
 
@@ -251,8 +374,11 @@ export default class FDMultiPage extends FdContainerVue {
   rightmove () {
     const scrollRef = this.scrolling
     let tempScrollTop = scrollRef.scrollTop!
-    if (this.properties.TabOrientation === 0 || this.properties.TabOrientation === 1) {
-    scrollRef.scrollLeft! += 50
+    if (
+      this.properties.TabOrientation === 0 ||
+      this.properties.TabOrientation === 1
+    ) {
+      scrollRef.scrollLeft! += 50
     } else {
       tempScrollTop += 50
       scrollRef.scrollTop = tempScrollTop
@@ -295,10 +421,18 @@ export default class FDMultiPage extends FdContainerVue {
    * @function getRepeat
    */
   protected get getRepeatData (): string {
-    const picture = this.selectedPageData.properties.Picture!
-    const pictureTiling = this.selectedPageData.properties.PictureTiling!
-    const pictureSizeMode = this.selectedPageData.properties.PictureSizeMode!
-    return controlProperties.getRepeatDataProp(picture, pictureTiling, pictureSizeMode)
+    if (this.selectedPageData) {
+      const picture = this.selectedPageData.properties.Picture!
+      const pictureTiling = this.selectedPageData.properties.PictureTiling!
+      const pictureSizeMode = this.selectedPageData.properties.PictureSizeMode!
+      return controlProperties.getRepeatDataProp(
+        picture,
+        pictureTiling,
+        pictureSizeMode
+      )
+    } else {
+      return ''
+    }
   }
 
   /**
@@ -312,29 +446,53 @@ export default class FDMultiPage extends FdContainerVue {
     return {
       position: 'absolute',
       display:
-      controlProp.Height! < controlProp.TabFixedHeight! ? 'none' : controlProp.Width! < controlProp.TabFixedWidth! ? 'none'
-        : controlProp.Style === 1 || controlProp.Style === 2
+        controlProp.Height! < controlProp.TabFixedHeight!
           ? 'none'
-          : controlProp.Width! < 30 || controlProp.Height! < 30
+          : controlProp.Width! < controlProp.TabFixedWidth!
             ? 'none'
-            : 'block',
-      top: controlProp.TabOrientation === 0 ? controlProp.TabFixedHeight! > 0 ? (controlProp.TabFixedHeight! + 12) + 'px' : '33px' : '0px',
-      height: controlProp.TabOrientation === 0 || controlProp.TabOrientation === 1
-        ? controlProp.TabFixedHeight! > 0 ? (controlProp.Height! - controlProp.TabFixedHeight! - 5) + 'px' : controlProp.TabOrientation === 1 ? `${controlProp.Height! - 21}px` : `${controlProp.Height! - 35}px`
-        : `${controlProp.Height! - 2}px`,
+            : controlProp.Style === 1 || controlProp.Style === 2
+              ? 'none'
+              : controlProp.Width! < 30 || controlProp.Height! < 30
+                ? 'none'
+                : 'block',
+      top:
+        controlProp.TabOrientation === 0
+          ? controlProp.TabFixedHeight! > 0
+            ? controlProp.TabFixedHeight! + 12 + 'px'
+            : '33px'
+          : '0px',
+      height:
+        controlProp.TabOrientation === 0 || controlProp.TabOrientation === 1
+          ? controlProp.TabFixedHeight! > 0
+            ? controlProp.Height! - controlProp.TabFixedHeight! - 5 + 'px'
+            : controlProp.TabOrientation === 1
+              ? `${controlProp.Height! - 21}px`
+              : `${controlProp.Height! - 35}px`
+          : `${controlProp.Height! - 2}px`,
       width:
         controlProp.TabOrientation === 0 || controlProp.TabOrientation === 1
           ? 'calc(100% - 3px)'
-          : controlProp.TabFixedWidth! > 0 ? (controlProp.Width! - controlProp.TabFixedWidth! - 15) + 'px' : controlProp.TabFixedWidth! === 0 ? (controlProp.Width! - this.tempTabWidth - 15) + 'px' : 'calc(100% - 44px)',
-      left: controlProp.TabOrientation === 2 ? controlProp.TabFixedWidth! > 0 ? (controlProp.TabFixedWidth! + 12) + 'px' : controlProp.TabFixedWidth! === 0 ? (controlProp.Width! - this.tempTabWidth - 41) + 'px' : '40px' : '0px',
+          : controlProp.TabFixedWidth! > 0
+            ? controlProp.Width! - controlProp.TabFixedWidth! - 15 + 'px'
+            : controlProp.TabFixedWidth! === 0
+              ? controlProp.Width! - this.tempTabWidth - 15 + 'px'
+              : 'calc(100% - 44px)',
+      left:
+        controlProp.TabOrientation === 2
+          ? controlProp.TabFixedWidth! > 0
+            ? controlProp.TabFixedWidth! + 12 + 'px'
+            : controlProp.TabFixedWidth! === 0
+              ? controlProp.Width! - this.tempTabWidth - 41 + 'px'
+              : '40px'
+          : '0px',
       cursor:
         controlProp.MousePointer !== 0 || controlProp.MouseIcon !== ''
           ? this.getMouseCursorData
           : 'default',
       padding: '0px',
       overflow: 'hidden',
-      overflowX: this.getScrollBarPage.overflowX,
-      overflowY: this.getScrollBarPage.overflowY
+      overflowX: this.getScrollBarPage ? this.getScrollBarPage.overflowX! : '',
+      overflowY: this.getScrollBarPage ? this.getScrollBarPage.overflowY! : ''
     }
   }
 
@@ -344,11 +502,19 @@ export default class FDMultiPage extends FdContainerVue {
    * @function getPosition
    * @returns string value
    */
-  protected get getPosition (): string {
-    const picture = this.selectedPageData.properties.Picture!
-    const pictureAlignment = this.selectedPageData.properties.PictureAlignment!
-    const pictureSizeMode = this.selectedPageData.properties.PictureSizeMode!
-    return controlProperties.getPositionProp(picture, pictureAlignment, pictureSizeMode)
+  protected get getPosition () {
+    if (this.selectedPageData) {
+      const picture = this.selectedPageData.properties.Picture!
+      const pictureAlignment = this.selectedPageData.properties.PictureAlignment!
+      const pictureSizeMode = this.selectedPageData.properties.PictureSizeMode!
+      return controlProperties.getPositionProp(
+        picture,
+        pictureAlignment,
+        pictureSizeMode
+      )
+    } else {
+      return ''
+    }
   }
 
   /**
@@ -358,8 +524,12 @@ export default class FDMultiPage extends FdContainerVue {
    * @returns string value
    */
   protected get getSizeMode (): string {
-    const index:number = this.selectedPageData.properties.PictureSizeMode!
-    return controlProperties.getSizeModeProp(index)
+    if (this.selectedPageData) {
+      const index: number = this.selectedPageData.properties.PictureSizeMode!
+      return controlProperties.getSizeModeProp(index)
+    } else {
+      return ''
+    }
   }
 
   /**
@@ -367,9 +537,14 @@ export default class FDMultiPage extends FdContainerVue {
    * @function getScrollBarPage
    */
   get getScrollBarPage () {
-    const keepScrollBar:number = this.selectedPageData.properties.KeepScrollBarsVisible!
-    const scrollBar:number = this.selectedPageData.properties.ScrollBars!
-    return controlProperties.setScrollBarProp(keepScrollBar, scrollBar)
+    if (this.selectedPageData) {
+      const keepScrollBar: number = this.selectedPageData.properties
+        .KeepScrollBarsVisible!
+      const scrollBar: number = this.selectedPageData.properties.ScrollBars!
+      return controlProperties.setScrollBarProp(keepScrollBar, scrollBar)
+    } else {
+      return ''
+    }
   }
 
   /**
@@ -382,7 +557,7 @@ export default class FDMultiPage extends FdContainerVue {
     if (this.selectedPageID) {
       return this.userformData[this.userFormId][this.selectedPageID]
     } else {
-      return this.userformData[this.userFormId][this.controls[0]]
+      return ''
     }
   }
 
@@ -396,12 +571,74 @@ export default class FDMultiPage extends FdContainerVue {
     }
     if (divElement && this.properties.TabFixedWidth === 0) {
       for (let i = 0; i < divElement.length; i++) {
-        let offsetWidth = (divElement[i].children[0].children[1] as HTMLElement).offsetWidth
+        let offsetWidth = (divElement[i].children[0].children[1] as HTMLElement)
+          .offsetWidth
         if (offsetWidth > width) {
           width = offsetWidth
           this.tempTabWidth = width
         }
       }
+    }
+  }
+  clickMultipage (e: MouseEvent) {
+    if (!this.isEditMode) {
+      this.selectedItem(e)
+    } else {
+      this.addControlObj(e, this.selectedPageID)
+    }
+  }
+  dragSelectorControl (event: MouseEvent) {
+    this.selectedControlArray = []
+    if (this.selectedPageData && this.controls.length > 0 && this.controls.includes(this.selectedPageID)) {
+      this.selectedAreaStyle = this.containerRef.dragSelector.selectAreaStyle
+      this.calSelectedAreaStyle(event, this.selectedPageData)
+    }
+  }
+
+  multiPageMouseDown (e: MouseEvent) {
+    this.selectedItem(e)
+    const selContainer = this.selectedControls[this.userFormId].container[0]
+    if (selContainer === this.controlId) {
+      this.deActiveControl()
+    }
+  }
+  showContextMenu (e: MouseEvent, parentID: string, controlID: string) {
+    e.preventDefault()
+    this.multiPageContextMenu = false
+    this.openMenu(e, parentID, controlID)
+    Vue.nextTick(() => this.containerRef.contextmenu.focus())
+  }
+  handleKeyDown (event: KeyboardEvent) {
+    this.containerRef.refContextMenu.updateAction(event)
+  }
+  handleContextMenu (e: MouseEvent) {
+    e.preventDefault()
+    this.top = `${e.offsetY}px`
+    this.left = `${e.offsetX}px`
+    if (this.isEditMode) {
+      this.multiPageContextMenu = true
+      Vue.nextTick(() => this.multipage.focus())
+      if (!this.controls.includes(this.selectedPageID)) {
+        const updatedValue: number = this.updatedValue - 1 < 0 ? -1 : this.updatedValue - 1
+        this.selectedPageID = this.controls.length > 0 ? updatedValue === -1 ? this.controls[0] : this.controls[updatedValue] : ''
+      }
+      if (this.data.controls.length >= 1) {
+        this.selectControl({
+          userFormId: this.userFormId,
+          select: {
+            container: this.getContainerList(this.selectedPageID),
+            selected: [this.selectedPageID]
+          }
+        })
+      }
+      this.viewMenu = false
+    }
+  }
+  deleteMultiPage (event: KeyboardEvent) {
+    if (this.controlId === this.selectedControls[this.userFormId].selected[0]) {
+      this.deleteItem(event)
+    } else {
+      this.handleKeyDown(event)
     }
   }
 }
@@ -603,5 +840,8 @@ export default class FDMultiPage extends FdContainerVue {
 .spanClass {
   text-decoration: underline;
   text-underline-position: under;
+}
+:focus{
+  outline: none;
 }
 </style>

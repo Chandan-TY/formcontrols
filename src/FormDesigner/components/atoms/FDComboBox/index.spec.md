@@ -177,3 +177,6 @@
 
 <h4>RowSourceData <span style="color:red;">(5)</span></h4>
 <span>Determines the values of the cells specified in the RowSource</span>
+
+<h4>MatchData <span style="color:red;">(5)</span></h4>
+<span>Determines the selected values and also stores the selected values.</span>

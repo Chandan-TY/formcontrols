@@ -4,42 +4,43 @@
       <button class="button" default>Alphabetic</button>
       <button class="button">Categorized</button>
     </div>
-      <div style="    position: absolute;
-    height: calc(100% - 59px);
-    overflow-y: auto;
-    overflow-x: hidden;
-    width: 100%;">
-    <FDTableItems
-      v-for="(value, propertyName, index) in tableData"
-      :key="index"
-      :controlPropertyData="value"
-      :propertyName="propertyName"
-      @change="updateAppearance"
-      @FontProp="fontProp"
-      @colorPaletteProp="colorPaletteProp"
-    />
-  </div>
+    <div
+      style="
+        position: absolute;
+        height: calc(100% - 59px);
+        overflow-y: auto;
+        overflow-x: hidden;
+        width: 100%;
+      "
+    >
+      <FDTableItems
+        v-for="(value, propertyName, index) in tableData"
+        :key="index"
+        @input="updateAppearance"
+        :controlPropertyData="value"
+        :propertyName="propertyName"
+      />
+        <!-- @FontProp="fontProp"
+        @colorPaletteProp="colorPaletteProp" -->
+        <!-- @change="handleChange" -->
+        <!-- @change="updateAppearance" -->
+    </div>
   </div>
 </template>
 
 <script lang="ts">
 import { Component, Prop, Vue, Emit } from 'vue-property-decorator'
-import { LabelData } from '../../../models/ControlsTableProperties/LabelTableProperties'
 import { State, Action } from 'vuex-class'
 import FDTableItems from '../../molecules/FDTableItems/index.vue'
-import CustomDropDown from '../../atoms/FDCustomDropDown/index.vue'
-import CustomInput from '../../atoms/FDCustomInput/index.vue'
-import CustomColorTabs from '../../organisms/FDCustomColorTabs/index.vue'
-import CustomFontDialog from '../../organisms/FDCustomFontDialog/index.vue'
 
 export interface tableData {
-   [key: string]: number | string | null | undefined | font | Array<string>,
-   type:string
-  }
+  [key: string]: number | string | null | undefined | font | Array<string>;
+  type: string;
+}
 export interface PicturePosition {
-    [key: string]: string,
-   backgroundPositionX: string,
-   backgroundPositionY: string
+  [key: string]: string;
+  backgroundPositionX: string;
+  backgroundPositionY: string;
 }
 
 @Component({
@@ -50,31 +51,35 @@ export interface PicturePosition {
     }
   },
   components: {
-    FDTableItems,
-    CustomDropDown,
-    CustomInput,
-    CustomColorTabs,
-    CustomFontDialog
+    FDTableItems
   }
 })
 export default class FDTable extends Vue {
   @Prop({ type: Object, required: true }) tableData!: tableData;
-  @State(state => state.fd.userformData) userformData!: userformData
+  @State((state) => state.fd.userformData) userformData!: userformData;
+
+  handleChange (e: any) {
+    console.log(e)
+  }
   @Emit('updateProperty')
-  emitUpdateProperty (proprtyName:string, value:string|number|object|null|undefined|boolean) {
-    return { target: null,
-      proprtyName: proprtyName,
-      value: value }
+  emitUpdateProperty (
+    proprtyName: string,
+    value: string | number | object | null | undefined | boolean
+  ) {
+    // debugger
+    return { target: null, proprtyName: proprtyName, value: value }
   }
 
   @Emit('updateExtraProperty')
-  emitUpdateExtraProperty (proprtyName:string, value:string|number|object|null|undefined|boolean) {
-    return { target: null,
-      proprtyName: proprtyName,
-      value: value }
+  emitUpdateExtraProperty (
+    proprtyName: string,
+    value: string | number | object | null | undefined | boolean
+  ) {
+    return { target: null, proprtyName: proprtyName, value: value }
   }
 
   updateAppearance (e: Event) {
+    // debugger
     const propertyName = (e.target as HTMLInputElement).name
     const inputType = this.tableData[propertyName]
     let propertyValue = (e.target as HTMLInputElement).value
@@ -82,24 +87,35 @@ export default class FDTable extends Vue {
       if (propertyName === 'MouseIcon' || propertyName === 'Picture') {
         this.handleConvertionImageToBase64(e)
       } else if (propertyName === 'Accelerator') {
-        this.emitUpdateProperty(propertyName, (propertyValue !== '') ? propertyValue[0] : propertyValue)
-        this.handleAccelerator(e)
+        this.emitUpdateProperty(
+          propertyName,
+          propertyValue !== '' ? propertyValue[0] : propertyValue
+        )
       } else {
         this.emitUpdateProperty(propertyName, propertyValue)
       }
     } else if (inputType === 'number' || inputType === 'float') {
-      this.emitUpdateProperty(propertyName, propertyValue.includes('.')
-        ? parseFloat(propertyValue)
-        : parseInt(propertyValue))
+      this.emitUpdateProperty(
+        propertyName,
+        propertyValue.includes('.')
+          ? parseFloat(propertyValue)
+          : parseInt(propertyValue)
+      )
     } else if (inputType === 'Boolean') {
       if (propertyName === 'AutoSize') {
-        this.emitUpdateProperty(propertyName, (e.target as HTMLInputElement).value === 'true')
+        this.emitUpdateProperty(
+          propertyName,
+          (e.target as HTMLInputElement).value === 'true'
+        )
       } else {
-        this.emitUpdateProperty(propertyName, (e.target as HTMLInputElement).value === 'true')
+        this.emitUpdateProperty(
+          propertyName,
+          (e.target as HTMLInputElement).value === 'true'
+        )
       }
     } else if (inputType === 'array') {
       if (propertyName === 'PicturePosition') {
-        let result:PicturePosition = this.handlePicturePosition(e)
+        let result: PicturePosition = this.handlePicturePosition(e)
         for (const key in result) {
           if (result.hasOwnProperty(key)) {
             const element = result[key]
@@ -107,25 +123,22 @@ export default class FDTable extends Vue {
           }
         }
       } else {
-        this.emitUpdateProperty(propertyName, parseInt((e.target as HTMLInputElement).value))
+        this.emitUpdateProperty(
+          propertyName,
+          parseInt((e.target as HTMLInputElement).value)
+        )
       }
     } else if (inputType === 'font') {
-      this.emitUpdateProperty(propertyName, (e.target as HTMLInputElement).value)
+      this.emitUpdateProperty(
+        propertyName,
+        (e.target as HTMLInputElement).value
+      )
     } else if (inputType === 'color') {
-      this.emitUpdateProperty(propertyName, (e.target as HTMLInputElement).value)
+      this.emitUpdateProperty(
+        propertyName,
+        (e.target as HTMLInputElement).value
+      )
     }
-  }
-
-  handleAccelerator (e: Event) {
-    let caption = this.selCtrl.Caption
-    let accelerator = this.selCtrl.Accelerator
-    let underline = '&#818;'
-    const isPresent = caption!.includes(accelerator!)
-    if (isPresent && accelerator !== '') {
-      let pos = caption!.indexOf(accelerator!)
-      caption = caption!.substring(0, pos) + caption![pos] + underline + caption!.substring(pos + 1, caption!.length)
-    }
-    this.emitUpdateExtraProperty('acceleratorValue', (isPresent) ? caption : '')
   }
 
   handleConvertionImageToBase64 (e: Event) {
@@ -134,12 +147,15 @@ export default class FDTable extends Vue {
     var reader = new FileReader()
     reader.onloadend = function () {
       console.log('RESULT', reader.result)
-      that.emitUpdateProperty((e.target as HTMLInputElement).name, reader.result)
+      that.emitUpdateProperty(
+        (e.target as HTMLInputElement).name,
+        reader.result
+      )
     }
     reader.readAsDataURL(file)
   }
 
-  handlePicturePosition (e: Event):PicturePosition {
+  handlePicturePosition (e: Event): PicturePosition {
     switch (parseInt((e.target as HTMLInputElement).value)) {
       case 0:
         return { backgroundPositionX: 'left', backgroundPositionY: 'top' }
@@ -170,10 +186,6 @@ export default class FDTable extends Vue {
       default:
         return { backgroundPositionX: '', backgroundPositionY: '' }
     }
-  }
-
-  get selCtrl () {
-    return this.userformData['ID_USERFORM1']['ID_Label1'].properties
   }
 
   fontProp (tempVal: font) {

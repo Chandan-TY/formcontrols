@@ -82,6 +82,8 @@
 <script lang="ts">
 import { Component, Vue, Prop, Emit } from 'vue-property-decorator'
 import FDSVGImage from '@/FormDesigner/components/atoms/FDSVGImage/index.vue'
+import { ControlPropertyData } from '@/FormDesigner/models/ControlsTableProperties/ControlPropertyData.ts'
+
 import { Action, State } from 'vuex-class'
 import {
   IaddChildControls,
@@ -160,6 +162,8 @@ export default class ContextMenu extends Vue {
     } else if (controlActionName === 'ID_DELETEPAGE') {
       this.deleteCurrentPage()
     } else if (controlActionName === 'ID_RENAME') {
+      console.log('this.controlId', this.controlId)
+      console.log('this.selectedTab', this.selectedControls[this.userFormId].selected)
       EventBus.$emit(
         'renamePage',
         this.userFormId,
@@ -167,9 +171,14 @@ export default class ContextMenu extends Vue {
         this.selectedTab
       )
     } else if (controlActionName === 'ID_MOVE') {
-      EventBus.$emit('tabStripTabOrder', this.userFormId, this.controlId)
+      const type = this.userformData[this.userFormId][this.controlId].type
+      if (type === 'MultiPage') {
+        EventBus.$emit('userFormTabOrder', this.userFormId, this.controlId, type)
+      } else {
+        EventBus.$emit('tabStripTabOrder', this.userFormId, this.containerId)
+      }
     } else if (controlActionName === 'ID_TABORDER') {
-      EventBus.$emit('userFormTabOrder', this.userFormId, this.containerId)
+      EventBus.$emit('userFormTabOrder', this.userFormId, this.containerId, '')
     } else if (
       controlActionName === 'ID_ALIGN' ||
       controlActionName === 'ID_MAKESAMESIZE'
@@ -223,51 +232,118 @@ export default class ContextMenu extends Vue {
   }
 
   addNewPage () {
-    const tabControlData = JSON.parse(
-      JSON.stringify(this.userformData[this.userFormId][this.controlId])
-    ).extraDatas.Tabs
-    let prevTabId = -1
-    const initialTabData: tabsItems = {
-      Name: '',
-      Caption: '',
-      ToolTip: '',
-      Accelerator: ''
-    }
-    if (tabControlData.length > 0) {
-      for (let i = 0; i < tabControlData.length; i++) {
-        const id = tabControlData[i].Name.split('Tab').pop() || '-1'
-        const parseId = parseInt(id, 10)
-        if (!isNaN(parseId) && prevTabId < parseId) {
-          prevTabId = parseId
-        }
+    const type = this.userformData[this.userFormId][this.controlId].type
+    if (type === 'TabStrip') {
+      const tabControlData = JSON.parse(
+        JSON.stringify(this.userformData[this.userFormId][this.controlId])
+      ).extraDatas.Tabs
+      let prevTabId = -1
+      const initialTabData: tabsItems = {
+        Name: '',
+        Caption: '',
+        ToolTip: '',
+        Accelerator: ''
       }
-      prevTabId += 1
-      initialTabData.Name = `Tab${prevTabId}`
-      initialTabData.Caption = `Tab${prevTabId}`
-    } else {
-      initialTabData.Name = `Tab${1}`
-      initialTabData.Caption = `Tab${1}`
-    }
-    tabControlData.push(initialTabData)
-    this.updateControlExtraData({
-      userFormId: this.userFormId,
-      controlId: this.controlId,
-      propertyName: 'Tabs',
-      value: tabControlData
-    })
-  }
-  deleteCurrentPage () {
-    const tabControlData = JSON.parse(
-      JSON.stringify(this.userformData[this.userFormId][this.controlId])
-    ).extraDatas.Tabs
-    if (tabControlData && tabControlData.length > 0) {
-      tabControlData.splice(this.selectedTab, 1)
+      if (tabControlData.length > 0) {
+        for (let i = 0; i < tabControlData.length; i++) {
+          const id = tabControlData[i].Name.split('Tab').pop() || '-1'
+          const parseId = parseInt(id, 10)
+          if (!isNaN(parseId) && prevTabId < parseId) {
+            prevTabId = parseId
+          }
+        }
+        prevTabId += 1
+        initialTabData.Name = `Tab${prevTabId}`
+        initialTabData.Caption = `Tab${prevTabId}`
+      } else {
+        initialTabData.Name = `Tab${1}`
+        initialTabData.Caption = `Tab${1}`
+      }
+      tabControlData.push(initialTabData)
       this.updateControlExtraData({
         userFormId: this.userFormId,
         controlId: this.controlId,
         propertyName: 'Tabs',
         value: tabControlData
       })
+    } else if (type === 'MultiPage') {
+      const parentId = this.controlId.split('MultiPage').pop()
+      const controlName = `Page${parentId}_`
+
+      let lastControlId = 0
+      const userformControlIds = Object.keys(this.userformData[this.userFormId])
+      for (let i = 0; i < userformControlIds.length; i++) {
+        if (userformControlIds[i].indexOf(controlName) !== -1) {
+          const IdNum =
+          userformControlIds[i].split(controlName).pop() || '-1'
+          const pasreId = parseInt(IdNum, 10)
+          if (!isNaN(pasreId) && lastControlId < pasreId) {
+            lastControlId = pasreId
+          }
+        }
+      }
+      const controlPropData = new ControlPropertyData()
+      let controlObj = controlPropData.data['Page']
+      const item = JSON.parse(JSON.stringify(controlObj!))
+      lastControlId += 1
+      item.properties.ID = `ID_${controlName}${lastControlId}`
+      item.properties.Caption = `Page${lastControlId}`
+      item.properties.Name = `Page${lastControlId}`
+      this.addControl({
+        userFormId: this.userFormId,
+        controlId: this.controlId,
+        addId: item.properties.ID,
+        item: item
+      })
+      this.selectControl({
+        userFormId: this.userFormId,
+        select: {
+          container: this.getContainerList(item.properties.ID),
+          selected: [item.properties.ID]
+        }
+      })
+    }
+  }
+  updateTabIndex (id: string) {
+    let newTabIndex = -1
+    const containerControls = this.userformData[this.userFormId][id].controls
+    for (const index in containerControls) {
+      const cntrlData = this.userformData[this.userFormId][containerControls[index]]
+      if ('TabIndex' in cntrlData.properties) {
+        newTabIndex = newTabIndex + 1
+        this.updateControl({
+          userFormId: this.userFormId,
+          controlId: containerControls[index],
+          propertyName: 'TabIndex',
+          value: newTabIndex
+        })
+      }
+    }
+  }
+  deleteCurrentPage () {
+    const type = this.userformData[this.userFormId][this.controlId].type
+    if (type === 'TabStrip') {
+      const tabControlData = JSON.parse(
+        JSON.stringify(this.userformData[this.userFormId][this.controlId])
+      ).extraDatas.Tabs
+      if (tabControlData && tabControlData.length > 0) {
+        tabControlData.splice(this.selectedTab, 1)
+        this.updateControlExtraData({
+          userFormId: this.userFormId,
+          controlId: this.controlId,
+          propertyName: 'Tabs',
+          value: tabControlData
+        })
+      }
+    } else if (type === 'MultiPage') {
+      const controls = this.userformData[this.userFormId][this.controlId].controls
+      if (controls.length > 0) {
+        this.deleteControl({
+          userFormId: this.userFormId,
+          parentId: this.selectedControls[this.userFormId].container[0],
+          targetId: this.selectedControls[this.userFormId].selected[0]
+        })
+      }
     }
   }
   updateControlProperty (
@@ -512,7 +588,6 @@ export default class ContextMenu extends Vue {
         }
       }
     }
-    console.log('add', this.copiedControl)
   }
 
   /**
@@ -596,6 +671,7 @@ export default class ContextMenu extends Vue {
               addId: controlID,
               item: item
             })
+            this.updateTabIndex(daTarget)
             recCopyControl(controlID)
           }
         }
@@ -646,6 +722,7 @@ export default class ContextMenu extends Vue {
             addId: controlID,
             item: item
           })
+          this.updateTabIndex(this.containerId)
           recCopyControl(controlID)
         } else {
           for (let ctrlId in this.copiedControl[this.userFormId]) {
@@ -698,6 +775,7 @@ export default class ContextMenu extends Vue {
                   addId: controlID,
                   item: item
                 })
+                this.updateTabIndex(this.containerId)
                 recCopyControl(controlID)
               }
             }
@@ -767,6 +845,7 @@ export default class ContextMenu extends Vue {
                 addId: key,
                 item: item
               })
+              this.updateTabIndex(this.containerId)
               recCopyControl(key)
             }
           }
@@ -785,6 +864,7 @@ export default class ContextMenu extends Vue {
               addId: key,
               item: item
             })
+            this.updateTabIndex(this.containerId)
             recCopyControl(key)
           } else {
             for (let ctrlId in userFormData) {
@@ -803,6 +883,7 @@ export default class ContextMenu extends Vue {
                     addId: ctrlId,
                     item: item
                   })
+                  this.updateTabIndex(this.containerId)
                   recCopyControl(ctrlId)
                 }
               }
@@ -858,6 +939,7 @@ export default class ContextMenu extends Vue {
         targetId: selControl[i]
       })
     }
+    this.updateTabIndex(this.selectedControls[this.userFormId].container[0])
     this.selectControl({
       userFormId: this.userFormId,
       select: {
@@ -867,10 +949,8 @@ export default class ContextMenu extends Vue {
         selected: [this.selectedControls[this.userFormId].container[0]]
       }
     })
-    console.log('thisdata', this.userformData)
   }
   updateAction (event: KeyboardEvent) {
-    console.log('enetred the context menu')
     let controlActionName = ''
     if (event.ctrlKey && event.code === 'KeyA') {
       controlActionName = 'ID_SELECTALL'

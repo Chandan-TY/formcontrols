@@ -202,9 +202,7 @@ export default class GroupControl extends Vue {
     this.percwidthArray = []
     this.percheightArray = []
 
-    for (const control of this.userformData[this.userFormId][this.containerId]
-      .controls) {
-    // for (const control in this.userformData[this.userFormId]) {
+    for (const control of this.userformData[this.userFormId][this.containerId].controls) {
       const controlProp = this.userformData[this.userFormId][control]
         .properties
       if (this.userformData[this.userFormId][control].type !== 'Useform') {

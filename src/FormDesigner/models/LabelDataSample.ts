@@ -142,7 +142,7 @@ export const label3 = {
 
 export const label4 = {
   properties: {
-    Accelerator: '',
+    Accelerator: 'a',
     AutoSize: false,
     BackColor: '#D6D5D5',
     BackStyle: 1,

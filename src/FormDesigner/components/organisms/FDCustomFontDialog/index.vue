@@ -10,8 +10,12 @@
 <script lang="ts">
 import { Component, Prop, Vue, Emit } from 'vue-property-decorator'
 import { tableData } from '../../molecules/FDPropertyTableItem/index.vue'
+import FontDialog from '@/FormDesigner/components/organisms/FDFontDialog/index.vue'
 @Component({
-  name: 'FDCustomFontDialog'
+  name: 'FDCustomFontDialog',
+  components: {
+    FontDialog
+  }
 })
 export default class FDCustomFontDialog extends Vue {
   @Prop({ }) propertyData! : tableData

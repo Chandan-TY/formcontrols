@@ -50,7 +50,7 @@ export const userDataNew = {
         WhatsThisHelp: false,
         Zoom: 100
       },
-      // controls: ['ID_TabStrip1', 'ID_Label3', 'ID_Label4'],
+      // controls: ['ID_TabStrip1', 'ID_Label3', 'ID_Label4', 'ID_MultiPage1'],
       controls: ['ID_Frame1', 'ID_Label3', 'ID_Label4'],
       extraDatas: {
         display: 'block'
@@ -755,7 +755,7 @@ export const userDataNew = {
     },
     ID_MultiPage1: {
       properties: {
-        ID: 'MultiPage1',
+        ID: 'ID_MultiPage1',
         Name: 'MultiPage1',
         BackColor: '#eeeeee',
         ControlTipText: '',
@@ -788,17 +788,13 @@ export const userDataNew = {
         GroupID: '',
         Index: 0
       },
-      controls: ['Page1', 'Page2', 'Page3', 'Page4', 'Page5', 'Page6'],
+      controls: ['ID_Page1_1', 'ID_Page1_2'],
       extraDatas: {
       },
       type: 'MultiPage'
     },
-    Page1: Page1,
-    Page2: Page2,
-    Page3: Page3,
-    Page4: Page4,
-    Page5: Page5,
-    Page6: Page6,
+    ID_Page1_1: Page4,
+    ID_Page1_2: Page5,
     ID_ScrollBar1: {
       properties: {
         BackColor: '#eeeeee',

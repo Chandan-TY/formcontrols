@@ -58,7 +58,7 @@ export const Page2 = {
   },
   extraDatas: {
   },
-  controls: ['ID_Label2'],
+  controls: [],
   type: 'Page'
 }
 export const Page3 = {
@@ -120,7 +120,7 @@ export const Page4 = {
   },
   extraDatas: {
   },
-  controls: ['ID_Label1'],
+  controls: [],
   type: 'Page'
 }
 export const Page5 = {
@@ -132,7 +132,7 @@ export const Page5 = {
     ControlTipText: 'Select the Page5',
     Cycle: 0,
     Enabled: true,
-    Index: 0,
+    Index: 1,
     KeepScrollBarsVisible: 3,
     Picture: '',
     PictureAlignment: 2,
@@ -151,7 +151,7 @@ export const Page5 = {
   },
   extraDatas: {
   },
-  controls: ['ID_Label1'],
+  controls: [],
   type: 'Page'
 }
 export const Page6 = {

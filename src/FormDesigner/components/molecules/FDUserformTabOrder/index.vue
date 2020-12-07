@@ -72,9 +72,12 @@ export default class FDUserformTabOrder extends FdDialogDragVue {
   userFormId: string = '';
   currentIndex: number = -1;
   tabOrderList: localTabOrderItem[] = [];
+  controlType: string = ''
 
   updateControlData () {
     const controlNum = this.tabOrderList.length
+    let propertyName = this.controlType === 'MultiPage' ? 'Index' : 'TabIndex'
+
     for (let tabIndex = 0; controlNum > tabIndex; tabIndex++) {
       this.updateControl({
         userFormId: this.userFormId,
@@ -88,15 +91,23 @@ export default class FDUserformTabOrder extends FdDialogDragVue {
   created () {
     EventBus.$on(
       'userFormTabOrder',
-      (userFormId: string, controlId: string) => {
+      (userFormId: string, controlId: string, type: string) => {
+        this.controlType = type
         const tabOrderControlData = this.userformData[userFormId][controlId]
         this.tabOrderList = Array(tabOrderControlData.controls.length)
         if (tabOrderControlData.controls.length > 0) {
           for (let control of tabOrderControlData.controls) {
             const targetData = this.userformData[userFormId][control]
             if (targetData) {
-              const targetTabIndex = targetData.properties.TabIndex
-              const targetTabName = targetData.properties.Name
+              let targetTabIndex
+              let targetTabName
+              if (this.controlType === 'MultiPage') {
+                targetTabIndex = targetData.properties.Index
+                targetTabName = targetData.properties.Caption
+              } else {
+                targetTabIndex = targetData.properties.TabIndex
+                targetTabName = targetData.properties.Name
+              }
               if (targetTabIndex !== undefined && targetTabName !== undefined) {
                 this.tabOrderList[targetTabIndex] = {
                   controlId: control,
