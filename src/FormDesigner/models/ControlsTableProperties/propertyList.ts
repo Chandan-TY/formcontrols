@@ -6,6 +6,207 @@ export class PropertyListDefine {
   };
   constructor () {
     this.data = {
+      Userform: {
+        Name: {
+          category: 'ID_CATEGORY_APPEARANCE',
+          type: 'String'
+        },
+        BackColor: {
+          category: 'ID_CATEGORY_APPEARANCE',
+          type: 'color'
+        },
+        BorderColor: {
+          category: 'ID_CATEGORY_APPEARANCE',
+          type: 'color'
+        },
+        BorderStyle: {
+          category: 'ID_CATEGORY_APPEARANCE',
+          type: 'array',
+          values: ['0-fmBorderStyleNone', '1-fmBorderStyleSingle']
+        },
+        Caption: {
+          category: 'ID_CATEGORY_APPEARANCE',
+          type: 'String'
+        },
+        ControlTipText: {
+          category: 'ID_CATEGORY_APPEARANCE',
+          type: 'String'
+        },
+        Cycle: {
+          category: 'ID_CATEGORY_BEHAVIOR',
+          type: 'array',
+          values: [
+            '0-fmCycleAllForms',
+            '2-fmCycleCurrentForms'
+          ]
+        },
+        DrawBuffer: {
+          category: 'ID_CATEGORY_MISC',
+          type: 'number'
+        },
+        Enabled: {
+          category: 'ID_CATEGORY_BEHAVIOR',
+          type: 'Boolean'
+        },
+        Font: {
+          category: 'ID_CATEGORY_FONT',
+          type: 'font'
+        },
+        ForeColor: {
+          category: 'ID_CATEGORY_APPEARANCE',
+          type: 'color'
+        },
+        Height: {
+          category: 'ID_CATEGORY_POSITION',
+          type: 'number'
+        },
+        HelpContextID: {
+          category: 'ID_CATEGORY_MISC',
+          type: 'number'
+        },
+        KeepScrollBarsVisible: {
+          category: 'ID_CATEGORY_SCROLLING',
+          type: 'array',
+          values: [
+            'fmScrollBarsNone',
+            'fmScrollBarsHorizontal',
+            'fmScrollBarsVertical',
+            'fmScrollBarsBoth'
+          ]
+        },
+        Left: {
+          category: 'ID_CATEGORY_POSITION',
+          type: 'number'
+        },
+        MouseIcon: {
+          category: 'ID_CATEGORY_MISC',
+          type: 'file'
+        },
+        MousePointer: {
+          category: 'ID_CATEGORY_MISC',
+          type: 'array',
+          values: [
+            '0-fmMousePointerDefault',
+            '1-fmMousePointerArrow',
+            '2-fmMousePointerCross',
+            '3-fmMousePointerIBeam',
+            '6-fmMousePointerNESW',
+            '7-fmMousePointerNS',
+            '8-fmMousePointerNWSE',
+            '9-fmMousePointerWE',
+            '10-fmMousePointerUpArrow',
+            '11-fmMousePointerHourGlass',
+            '12-fmMousePointerNoDrop',
+            '13-fmMousePointerAppStarting',
+            '14-fmMousePointerHelp',
+            '15-fmMousePointerSizeAll',
+            '99-fmMousePointerCustom'
+          ]
+        },
+        Picture: {
+          category: 'ID_CATEGORY_PICTURE',
+          type: 'file'
+        },
+        PictureAlignment: {
+          category: 'ID_CATEGORY_PICTURE',
+          type: 'array',
+          values: [
+            '0 - fmPictureAlignmentTopLeft',
+            '1 - fmPictureAlignmentTopRight',
+            '2 - fmPictureAlignmentCenter',
+            '3 - fmPictureAlignmentBottomLeft',
+            '4 - fmPictureAlignmentBottomRight'
+          ]
+        },
+        PictureSizeMode: {
+          category: 'ID_CATEGORY_PICTURE',
+          type: 'array',
+          values: [
+            '0 - fmPictureSizeModeClip',
+            '1 - fmPictureSizeModeStretch',
+            '3 - fmPictureSizeModeZoom'
+          ]
+        },
+        PictureTiling: {
+          category: 'ID_CATEGORY_PICTURE',
+          type: 'Boolean'
+        },
+        ScrollBars: {
+          category: 'ID_CATEGORY_SCROLLING',
+          type: 'array',
+          values: [
+            '0 - fmScrollBarsNone',
+            '1 - fmScrollBarsHorizontal',
+            '2 - fmScrollBarsVertical',
+            '3 - fmScrollBarsBoth'
+          ]
+        },
+        ScrollHeight: {
+          category: 'ID_CATEGORY_SCROLLING',
+          type: 'number'
+        },
+        ScrollLeft: {
+          category: 'ID_CATEGORY_SCROLLING',
+          type: 'number'
+        },
+        ScrollTop: {
+          category: 'ID_CATEGORY_SCROLLING',
+          type: 'number'
+        },
+        ScrollWidth: {
+          category: 'ID_CATEGORY_SCROLLING',
+          type: 'number'
+        },
+        ShowModal: {
+          category: 'ID_CATEGORY_BEHAVIOR',
+          type: 'Boolean'
+        },
+        SpecialEffect: {
+          category: 'ID_CATEGORY_APPEARANCE',
+          type: 'array',
+          values: [
+            '0-fmSpecialEffectFlat',
+            '1-fmSpecialEffectRaised',
+            '2-fmSpecialEffectSunken',
+            '3-fmSpecialEffectEtched',
+            '6-fmSpecialEffectBump'
+          ]
+        },
+        StartUpPosition: {
+          category: 'ID_CATEGORY_POSITION',
+          type: 'array',
+          values: [
+            '0-Manual',
+            '1-CenterOwner',
+            '2-CenterScreen',
+            '3-Windows Default'
+          ]
+        },
+        Tag: {
+          category: 'ID_CATEGORY_MISC',
+          type: 'String'
+        },
+        Top: {
+          category: 'ID_CATEGORY_POSITION',
+          type: 'number'
+        },
+        WhatsThisButton: {
+          category: 'ID_CATEGORY_MISC',
+          type: 'Boolean'
+        },
+        WhatsThisHelp: {
+          category: 'ID_CATEGORY_MISC',
+          type: 'Boolean'
+        },
+        Width: {
+          category: 'ID_CATEGORY_POSITION',
+          type: 'number'
+        },
+        Zoom: {
+          category: 'ID_CATEGORY_MISC',
+          type: 'number'
+        }
+      },
       Label: {
         Name: {
           category: 'ID_CATEGORY_APPEARANCE',
@@ -1118,7 +1319,7 @@ export class PropertyListDefine {
           type: 'number'
         }
       },
-      Image: {
+      FDImage: {
         Name: {
           category: 'ID_CATEGORY_APPEARANCE',
           type: 'String'
@@ -2266,6 +2467,131 @@ export class PropertyListDefine {
         WordWrap: {
           category: 'ID_CATEGORY_BEHAVIOR',
           type: 'Boolean'
+        }
+      },
+      Page: {
+        Name: {
+          category: 'ID_CATEGORY_APPEARANCE',
+          type: 'String'
+        },
+        Accelerator: {
+          category: 'ID_CATEGORY_MISC',
+          type: 'String'
+        },
+        Caption: {
+          category: 'ID_CATEGORY_APPEARANCE',
+          type: 'String'
+        },
+        ControlTipText: {
+          category: 'ID_CATEGORY_APPEARANCE',
+          type: 'String'
+        },
+        Cycle: {
+          category: 'ID_CATEGORY_BEHAVIOR',
+          type: 'array',
+          values: [
+            '0-fmCycleAllForms',
+            '2-fmCycleCurrentForms'
+          ]
+        },
+        Enabled: {
+          category: 'ID_CATEGORY_BEHAVIOR',
+          type: 'Boolean'
+        },
+        Index: {
+          category: 'ID_CATEGORY_TABS',
+          type: 'number'
+        },
+        KeepScrollBarsVisible: {
+          category: 'ID_CATEGORY_SCROLLING',
+          type: 'array',
+          values: [
+            'fmScrollBarsNone',
+            'fmScrollBarsHorizontal',
+            'fmScrollBarsVertical',
+            'fmScrollBarsBoth'
+          ]
+        },
+        Picture: {
+          category: 'ID_CATEGORY_PICTURE',
+          type: 'file'
+        },
+        PictureAlignment: {
+          category: 'ID_CATEGORY_PICTURE',
+          type: 'array',
+          values: [
+            '0 - fmPictureAlignmentTopLeft',
+            '1 - fmPictureAlignmentTopRight',
+            '2 - fmPictureAlignmentCenter',
+            '3 - fmPictureAlignmentBottomLeft',
+            '4 - fmPictureAlignmentBottomRight'
+          ]
+        },
+        PictureSizeMode: {
+          category: 'ID_CATEGORY_PICTURE',
+          type: 'array',
+          values: [
+            '0 - fmPictureSizeModeClip',
+            '1 - fmPictureSizeModeStretch',
+            '3 - fmPictureSizeModeZoom'
+          ]
+        },
+        PictureTiling: {
+          category: 'ID_CATEGORY_PICTURE',
+          type: 'Boolean'
+        },
+        ScrollBars: {
+          category: 'ID_CATEGORY_SCROLLING',
+          type: 'array',
+          values: [
+            '0 - fmScrollBarsNone',
+            '1 - fmScrollBarsHorizontal',
+            '2 - fmScrollBarsVertical',
+            '3 - fmScrollBarsBoth'
+          ]
+        },
+        ScrollHeight: {
+          category: 'ID_CATEGORY_SCROLLING',
+          type: 'number'
+        },
+        ScrollLeft: {
+          category: 'ID_CATEGORY_SCROLLING',
+          type: 'number'
+        },
+        ScrollTop: {
+          category: 'ID_CATEGORY_SCROLLING',
+          type: 'number'
+        },
+        ScrollWidth: {
+          category: 'ID_CATEGORY_SCROLLING',
+          type: 'number'
+        },
+        Tag: {
+          category: 'ID_CATEGORY_MISC',
+          type: 'String'
+        },
+        TransitionEffect: {
+          category: 'ID_CATEGORY_BEHAVIOR',
+          type: 'array',
+          values: [
+            '0-fmSpecialEffectFlat',
+            '1-fmSpecialEffectRaised',
+            '2-fmSpecialEffectSunken',
+            '3-fmSpecialEffectEtched',
+            '6-fmSpecialEffectBump'
+          ]
+        },
+        TransitionPeriod: {
+          category: 'ID_CATEGORY_BEHAVIOR',
+          type: 'number'
+        },
+        Visible: {
+          category: 'ID_CATEGORY_APPEARANCE',
+          type: 'Boolean'
+        },
+        Zoom: {
+          category: 'ID_CATEGORY_MISC',
+          type: 'number'
         }
       }
     }

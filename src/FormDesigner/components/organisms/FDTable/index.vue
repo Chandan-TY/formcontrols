@@ -79,9 +79,9 @@ export default class FDTable extends Vue {
   }
 
   updateAppearance (e: Event) {
-    // debugger
+    debugger
     const propertyName = (e.target as HTMLInputElement).name
-    const inputType = this.tableData[propertyName]
+    const inputType = this.tableData[propertyName].type
     let propertyValue = (e.target as HTMLInputElement).value
     if (inputType === 'String') {
       if (propertyName === 'MouseIcon' || propertyName === 'Picture') {

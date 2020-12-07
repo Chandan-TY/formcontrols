@@ -17,6 +17,7 @@
         <span>Caption:</span>
         <div>
           <input
+            name="Caption"
             type="text"
             class="btn-outline"
             @input="handleRename"
@@ -26,6 +27,7 @@
         <span>Accelerator Key:</span>
         <div>
           <input
+            name="Accelerator"
             class="btn-outline inputClass"
             type="text"
             @input="updateAccelerator"
@@ -35,6 +37,7 @@
         <span>Control Tip Text:</span>
         <div>
           <input
+            name='ToolTip'
             class="btn-outline"
             type="text"
             @input="handleTip"
@@ -62,7 +65,7 @@
 </template>
 
 <script lang="ts">
-import { IupdateControlExtraData } from '@/storeModules/fd/actions'
+import { IupdateControlExtraData, IupdateControl } from '@/storeModules/fd/actions'
 import { Component, Vue } from 'vue-property-decorator'
 import { State, Action } from 'vuex-class'
 import { EventBus } from '@/FormDesigner/event-bus'
@@ -77,6 +80,7 @@ export default class FDRenameMultiPageDialog extends FdDialogDragVue {
   @Action('fd/updateControlExtraData') updateControlExtraData!: (
     payload: IupdateControlExtraData
   ) => void;
+  @Action('fd/updateControl') updateControl!: (payload: IupdateControl) => void;
   @State((state) => state.fd.userformData) userformData!: userformData;
   tabOrderList: tabsItems[];
   selectedTabData: tabsItems = {
@@ -85,7 +89,7 @@ export default class FDRenameMultiPageDialog extends FdDialogDragVue {
     ToolTip: '',
     Accelerator: ''
   };
-
+  controlType: string = ''
   handleRename (e: KeyboardEvent) {
     if (e.target instanceof HTMLInputElement) {
       this.selectedTabData.Caption = e.target.value
@@ -114,23 +118,53 @@ export default class FDRenameMultiPageDialog extends FdDialogDragVue {
     } else {
       console.error('Accelerator value empty')
     }
-    this.updateControlExtraData({
-      userFormId: this.userFormId,
-      controlId: this.controlId,
-      propertyName: 'Tabs',
-      value: this.tabOrderList
-    })
+    if (this.controlType === 'Page') {
+      this.updateControl({
+        userFormId: this.userFormId,
+        controlId: this.controlId,
+        propertyName: 'Caption',
+        value: this.selectedTabData.Caption
+      })
+      this.updateControl({
+        userFormId: this.userFormId,
+        controlId: this.controlId,
+        propertyName: 'Accelerator',
+        value: this.selectedTabData.Accelerator
+      })
+      this.updateControl({
+        userFormId: this.userFormId,
+        controlId: this.controlId,
+        propertyName: 'ControlTipText',
+        value: this.selectedTabData.ToolTip
+      })
+    } else {
+      this.updateControlExtraData({
+        userFormId: this.userFormId,
+        controlId: this.controlId,
+        propertyName: 'Tabs',
+        value: this.tabOrderList
+      })
+    }
     this.isTabOrderOpen = false
   }
   created () {
     EventBus.$on(
       'renamePage',
-      (userFormId: string, controlId: string, selectedTab: number) => {
-        const tabOrderControlData = this.userformData[userFormId][controlId]
-          .extraDatas!.Tabs!
-        if (tabOrderControlData.length > 0) {
-          this.tabOrderList = JSON.parse(JSON.stringify(tabOrderControlData))
-          this.selectedTabData = this.tabOrderList[selectedTab]
+      (userFormId: string, controlId: string, selectedTab: number, type: string) => {
+        this.controlType = type
+        if (this.controlType === 'Page') {
+          const selectedPageData = this.userformData[userFormId][controlId]
+          this.selectedTabData.Name = selectedPageData.properties.Name!
+          this.selectedTabData.Caption = selectedPageData.properties.Caption!
+          this.selectedTabData.ToolTip = selectedPageData.properties.ControlTipText!
+          this.selectedTabData.Accelerator = selectedPageData.properties.Accelerator!
+        } else {
+          const tabOrderControlData = this.userformData[userFormId][controlId]
+            .extraDatas!.Tabs!
+          if (tabOrderControlData.length > 0) {
+            this.tabOrderList = JSON.parse(JSON.stringify(tabOrderControlData))
+            this.selectedTabData = this.tabOrderList[selectedTab]
+          }
         }
         this.isTabOrderOpen = true
         this.userFormId = userFormId

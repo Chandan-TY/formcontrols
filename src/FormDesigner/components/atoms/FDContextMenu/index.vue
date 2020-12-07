@@ -162,13 +162,13 @@ export default class ContextMenu extends Vue {
     } else if (controlActionName === 'ID_DELETEPAGE') {
       this.deleteCurrentPage()
     } else if (controlActionName === 'ID_RENAME') {
-      console.log('this.controlId', this.controlId)
-      console.log('this.selectedTab', this.selectedControls[this.userFormId].selected)
+      const selectedPageID = this.selectedControls[this.userFormId].selected[0]
       EventBus.$emit(
         'renamePage',
         this.userFormId,
-        this.controlId,
-        this.selectedTab
+        selectedPageID,
+        this.selectedTab,
+        this.userformData[this.userFormId][selectedPageID].type
       )
     } else if (controlActionName === 'ID_MOVE') {
       const type = this.userformData[this.userFormId][this.controlId].type
