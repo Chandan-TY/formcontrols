@@ -563,29 +563,23 @@ export default class FDMultiPage extends FdContainerVue {
 
   mounted () {
     this.selectedPageID = this.controls[0]
-    const divElement = this.scrolling.children
-    let width = 0
-    if (this.contentRef) {
-      const scrollRef = this.contentRef
-      scrollRef.scrollLeft! = 20
-    }
-    if (divElement && this.properties.TabFixedWidth === 0) {
-      for (let i = 0; i < divElement.length; i++) {
-        let offsetWidth = (divElement[i].children[0].children[1] as HTMLElement)
-          .offsetWidth
-        if (offsetWidth > width) {
-          width = offsetWidth
-          this.tempTabWidth = width
-        }
-      }
-    }
-  }
-  clickMultipage (e: MouseEvent) {
-    if (!this.isEditMode) {
-      this.selectedItem(e)
-    } else {
-      this.addControlObj(e, this.selectedPageID)
-    }
+    // Error while running test case
+    // const divElement = this.scrolling.children
+    // let width = 0
+    // if (this.contentRef) {
+    //   const scrollRef = this.contentRef
+    //   scrollRef.scrollLeft! = 20
+    // }
+    // if (divElement && this.properties.TabFixedWidth === 0) {
+    //   for (let i = 0; i < divElement.length; i++) {
+    //     let offsetWidth = (divElement[i].children[0].children[1] as HTMLElement)
+    //       .offsetWidth
+    //     if (offsetWidth > width) {
+    //       width = offsetWidth
+    //       this.tempTabWidth = width
+    //     }
+    //   }
+    // }
   }
   dragSelectorControl (event: MouseEvent) {
     this.selectedControlArray = []

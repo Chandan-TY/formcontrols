@@ -96,7 +96,8 @@ import { State, Action } from 'vuex-class'
 import { Payload } from 'vuex'
 import {
   IupdateControl,
-  IdeleteControl
+  IdeleteControl,
+  IupdateControlExtraData
 } from '../../../../storeModules/fd/actions'
 import { EventBus } from '@/FormDesigner/event-bus'
 
@@ -128,9 +129,11 @@ export default class FDPage extends Vue {
   @State((state: rootState) => state.fd.selectedControls)
   selectedControls!: fdState['selectedControls'];
   @Action('fd/updateControl') updateControl!: (payload: IupdateControl) => void;
+  @Action('fd/updateControlExtraData') updateControlExtraData!: (payload: IupdateControlExtraData) => void;
   @Action('fd/deleteControl') deleteControl!: (payload: IdeleteControl) => void;
   testPropName: keyof controlProperties = 'Width';
   testPropValue = '100';
+
   clickUpdate () {
     const selected = this.selectedControls[this.userFormId].selected
     for (let i = 0; i < selected.length; i++) {

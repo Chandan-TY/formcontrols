@@ -194,14 +194,29 @@ export default class FdSelectVue extends Vue {
       value: value
     })
   }
+  updateExtraDatas (id: string, propName: keyof extraDatas, value: number) {
+    this.updateControlExtraData({
+      userFormId: this.userFormId,
+      controlId: id,
+      propertyName: propName,
+      value: value
+    })
+  }
   deleteTabIndex (id: string) {
     const userData = this.userformData[this.userFormId]
     const container = this.selectedControls[this.userFormId].container[0]
-    const tempIndex: number = userData[id].properties!.TabIndex!
+    const type = userData[id].type
+    const tempIndex: number = type === 'FDImage' ? userData[id].extraDatas!.TabIndex! : userData[id].properties!.TabIndex!
     for (const key in userData[container].controls) {
-      const controlTabIndex = userData[userData[container].controls[key]].properties!.TabIndex!
-      if (controlTabIndex > tempIndex) {
-        this.updateTabIndex(userData[container].controls[key], controlTabIndex - 1)
+      const ctrltype = userData[userData[container].controls[key]].type
+      const controlData = userData[userData[container].controls[key]]
+      const controlTabIndex = ctrltype === 'FDImage' ? controlData.extraDatas!.TabIndex! : controlData.properties!.TabIndex!
+      if (controlTabIndex > tempIndex && controlTabIndex - 1 > -1) {
+        if (ctrltype !== 'FDImage') {
+          this.updateTabIndex(userData[container].controls[key], controlTabIndex - 1)
+        } else {
+          this.updateExtraDatas(userData[container].controls[key], 'TabIndex', controlTabIndex - 1)
+        }
       }
     }
   }
@@ -214,6 +229,27 @@ export default class FdSelectVue extends Vue {
       if (controlZIndex > tempIndex) {
         this.updateZIndex(userData[container].controls[key], controlZIndex - 1)
       }
+    }
+  }
+  swapZIndex (tempZIndex: number) {
+    const userData = this.userformData[this.userFormId]
+    const container = this.selectedControls[this.userFormId].container[0]
+    const selected = this.selectedControls[this.userFormId].selected[0]
+    const swapTabIndex = userData[selected].extraDatas!.zIndex!
+    if (tempZIndex <= userData[container].controls.length && tempZIndex > 0) {
+      const index = userData[container].controls.findIndex(
+        (val) => userData[val].extraDatas!.zIndex === tempZIndex
+      )
+      this.updateZIndex(userData[container].controls[index], swapTabIndex)
+      this.updateZIndex(selected, tempZIndex)
+    }
+  }
+  bringFront () {
+    const container = this.selectedControls[this.userFormId].container[0]
+    if (container) {
+      this.swapZIndex(
+        this.userformData[this.userFormId][container].controls.length
+      )
     }
   }
 }

@@ -58,27 +58,25 @@
       <div class="items" :class="{ selectHide: !open }" :style="itemsStyleObj">
         <div class="listStyle" :title="properties.ControlTipText" :style="listStyleObj">
           <table :style="tableStyleObj" class="table-style" @click="tableClick" ref="comboRef" tabindex="1">
-            <thead v-if="properties.ColumnHeads === true" class="theadClass">
-              <tr>
-                <td
+            <th v-if="properties.ColumnHeads === true" class="thClass" :style="colHeadsStyle">
+                <template
                   :style="tdStyleObj"
                   v-if="properties.ListStyle === 1"
                   class="tdClass"
-                ></td>
+                ></template>
                 <template
                   v-for="(a, columnIndex) in extraDatas.ColumnHeadsValues"
                 >
-                  <td
+                  <th
                     v-if="columnIndex < properties.ColumnCount"
                     :key="columnIndex"
                     :style="updateColHeads(columnIndex)"
                   >
                     {{ a }}
-                  </td>
+                  </th>
                 </template>
-              </tr>
-            </thead>
-            <thead v-else></thead>
+            </th>
+            <th v-else></th>
             <tbody
               ref="style"
               class="table-body"
@@ -233,6 +231,13 @@ export default class FDComboBox extends Mixins(FdControlVue) {
     }
   }
 
+  protected get colHeadsStyle (): Partial<CSSStyleDeclaration> {
+    const controlProp = this.properties
+    return {
+      backgroundColor: controlProp.BackColor,
+      width: '100%'
+    }
+  }
   /**
    * @description  show selection when TextBox loses focus
    * when HideSelection is false selection is show if user selects any text
@@ -387,7 +392,7 @@ export default class FDComboBox extends Mixins(FdControlVue) {
   protected get listStyleObj (): Partial<CSSStyleDeclaration> {
     const controlProp = this.properties
     return {
-      height: controlProp.ListRows! > 0 && controlProp.ListRows! < this.extraDatas.RowSourceData!.length ? (controlProp.ListRows! * (controlProp.Font!.FontSize! + 3) + 'px') : ''
+      height: !controlProp.ColumnHeads ? (controlProp.ListRows! > 0 && controlProp.ListRows! < this.extraDatas.RowSourceData!.length ? (controlProp.ListRows! * (controlProp.Font!.FontSize! + 3) + 'px') : '') : (controlProp.ListRows! > 0 && controlProp.ListRows! < this.extraDatas.RowSourceData!.length ? ((controlProp.ListRows! + 1) * (controlProp.Font!.FontSize! + 3) + 'px') : '')
     }
   }
 
@@ -828,8 +833,11 @@ export default class FDComboBox extends Mixins(FdControlVue) {
 .table-style {
   width: 100%;
 }
-.theadClass {
-  border-bottom: 1px solid;
+.thClass {
+  position: sticky;
+  top: 0;
+  overflow: hidden;
+  text-decoration: underline;
   white-space: nowrap;
 }
 .tdClass {

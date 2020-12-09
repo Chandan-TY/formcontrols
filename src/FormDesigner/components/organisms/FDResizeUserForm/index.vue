@@ -2,11 +2,13 @@
   <div
     @keydown.ctrl="handleKeyDown"
     @keydown.delete.exact="handleKeyDown"
-     @keydown.tab.exact="tabAction"
+    @keydown.tab.exact="tabAction"
     tabindex="0"
   >
     <div
-      :class="[isInnerWindowClicked? 'inner-window-border': 'inner-window-border1']"
+      :class="[
+        isInnerWindowClicked ? 'inner-window-border' : 'inner-window-border1',
+      ]"
       :style="resizeUserformStyle"
     >
       <ResizeHandler
@@ -46,10 +48,10 @@ import FdContainerVue from '@/api/abstract/FormDesigner/FdContainerVue'
   }
 })
 export default class ResizeUserForm extends FdSelectVue {
-  @Prop({ required: true, type: String }) public containerId!: string
-  @Ref('userFormRef') readonly userFormRef!: Userform
+  @Prop({ required: true, type: String }) public containerId!: string;
+  @Ref('userFormRef') readonly userFormRef!: Userform;
 
-  tabCounter = 0
+  tabCounter = 0;
   /**
    * @description To perform ContextMenu actions(for example: selectAll, paste etc.) on UserForm  and Control
    * @function handleKeyDown
@@ -82,28 +84,46 @@ export default class ResizeUserForm extends FdSelectVue {
     }
   }
   get isInnerWindowClicked () {
-    return this.selectedControls[this.userFormId].selected.includes(this.controlId)
+    return this.selectedControls[this.userFormId].selected.includes(
+      this.controlId
+    )
   }
-  tabAction () {
-    const controlList = []
-    for (const key in this.userformData[this.userFormId]) {
-      const controlType = this.userformData[this.userFormId][key].type
-      if (controlType !== 'Userform') {
-        controlList.push(this.userformData[this.userFormId][key])
+  tabAction (event: KeyboardEvent) {
+    event.preventDefault()
+    const userData = this.userformData[this.userFormId]
+    let selected = this.selectedControls[this.userFormId].selected[0]
+    const container = this.selectedControls[this.userFormId].container[0]
+    const containerControls = userData[container].controls
+    if (containerControls.length > 0) {
+      let type = userData[selected].type
+      let selectedTab = -1
+      if (type === 'Userform') {
+        selectedTab = 0
+      } else if (type === 'FDImage') {
+        selectedTab = userData[selected].extraDatas!.TabIndex! + 1
+      } else {
+        selectedTab = userData[selected].properties!.TabIndex! + 1
       }
+      if (selectedTab > containerControls.length - 1) {
+        selectedTab = 0
+      }
+      const nextControlId = containerControls.findIndex((val) => {
+        const type = userData[val].type
+        if (type === 'FDImage') {
+          return userData[val].extraDatas!.TabIndex! === selectedTab
+        } else {
+          return userData[val].properties!.TabIndex! === selectedTab
+        }
+      })
+      console.log('nextControlId', nextControlId)
+      this.selectControl({
+        userFormId: this.userFormId,
+        select: {
+          container: [container],
+          selected: [containerControls[nextControlId]]
+        }
+      })
     }
-    const sortedArray = controlList.sort((a, b) => {
-      return a.properties.TabIndex! - b.properties.TabIndex!
-    })
-    this.selectControl({
-      userFormId: this.userFormId,
-      select: {
-        container: [this.userFormId],
-        selected: [sortedArray[this.tabCounter].properties.ID]
-      }
-    })
-    const max = sortedArray.reduce((prev, current) => (prev.properties.TabIndex! > current.properties.TabIndex!) ? prev : current)
-    this.tabCounter = this.tabCounter > max.properties.TabIndex! ? 0 : this.tabCounter + 1
   }
 }
 </script>

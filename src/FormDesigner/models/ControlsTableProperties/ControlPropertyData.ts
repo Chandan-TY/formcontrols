@@ -377,7 +377,8 @@ export class ControlPropertyData {
         },
         controls: [],
         extraDatas: {
-          zIndex: -1
+          zIndex: -1,
+          TabIndex: 0
         },
         type: 'FDImage'
       },
@@ -484,7 +485,7 @@ export class ControlPropertyData {
           GroupID: '',
           Index: 0
         },
-        controls: ['ID_Page1', 'ID_Page2'],
+        controls: ['ID_Page1_1', 'ID_Page1_2'],
         extraDatas: {
           zIndex: -1
         },

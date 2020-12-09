@@ -23,16 +23,16 @@ In the case of an option button, the group is set through what is in the frame c
 
 <h3><b>Control Properties:</b></h3>
 
-<h4>BackColor</h4>
+<h4>BackColor <span style='color:red'>(3)</span> </h4>
 <span>Control's background color - Color table appears when the button is clicked sets the selected color to Frame</span>
 
 <h4>BorderColor</h4>
 <span>Control's Border color - Color table appears when the button is clicked sets the selected color to Frame border</span>
 
-<h4>BorderStyle</h4>
+<h4>BorderStyle </h4>
 <span>When set to '0 - fmBordersStyleNone' , the Border style changes to none</span>
 
-<h4>Caption</h4>
+<h4>Caption <span style='color:red'>(3)</span> </h4>
 <span>Text information that appears in the control</span>
 
 <h4>ControlTipText</h4>
@@ -47,7 +47,7 @@ In the case of an option button, the group is set through what is in the frame c
 <h4>Font</h4>
 <span>1. Supports Fonts (Arial, Algerian, Banschrift)
 2. Supports Font styles (Bold, Itallic,...)
-3. Supports Font size
+3. Supports Font size <span style='color:red'>(3)</span>
 4. Supports Font effects (Underline, StrikeThrough)</span>
 
 <h4>ForeColor</h4>
@@ -72,7 +72,7 @@ In the case of an option button, the group is set through what is in the frame c
 <span>Changes the shape of the mouse cursor when the mouse is over the control </span>
 
 <h4>Picture</h4>
-<span>Insert an image into the userform control</span>
+<span>Insert an image into the frame control</span>
 
 <h4>PictureAlignment</h4>
 <span>Set the position of the image inserted in the frame control</span>
@@ -86,16 +86,16 @@ In the case of an option button, the group is set through what is in the frame c
 <h4>ScrollBars</h4>
 <span>Whether to show a scrollBars</span>
 
-<h4>ScrollHeight</h4>
+<h4>ScrollHeight <span style='color:red'>(1)</span></h4>
 <span>Total scrollable height of the scroll bar</span>
 
-<h4>ScrollLeft</h4>
+<h4>ScrollLeft <span style='color:red'>(3)</span></h4>
 <span>The horizontal position of the scroll bar (x-coordinate)</span>
 
-<h4>ScrollTop</h4>
+<h4>ScrollTop <span style='color:red'>(3)</span></h4>
 <span>If set to True, Show images in checkerboard format</span>
 
-<h4>ScrollWidth</h4>
+<h4>ScrollWidth <span style='color:red'>(1)</span></h4>
 <span>The total scrollable width of the scroll bar</span>
 
 <h4>SpecilalEffect</h4>
@@ -116,8 +116,8 @@ In the case of an option button, the group is set through what is in the frame c
 <h4>Visible</h4>
 <span>Whether it is visible or invisible when running UserForm</span>
 
-<h4>Width</h4>
+<h4>Width </h4>
 <span>The width of the control</span>
 
-<h4>Zoom</h4>
-<span>Expand or reduce the content in UserForm according to the set value ratio</span>
+<h4>Zoom <span style='color:red'>(3)</span> </h4>
+<span>Expand or reduce the content in Frame according to the set value ratio</span>

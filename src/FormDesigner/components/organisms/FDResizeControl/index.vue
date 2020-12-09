@@ -281,6 +281,7 @@ export default class ResizeControl extends FdSelectVue {
     if ((this.propControlData.type === 'Frame' || this.propControlData.type === 'MultiPage') && currentSelect.length === 1) {
       this.isMoving = true
       this.isEditMode = true
+      this.bringFront()
       e.stopPropagation()
     }
   }

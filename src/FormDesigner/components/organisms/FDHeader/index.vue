@@ -110,7 +110,7 @@
                 <li class="sub-menu-li">
                   <span><u>A</u>lign</span>
                 </li>
-                <li class="sub-menu-li" @click="insertUserForm()">
+                <li class="sub-menu-li">
                   <UserFormLogo class="fa padding" />
                   <span><u>M</u>ake Same Size</span>
                 </li>
@@ -133,10 +133,10 @@
                 <li class="sub-menu-li">
                   <span>A<u>r</u>range Buttons</span>
                 </li>
-                <li class="sub-menu-li">
+                <li class="sub-menu-li" @click="groupControl">
                   <span><u>G</u>roup</span>
                 </li>
-                <li class="sub-menu-li">
+                <li class="sub-menu-li" @click="unGroupControl">
                   <span><u>U</u>nGroup</span>
                 </li>
                 <li class="sub-menu-li">
@@ -205,6 +205,7 @@ import HelpLogo from '../../../../assets/help.svg'
 import CodeLogo from '../../../../assets/view-code.svg'
 import ObjectLogo from '../../../../assets/view-object.svg'
 import FDSVGImage from '@/FormDesigner/components/atoms/FDSVGImage/index.vue'
+import { EventBus } from '@/FormDesigner/event-bus'
 @Component({
   name: 'Header',
   components: {
@@ -293,17 +294,44 @@ export default class Header extends Vue {
       this.updateZIndex(selected, tempZIndex)
     }
   }
+  getLowestZIndex (tempControls: string[], controlLength: number) {
+    let lastControlId = controlLength
+    const userData = this.userformData[this.userFormId]
+    for (let i = 0; i < tempControls.length; i++) {
+      if (userData[tempControls[i]].extraDatas!.zIndex !== -1) {
+        const IdNum = userData[tempControls[i]].extraDatas!.zIndex!
+        if (!isNaN(IdNum) && lastControlId > IdNum) {
+          lastControlId = IdNum
+        }
+      }
+    }
+    return lastControlId
+  }
   bringFront () {
     const userData = this.userformData[this.userFormId]
     const selected = this.selectedControls[this.userFormId].selected[0]
     const container = this.selectedControls[this.userFormId].container[0]
     const tempZIndex = userData[selected].extraDatas!.zIndex!
-    this.swapZIndex(
-      this.userformData[this.userFormId][container].controls.length
-    )
+    const containerControls = this.userformData[this.userFormId][container].controls
+    const tempControls = []
+    for (const index in containerControls) {
+      const cntrlData = this.userformData[this.userFormId][containerControls[index]]
+      if (cntrlData.type === 'MultiPage' || cntrlData.type === 'Frame') {
+        tempControls.push(containerControls[index])
+      }
+    }
+    const lastControlId = tempControls.length > 0 ? this.getLowestZIndex(tempControls, userData[container].controls.length)
+      : this.userformData[this.userFormId][container].controls.length + 1
+    this.swapZIndex(lastControlId - 1)
   }
   sendBack () {
     this.swapZIndex(1)
+  }
+  groupControl () {
+    EventBus.$emit('groupControl', 'group')
+  }
+  unGroupControl () {
+    EventBus.$emit('groupControl', 'ungroup')
   }
 }
 </script>

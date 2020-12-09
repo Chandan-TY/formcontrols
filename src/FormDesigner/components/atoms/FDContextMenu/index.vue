@@ -191,6 +191,20 @@ export default class ContextMenu extends Vue {
     }
     this.closeMenu()
   }
+  created () {
+    EventBus.$on('groupControl', (value: string) => {
+      if (this.selectedControls[this.userFormId].container[0] === this.containerId) {
+        if (value === 'group') {
+          this.groupControl()
+        } else if (value === 'ungroup') {
+          this.unGroupControl()
+        }
+      }
+    })
+  }
+  destroyed () {
+    EventBus.$off('groupControl')
+  }
   @Emit('closeMenu')
   closeMenu () {
     return 0
@@ -309,11 +323,81 @@ export default class ContextMenu extends Vue {
       })
     }
   }
-  updateZIndex (id: string, value: number) {
+  getLowestIndex (tempControls: string[], controlLength: number, propertyType: boolean) {
+    let lastControlId = controlLength
+    const userData = this.userformData[this.userFormId]
+    for (let i = 0; i < tempControls.length; i++) {
+      const propetyName = propertyType ? userData[tempControls[i]].extraDatas!.zIndex! : userData[tempControls[i]].extraDatas!.TabIndex!
+      if (propetyName !== -1) {
+        const IdNum = propetyName
+        if (!isNaN(IdNum) && lastControlId > IdNum) {
+          lastControlId = IdNum
+        }
+      }
+    }
+    return lastControlId
+  }
+  updateZIndexValue (id: string) {
+    const userData = this.userformData[this.userFormId]
+    const container = this.getContainerList(id)[0]
+    const containerControls = this.userformData[this.userFormId][container].controls
+    const controlType = userData[id].type
+    if (controlType === 'MultiPage' || controlType === 'Frame') {
+      this.updateExtraDatas(id, 'zIndex', userData[container].controls.length)
+    } else {
+      const tempControls = []
+      for (const index in containerControls) {
+        const cntrlData = this.userformData[this.userFormId][containerControls[index]]
+        if (cntrlData.type === 'MultiPage' || cntrlData.type === 'Frame') {
+          tempControls.push(containerControls[index])
+        }
+      }
+      const lastControlId = tempControls.length > 0 ? this.getLowestIndex(tempControls, userData[container].controls.length, true)
+        : this.userformData[this.userFormId][container].controls.length
+      this.updateExtraDatas(id, 'zIndex', lastControlId)
+      for (const index of tempControls) {
+        const cntrlZIndex = this.userformData[this.userFormId][index].extraDatas!.zIndex!
+        this.updateExtraDatas(index, 'zIndex', cntrlZIndex + 1)
+      }
+    }
+  }
+  updateTabIndexValue (id: string) {
+    const userData = this.userformData[this.userFormId]
+    const container = this.getContainerList(id)[0]
+    const containerControls = this.userformData[this.userFormId][container].controls
+    const controlType = userData[id].type
+    if (controlType === 'FDImage') {
+      this.updateExtraDatas(id, 'TabIndex', userData[container].controls.length - 1)
+    } else {
+      const tempControls = []
+      for (const index in containerControls) {
+        const cntrlData = this.userformData[this.userFormId][containerControls[index]]
+        if (cntrlData.type === 'FDImage') {
+          tempControls.push(containerControls[index])
+        }
+      }
+      const lastControlId = tempControls.length > 0 ? this.getLowestIndex(tempControls, userData[container].controls.length - 1, false)
+        : this.userformData[this.userFormId][container].controls.length - 1
+      this.updateTabIndex(id, lastControlId)
+      for (const index of tempControls) {
+        const cntrlTabIndex = this.userformData[this.userFormId][index].extraDatas!.TabIndex!
+        this.updateExtraDatas(index, 'TabIndex', cntrlTabIndex + 1)
+      }
+    }
+  }
+  updateExtraDatas (id: string, propertyName: keyof extraDatas, value: number) {
     this.updateControlExtraData({
       userFormId: this.userFormId,
       controlId: id,
-      propertyName: 'zIndex',
+      propertyName: propertyName,
+      value: value
+    })
+  }
+  updateTabIndex (id: string, value: number) {
+    this.updateControl({
+      userFormId: this.userFormId,
+      controlId: id,
+      propertyName: 'TabIndex',
       value: value
     })
   }
@@ -324,29 +408,34 @@ export default class ContextMenu extends Vue {
     const swapTabIndex = userData[selected].extraDatas!.zIndex!
     if (tempZIndex <= userData[container].controls.length && tempZIndex > 0) {
       const index = userData[container].controls.findIndex(val => userData[val].extraDatas!.zIndex === tempZIndex)
-      this.updateZIndex(userData[container].controls[index], swapTabIndex)
-      this.updateZIndex(selected, tempZIndex)
+      this.updateExtraDatas(userData[container].controls[index], 'zIndex', swapTabIndex)
+      this.updateExtraDatas(selected, 'zIndex', tempZIndex)
     }
   }
   bringForward () {
     const userData = this.userformData[this.userFormId]
     const selected = this.selectedControls[this.userFormId].selected[0]
     const tempZIndex = userData[selected].extraDatas!.zIndex!
-    this.swapZIndex(tempZIndex + 1)
+    const tempControls = []
+    const container = this.getContainerList(selected)[0]
+    const containerControls = this.userformData[this.userFormId][container].controls
+    for (const index in containerControls) {
+      const cntrlData = this.userformData[this.userFormId][containerControls[index]]
+      if (cntrlData.type === 'MultiPage' || cntrlData.type === 'Frame') {
+        tempControls.push(containerControls[index])
+      }
+    }
+    const lastControlId = tempControls.length > 0 ? this.getLowestIndex(tempControls, userData[container].controls.length, true)
+      : this.userformData[this.userFormId][container].controls.length + 1
+    if (tempZIndex + 1 < lastControlId) {
+      this.swapZIndex(tempZIndex + 1)
+    }
   }
   bringBackward () {
     const userData = this.userformData[this.userFormId]
     const selected = this.selectedControls[this.userFormId].selected[0]
     const tempZIndex = userData[selected].extraDatas!.zIndex!
     this.swapZIndex(tempZIndex - 1)
-  }
-  updateTabIndex (id: string, value: number) {
-    this.updateControl({
-      userFormId: this.userFormId,
-      controlId: id,
-      propertyName: 'TabIndex',
-      value: value
-    })
   }
   deletePageIndex (id: string) {
     const userData = this.userformData[this.userFormId]
@@ -516,6 +605,7 @@ export default class ContextMenu extends Vue {
         this.updateControlProperty('GroupID', updateGroupId, val)
       }
     }
+    this.createGroup(updateGroupId)
     this.selectControl({
       userFormId: this.userFormId,
       select: {
@@ -523,7 +613,6 @@ export default class ContextMenu extends Vue {
         selected: [updateGroupId]
       }
     })
-    this.createGroup(updateGroupId)
   }
 
   /**
@@ -642,8 +731,8 @@ export default class ContextMenu extends Vue {
       item: ctrlObj
     })
     const newTabIndex = this.userformData[this.userFormId][parentId].controls.length
-    this.updateTabIndex(ctrlId, newTabIndex - 1)
-    this.updateZIndex(ctrlId, newTabIndex)
+    this.updateTabIndexValue(ctrlId)
+    this.updateZIndexValue(ctrlId)
   }
   /**
    * @description To paste controls in respective container present in respective userform
@@ -964,9 +1053,7 @@ export default class ContextMenu extends Vue {
     this.selectControl({
       userFormId: this.userFormId,
       select: {
-        container: this.getContainerList(
-          this.selectedControls[this.userFormId].container[0]
-        ),
+        container: [this.selectedControls[this.userFormId].container[0]],
         selected: [this.selectedControls[this.userFormId].container[0]]
       }
     })
@@ -974,11 +1061,18 @@ export default class ContextMenu extends Vue {
   deleteTabIndex (id: string) {
     const userData = this.userformData[this.userFormId]
     const container = this.selectedControls[this.userFormId].container[0]
-    const tempIndex: number = userData[id].properties!.TabIndex!
+    const type = userData[id].type
+    const tempIndex: number = type === 'FDImage' ? userData[id].extraDatas!.TabIndex! : userData[id].properties!.TabIndex!
     for (const key in userData[container].controls) {
-      const controlTabIndex = userData[userData[container].controls[key]].properties!.TabIndex!
-      if (controlTabIndex > tempIndex) {
-        this.updateTabIndex(userData[container].controls[key], controlTabIndex - 1)
+      const ctrltype = userData[userData[container].controls[key]].type
+      const controlData = userData[userData[container].controls[key]]
+      const controlTabIndex = ctrltype === 'FDImage' ? controlData.extraDatas!.TabIndex! : controlData.properties!.TabIndex!
+      if (controlTabIndex > tempIndex && controlTabIndex - 1 > -1) {
+        if (ctrltype !== 'FDImage') {
+          this.updateTabIndex(userData[container].controls[key], controlTabIndex - 1)
+        } else {
+          this.updateExtraDatas(userData[container].controls[key], 'TabIndex', controlTabIndex - 1)
+        }
       }
     }
   }
@@ -989,7 +1083,7 @@ export default class ContextMenu extends Vue {
     for (const key in userData[container].controls) {
       const controlZIndex = userData[userData[container].controls[key]].extraDatas!.zIndex!
       if (controlZIndex > tempIndex) {
-        this.updateZIndex(userData[container].controls[key], controlZIndex - 1)
+        this.updateExtraDatas(userData[container].controls[key], 'zIndex', controlZIndex - 1)
       }
     }
   }

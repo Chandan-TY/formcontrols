@@ -18,12 +18,13 @@
         name="selectedUserForm"
         id="selectedUserForm"
         v-if="userFormId"
+        @change="updateSelected($event)"
       >
         <option
           :value="userFormId"
           :selected="true"
-        >{{ userformData[userFormId][userFormId].properties.Name}} {{userformData[userFormId][userFormId].type}}</option>
-         <option v-for="control in userformData[userFormId][userFormId].controls" :value="control" :key="userformData[userFormId][control].properties.Name">
+        >{{ userformData[userFormId][this.selectedContainer[0]].properties.Name}} {{userformData[userFormId][this.selectedContainer[0]].type}}</option>
+         <option  v-for="control in userformData[userFormId][this.selectedContainer[0]].controls" :value="control" :key="userformData[userFormId][control].properties.Name">
           <b>{{ userformData[userFormId][control].properties.Name }} {{userformData[userFormId][control].type}}</b>
         </option>
       </select>
@@ -43,7 +44,7 @@ import FDTable from '@/FormDesigner/components/organisms/FDTable/index.vue'
 import FDPropertyTable, { tableDatas } from '@/FormDesigner/components/organisms/FDPropertyTable/index.vue'
 import { LabelData } from '../../../models/ControlsTableProperties/LabelTableProperties'
 import { PropertyListDefine } from '@/FormDesigner/models/ControlsTableProperties/propertyList'
-import { IupdateControl, IupdateControlExtraData, IupdatedSelectedControl } from '@/storeModules/fd/actions'
+import { IselectControl, IupdateControl, IupdateControlExtraData, IupdatedSelectedControl } from '@/storeModules/fd/actions'
 
 @Component({
   name: 'PropertiesList',
@@ -61,6 +62,7 @@ export default class PropertiesList extends Vue {
   @State((state) => state.fd.selectedControls) selectedControls!: fdState['selectedControls'];
   @State(state => state.fd.groupedControls) groupedControls!: fdState['groupedControls']
   @Prop({ required: true, type: String }) public readonly userFormId! : string
+  @Action('fd/selectControl') selectControl!: (payload: IselectControl) => void;
 
   propList = new PropertyListDefine();
 
@@ -72,18 +74,51 @@ export default class PropertiesList extends Vue {
   selectedOption: Object= {}
 
   get getSelectedControlsDatas () {
-    return this.selectedControls[this.userFormId]
+    if (this.selectedSelect.length > 0 && this.selectedContainer.length > 0) {
+      if (this.selectedControls[this.userFormId].selected.length === 1 && !this.selectedControls[this.userFormId].selected[0].startsWith('group')) {
+        return this.selectedControls[this.userFormId].selected
+      } else {
+        const filteredSelectedControls = []
+        const controls = this.userformData[this.userFormId][this.selectedControls[this.userFormId].container[0]].controls
+        const selControls = this.selectedControls[this.userFormId].selected
+        for (let i = 0; i < selControls.length; i++) {
+          if (selControls[i].startsWith('group')) {
+            for (let j = 0; j < controls.length; j++) {
+              if (this.userformData[this.userFormId][controls[j]].properties.GroupID === selControls[i]) {
+                filteredSelectedControls.push(controls[j])
+              }
+            }
+          } else {
+            filteredSelectedControls.push(selControls[i])
+          }
+        }
+        console.log('222', filteredSelectedControls)
+        return filteredSelectedControls
+      }
+    }
+  }
+  updatePageIndex (propValue: number) {
+    const userData = this.userformData[this.userFormId]
+    const selected = this.selectedControls[this.userFormId].selected[0]
+    const swapTabIndex = userData[selected].properties.Index!
+    const container = this.selectedControls[this.userFormId].container[0]
+
+    if (propValue < userData[container].controls.length) {
+      const index = userData[container].controls.findIndex(val => userData[val].properties.Index === propValue)
+      this.updatePropValue(userData[container].controls[index], 'Index', swapTabIndex)
+      this.updatePropValue(selected, 'Index', propValue)
+    }
   }
   updateProperty (arg: IupdateControl) {
-    debugger
-    const selected = this.getSelectedControlsDatas.selected
+    const selected = this.getSelectedControlsDatas!
     for (let i = 0; i < selected.length; i++) {
-      this.updateControl({
-        userFormId: this.userFormId,
-        controlId: selected[i],
-        propertyName: arg.propertyName,
-        value: arg.value
-      })
+      if (arg.propertyName === 'TabIndex') {
+        this.updateTabIndexValue(parseInt(arg.value))
+      } else if (arg.propertyName === 'Index') {
+        this.updatePageIndex(parseInt(arg.value))
+      } else {
+        this.updatePropValue(selected[i], arg.propertyName, arg.value)
+      }
     }
     // if (arg.target === null) {
     //   if (this.selectedControls.main instanceof Array) {
@@ -97,9 +132,65 @@ export default class PropertiesList extends Vue {
     //   }
     // }
   }
+  updatePropValue (id: string, propName: keyof controlProperties, propValue: string|number) {
+    this.updateControl({
+      userFormId: this.userFormId,
+      controlId: id,
+      propertyName: propName,
+      value: propValue
+    })
+  }
+  getLowestIndex (tempControls: string[], controlLength: number, propertyType: boolean) {
+    let lastControlId = controlLength
+    const userData = this.userformData[this.userFormId]
+    for (let i = 0; i < tempControls.length; i++) {
+      const propetyName = propertyType ? userData[tempControls[i]].extraDatas!.zIndex! : userData[tempControls[i]].extraDatas!.TabIndex!
+      if (propetyName !== -1) {
+        const IdNum = propetyName
+        if (!isNaN(IdNum) && lastControlId > IdNum) {
+          lastControlId = IdNum
+        }
+      }
+    }
+    return lastControlId
+  }
+  swapTabIndex (tempZIndex: number) {
+    const userData = this.userformData[this.userFormId]
+    const container = this.selectedControls[this.userFormId].container[0]
+    const selected = this.selectedControls[this.userFormId].selected[0]
+    const swapTabIndex = userData[selected].properties!.TabIndex!
+    if (tempZIndex <= userData[container].controls.length - 1 && tempZIndex > -1) {
+      const index = userData[container].controls.findIndex(
+        (val) => userData[val].properties!.TabIndex === tempZIndex
+      )
+      this.updatePropValue(userData[container].controls[index], 'TabIndex', swapTabIndex)
+      this.updatePropValue(selected, 'TabIndex', tempZIndex)
+    }
+  }
+  updateTabIndexValue (val: number) {
+    const userData = this.userformData[this.userFormId]
+    const container = this.selectedControls[this.userFormId].container[0]
+    const selected = this.selectedControls[this.userFormId].selected[0]
+    const containerControls = this.userformData[this.userFormId][container].controls
+    const controlType = userData[selected].type
+    if (controlType !== 'FDImage') {
+      const tempControls = []
+      for (const index in containerControls) {
+        const cntrlData = this.userformData[this.userFormId][containerControls[index]]
+        if (cntrlData.type === 'FDImage') {
+          tempControls.push(containerControls[index])
+        }
+      }
+      const lastControlId = tempControls.length > 0 ? this.getLowestIndex(tempControls, userData[container].controls.length - 1, false)
+        : this.userformData[this.userFormId][container].controls.length - 1
+      if (val <= lastControlId) {
+        this.swapTabIndex(val)
+      }
+    }
+  }
 
   updateExtraProperty (arg: IupdateControlExtraData) {
-    const selected = this.getSelectedControlsDatas.selected
+    const selected = this.getSelectedControlsDatas!
     for (let i = 0; i < selected.length; i++) {
       this.updateControlExtraData({
         userFormId: this.userFormId,
@@ -111,29 +202,48 @@ export default class PropertiesList extends Vue {
   }
 
   get propertyTableData () : tableDatas {
-    // debugger
-    // console.log('SSS', this.getSelectedControlsDatas.selected)
-    // console.log('GGG', this.groupedControls[this.userFormId])
     const result : tableDatas = {}
-    for (const controlType in this.propList.data) {
-      if (this.getSelectedControlsDatas.selected.length === 1) {
-        const controlData = this.userformData[this.userFormId][this.getSelectedControlsDatas.selected[0]]
-        if (controlData.type === controlType) {
-          const defineList = this.propList.data[controlType]
-          for (const propName in defineList) {
-            const propValue = controlData.properties[propName]
-            if (propValue !== undefined) {
-              result[propName] = {
-                ...defineList[propName],
-                value: propValue
-              }
+    if (this.selectedSelect.length > 0 && this.selectedContainer.length > 0) {
+      if (this.getSelectedControlsDatas!.length === 1) {
+        const controlData = this.userformData[this.userFormId][this.getSelectedControlsDatas![0]]
+        const defineList = this.propList.data[controlData.type]
+        for (const propName in defineList) {
+          const propValue = controlData!.properties[propName]
+          if (propValue !== undefined) {
+            result[propName] = {
+              ...defineList[propName],
+              value: propValue
             }
           }
-          break
         }
       }
     }
     return result
+  }
+
+  updateSelected (e: MouseEvent) {
+    if (e.target instanceof HTMLSelectElement) {
+      if (e.target.options.selectedIndex > -1) {
+        const controlName = e.target.options[e.target.options.selectedIndex].text.split(' ')[0]
+        const controlsArray = this.userformData[this.userFormId][this.selectedContainer[0]].controls
+        const value = Object.keys(this.userformData[this.userFormId]).filter(val => {
+          return this.userformData[this.userFormId][val].properties.Name === controlName
+        })
+        this.selectControl({
+          userFormId: this.userFormId,
+          select: {
+            container: this.selectedContainer,
+            selected: value
+          }
+        })
+      }
+    }
+  }
+  get selectedSelect () {
+    return this.selectedControls[this.userFormId].selected
+  }
+  get selectedContainer () {
+    return this.selectedControls[this.userFormId].container
   }
 }
 </script>
