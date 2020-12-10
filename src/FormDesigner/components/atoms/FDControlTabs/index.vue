@@ -87,7 +87,6 @@ export default class FDControlTabs extends Vue {
   @Prop() tempWeight: string;
   @Prop() getMouseCursorData: string;
   @Prop() setFontStyle: string;
-  @Prop() tempTabWidth: number;
 
   /**
    * @description getDisableValue checks for the RunMode of the control and then returns after checking for the Enabled
@@ -177,9 +176,8 @@ export default class FDControlTabs extends Vue {
         FontStrikethrough: true
       }
     return {
-      // color: this.data.type === 'TabStrip' ? controlProp.ForeColor : '',
       height: controlProp.TabFixedHeight! > 0 ? controlProp.TabFixedHeight + 'px' : '',
-      width: controlProp.TabFixedWidth! > 0 ? controlProp.TabFixedWidth + 'px' : controlProp.TabOrientation === 2 || controlProp.TabOrientation === 3 ? this.tempTabWidth + 'px' : '',
+      width: controlProp.TabFixedWidth! > 0 ? controlProp.TabFixedWidth + 'px' : '',
       top: controlProp.TabOrientation === 1 ? '10px' : '0px',
       fontFamily: (font.FontStyle! !== '') ? this.setFontStyle : font.FontName!,
       fontSize: `${font.FontSize}px`,
@@ -224,6 +222,7 @@ export default class FDControlTabs extends Vue {
 .forLeft {
   border-bottom: none;
   border-radius: 3px;
+  width: fit-content;
 }
 .page [type="radio"]:checked ~ label.forLeft {
   border-bottom: 2px solid gray;
@@ -256,5 +255,8 @@ export default class FDControlTabs extends Vue {
 }
 .page [type="radio"] {
   display: none;
+}
+.spanClass {
+  text-decoration: underline;
 }
 </style>

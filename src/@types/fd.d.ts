@@ -154,7 +154,6 @@ interface controlProperties {
     WordWrap?: boolean,
     Zoom?: number,
     GroupID?: string,
-    NextAvailableID?: number
 }
 
 interface extraDatas {
@@ -285,4 +284,8 @@ interface Iscrolling {
     scrollLeft?: number;
     scrollTop?: number;
   };
+}
+interface ISelectedColoPaletteValue {
+  propertyName: string;
+  propertyValue: string;
 }

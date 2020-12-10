@@ -6,8 +6,8 @@
         id="enter"
         :name="name"
         class="color-input"
-        v-on="$listeners"
-        v-model="emitChange"
+        :value="value"
+        disabled= "true"
       />
       <button
         id="clear"
@@ -25,7 +25,6 @@
           ref="colorPalleteRef"
           tabindex="1"
           v-if="isVisible"
-          @focus="focus"
           @blur="hideColorPallete"
         >
           <div class="tab">
@@ -89,11 +88,6 @@ interface IColors {
   name: string;
   value: string;
 }
-interface IColorSystem {
-  name: string;
-  value: string;
-  displayName: string;
-}
 interface ISelectedValue {
   name: string;
   value: string;
@@ -103,18 +97,13 @@ interface ISelectedValue {
   name: 'FDColorPalettes'
 })
 export default class FDColorPalettes extends Vue {
-  @Prop() value: ISelectedValue;
+  @Prop() value: string;
   @Prop() name: string;
   @Ref('colorPalleteRef') readonly colorPalleteRef!: HTMLDivElement;
-  constructor () {
-    super()
-    this.colorDataValue = this.value
-  }
   private isVisible = false;
-  colorDataValue: ISelectedValue = { name: '', value: '', displayName: '' };
   colors: Array<IColors> = colors;
-  colorSystem: Array<IColorSystem> = colorSystem;
-  selectedValue: ISelectedValue = this.colorDataValue;
+  colorSystem: Array<ISelectedValue> = colorSystem;
+  selectedValue: ISelectedValue
 
   openColorPalette () {
     this.isVisible = !this.isVisible
@@ -127,21 +116,16 @@ export default class FDColorPalettes extends Vue {
 
   selectColor (data: ISelectedValue) {
     this.selectedValue = data
+    this.emitColorPalette(this.selectedValue.value, this.name)
     this.isVisible = !this.isVisible
   }
 
   hideColorPallete () {
     this.isVisible = false
   }
-  get emitChange () {
-    this.emitColorPalette(this.selectedValue.value, this.name)
-    return this.selectedValue.name !== undefined
-      ? this.selectedValue.name
-      : this.selectedValue
-  }
   @Emit('colorPalette')
   emitColorPalette (selectedValue: string, name: string) {
-    return { selectedValue, name }
+    return { propertyName: name, propertyValue: selectedValue }
   }
   get colorPalettesStyleObj () {
     return {

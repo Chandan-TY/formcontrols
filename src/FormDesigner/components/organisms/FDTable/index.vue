@@ -22,8 +22,6 @@
         @FontProp="fontProp"
         @colorPaletteProp="colorPaletteProp"
       />
-        <!-- @change="handleChange" -->
-        <!-- @change="updateAppearance" -->
     </div>
   </div>
 </template>
@@ -58,9 +56,6 @@ export default class FDTable extends Vue {
   @Prop({ type: Object, required: true }) tableData!: tableData;
   @State((state) => state.fd.userformData) userformData!: userformData;
 
-  handleChange (e: any) {
-    console.log(e)
-  }
   @Emit('updateProperty')
   emitUpdateProperty (
     propertyName: string,
@@ -78,14 +73,15 @@ export default class FDTable extends Vue {
   }
 
   updateAppearance (e: Event) {
-    debugger
     const propertyName = (e.target as HTMLInputElement).name
     const inputType = this.tableData[propertyName].type
     let propertyValue = (e.target as HTMLInputElement).value
-    if (inputType === 'String') {
+    if (inputType === 'file') {
       if (propertyName === 'MouseIcon' || propertyName === 'Picture') {
         this.handleConvertionImageToBase64(e)
-      } else if (propertyName === 'Accelerator') {
+      }
+    } else if (inputType === 'String') {
+      if (propertyName === 'Accelerator') {
         this.emitUpdateProperty(
           propertyName,
           propertyValue !== '' ? propertyValue[0] : propertyValue
@@ -113,26 +109,11 @@ export default class FDTable extends Vue {
         )
       }
     } else if (inputType === 'array') {
-      if (propertyName === 'PicturePosition') {
-        let result: PicturePosition = this.handlePicturePosition(e)
-        for (const key in result) {
-          if (result.hasOwnProperty(key)) {
-            const element = result[key]
-            this.emitUpdateExtraProperty(key, element)
-          }
-        }
-      } else {
-        this.emitUpdateProperty(
-          propertyName,
-          parseInt((e.target as HTMLInputElement).value)
-        )
-      }
-    } else if (inputType === 'font') {
       this.emitUpdateProperty(
         propertyName,
-        (e.target as HTMLInputElement).value
+        parseInt((e.target as HTMLInputElement).value)
       )
-    } else if (inputType === 'color') {
+    } else if (inputType === 'font') {
       this.emitUpdateProperty(
         propertyName,
         (e.target as HTMLInputElement).value
@@ -154,45 +135,11 @@ export default class FDTable extends Vue {
     reader.readAsDataURL(file)
   }
 
-  handlePicturePosition (e: Event): PicturePosition {
-    switch (parseInt((e.target as HTMLInputElement).value)) {
-      case 0:
-        return { backgroundPositionX: 'left', backgroundPositionY: 'top' }
-      case 1:
-        return { backgroundPositionX: 'left', backgroundPositionY: 'center' }
-      case 2:
-        return { backgroundPositionX: 'left', backgroundPositionY: 'bottom' }
-      case 3:
-        return { backgroundPositionX: 'right', backgroundPositionY: 'top' }
-      case 4:
-        return { backgroundPositionX: 'right', backgroundPositionY: 'center' }
-      case 5:
-        return { backgroundPositionX: 'right', backgroundPositionY: 'bottom' }
-      case 6:
-        return { backgroundPositionX: 'center', backgroundPositionY: 'top' }
-      case 7:
-        return { backgroundPositionX: 'center', backgroundPositionY: 'bottom' }
-      case 8:
-        return { backgroundPositionX: 'center', backgroundPositionY: 'center' }
-      case 9:
-        return { backgroundPositionX: 'center', backgroundPositionY: '20%' }
-      case 10:
-        return { backgroundPositionX: 'center', backgroundPositionY: 'center' }
-      case 11:
-        return { backgroundPositionX: 'center', backgroundPositionY: 'bottom' }
-      case 12:
-        return { backgroundPositionX: 'center', backgroundPositionY: 'center' }
-      default:
-        return { backgroundPositionX: '', backgroundPositionY: '' }
-    }
-  }
-
   fontProp (tempVal: font) {
     this.emitUpdateProperty('Font', tempVal)
   }
-  colorPaletteProp (selectedValue: string, name: string) {
-    debugger
-    this.emitUpdateProperty(name, selectedValue)
+  colorPaletteProp (selectedValue: ISelectedColoPaletteValue) {
+    this.emitUpdateProperty(selectedValue.propertyName, selectedValue.propertyValue)
   }
 }
 </script>

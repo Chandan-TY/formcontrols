@@ -2,8 +2,7 @@
   <div class="custom-dropdown-outer">
     <label class="custom-label-ele">{{propertyName}}</label>
     <div class="custom-div-ele">
-      <div class="select-editable" style="width: 100%;
-    height: 17px;">
+      <div class="select-editable" style="width: 100%; height: 17px;">
         <select
         :name="propertyName"
         v-on="$listeners"
@@ -18,11 +17,10 @@
         v-on="$listeners"
         :id="propertyValues.indexOf(propertyValues[propertyValue])"
         v-if="propertyType==='array'"
-        :value="propertyValues[propertyValue]"
+        v-model="selected"
         >
-        <option v-for="(propValue,index) in propertyValues" :key="propValue" :value="index">{{propValue}}</option>
+        <option v-for="(propValue, index) in propertyValues" :key="propValue" :value="index">{{propValue}}</option>
         </select>
-        <input  :name="propertyName" type="text" :value="(propertyType==='array')?propertyValues[propertyValue]:propertyValue" />
       </div>
     </div>
   </div>
@@ -40,6 +38,8 @@ export default class FDCustomDropDown extends Vue {
   @Prop({ }) propertyData! : tableData
   @Prop({ default: 'default' }) propertyName!: string
 
+  selected: string | number | font | null | undefined = null
+
   get propertyType () {
     return this.propertyData.type
   }
@@ -50,6 +50,9 @@ export default class FDCustomDropDown extends Vue {
 
   get propertyValues () {
     return this.propertyData.values
+  }
+  mounted () {
+    this.selected = this.propertyValue
   }
 }
 </script>

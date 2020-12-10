@@ -28,8 +28,8 @@ export default class CustomColorTabs extends Vue {
   }
 
   @Emit('colorPaletteProp')
-  colorPaletteEmit (selectedValue: string, name: string) {
-    return { selectedValue, name }
+  colorPaletteEmit (selectedValue: ISelectedColoPaletteValue) {
+    return selectedValue
   }
 }
 </script>

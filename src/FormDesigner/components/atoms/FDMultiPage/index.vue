@@ -30,7 +30,6 @@
             <FDControlTabs
               @setValue="setValue"
               @isChecked="isChecked"
-              :getMouseCursorData="getMouseCursorData"
               :setFontStyle="setFontStyle"
               @tempStretch="tempStretch"
               :data="data"
@@ -42,7 +41,6 @@
               :isItalic="isItalic"
               :tempStretch="tempStretch"
               :tempWeight="tempWeight"
-              :tempTabWidth="tempTabWidth"
             />
           </div>
         </div>
@@ -145,7 +143,6 @@ export default class FDMultiPage extends FdContainerVue {
   contextMenuValue: Array<IcontextMenu> = tabsContextMenu;
   updatedValue: number = 0;
   selectedPageID: string = '';
-  tempTabWidth: number = 0;
   multiPageContextMenu: boolean = false
   selectedPageIndex: number = -1
 
@@ -184,10 +181,6 @@ export default class FDMultiPage extends FdContainerVue {
       width: `${controlProp.Width}px`,
       height: `${controlProp.Height}px`,
       top: `${controlProp.Top}px`,
-      cursor:
-        controlProp.MousePointer !== 0 || controlProp.MouseIcon !== ''
-          ? this.getMouseCursorData
-          : 'default',
       display: display
     }
   }
@@ -201,11 +194,7 @@ export default class FDMultiPage extends FdContainerVue {
   protected get styleTabsObj (): Partial<CSSStyleDeclaration> {
     const controlProp = this.properties
     return {
-      backgroundColor: controlProp.BackColor,
-      cursor:
-        controlProp.MousePointer !== 0 || controlProp.MouseIcon !== ''
-          ? this.getMouseCursorData
-          : 'default'
+      backgroundColor: controlProp.BackColor
     }
   }
 
@@ -239,7 +228,7 @@ export default class FDMultiPage extends FdContainerVue {
           : '',
       width:
         controlProp.TabOrientation === 2 || controlProp.TabOrientation === 3
-          ? 'fit-content'
+          ? ''
           : '100%',
       right: controlProp.TabOrientation === 3 ? '0px' : '',
       overflow: 'hidden'
@@ -262,6 +251,7 @@ export default class FDMultiPage extends FdContainerVue {
         width: '100%',
         position: 'relative',
         backgroundImage: `url(${this.selectedPageData.properties.Picture})`,
+        // backgroundImage: 'radial-gradient(circle, rgb(0, 0, 0) 0.5px, rgba(0, 0, 0, 0) 0.2px)',
         backgroundSize:
           this.selectedPageData.properties.Picture === ''
             ? ''
@@ -407,11 +397,7 @@ export default class FDMultiPage extends FdContainerVue {
       display:
         controlProp.TabOrientation === 0 || controlProp.TabOrientation === 1
           ? 'inline-block'
-          : 'block',
-      cursor:
-        controlProp.MousePointer !== 0 || controlProp.MouseIcon !== ''
-          ? this.getMouseCursorData
-          : 'default'
+          : 'block'
     }
   }
 
@@ -459,40 +445,39 @@ export default class FDMultiPage extends FdContainerVue {
         controlProp.TabOrientation === 0
           ? controlProp.TabFixedHeight! > 0
             ? controlProp.TabFixedHeight! + 12 + 'px'
-            : '33px'
+            : controlProp.TabFixedHeight! === 0 ? (controlProp.Font!.FontSize! + 20) + 'px'
+              : '33px'
           : '0px',
       height:
         controlProp.TabOrientation === 0 || controlProp.TabOrientation === 1
           ? controlProp.TabFixedHeight! > 0
             ? controlProp.Height! - controlProp.TabFixedHeight! - 5 + 'px'
-            : controlProp.TabOrientation === 1
-              ? `${controlProp.Height! - 21}px`
-              : `${controlProp.Height! - 35}px`
+            : controlProp.TabFixedHeight! === 0 ? (controlProp.Height! - controlProp.Font!.FontSize! - 20) + 'px'
+              : controlProp.TabOrientation === 1
+                ? `${controlProp.Height! - 21}px`
+                : `${controlProp.Height! - 35}px`
           : `${controlProp.Height! - 2}px`,
       width:
         controlProp.TabOrientation === 0 || controlProp.TabOrientation === 1
           ? 'calc(100% - 3px)'
           : controlProp.TabFixedWidth! > 0
             ? controlProp.Width! - controlProp.TabFixedWidth! - 15 + 'px'
-            : controlProp.TabFixedWidth! === 0
-              ? controlProp.Width! - this.tempTabWidth - 15 + 'px'
+            : controlProp.TabFixedWidth! === 0 ? controlProp.TabOrientation === 2 || controlProp.TabOrientation === 3 ? controlProp.Font!.FontSize! < 50 && controlProp.Font!.FontSize! > 25 ? (controlProp.Width! - controlProp.Font!.FontSize! - 68) + 'px' : controlProp.Font!.FontSize! <= 25 ? (controlProp.Width! - controlProp.Font!.FontSize! - 54) + 'px' : (controlProp.Width! - controlProp.Font!.FontSize! - 103) + 'px' : (controlProp.Width! - controlProp.Font!.FontSize! - 20) + 'px'
               : 'calc(100% - 44px)',
       left:
         controlProp.TabOrientation === 2
           ? controlProp.TabFixedWidth! > 0
             ? controlProp.TabFixedWidth! + 12 + 'px'
-            : controlProp.TabFixedWidth! === 0
-              ? controlProp.Width! - this.tempTabWidth - 41 + 'px'
+            : controlProp.TabFixedWidth! === 0 ? controlProp.TabOrientation === 2 || controlProp.TabOrientation === 3 ? controlProp.Font!.FontSize! < 50 && controlProp.Font!.FontSize! > 25 ? (controlProp.Font!.FontSize! + 68) + 'px' : controlProp.Font!.FontSize! <= 25 ? (controlProp.Font!.FontSize! + 54) + 'px' : (controlProp.Font!.FontSize! + 102) + 'px' : (controlProp.Font!.FontSize! + 20) + 'px'
               : '40px'
           : '0px',
-      cursor:
-        controlProp.MousePointer !== 0 || controlProp.MouseIcon !== ''
-          ? this.getMouseCursorData
-          : 'default',
       padding: '0px',
       overflow: 'hidden',
       overflowX: this.getScrollBarPage ? this.getScrollBarPage.overflowX! : '',
-      overflowY: this.getScrollBarPage ? this.getScrollBarPage.overflowY! : ''
+      overflowY: this.getScrollBarPage ? this.getScrollBarPage.overflowY! : '',
+      backgroundColor: 'rgb(238,238,238)',
+      backgroundImage: 'radial-gradient(circle, rgb(0, 0, 0) 0.5px, rgba(0, 0, 0, 0) 0.2px) !important',
+      backgroundSize: '10px 10px'
     }
   }
 
@@ -563,23 +548,11 @@ export default class FDMultiPage extends FdContainerVue {
 
   mounted () {
     this.selectedPageID = this.controls[0]
-    // Error while running test case
-    // const divElement = this.scrolling.children
-    // let width = 0
-    // if (this.contentRef) {
-    //   const scrollRef = this.contentRef
-    //   scrollRef.scrollLeft! = 20
-    // }
-    // if (divElement && this.properties.TabFixedWidth === 0) {
-    //   for (let i = 0; i < divElement.length; i++) {
-    //     let offsetWidth = (divElement[i].children[0].children[1] as HTMLElement)
-    //       .offsetWidth
-    //     if (offsetWidth > width) {
-    //       width = offsetWidth
-    //       this.tempTabWidth = width
-    //     }
-    //   }
-    // }
+    const divElement = this.scrolling.children
+    if (this.contentRef) {
+      const scrollRef = this.contentRef
+      scrollRef.scrollLeft! = 20
+    }
   }
   dragSelectorControl (event: MouseEvent) {
     this.selectedControlArray = []
@@ -697,12 +670,9 @@ export default class FDMultiPage extends FdContainerVue {
   z-index: 5;
 }
 .move {
-  width: 100%;
   display: grid;
-  /* grid-template-columns: 1fr; */
 }
 .page {
-  /* display: inline-block; */
   vertical-align: top;
   z-index: 1;
   overflow: hidden;

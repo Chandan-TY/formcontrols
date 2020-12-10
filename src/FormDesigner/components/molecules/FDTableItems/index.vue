@@ -5,7 +5,7 @@
         v-if="
           propertyType === 'String' ||
             propertyType === 'float' ||
-            propertyType === 'number'
+            propertyType === 'number' ||  propertyType === 'file'
         "
         :propertyData="controlPropertyData"
         :propertyName="propertyName"
@@ -64,8 +64,8 @@ export default class FDLabelPropertyTableItems extends Vue {
   }
 
   @Emit('colorPaletteProp')
-  colorPaletteProp (selectedValue: string, name: string) {
-    return { selectedValue, name }
+  colorPaletteProp (selectedValue: ISelectedColoPaletteValue) {
+    return selectedValue
   }
 }
 

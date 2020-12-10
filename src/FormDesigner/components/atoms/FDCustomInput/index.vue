@@ -5,7 +5,7 @@
       :name="propertyName"
       class="custom-input-ele"
       :value="(inputType)?null:propertyValue"
-      :type="(propertyType==='String')?((inputType)?'file':'text'):'number'"
+      :type="propertyType"
       v-on="$listeners"
     />
   </div>
@@ -52,7 +52,6 @@ export default class FDCustomInput extends Vue {
 
 <style scoped>
 .custom-input-outer {
-  /* border: 1px solid lightgray; */
   position: relative;
   width: 100%;
   display: grid;

@@ -109,6 +109,13 @@ export default class PropertiesList extends Vue {
       this.updatePropValue(selected, 'Index', propValue)
     }
   }
+  updateName (id: string, value: string) {
+    const userData = Object.keys(this.userformData[this.userFormId])
+    const isUnique = userData.findIndex(val => this.userformData[this.userFormId][val].properties.Name === value)
+    if (isUnique === -1) {
+      this.updatePropValue(id, 'Name', value)
+    }
+  }
   updateProperty (arg: IupdateControl) {
     const selected = this.getSelectedControlsDatas!
     for (let i = 0; i < selected.length; i++) {
@@ -116,6 +123,8 @@ export default class PropertiesList extends Vue {
         this.updateTabIndexValue(parseInt(arg.value))
       } else if (arg.propertyName === 'Index') {
         this.updatePageIndex(parseInt(arg.value))
+      } else if (arg.propertyName === 'Name') {
+        this.updateName(selected[i], arg.value)
       } else {
         this.updatePropValue(selected[i], arg.propertyName, arg.value)
       }
@@ -201,14 +210,14 @@ export default class PropertiesList extends Vue {
     }
   }
 
-  get propertyTableData () : tableDatas {
+  get propertyTableData () {
     const result : tableDatas = {}
     if (this.selectedSelect.length > 0 && this.selectedContainer.length > 0) {
       if (this.getSelectedControlsDatas!.length === 1) {
-        const controlData = this.userformData[this.userFormId][this.getSelectedControlsDatas![0]]
+        const controlData: controlData = this.userformData[this.userFormId][this.getSelectedControlsDatas![0]]
         const defineList = this.propList.data[controlData.type]
         for (const propName in defineList) {
-          const propValue = controlData!.properties[propName]
+          const propValue = controlData.properties[propName]
           if (propValue !== undefined) {
             result[propName] = {
               ...defineList[propName],
@@ -217,8 +226,8 @@ export default class PropertiesList extends Vue {
           }
         }
       }
+      return result
     }
-    return result
   }
 
   updateSelected (e: MouseEvent) {

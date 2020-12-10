@@ -96,7 +96,7 @@ export const Page4 = {
   properties: {
     ID: 'Page4',
     Name: 'Page4',
-    Accelerator: '1',
+    Accelerator: 'a',
     Caption: 'Page4',
     ControlTipText: 'Select the Page4',
     Cycle: 0,
@@ -120,14 +120,14 @@ export const Page4 = {
   },
   extraDatas: {
   },
-  controls: [],
+  controls: ['ID_Label1'],
   type: 'Page'
 }
 export const Page5 = {
   properties: {
     ID: 'Page5',
     Name: 'Page5',
-    Accelerator: '1',
+    Accelerator: '5',
     Caption: 'Page5',
     ControlTipText: 'Select the Page5',
     Cycle: 0,

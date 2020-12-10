@@ -43,16 +43,20 @@
                 </li>
                 <hr />
                 <li class="sub-menu-li">
+                  <span></span>
                   <span><u>I</u>mmediate Window</span>
                 </li>
                 <li class="sub-menu-li">
+                  <span></span>
                   <span>Local<u>s</u> Window</span>
                 </li>
                 <hr />
                 <li class="sub-menu-li">
+                  <span></span>
                   <span>Watc<u>h</u> Window</span>
                 </li>
                 <li class="sub-menu-li">
+                  <span></span>
                   <span>Call Stac<u>k</u></span>
                 </li>
                 <hr />
@@ -70,10 +74,12 @@
                   <span>ToolBo<u>x</u></span>
                 </li>
                 <li class="sub-menu-li">
+                  <span></span>
                   <span>T<u>a</u>b Order</span>
                 </li>
                 <hr />
                 <li class="sub-menu-li">
+                  <span></span>
                   <span>Microscoft Excel</span>
                 </li>
               </ul>
@@ -84,6 +90,7 @@
             <div class="sub-menu-1" v-if="displaySubMenu === true">
               <ul class="sub-menu-ul">
                 <li class="sub-menu-li">
+                  <span></span>
                   <span><u>P</u>rocedure</span>
                 </li>
                 <li class="sub-menu-li" @click="insertUserForm()">
@@ -91,13 +98,16 @@
                   <span><u>U</u>serform</span>
                 </li>
                 <li class="sub-menu-li">
+                  <span></span>
                   <span><u>M</u>odule</span>
                 </li>
                 <li class="sub-menu-li">
+                  <span></span>
                   <span><u>C</u>lass Module</span>
                 </li>
                 <hr />
                 <li class="sub-menu-li">
+                  <span></span>
                   <span>F<u>i</u>le</span>
                 </li>
               </ul>
@@ -108,44 +118,60 @@
             <div class="sub-menu-1" v-if="displaySubMenu === true">
               <ul class="sub-menu-ul">
                 <li class="sub-menu-li">
+                  <span></span>
                   <span><u>A</u>lign</span>
                 </li>
-                <li class="sub-menu-li">
+                <li class="sub-menu-li" @click="insertUserForm()">
                   <UserFormLogo class="fa padding" />
                   <span><u>M</u>ake Same Size</span>
                 </li>
+                <hr />
                 <li class="sub-menu-li">
+                  <span></span>
                   <span><u>S</u>ize to Fit</span>
                 </li>
                 <li class="sub-menu-li">
+                  <span></span>
                   <span><u>S</u>ize to Grid</span>
                 </li>
                 <hr />
                 <li class="sub-menu-li">
+                  <span></span>
                   <span><u>H</u>orizontal Spacing</span>
                 </li>
                 <li class="sub-menu-li">
+                  <span></span>
                   <span><u>V</u>ertical Spacing</span>
                 </li>
+                <hr />
                 <li class="sub-menu-li">
+                  <span></span>
                   <span><u>C</u>ertre in Form</span>
                 </li>
                 <li class="sub-menu-li">
+                  <span></span>
                   <span>A<u>r</u>range Buttons</span>
                 </li>
-                <li class="sub-menu-li" @click="groupControl">
+                <hr />
+                <li class="sub-menu-li">
+                  <span></span>
                   <span><u>G</u>roup</span>
                 </li>
-                <li class="sub-menu-li" @click="unGroupControl">
+                <li class="sub-menu-li">
+                  <span></span>
                   <span><u>U</u>nGroup</span>
                 </li>
+                <hr />
                 <li class="sub-menu-li">
+                  <span></span>
                   <span><u>O</u>rder</span>
                 </li>
                 <li class="sub-menu-li" @click="bringFront">
+                  <span></span>
                   <span><u>B</u>ring to Front</span>
                 </li>
                 <li class="sub-menu-li" @click="sendBack">
+                  <span></span>
                   <span><u>S</u>end to Back</span>
                 </li>
               </ul>
@@ -205,7 +231,6 @@ import HelpLogo from '../../../../assets/help.svg'
 import CodeLogo from '../../../../assets/view-code.svg'
 import ObjectLogo from '../../../../assets/view-object.svg'
 import FDSVGImage from '@/FormDesigner/components/atoms/FDSVGImage/index.vue'
-import { EventBus } from '@/FormDesigner/event-bus'
 @Component({
   name: 'Header',
   components: {
@@ -326,12 +351,6 @@ export default class Header extends Vue {
   }
   sendBack () {
     this.swapZIndex(1)
-  }
-  groupControl () {
-    EventBus.$emit('groupControl', 'group')
-  }
-  unGroupControl () {
-    EventBus.$emit('groupControl', 'ungroup')
   }
 }
 </script>
@@ -572,10 +591,16 @@ hr {
 .sub-menu-1 ul li {
   text-align: left;
   border: 0.1px solid white;
+  display: grid;
+  grid-template-columns: 30px 150px;
+  word-wrap: none;
 }
 
 .sub-menu-1 ul {
+  display: grid;
+  grid-template-columns: 1fr;
   background-color: white;
+  width: 200px;
   padding: 0px;
   margin-left: -6px;
 }
