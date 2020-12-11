@@ -28,7 +28,8 @@
         v-if="propertyType === 'font'"
         :propertyData="controlPropertyData"
         :propertyName="propertyName"
-        @FontProp = "fontProp"
+        @emitFont="emitFont"
+
       />
   </div>
 </template>
@@ -39,7 +40,6 @@ import CustomDropDown from '../../atoms/FDCustomDropDown/index.vue'
 import CustomInput from '../../atoms/FDCustomInput/index.vue'
 import CustomColorTabs from '../../organisms/FDCustomColorTabs/index.vue'
 import CustomFontDialog from '../../organisms/FDCustomFontDialog/index.vue'
-import { tableData } from '../FDPropertyTableItem/index.vue'
 
 @Component({
   name: 'FDLabelPropertyTableItems',
@@ -58,8 +58,8 @@ export default class FDLabelPropertyTableItems extends Vue {
     return this.controlPropertyData.type
   }
 
-  @Emit('FontProp')
-  fontProp (tempVal: font) {
+  @Emit('emitFont')
+  emitFont (tempVal: font) {
     return tempVal
   }
 

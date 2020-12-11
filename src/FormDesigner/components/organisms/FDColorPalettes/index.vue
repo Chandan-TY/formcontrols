@@ -83,7 +83,6 @@
 import { colors } from '../../../models/colors'
 import { colorSystem } from '../../../models/colorSystem'
 import { Component, Prop, Vue, Emit, Ref } from 'vue-property-decorator'
-import { tableData } from '../../molecules/FDPropertyTableItem/index.vue'
 interface IColors {
   name: string;
   value: string;

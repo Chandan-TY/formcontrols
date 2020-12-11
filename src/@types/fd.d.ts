@@ -289,3 +289,19 @@ interface ISelectedColoPaletteValue {
   propertyName: string;
   propertyValue: string;
 }
+interface tableData {
+  value: number | string | null | undefined | font,
+  type: string,
+  category: string,
+  values?: Array<string>
+}
+interface tableDatas {
+  [propName: string]: tableData
+}
+interface ICommonProp {
+  [propName: string]: string[] | number[]
+}
+
+interface ICommonPropVal {
+  [propName: string]: string | number
+}

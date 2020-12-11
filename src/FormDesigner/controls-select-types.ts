@@ -38,17 +38,17 @@ export const mousePointer = {
   '1 - fmMousePointerArrow': 1,
   '2 - fmMousePointerCross': 2,
   '3 - fmMousePointerIBeam': 3,
-  '6 - fmMousePointerSizeNESW': 6,
-  '7 - fmMousePointerSizeNS': 7,
-  '8 - fmMousePointerSizeNWSE': 8,
-  '9 - fmMousePointerSizeWE': 9,
-  '10 - fmMousePointerUpArrow': 10,
-  '11 - fmMousePointerHourglass': 11,
-  '12 - fmMousePointerNoDrop': 12,
-  '13 - fmMousePointerAppStarting': 13,
-  '14 - fmMousePointerHelp': 14,
-  '15 - fmMousePointerSizeAll': 15,
-  '99 - fmMousePointerCustom': 99
+  '6 - fmMousePointerSizeNESW': 4,
+  '7 - fmMousePointerSizeNS': 5,
+  '8 - fmMousePointerSizeNWSE': 6,
+  '9 - fmMousePointerSizeWE': 7,
+  '10 - fmMousePointerUpArrow': 8,
+  '11 - fmMousePointerHourglass': 9,
+  '12 - fmMousePointerNoDrop': 10,
+  '13 - fmMousePointerAppStarting': 11,
+  '14 - fmMousePointerHelp': 12,
+  '15 - fmMousePointerSizeAll': 13,
+  '99 - fmMousePointerCustom': 14
 }
 
 export const borderStyle = {

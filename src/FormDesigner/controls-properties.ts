@@ -40,22 +40,23 @@ export const controlProperties = {
 * @returns string value
 */
   mousePointerProp: (controlData: controlData): string => {
+    debugger
     const propObject: KeyValueProp = {
       0: 'default',
       1: 'context-menu',
       2: 'crosshair',
       3: 'text',
-      6: 'nesw-resize',
-      7: 'ns-resize',
-      8: 'nwse-resize',
-      9: 'ew-resize',
-      10: 'n-resize',
-      11: 'wait',
-      12: 'no-drop',
-      13: 'progress',
-      14: 'help',
-      15: 'all-scroll',
-      99: `url(${controlData.properties.MouseIcon}), auto`
+      4: 'nesw-resize',
+      5: 'ns-resize',
+      6: 'nwse-resize',
+      7: 'ew-resize',
+      8: 'n-resize',
+      9: 'wait',
+      10: 'no-drop',
+      11: 'progress',
+      12: 'help',
+      13: 'all-scroll',
+      14: `url(${controlData.properties.MouseIcon}), auto`
     }
     const controlMousePointerData :number = controlData.properties.MousePointer!
     if (propObject[controlMousePointerData] !== undefined) {

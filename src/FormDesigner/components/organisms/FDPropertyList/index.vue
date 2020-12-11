@@ -17,31 +17,27 @@
         class="form-control"
         name="selectedUserForm"
         id="selectedUserForm"
+        ref="selectedUserForm"
         v-if="userFormId"
         @change="updateSelected($event)"
       >
         <option
           :value="userFormId"
-          :selected="true"
-        >{{ userformData[userFormId][this.selectedContainer[0]].properties.Name}} {{userformData[userFormId][this.selectedContainer[0]].type}}</option>
+        >{{selectedSelect.length === 1 ? userformData[userFormId][this.selectedContainer[0]].properties.Name + ' '+ userformData[userFormId][this.selectedContainer[0]].type : ''}}</option>
          <option  v-for="control in userformData[userFormId][this.selectedContainer[0]].controls" :value="control" :key="userformData[userFormId][control].properties.Name">
-          <b>{{ userformData[userFormId][control].properties.Name }} {{userformData[userFormId][control].type}}</b>
+          <b>{{selectedSelect.length === 1 ?  userformData[userFormId][control].properties.Name + ' ' + userformData[userFormId][control].type : ''}}</b>
         </option>
       </select>
 
     </div>
-    <!-- <FDPropertyTable
-      :tableData="propertyTableData"
-      @updateProperty="updateProperty"/> -->
     <FDTable :tableData="propertyTableData" @updateProperty="updateProperty" @updateExtraProperty="updateExtraProperty" />
   </div>
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from 'vue-property-decorator'
+import { Component, Prop, Ref, Vue, Watch } from 'vue-property-decorator'
 import { Action, State } from 'vuex-class'
 import FDTable from '@/FormDesigner/components/organisms/FDTable/index.vue'
-import FDPropertyTable, { tableDatas } from '@/FormDesigner/components/organisms/FDPropertyTable/index.vue'
 import { LabelData } from '../../../models/ControlsTableProperties/LabelTableProperties'
 import { PropertyListDefine } from '@/FormDesigner/models/ControlsTableProperties/propertyList'
 import { IselectControl, IupdateControl, IupdateControlExtraData, IupdatedSelectedControl } from '@/storeModules/fd/actions'
@@ -49,7 +45,6 @@ import { IselectControl, IupdateControl, IupdateControlExtraData, IupdatedSelect
 @Component({
   name: 'PropertiesList',
   components: {
-    FDPropertyTable,
     FDTable
   }
 })
@@ -63,6 +58,7 @@ export default class PropertiesList extends Vue {
   @State(state => state.fd.groupedControls) groupedControls!: fdState['groupedControls']
   @Prop({ required: true, type: String }) public readonly userFormId! : string
   @Action('fd/selectControl') selectControl!: (payload: IselectControl) => void;
+  @Ref('selectedUserForm') readonly selectedUserForm!: HTMLSelectElement;
 
   propList = new PropertyListDefine();
 
@@ -73,6 +69,18 @@ export default class PropertiesList extends Vue {
 
   selectedOption: Object= {}
 
+  selectOption () {
+    debugger
+    if (this.selectedUserForm !== undefined && this.selectedSelect.length === 1) {
+      for (const index in this.selectedUserForm.childNodes) {
+        const selected = this.selectedSelect[0]
+        const option: HTMLOptionElement = this.selectedUserForm.childNodes[index]
+        if (option.value && option.value === selected) {
+          option.selected = true
+        }
+      }
+    }
+  }
   get getSelectedControlsDatas () {
     if (this.selectedSelect.length > 0 && this.selectedContainer.length > 0) {
       if (this.selectedControls[this.userFormId].selected.length === 1 && !this.selectedControls[this.userFormId].selected[0].startsWith('group')) {
@@ -92,7 +100,6 @@ export default class PropertiesList extends Vue {
             filteredSelectedControls.push(selControls[i])
           }
         }
-        console.log('222', filteredSelectedControls)
         return filteredSelectedControls
       }
     }
@@ -211,25 +218,73 @@ export default class PropertiesList extends Vue {
   }
 
   get propertyTableData () {
-    const result : tableDatas = {}
+    let result : tableDatas = {}
     if (this.selectedSelect.length > 0 && this.selectedContainer.length > 0) {
       if (this.getSelectedControlsDatas!.length === 1) {
         const controlData: controlData = this.userformData[this.userFormId][this.getSelectedControlsDatas![0]]
-        const defineList = this.propList.data[controlData.type]
-        for (const propName in defineList) {
-          const propValue = controlData.properties[propName]
-          if (propValue !== undefined) {
-            result[propName] = {
-              ...defineList[propName],
-              value: propValue
+        result = this.updateResult(controlData.properties)
+      } else if (this.getSelectedControlsDatas!.length > 1) {
+        let ctrlKeys = []
+        const uniqueKey = ['Name', 'TabIndex', 'Index', 'MouseIcon', 'Picture']
+        const combinedObj: ICommonProp = {}
+        const commonPropValue: ICommonPropVal = {}
+
+        // get array of Object which property Object of selected Controls
+        for (const controlIndex in this.getSelectedControlsDatas!) {
+          const controlData = this.userformData[this.userFormId][this.getSelectedControlsDatas![controlIndex]]
+          const defineList = this.propList.data[controlData.type]
+          ctrlKeys.push(Object.keys(defineList))
+        }
+        // get the array which include common key of selected controls
+        let commonProp = ctrlKeys.reduce((a, b) => a.filter((c: string) => b.includes(c)))
+
+        // excluding the Unique key
+        commonProp = commonProp.filter((x: string) => !uniqueKey.includes(x))
+
+        // Generating the Object of common key : value pair and Intializing value as null
+        for (const propName in commonProp) {
+          Vue.set(combinedObj, commonProp[propName], '')
+        }
+
+        // get the Object which include common key:[value] pair of selected control
+        for (const key of this.selectedSelect) {
+          const contolProp = this.userformData[this.userFormId][key].properties
+          for (const propName in contolProp) {
+            if (commonProp.indexOf(propName) > -1) {
+              combinedObj[propName] = [...combinedObj[propName], contolProp[propName]]
             }
           }
         }
+        const allEqual = (arr: any) => arr.every((v: any) => v === arr[0])
+
+        // get the common value
+        for (const propName in combinedObj) {
+          const isSame = allEqual(combinedObj[propName])
+          commonPropValue[propName] = isSame ? combinedObj[propName][0] : ''
+        }
+
+        const controlData: controlData = this.userformData[this.userFormId][this.getSelectedControlsDatas![0]]
+        const defineList = this.propList.data[controlData.type]
+        result = this.updateResult(commonPropValue)
       }
       return result
     }
   }
-
+  updateResult (commonPropValue: ICommonPropVal) {
+    const result : tableDatas = {}
+    const controlData: controlData = this.userformData[this.userFormId][this.getSelectedControlsDatas![0]]
+    const defineList = this.propList.data[controlData.type]
+    for (const propName in defineList) {
+      const propValue: string|number = commonPropValue[propName]
+      if (propValue !== undefined) {
+        result[propName] = {
+          ...defineList[propName],
+          value: propValue
+        }
+      }
+    }
+    return result
+  }
   updateSelected (e: MouseEvent) {
     if (e.target instanceof HTMLSelectElement) {
       if (e.target.options.selectedIndex > -1) {
@@ -253,6 +308,10 @@ export default class PropertiesList extends Vue {
   }
   get selectedContainer () {
     return this.selectedControls[this.userFormId].container
+  }
+  @Watch('selectedControls', { deep: true })
+  updateOption () {
+    this.selectOption()
   }
 }
 </script>

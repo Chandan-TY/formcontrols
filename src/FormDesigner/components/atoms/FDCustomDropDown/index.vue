@@ -28,7 +28,6 @@
 
 <script lang="ts">
 import { Component, Vue, Prop } from 'vue-property-decorator'
-import { tableData } from '../../molecules/FDPropertyTableItem/index.vue'
 
 @Component({
   name: 'FDCustomDropDown',

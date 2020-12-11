@@ -1,15 +1,25 @@
 <template>
   <div class="custom-fontDialog-outer">
     <label class="custom-label-ele">{{propertyName}}</label>
-    <div class="custom-div-ele">
-      <FontDialog v-on="$listeners" :value="propertyValue" @Font="fontEmit"/>
+     <div class="box grid-design">
+      <input type="text" name="Font" class="font-input"
+      :value="propertyValue.FontName" disabled="true"
+      />
+        <button
+          class="fontButtonStyle"
+          @click="setFontDialogVisiblilty(true)"
+        >
+          ...
+        </button>
     </div>
+    <FontDialog :fontPropValue="propertyValue" v-if="isOpen"
+    :isOpen="isOpen" @setFontDialogVisiblilty="setFontDialogVisiblilty"
+    @emitFont="emitFont" />
   </div>
 </template>
 
 <script lang="ts">
 import { Component, Prop, Vue, Emit } from 'vue-property-decorator'
-import { tableData } from '../../molecules/FDPropertyTableItem/index.vue'
 import FontDialog from '@/FormDesigner/components/organisms/FDFontDialog/index.vue'
 @Component({
   name: 'FDCustomFontDialog',
@@ -20,19 +30,36 @@ import FontDialog from '@/FormDesigner/components/organisms/FDFontDialog/index.v
 export default class FDCustomFontDialog extends Vue {
   @Prop({ }) propertyData! : tableData
   @Prop({ default: 'default' }) propertyName!: string
-
+  isOpen: boolean = false
   get propertyValue () {
     return this.propertyData.value
   }
-
-  @Emit('FontProp')
-  fontEmit (tempVal: font) {
+  @Emit('emitFont')
+  emitFont (tempVal: font) {
     return tempVal
+  }
+
+  setFontDialogVisiblilty (value: boolean) {
+    this.isOpen = value
   }
 }
 </script>
 
 <style scoped>
+.fontButtonStyle {
+  height: 20px;
+  width: 17px;
+  padding: 0px;
+  padding-left: 1px;
+  padding-right: 2px;
+  border: 1px solid white;
+  border-right-color: gray;
+  border-bottom-color: gray;
+  border-left-color: lightgray;
+  border-top-color: lightgray;
+  outline: none;
+  margin-left: -3px;
+}
 .custom-fontDialog-outer {
   position: relative;
   width: 100%;
@@ -50,5 +77,17 @@ export default class FDCustomFontDialog extends Vue {
   outline: none;
   font-size: 12px;
   width: calc(100%);
+}
+.font-input {
+  border: none;
+  outline: none;
+  height: 14px;
+  width: calc(100% - 20px);
+}
+.box {
+  overflow: hidden;
+  float: right;
+  width: 100%;
+  height: 14px;
 }
 </style>

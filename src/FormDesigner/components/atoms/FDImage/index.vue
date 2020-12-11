@@ -34,9 +34,10 @@ export default class FDImage extends Mixins(FdControlVue) {
    */
   @Watch('properties.AutoSize', { deep: true })
   updateAutoSize (newVal: boolean, oldVal: boolean) {
+    debugger
     if (newVal && this.properties.Picture) {
       const img = new Image()
-      img.src = this.properties.Picture[0]
+      img.src = this.properties.Picture
       this.updateDataModel({
         propertyName: 'Height',
         value: img.height
@@ -57,6 +58,7 @@ export default class FDImage extends Mixins(FdControlVue) {
    */
   protected get cssStyleProperty (): Partial<CSSStyleDeclaration> {
     const controlProp = this.properties
+    debugger
     return {
       ...this.baseStyle,
       left: `${controlProp.Left}px`,

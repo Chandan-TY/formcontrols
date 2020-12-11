@@ -19,7 +19,7 @@
         @input="updateAppearance"
         :controlPropertyData="value"
         :propertyName="propertyName"
-        @FontProp="fontProp"
+        @emitFont="emitFont"
         @colorPaletteProp="colorPaletteProp"
       />
     </div>
@@ -34,11 +34,6 @@ import FDTableItems from '../../molecules/FDTableItems/index.vue'
 export interface tableData {
   [key: string]: number | string | null | undefined | font | Array<string>;
   type: string;
-}
-export interface PicturePosition {
-  [key: string]: string;
-  backgroundPositionX: string;
-  backgroundPositionY: string;
 }
 
 @Component({
@@ -113,11 +108,6 @@ export default class FDTable extends Vue {
         propertyName,
         parseInt((e.target as HTMLInputElement).value)
       )
-    } else if (inputType === 'font') {
-      this.emitUpdateProperty(
-        propertyName,
-        (e.target as HTMLInputElement).value
-      )
     }
   }
 
@@ -135,7 +125,7 @@ export default class FDTable extends Vue {
     reader.readAsDataURL(file)
   }
 
-  fontProp (tempVal: font) {
+  emitFont (tempVal: font) {
     this.emitUpdateProperty('Font', tempVal)
   }
   colorPaletteProp (selectedValue: ISelectedColoPaletteValue) {

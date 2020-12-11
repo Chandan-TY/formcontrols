@@ -121,7 +121,7 @@
                   <span></span>
                   <span><u>A</u>lign</span>
                 </li>
-                <li class="sub-menu-li" @click="insertUserForm()">
+                <li class="sub-menu-li">
                   <UserFormLogo class="fa padding" />
                   <span><u>M</u>ake Same Size</span>
                 </li>
@@ -153,11 +153,11 @@
                   <span>A<u>r</u>range Buttons</span>
                 </li>
                 <hr />
-                <li class="sub-menu-li">
+                <li class="sub-menu-li" @click="groupControl">
                   <span></span>
                   <span><u>G</u>roup</span>
                 </li>
-                <li class="sub-menu-li">
+                <li class="sub-menu-li" @click="unGroupControl">
                   <span></span>
                   <span><u>U</u>nGroup</span>
                 </li>
@@ -231,6 +231,7 @@ import HelpLogo from '../../../../assets/help.svg'
 import CodeLogo from '../../../../assets/view-code.svg'
 import ObjectLogo from '../../../../assets/view-object.svg'
 import FDSVGImage from '@/FormDesigner/components/atoms/FDSVGImage/index.vue'
+import { EventBus } from '@/FormDesigner/event-bus'
 @Component({
   name: 'Header',
   components: {
@@ -351,6 +352,12 @@ export default class Header extends Vue {
   }
   sendBack () {
     this.swapZIndex(1)
+  }
+  groupControl () {
+    EventBus.$emit('groupControl', 'group')
+  }
+  unGroupControl () {
+    EventBus.$emit('groupControl', 'ungroup')
   }
 }
 </script>

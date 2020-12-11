@@ -187,7 +187,6 @@
 <script lang="ts">
 import { newFont } from '../../../models/newFont'
 import { Component, Vue, Prop, Emit, Ref } from 'vue-property-decorator'
-import { tableData } from '../../molecules/FDPropertyTableItem/index.vue'
 import FDSVGImage from '@/FormDesigner/components/atoms/FDSVGImage/index.vue'
 import FdDialogDragVue from '@/api/abstract/FormDesigner/FdDialogDragVue'
 
@@ -202,7 +201,7 @@ export interface INewFont {
   }
 })
 export default class FDFontDialog extends FdDialogDragVue {
-  @Prop() value: font;
+  @Prop() fontPropValue: font;
   @Prop() isOpen: boolean;
   isFontStrikeOut: boolean = false;
   isFontUnderline: boolean = false;
@@ -309,7 +308,7 @@ export default class FDFontDialog extends FdDialogDragVue {
     this.emitFont(this.tempVal)
     this.setFontDialogVisiblilty(false)
   }
-  @Emit('Font')
+  @Emit('emitFont')
   emitFont (tempVal: font) {
     return tempVal
   }
@@ -335,11 +334,12 @@ export default class FDFontDialog extends FdDialogDragVue {
     }
   }
   mounted () {
-    this.fontDataValue = this.value
+    this.fontDataValue = this.fontPropValue
     this.font = this.fontDataValue.FontName
     this.fontStyle = this.fontDataValue.FontStyle
     this.isFontStrikeOut = this.fontDataValue.FontStrikethrough!
     this.isFontUnderline = this.fontDataValue.FontUnderline!
+    this.size = this.fontDataValue.FontSize!
   }
 }
 </script>
@@ -384,7 +384,6 @@ h1 {
   border-radius: 20px/50px;
   text-decoration: none;
   cursor: pointer;
-  /* transition: all 0.3s ease-out; */
 }
 .button:hover {
   background: #06d85f;
@@ -397,7 +396,6 @@ h1 {
   left: 0;
   right: 0;
   background: rgba(0, 0, 0, 0.7);
-  /* transition: opacity 500ms; */
   visibility: hidden;
   opacity: 0;
   z-index: 110;
@@ -409,12 +407,10 @@ h1 {
 
 .popup {
   margin: 70px auto;
-  /* padding: 20px; */
   background: #fff;
   border-radius: 5px;
   width: 30%;
   position: relative;
-  /* transition: all 5s ease-in-out; */
 }
 
 .popup h2 {
@@ -424,10 +420,7 @@ h1 {
 }
 .popup .close {
   position: absolute;
-  /* top: 20px; */
   right: 0px;
-  /* transition: all 200ms; */
-  /* font-size: 30px; */
   font-weight: bold;
   text-decoration: none;
   color: #333;
@@ -500,7 +493,6 @@ h1 {
   height: 25px;
 }
 .font-body {
-  /* background-color:rgb(173, 170, 170); */
   font-size: 12px;
 }
 .font-input-1 {
@@ -558,7 +550,6 @@ h1 {
   margin-left: 1px;
 }
 
-/* fieldSet */
 .fieldset {
   border: 0.5px groove threedface;
   border-top: none;
@@ -594,7 +585,6 @@ h1 {
 }
 
 .ui-btn {
-  /* margin: 2px; */
   margin: 0;
   width: 33px;
   height: 25px;

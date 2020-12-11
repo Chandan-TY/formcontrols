@@ -10,7 +10,6 @@
 <script lang="ts">
 import { Component, Vue, Prop, Emit } from 'vue-property-decorator'
 import ColorPalettes from '../../organisms/FDColorPalettes/index.vue'
-import { tableData } from '../../molecules/FDPropertyTableItem/index.vue'
 
 @Component({
   name: 'CustomColorTabs',
