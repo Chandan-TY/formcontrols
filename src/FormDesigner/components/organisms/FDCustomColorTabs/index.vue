@@ -2,7 +2,7 @@
   <div class="custom-colortabs-outer">
     <label class="custom-label-ele">{{ propertyName }}</label>
     <div class="custom-div-ele">
-      <ColorPalettes v-on="$listeners" :name="propertyName" :value="propertyValue" @colorPalette="colorPaletteEmit"/>
+      <ColorPalettes :name="propertyName" :value="propertyValue" @colorPalette="colorPaletteEmit"/>
     </div>
   </div>
 </template>

@@ -1,4 +1,5 @@
 <template>
+<div :style="outerDivStyle">
   <fieldset
     class="fieldset"
     :style="cssStyleProperty"
@@ -28,6 +29,7 @@
       @openMenu="(e, parentID, controlID) => showContextMenu(e, parentID, controlID)"
     />
   </fieldset>
+</div>
 </template>
 
 <script lang="ts">
@@ -103,6 +105,22 @@ export default class FDFrame extends FdContainerVue {
   }
 
   /**
+   * @description style object is passed to :style attribute in div tag
+   * dynamically changing the styles of the component based on propControlData
+   * @function outerDivStyle
+   *
+   */
+  protected get outerDivStyle (): Partial<CSSStyleDeclaration> {
+    const controlProp = this.data.properties
+    return {
+      backgroundColor: controlProp.BackColor,
+      width: `${controlProp.Width! + 15}px`,
+      height: `${controlProp.Height}px`,
+      overflow: 'hidden'
+    }
+  }
+
+  /**
    * @description style object is passed to :style attribute in fieldset tag
    * dynamically changing the styles of the component based on propControlData
    * @function cssStyleProperty
@@ -121,10 +139,17 @@ export default class FDFrame extends FdContainerVue {
         FontStrikethrough: true,
         FontStyle: 'Arial'
       }
+    let display = ''
+    if (this.isRunMode) {
+      display = controlProp.Visible ? 'block' : 'none'
+    } else {
+      display = 'block'
+    }
     return {
-      left: `${controlProp.Left}px`,
-      width: `${controlProp!.Width!}px`,
-      height: `${controlProp.Height}px`,
+      width: 'calc(100% - 3px)',
+      height: 'calc(100% - 3px)',
+      marginLeft: '2px',
+      outline: 'none',
       cursor: controlProp.MousePointer !== 0 || controlProp.MouseIcon !== ''
         ? `${this.getMouseCursorData} !important`
         : 'default !important',
@@ -161,7 +186,7 @@ export default class FDFrame extends FdContainerVue {
       overflowY: this.getScrollBarY,
       top: `${controlProp.Top}px`,
       boxShadow: controlProp.SpecialEffect ? this.getSpecialEffectData : 'none',
-      display: controlProp.Visible ? 'block' : 'none',
+      display: display,
       zoom: `${controlProp.Zoom}%`
     }
   }
@@ -176,7 +201,9 @@ export default class FDFrame extends FdContainerVue {
     return {
       color:
         controlProp.Enabled === true ? controlProp.ForeColor : this.getEnabled,
-      background: controlProp.BackColor
+      background: controlProp.BackColor,
+      whiteSpace: 'pre',
+      wordBreak: 'normal'
     }
   }
 

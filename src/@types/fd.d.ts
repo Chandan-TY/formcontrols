@@ -290,7 +290,7 @@ interface ISelectedColoPaletteValue {
   propertyValue: string;
 }
 interface tableData {
-  value: number | string | null | undefined | font,
+  value: number | string | null | undefined | font | boolean,
   type: string,
   category: string,
   values?: Array<string>

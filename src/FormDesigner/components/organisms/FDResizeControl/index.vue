@@ -189,7 +189,7 @@ export default class ResizeControl extends FdSelectVue {
       left: `${currentProperties.Left}px`,
       top: `${currentProperties.Top}px`,
       /* border width(5) * 2 = 10 */
-      width: `${currentProperties.Width! + 10}px`,
+      width: this.propControlData.type === 'Frame' ? `${currentProperties.Width! + 25}px` : `${currentProperties.Width! + 10}px`,
       height: `${currentProperties.Height! + 10}px`,
       display:
         this.isRunMode && currentProperties.Visible === false

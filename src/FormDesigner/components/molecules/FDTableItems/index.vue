@@ -17,14 +17,12 @@
         :propertyName="propertyName"
       />
       <CustomColorTabs
-        v-on="$listeners"
         v-if="propertyType === 'color'"
         :propertyData="controlPropertyData"
         :propertyName="propertyName"
         @colorPaletteProp = "colorPaletteProp"
       />
       <CustomFontDialog
-        v-on="$listeners"
         v-if="propertyType === 'font'"
         :propertyData="controlPropertyData"
         :propertyName="propertyName"
@@ -42,7 +40,7 @@ import CustomColorTabs from '../../organisms/FDCustomColorTabs/index.vue'
 import CustomFontDialog from '../../organisms/FDCustomFontDialog/index.vue'
 
 @Component({
-  name: 'FDLabelPropertyTableItems',
+  name: 'FDTableItems',
   components: {
     CustomDropDown,
     CustomInput,
@@ -50,7 +48,7 @@ import CustomFontDialog from '../../organisms/FDCustomFontDialog/index.vue'
     CustomFontDialog
   }
 })
-export default class FDLabelPropertyTableItems extends Vue {
+export default class FDTableItems extends Vue {
  @Prop({}) controlPropertyData! : tableData
   @Prop({ default: 'default' }) propertyName!: string
 

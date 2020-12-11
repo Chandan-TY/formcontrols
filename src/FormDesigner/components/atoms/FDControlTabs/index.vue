@@ -19,7 +19,7 @@
                   : '',
             ]"
             :for="pageData.ID"
-            :title="pageData.ControlTipText"
+            :title="data.type === 'TabStrip' ? pageData.ToolTip : pageData.ControlTipText"
             :style="[styleLabelObj,{ color : data.type !== 'TabStrip' ? setForeColor(pageData.Enabled) : setForeColor(data.properties.Enabled), display: data.type !== 'TabStrip' ? setVisible(pageData.Visible) : ''}]">
           <span v-if="pageData.Accelerator === ''">{{ pageData.Caption }}</span>
               <span v-else
@@ -34,15 +34,13 @@
                 }}</span></span
     >
     </label>
-            <!-- :style="[styleLabelObj, { color : pageData.ID.includes('Page') ? setForeColor(pageData.Enabled) : '', display: pageData.ID.includes('Page') ? setVisible(pageData.Visible) : ''}]"> -->
-
 </div>
 </template>
 
 <script lang="ts">
 import FdControlVue from '@/api/abstract/FormDesigner/FdControlVue'
 import { controlProperties } from '@/FormDesigner/controls-properties'
-import { Component, Prop, Model, Vue, Emit } from 'vue-property-decorator'
+import { Component, Prop, Model, Vue, Emit, Ref, Watch } from 'vue-property-decorator'
 import { State } from 'vuex-class'
 
 @Component({ name: 'FDControlTabs',
@@ -87,6 +85,7 @@ export default class FDControlTabs extends Vue {
   @Prop() tempWeight: string;
   @Prop() getMouseCursorData: string;
   @Prop() setFontStyle: string;
+  @Prop() tempWidth: number;
 
   /**
    * @description getDisableValue checks for the RunMode of the control and then returns after checking for the Enabled
@@ -115,6 +114,11 @@ export default class FDControlTabs extends Vue {
     return {
       indexValue,
       pageValue }
+  }
+
+  @Emit('emitRef')
+  emitRef (indexValue: number) {
+    return indexValue
   }
 
   /**
@@ -177,7 +181,7 @@ export default class FDControlTabs extends Vue {
       }
     return {
       height: controlProp.TabFixedHeight! > 0 ? controlProp.TabFixedHeight + 'px' : '',
-      width: controlProp.TabFixedWidth! > 0 ? controlProp.TabFixedWidth + 'px' : '',
+      width: controlProp.TabFixedWidth! > 0 ? controlProp.TabFixedWidth + 'px' : controlProp.TabOrientation === 2 || controlProp.TabOrientation === 3 ? this.tempWidth + 'px' : '',
       top: controlProp.TabOrientation === 1 ? '10px' : '0px',
       fontFamily: (font.FontStyle! !== '') ? this.setFontStyle : font.FontName!,
       fontSize: `${font.FontSize}px`,

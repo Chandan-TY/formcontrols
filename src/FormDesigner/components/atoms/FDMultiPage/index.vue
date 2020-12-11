@@ -22,6 +22,7 @@
           :style="styleMoveObj"
         >
           <div
+            ref="controlTabsRef"
             class="page"
             v-for="(value, key) in controls"
             :key="key"
@@ -41,6 +42,7 @@
               :isItalic="isItalic"
               :tempStretch="tempStretch"
               :tempWeight="tempWeight"
+              :tempWidth="tempWidth"
             />
           </div>
         </div>
@@ -136,6 +138,7 @@ export default class FDMultiPage extends FdContainerVue {
   @Ref('contentRef') contentRef: HTMLDivElement;
   @Ref('containerRef') readonly containerRef!: Container;
   @Ref('multipage') multipage: HTMLDivElement
+  @Ref('controlTabsRef') controlTabsRef: HTMLDivElement[];
 
   viewMenu?: boolean = false;
   top: string = '0px';
@@ -143,8 +146,10 @@ export default class FDMultiPage extends FdContainerVue {
   contextMenuValue: Array<IcontextMenu> = tabsContextMenu;
   updatedValue: number = 0;
   selectedPageID: string = '';
-  multiPageContextMenu: boolean = false
-  selectedPageIndex: number = -1
+  multiPageContextMenu: boolean = false;
+  selectedPageIndex: number = -1;
+  tempWidth: number = 0;
+  tempHeight: number = 0;
 
   closeMenu () {
     this.viewMenu = false
@@ -215,10 +220,11 @@ export default class FDMultiPage extends FdContainerVue {
     }
     return {
       position:
-        controlProp.TabOrientation === 1 || controlProp.TabOrientation === 3
+        controlProp.TabOrientation === 1
           ? 'absolute'
           : 'inherit',
       ...bottomTopStyle,
+      float: controlProp.TabOrientation === 3 ? 'right' : '',
       whiteSpace: controlProp.MultiRow === true ? 'break-spaces' : 'nowrap',
       zIndex: controlProp.MultiRow === true ? '100' : '',
       display: controlProp.Style === 2 ? 'none' : 'inline-block',
@@ -283,7 +289,6 @@ export default class FDMultiPage extends FdContainerVue {
         ? this.controls.length * this.properties.TabFixedHeight! +
           10 * this.controls!.length
         : this.controls.length * 20 + 10 * this.controls!.length
-
     return {
       position: 'absolute',
       zIndex: '3',
@@ -462,13 +467,13 @@ export default class FDMultiPage extends FdContainerVue {
           ? 'calc(100% - 3px)'
           : controlProp.TabFixedWidth! > 0
             ? controlProp.Width! - controlProp.TabFixedWidth! - 15 + 'px'
-            : controlProp.TabFixedWidth! === 0 ? controlProp.TabOrientation === 2 || controlProp.TabOrientation === 3 ? controlProp.Font!.FontSize! < 50 && controlProp.Font!.FontSize! > 25 ? (controlProp.Width! - controlProp.Font!.FontSize! - 68) + 'px' : controlProp.Font!.FontSize! <= 25 ? (controlProp.Width! - controlProp.Font!.FontSize! - 54) + 'px' : (controlProp.Width! - controlProp.Font!.FontSize! - 103) + 'px' : (controlProp.Width! - controlProp.Font!.FontSize! - 20) + 'px'
+            : controlProp.TabFixedWidth! === 0 ? controlProp.TabOrientation === 2 || controlProp.TabOrientation === 3 ? `${controlProp.Width! - this.tempWidth - 12}px` : (controlProp.Width! - controlProp.Font!.FontSize! - 20) + 'px'
               : 'calc(100% - 44px)',
       left:
         controlProp.TabOrientation === 2
           ? controlProp.TabFixedWidth! > 0
             ? controlProp.TabFixedWidth! + 12 + 'px'
-            : controlProp.TabFixedWidth! === 0 ? controlProp.TabOrientation === 2 || controlProp.TabOrientation === 3 ? controlProp.Font!.FontSize! < 50 && controlProp.Font!.FontSize! > 25 ? (controlProp.Font!.FontSize! + 68) + 'px' : controlProp.Font!.FontSize! <= 25 ? (controlProp.Font!.FontSize! + 54) + 'px' : (controlProp.Font!.FontSize! + 102) + 'px' : (controlProp.Font!.FontSize! + 20) + 'px'
+            : controlProp.TabFixedWidth! === 0 ? controlProp.TabOrientation === 2 || controlProp.TabOrientation === 3 ? `${this.tempWidth + 12}px` : (controlProp.Font!.FontSize! + 20) + 'px'
               : '40px'
           : '0px',
       padding: '0px',
@@ -546,13 +551,52 @@ export default class FDMultiPage extends FdContainerVue {
     }
   }
 
+  /**
+   * @description watches changes in FontSize of Font
+   * @function checkFontValue
+   * @param oldVal previous properties data
+   * @param newVal  new/changed properties data
+   */
+  @Watch('properties.Font.FontSize')
+  checkFontValue (newVal: number, oldVal: number) {
+    this.calculateWidthHeight()
+  }
+
+  /**
+   * @description watches changes in selectedPageData to set the caption
+   * @function captionValue
+   * @param oldVal previous selectedPageData data
+   * @param newVal  new/changed selectedPageData data
+   */
+  @Watch('selectedPageData.properties.Caption')
+  captionValue (newVal: string, oldVal: string) {
+    this.calculateWidthHeight()
+  }
+
+  calculateWidthHeight () {
+    const that = this
+    if (this.controlTabsRef) {
+      const divElement = this.controlTabsRef
+      let tempWidth = 0
+      let tempHeight = 0
+      Vue.nextTick(function () {
+        for (let i = 0; i < divElement.length; i++) {
+          const ele = divElement[i].children[0].children[1].children[0] as HTMLInputElement
+          if (ele.offsetWidth > tempWidth) {
+            tempWidth = ele.offsetWidth
+          }
+          if (ele.offsetHeight > tempHeight) {
+            tempHeight = ele.offsetHeight
+          }
+        }
+        that.tempWidth = tempWidth
+        that.tempHeight = tempHeight
+      })
+    }
+  }
   mounted () {
     this.selectedPageID = this.controls[0]
-    const divElement = this.scrolling.children
-    if (this.contentRef) {
-      const scrollRef = this.contentRef
-      scrollRef.scrollLeft! = 20
-    }
+    this.calculateWidthHeight()
   }
   dragSelectorControl (event: MouseEvent) {
     this.selectedControlArray = []
