@@ -299,7 +299,7 @@ interface tableDatas {
   [propName: string]: tableData
 }
 interface ICommonProp {
-  [propName: string]: string[] | number[]
+  [propName: string]: string[]
 }
 
 interface ICommonPropVal {

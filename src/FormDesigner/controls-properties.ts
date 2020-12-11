@@ -40,7 +40,6 @@ export const controlProperties = {
 * @returns string value
 */
   mousePointerProp: (controlData: controlData): string => {
-    debugger
     const propObject: KeyValueProp = {
       0: 'default',
       1: 'context-menu',

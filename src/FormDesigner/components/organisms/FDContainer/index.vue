@@ -419,6 +419,7 @@ export default class Container extends Vue {
       let moveValueY: number = 0
       let mainSelect: string = ''
       let parentConatiner = ''
+      let count = 0
       this.selectedGroup = this.selectedControls[this.userFormId].selected
       if (this.grouphandler === 'groupdrag') {
         EventBus.$emit(
@@ -455,10 +456,13 @@ export default class Container extends Vue {
         )
       }
       if (mainSelect) {
+        count = count + 1
         let frameCondition: boolean = false
         if (this.handler === 'frameDrag') {
           const isChild = this.getChildControl(mainSelect).includes(this.containerId) || this.containerId === mainSelect
-          frameCondition = (isChild === false && parentConatiner === this.containerId) || (isChild === false && this.selectedControls[this.userFormId].selected.includes(mainSelect))
+          frameCondition = (isChild === false && parentConatiner === this.containerId) ||
+          (isChild === false && this.selectedControls[this.userFormId].selected.includes(mainSelect)) ||
+          (isChild === false && count === 1)
         }
         if ((this.handler === 'frameDrag' && frameCondition) || this.handler === 'drag' || this.grouphandler === 'groupdrag') {
           const currentControlsData = this.userformData[this.userFormId]
@@ -490,11 +494,18 @@ export default class Container extends Vue {
             event.stopPropagation()
             document.onmouseup(event)
           } else {
+            debugger
             if (this.selectedContainer !== this.containerId) {
-            // remove
-              this.removeChildControl(this.selectedContainer, this.fromContainerControls)
-              // add
-              this.addChildControl(selectedSelect)
+              const mainSelContainer = this.getContainerList(mainSelect)[0]
+              if (this.selectedControls[this.userFormId].selected.includes(mainSelect) || this.grouphandler === 'groupdrag') {
+                this.removeChildControl(this.selectedContainer, this.fromContainerControls)
+                this.addChildControl(selectedSelect)
+              } else {
+                const controls = this.userformData[this.userFormId][mainSelContainer].controls
+                const removeControl = controls.filter(e => e !== mainSelect)
+                this.removeChildControl(mainSelContainer, removeControl)
+                this.addChildControl([mainSelect])
+              }
               if (this.grouphandler === 'groupdrag') {
                 for (let k = 0; k < this.selectedGroup.length; k++) {
                   if (this.selectedGroup[k].startsWith('group')) {
@@ -507,7 +518,7 @@ export default class Container extends Vue {
                 const selected = this.selectedControls[this.userFormId].selected
                 this.updatedSelect(this.getContainerList(selected[0]), selected)
               } else {
-                this.updatedSelect(this.getContainerList(this.selectedSelect[0]), selectedSelect)
+                this.updatedSelect(this.getContainerList(this.selectedSelect[0]), this.selectedControls[this.userFormId].selected)
               }
             }
             event.stopPropagation()
