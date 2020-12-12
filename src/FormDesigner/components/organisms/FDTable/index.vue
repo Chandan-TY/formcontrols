@@ -207,7 +207,7 @@ export default class FDTable extends Vue {
           if (value > 32767) {
             EventBus.$emit('showErrorPopup', true, 'overflow', 'Overflow')
           } else {
-            EventBus.$emit('showErrorPopup', true, 'invalid', `Could not set the ${propertyName} property. Invalid property value. Enter a value greater than zero or lesser than 32768`)
+            EventBus.$emit('showErrorPopup', true, 'invalid', `Could not set the ${propertyName} property. Invalid property value. Enter a value between 0 and 32768`)
           }
         }
       } else if (propertyName === 'Top' || propertyName === 'Left') {
@@ -222,7 +222,35 @@ export default class FDTable extends Vue {
           this.emitUpdateProperty(propertyName, value)
         } else {
           (e.target as HTMLInputElement).value = this.tableData![propertyName]!.value! as string
-          EventBus.$emit('showErrorPopup', true, 'invalid', `Could not set the ${propertyName} property. Invalid property value. Enter a value greater than zero or lesser than 2147483647`)
+          EventBus.$emit('showErrorPopup', true, 'invalid', `Could not set the ${propertyName} property. Invalid property value. Enter a value between 0 and  2147483647`)
+        }
+      } else if (propertyName === 'BoundColumn') {
+        if (checkPropertyValue(propertyName, value)) {
+          this.emitUpdateProperty(propertyName, value)
+        } else {
+          (e.target as HTMLInputElement).value = this.tableData![propertyName]!.value! as string
+          EventBus.$emit('showErrorPopup', true, 'invalid', `Could not set the ${propertyName} property. Invalid property value. Enter a value between 0 and 65536`)
+        }
+      } else if (propertyName === 'ColumnCount') {
+        if (checkPropertyValue(propertyName, value)) {
+          this.emitUpdateProperty(propertyName, value)
+        } else {
+          (e.target as HTMLInputElement).value = this.tableData![propertyName]!.value! as string
+          EventBus.$emit('showErrorPopup', true, 'invalid', `Could not set the ${propertyName} property. Invalid property value. Enter a value between -1 and 2147483647`)
+        }
+      } else if (propertyName === 'ListRows') {
+        if (checkPropertyValue(propertyName, value)) {
+          this.emitUpdateProperty(propertyName, value)
+        } else {
+          (e.target as HTMLInputElement).value = this.tableData![propertyName]!.value! as string
+          EventBus.$emit('showErrorPopup', true, 'invalid', `Could not set the ${propertyName} property. Invalid property value. Enter a value between 0 and 2147483647`)
+        }
+      } else if (propertyName === 'TextColumn') {
+        if (checkPropertyValue(propertyName, value)) {
+          this.emitUpdateProperty(propertyName, value)
+        } else {
+          (e.target as HTMLInputElement).value = this.tableData![propertyName]!.value! as string
+          EventBus.$emit('showErrorPopup', true, 'invalid', `Could not set the ${propertyName} property. Invalid property value. Enter a value between -1 and 32768`)
         }
       } else {
         this.emitUpdateProperty(propertyName, value)

@@ -69,7 +69,9 @@ export default class PropertiesList extends Vue {
   selectedOption: Object= {}
 
   selectOption () {
-    this.selected = this.selectedSelect[0]
+    if (this.displayName) {
+      this.selected = this.selectedSelect[0]
+    }
   }
   get getSelectedControlsDatas () {
     if (this.selectedSelect.length > 0 && this.selectedContainer.length > 0) {
@@ -125,7 +127,7 @@ export default class PropertiesList extends Vue {
         }
 
         // get the Object which include common key:[value] pair of selected control
-        for (const key of this.selectedSelect) {
+        for (const key of this.getSelectedControlsDatas!) {
           const contolProp: controlProperties = this.userformData[this.userFormId][key].properties
           for (const propName in contolProp) {
             if (commonProp.indexOf(propName) > -1) {

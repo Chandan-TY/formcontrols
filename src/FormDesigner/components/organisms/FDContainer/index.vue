@@ -15,6 +15,7 @@
         :values="contextMenuType ? userformContextMenu : controlContextMenu"
         @createGroup="createGroup"
         @closeMenu="closeMenu"
+        :groupStyleArray="groupStyleArray"
       />
     </div>
     <drag-selector
@@ -129,6 +130,7 @@ export default class Container extends FDCommonMethod {
   mainSelectData: controlData
   containerPosition: IMousePosition = { clientX: 0, clientY: 0, movementX: 0, movementY: 0 }
   selectedGroup: string[] = []
+  groupStyleArray: Array<IGroupStyle> = []
 
   /**
    * @description To get the selected container  from controls are dragged
@@ -515,6 +517,12 @@ export default class Container extends FDCommonMethod {
   //   EventBus.$off('handleName')
   //   EventBus.$off('groupDrag')
   // }
+  @Watch('selectedControls', { deep: true })
+  updateGroupStyle () {
+    if (this.selectedContainer === this.containerId) {
+      this.groupStyleArray = [...this.groupRef.divStyleArray]
+    }
+  }
 }
 </script>
 

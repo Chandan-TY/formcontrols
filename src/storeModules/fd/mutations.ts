@@ -89,6 +89,7 @@ export type FdMutations<S = fdState> = {
   updateControl(state: S, payload: IMupdateControl): void;
   updateControlExtraData(state: S, payload: IMupdateControlExtraData): void;
   deleteControl(state: S, payload: IMdeleteControl): void;
+  deleteCopiedControl(state: S, payload: IMdeleteControl): void;
   setChildControls(state: S, payload: IMsetChildControls): void;
   addChildControls(state: S, payload: IMaddChildControls): void;
   selectControl(state: S, payload: IMselectControl): void;
@@ -176,6 +177,27 @@ const mutations: MutationTree<fdState> & FdMutations = {
     const userFormData = state.userformData[payload.userFormId]
     const parentData = userFormData[payload.parentId]
     const selectedControl = state.selectedControls.selected
+    const deleteAll = function (daTarget: string) {
+      const daTargetControls = userFormData[daTarget].controls
+      if (daTargetControls.length > 0) {
+        for (let i = 0, limit = daTargetControls.length; i < limit; i++) {
+          deleteAll(daTargetControls[i])
+          delete userFormData[daTargetControls[i]]
+        }
+      }
+    }
+    for (let i = 0, limit = parentData.controls.length; i < limit; i++) {
+      if (payload.targetId === parentData.controls[i]) {
+        deleteAll(payload.targetId)
+        parentData.controls.splice(i, 1)
+        delete userFormData[payload.targetId]
+      }
+    }
+  },
+  deleteCopiedControl (state, payload) {
+    debugger
+    const userFormData = state.copiedControl[payload.userFormId]
+    const parentData = userFormData[payload.parentId]
     const deleteAll = function (daTarget: string) {
       const daTargetControls = userFormData[daTarget].controls
       if (daTargetControls.length > 0) {

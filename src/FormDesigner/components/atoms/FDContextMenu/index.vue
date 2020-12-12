@@ -113,6 +113,7 @@ export default class ContextMenu extends FDCommonMethod {
   @Prop() controlId: string;
   @Prop() selectedTab: number;
   @Prop() data: controlData;
+  @Prop() groupStyleArray: Array<IGroupStyle>
 
   @State((state) => state.fd.selectedControls)
   selectedControls!: fdState['selectedControls'];
@@ -124,6 +125,7 @@ export default class ContextMenu extends FDCommonMethod {
   groupedControls!: fdState['groupedControls'];
 
   @Action('fd/deleteControl') deleteControl!: (payload: IdeleteControl) => void;
+  @Action('fd/deleteCopiedControl') deleteCopiedControl!: (payload: IdeleteControl) => void;
   @Action('fd/updateCopyControlList') updateCopyControlList!: (
     payload: IupdateCopyControlList
   ) => void;
@@ -533,10 +535,16 @@ export default class ContextMenu extends FDCommonMethod {
    * @function copyControl
    */
   copyControl (type: string) {
+    for (let i = 0; i < this.copiedControl[this.userFormId][this.userFormId].controls.length; i++) {
+      this.deleteCopiedControl({
+        userFormId: this.userFormId,
+        parentId: this.userFormId,
+        targetId: this.copiedControl[this.userFormId][this.userFormId].controls[i]
+      })
+    }
+    const userFormData = this.userformData[this.userFormId]
     const selContainer = this.selectedControls[this.userFormId].container[0]
     const selSelected = this.selectedControls[this.userFormId].selected
-    const userFormData = this.userformData[this.userFormId]
-
     this.updateCopyControlList({
       userFormId: this.userFormId,
       parentId: selContainer,
@@ -547,7 +555,7 @@ export default class ContextMenu extends FDCommonMethod {
     const recCopyControl = (daTarget: string) => {
       const daTargetControls = userFormData[daTarget].controls
       if (daTargetControls.length > 0) {
-        for (let i = 0, limit = daTargetControls.length; i < limit; i++) {
+        for (let i in daTargetControls) {
           const controlObject = JSON.parse(
             JSON.stringify(userFormData[daTargetControls[i]])
           )
@@ -596,16 +604,47 @@ export default class ContextMenu extends FDCommonMethod {
       }
     }
   }
-  updateNewControl (parentId: string, ctrlId: string, ctrlObj: controlData) {
+  updateNewControl (parentId: string, ctrlId: string, ctrlObj: controlData, isParent: boolean) {
     this.addControl({
       userFormId: this.userFormId,
       controlId: parentId,
       addId: ctrlId,
       item: ctrlObj
     })
-    const newTabIndex = this.userformData[this.userFormId][parentId].controls.length
-    this.updateTabIndexValue(ctrlId)
-    this.updateZIndexValue(ctrlId)
+    if (isParent) {
+      const newTabIndex = this.userformData[this.userFormId][parentId].controls.length
+      this.updateTabIndexValue(ctrlId)
+      this.updateZIndexValue(ctrlId)
+    }
+  }
+
+  newPasteControlId (key: string) {
+    const userFormData = this.userformData[this.userFormId]
+    let lastControlId = -1
+    const selectedControlName: string | undefined = key.replace(/[0-9]/g, '').split('_').pop()
+    const userformControlIds = Object.keys(userFormData)
+    for (let i = 0; i < userformControlIds.length; i++) {
+      if (userformControlIds[i].indexOf(selectedControlName!) !== -1) {
+        const IdNum = userformControlIds[i].split(selectedControlName!).pop() || '-1'
+        const pasreId = parseInt(IdNum, 10)
+        if (!isNaN(pasreId) && lastControlId < pasreId) {
+          lastControlId = pasreId
+        }
+      }
+    }
+    lastControlId += 1
+    const Name = `${selectedControlName}${lastControlId}`
+    return Name
+  }
+  removeChildControl (daTarget: string, deleteControl: string) {
+    const removeControl = [...this.userformData[this.userFormId][daTarget].controls]
+    const removeIndex = removeControl.findIndex((val) => val === deleteControl)
+    removeControl.splice(removeIndex, 1)
+    this.setChildControls({
+      userFormId: this.userFormId,
+      containerId: daTarget,
+      targetControls: removeControl
+    })
   }
   /**
    * @description To paste controls in respective container present in respective userform
@@ -622,8 +661,7 @@ export default class ContextMenu extends FDCommonMethod {
       const newControlId: string[] = []
 
       for (const key in this.copiedControl[this.userFormId]) {
-        const controlProp = this.copiedControl[this.userFormId][key].properties
-          .GroupID
+        const controlProp = this.copiedControl[this.userFormId][key].properties.GroupID
         if (controlProp && !presentGroupId.includes(controlProp)) {
           presentGroupId.push(controlProp)
         }
@@ -638,51 +676,22 @@ export default class ContextMenu extends FDCommonMethod {
         if (daTargetControls.length > 0) {
           for (let i = 0, limit = daTargetControls.length; i < limit; i++) {
             const key = daTargetControls[i]
-            let lastControlId = -1
-            const selectedControlName: string | undefined = key
-              .replace(/[0-9]/g, '')
-              .split('_')
-              .pop()
-            const userformControlIds = Object.keys(userFormData)
-            for (let i = 0; i < userformControlIds.length; i++) {
-              if (userformControlIds[i].indexOf(selectedControlName!) !== -1) {
-                const IdNum =
-                  userformControlIds[i].split(selectedControlName!).pop() ||
-                  '-1'
-                const pasreId = parseInt(IdNum, 10)
-                if (!isNaN(pasreId) && lastControlId < pasreId) {
-                  lastControlId = pasreId
-                }
-              }
-            }
-            const controlObj = this.copiedControl[this.userFormId][key]
-            lastControlId += 1
-            const controlID:
-              | string
-              | undefined = `ID_${selectedControlName}${lastControlId}`
+            const Name = this.newPasteControlId(key)
+            const controlID:| string| undefined = `ID_${Name}`
+            const controlObj = { ...this.copiedControl[this.userFormId][key] }
             let groupIdIndex = -1
-            groupIdIndex = presentGroupId.findIndex(
-              (val) => controlObj.properties.GroupID
-            )
+            groupIdIndex = presentGroupId.findIndex((val) => controlObj.properties.GroupID)
             const item: controlData = {
               ...controlObj,
               properties: {
                 ...controlObj.properties,
                 ID: controlID!,
-                GroupID: groupIdIndex !== -1 ? newGroupId[groupIdIndex] : ''
+                GroupID: groupIdIndex !== -1 ? newGroupId[groupIdIndex] : '',
+                Name: Name
               }
             }
-            const removeControl = [
-              ...this.userformData[this.userFormId][daTarget].controls
-            ]
-            const removeIndex = removeControl.findIndex((val) => val === key)
-            removeControl.splice(removeIndex, 1)
-            this.setChildControls({
-              userFormId: this.userFormId,
-              containerId: daTarget,
-              targetControls: removeControl
-            })
-            this.updateNewControl(daTarget, controlID, item)
+            this.removeChildControl(daTarget, key)
+            this.updateNewControl(daTarget, controlID, item, false)
             recCopyControl(controlID)
           }
         }
@@ -691,27 +700,9 @@ export default class ContextMenu extends FDCommonMethod {
       for (const key of selSelected) {
         if (!key.startsWith('group')) {
           oldControlId.push(key)
-          let lastControlId = -1
-          const selectedControlName: string | undefined = key
-            .replace(/[0-9]/g, '')
-            .split('_')
-            .pop()
-          const userformControlIds = Object.keys(userFormData)
-          for (let i = 0; i < userformControlIds.length; i++) {
-            if (userformControlIds[i].indexOf(selectedControlName!) !== -1) {
-              const IdNum =
-                userformControlIds[i].split(selectedControlName!).pop() || '-1'
-              const pasreId = parseInt(IdNum, 10)
-              if (!isNaN(pasreId) && lastControlId < pasreId) {
-                lastControlId = pasreId
-              }
-            }
-          }
-          const controlObj = this.copiedControl[this.userFormId][key]
-          lastControlId += 1
-          const controlID:
-            | string
-            | undefined = `ID_${selectedControlName}${lastControlId}`
+          const Name = this.newPasteControlId(key)
+          const controlID:| string| undefined = `ID_${Name}`
+          const controlObj = { ...this.copiedControl[this.userFormId][key] }
           newControlId.push(controlID)
           let groupIdIndex = -1
           groupIdIndex = presentGroupId.findIndex(
@@ -724,10 +715,11 @@ export default class ContextMenu extends FDCommonMethod {
               ID: controlID!,
               Left: controlObj.properties.Left! + 10,
               Top: controlObj.properties.Top! + 10,
-              GroupID: groupIdIndex !== -1 ? newGroupId[groupIdIndex] : ''
+              GroupID: groupIdIndex !== -1 ? newGroupId[groupIdIndex] : '',
+              Name: Name
             }
           }
-          this.updateNewControl(this.containerId, controlID, item)
+          this.updateNewControl(this.containerId, controlID, item, true)
           recCopyControl(controlID)
         } else {
           for (let ctrlId in this.copiedControl[this.userFormId]) {
@@ -735,30 +727,10 @@ export default class ContextMenu extends FDCommonMethod {
               .properties.GroupID
             if (controlProp) {
               if (controlProp === key) {
-                let lastControlId = -1
-                const selectedControlName: string | undefined = ctrlId
-                  .replace(/[0-9]/g, '')
-                  .split('_')
-                  .pop()
-                const userformControlIds = Object.keys(userFormData)
-                for (let i = 0; i < userformControlIds.length; i++) {
-                  if (
-                    userformControlIds[i].indexOf(selectedControlName!) !== -1
-                  ) {
-                    const IdNum =
-                      userformControlIds[i].split(selectedControlName!).pop() ||
-                      '-1'
-                    const pasreId = parseInt(IdNum, 10)
-                    if (!isNaN(pasreId) && lastControlId < pasreId) {
-                      lastControlId = pasreId
-                    }
-                  }
-                }
+                const Name = this.newPasteControlId(ctrlId)
+                const controlID:| string| undefined = `ID_${Name}`
                 const controlObj = this.copiedControl[this.userFormId][ctrlId]
-                lastControlId += 1
-                const controlID:
-                  | string
-                  | undefined = `ID_${selectedControlName}${lastControlId}`
+
                 let groupIdIndex = -1
                 groupIdIndex = presentGroupId.findIndex(
                   (val) => controlObj.properties.GroupID
@@ -770,11 +742,11 @@ export default class ContextMenu extends FDCommonMethod {
                     ID: controlID!,
                     Left: controlObj.properties.Left! + 10,
                     Top: controlObj.properties.Top! + 10,
-                    GroupID:
-                      groupIdIndex !== -1 ? newGroupId[groupIdIndex] : ''
+                    GroupID: groupIdIndex !== -1 ? newGroupId[groupIdIndex] : '',
+                    Name: Name
                   }
                 }
-                this.updateNewControl(this.containerId, controlID, item)
+                this.updateNewControl(this.containerId, controlID, item, true)
                 recCopyControl(controlID)
               }
             }
@@ -822,23 +794,12 @@ export default class ContextMenu extends FDCommonMethod {
           if (daTargetControls.length > 0) {
             for (let i = 0, limit = daTargetControls.length; i < limit; i++) {
               const key = daTargetControls[i]
-              const controlObj = JSON.parse(
-                JSON.stringify(this.copiedControl[this.userFormId][key])
-              )
+              const controlObj = JSON.parse(JSON.stringify(this.copiedControl[this.userFormId][key]))
               const item: controlData = {
                 ...controlObj
               }
-              const removeControl = [
-                ...this.userformData[this.userFormId][daTarget].controls
-              ]
-              const removeIndex = removeControl.findIndex((val) => val === key)
-              removeControl.splice(removeIndex, 1)
-              this.setChildControls({
-                userFormId: this.userFormId,
-                containerId: daTarget,
-                targetControls: removeControl
-              })
-              this.updateNewControl(daTarget, key, item)
+              this.removeChildControl(daTarget, key)
+              this.updateNewControl(daTarget, key, item, false)
               recCopyControl(key)
             }
           }
@@ -851,7 +812,7 @@ export default class ContextMenu extends FDCommonMethod {
             const item: controlData = {
               ...controlObj
             }
-            this.updateNewControl(this.containerId, key, item)
+            this.updateNewControl(this.containerId, key, item, true)
             recCopyControl(key)
           } else {
             for (let ctrlId in userFormData) {
@@ -864,7 +825,7 @@ export default class ContextMenu extends FDCommonMethod {
                   const item: controlData = {
                     ...controlObj
                   }
-                  this.updateNewControl(this.containerId, ctrlId, item)
+                  this.updateNewControl(this.containerId, ctrlId, item, true)
                   recCopyControl(ctrlId)
                 }
               }
@@ -954,8 +915,8 @@ export default class ContextMenu extends FDCommonMethod {
     const ctrlSel = this.selectedControls[this.userFormId].selected
     const usrFrmData = this.userformData[this.userFormId]
     for (let index = 1; index < ctrlSel.length; index++) {
-      const curProp = usrFrmData[ctrlSel[index]].properties
       if (!ctrlSel[index].startsWith('group')) {
+        const curProp = usrFrmData[ctrlSel[index]].properties
         if (propName === 'selRight') {
           const curRight = curProp.Width! + curProp.Left!
           const value = curProp.Left! + (propValue - curRight)
@@ -978,36 +939,70 @@ export default class ContextMenu extends FDCommonMethod {
           const propertyname: keyof controlProperties = propName as keyof controlProperties
           this.updateControlProperty(propertyname, propValue, ctrlSel[index])
         }
+      } else {
+        const groupIndex: number = this.groupStyleArray.findIndex(val => val.groupName === ctrlSel[index])
+        const curProp = this.groupStyleArray[groupIndex]
+        const left = parseInt(curProp.left!)
+        const top = parseInt(curProp.top!)
+        const width = parseInt(curProp.width!)
+        const height = parseInt(curProp.height!)
+        let value = -1
+        if (propName === 'selRight') {
+          value = left! + (propValue - (width! + left!))
+          EventBus.$emit('updasteGroupSize', 'Left', value, groupIndex)
+        } else if (propName === 'selBottom') {
+          value = top! + (propValue - (height + top))
+          EventBus.$emit('updasteGroupSize', 'Top', value, groupIndex)
+        }
+        if (propName === 'selCenter') {
+          value = propValue - (width! / 2)
+          EventBus.$emit('updasteGroupSize', 'Left', value, groupIndex)
+        }
+        if (propName === 'selMiddle') {
+          value = propValue - height! / 2
+          EventBus.$emit('updasteGroupSize', 'Top', value, groupIndex)
+        } else {
+          const propertyname: keyof controlProperties = propName as keyof controlProperties
+          EventBus.$emit('updasteGroupSize', propertyname, `${propValue}px`, groupIndex)
+        }
       }
     }
   }
   controlAlignMent (subVal: string) {
     const mainSel = this.selectedControls[this.userFormId].selected[0]
+    const isGroup = mainSel.startsWith('group')
     const usrFrmData = this.userformData[this.userFormId]
-    const ctrlProp = usrFrmData[mainSel].properties
+    const ctrlProp = !isGroup && usrFrmData[mainSel].properties
+    const groupIndex: number = this.groupStyleArray.findIndex(val => val.groupName === mainSel)
+    const newObject = {
+      Left: isGroup && groupIndex !== -1 ? parseInt(this.groupStyleArray[groupIndex].left!) : ctrlProp ? ctrlProp.Left! : 0,
+      Top: isGroup && groupIndex !== -1 ? parseInt(this.groupStyleArray[groupIndex].top!) : ctrlProp ? ctrlProp.Top! : 0,
+      Width: isGroup && groupIndex !== -1 ? parseInt(this.groupStyleArray[groupIndex].width!) : ctrlProp ? ctrlProp.Width! : 0,
+      Height: isGroup && groupIndex !== -1 ? parseInt(this.groupStyleArray[groupIndex].height!) : ctrlProp ? ctrlProp.Height! : 0
+    }
     if (subVal === 'ID_ALIGNLEFT') {
-      this.updatePropVal('Left', ctrlProp.Left!)
+      this.updatePropVal('Left', newObject.Left!)
     } else if (subVal === 'ID_ALIGNTOP') {
-      this.updatePropVal('Top', ctrlProp.Top!)
+      this.updatePropVal('Top', newObject.Top!)
     } else if (subVal === 'ID_ALIGNRIGHT') {
-      const selRight = ctrlProp.Width! + ctrlProp.Left!
+      const selRight = newObject.Width! + newObject.Left!
       this.updatePropVal('selRight', selRight)
     } else if (subVal === 'ID_ALIGNBOTTOM') {
-      const selBottom = ctrlProp.Height! + ctrlProp.Top!
+      const selBottom = newObject.Height! + newObject.Top!
       this.updatePropVal('selBottom', selBottom)
     } else if (subVal === 'ID_ALIGNCENTER') {
-      const selCenter = ctrlProp.Left! + ctrlProp.Width! / 2
+      const selCenter = newObject.Left! + newObject.Width! / 2
       this.updatePropVal('selCenter', selCenter)
     } else if (subVal === 'ID_ALIGNMIDDLE') {
-      const selMiddle = ctrlProp.Top! + ctrlProp.Height! / 2
+      const selMiddle = newObject.Top! + newObject.Height! / 2
       this.updatePropVal('selMiddle', selMiddle)
     } else if (subVal === 'ID_WIDTH') {
-      this.updatePropVal('Width', ctrlProp.Width!)
+      this.updatePropVal('Width', newObject.Width!)
     } else if (subVal === 'ID_HEIGHT') {
-      this.updatePropVal('Height', ctrlProp.Height!)
+      this.updatePropVal('Height', newObject.Height!)
     } else if (subVal === 'ID_BOTH') {
-      this.updatePropVal('Height', ctrlProp.Height!)
-      this.updatePropVal('Width', ctrlProp.Width!)
+      this.updatePropVal('Height', newObject.Height!)
+      this.updatePropVal('Width', newObject.Width!)
     }
   }
 }

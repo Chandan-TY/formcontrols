@@ -74,6 +74,7 @@ export default class GroupControl extends FDCommonMethod {
     EventBus.$on('moveGroupControl', this.moveGroupControl)
     EventBus.$on('endGroupMoveControl', this.endGroupMoveControl)
     EventBus.$on('getClientValue', this.getClientValue)
+    EventBus.$on('updasteGroupSize', this.updasteGroupSize)
   }
   destroyed () {
     EventBus.$off('getGroupMoveValue', this.getGroupMoveValue)
@@ -81,6 +82,41 @@ export default class GroupControl extends FDCommonMethod {
     EventBus.$off('moveGroupControl', this.moveGroupControl)
     EventBus.$off('endGroupMoveControl', this.endGroupMoveControl)
     // EventBus.$off('getClientValue', this.getClientValue)
+    EventBus.$on('updasteGroupSize', this.updasteGroupSize)
+  }
+  updasteGroupSize (propName: keyof controlProperties, propertyValue: string, groupIndex: number) {
+    debugger
+    if (this.selectedControls[this.userFormId].container[0] === this.containerId) {
+      this.groupStyle(this.divStyleArray[groupIndex].groupName!)
+      this.updatedValue(groupIndex, propName, parseInt(propertyValue))
+      this.groupStyle(this.divStyleArray[groupIndex].groupName!)
+    }
+  }
+  updatedValue (groupIndex: number, propName: keyof controlProperties, diff: number) {
+    for (const j in this.userformData[this.userFormId][this.containerId].controls) {
+      const index = this.userformData[this.userFormId][this.containerId].controls[j]
+      const controlProp = this.userformData[this.userFormId][index].properties
+      const divStyle = this.divStyleArray[groupIndex]
+      if (controlProp.GroupID && controlProp.GroupID === divStyle.groupName) {
+        if (propName === 'Left') {
+          let left: number = diff + this.leftArray[j]
+          this.updateControlAction(propName, left, index)
+        } else if (propName === 'Top') {
+          let top: number = diff + this.topArray[j]
+          this.updateControlAction(propName, top, index)
+        } else if (propName === 'Width') {
+          let left = (diff * this.leftArray[j]) / parseInt(divStyle.width!) + parseInt(divStyle.left!)
+          let width = diff * this.percwidthArray[j]
+          this.updateControlAction('Left', left, index)
+          this.updateControlAction(propName, width, index)
+        } else if (propName === 'Height') {
+          let top = (diff * this.topArray[j]) / parseInt(divStyle.height!) + parseInt(divStyle.top!)
+          let height = diff * this.percheightArray[j]
+          this.updateControlAction('Top', top, index)
+          this.updateControlAction(propName, height, index)
+        }
+      }
+    }
   }
   getClientValue (event: MouseEvent) {
     this.elementMouseDrag(event)
@@ -204,8 +240,7 @@ export default class GroupControl extends FDCommonMethod {
     this.percheightArray = []
 
     for (const control of this.userformData[this.userFormId][this.containerId].controls) {
-      const controlProp = this.userformData[this.userFormId][control]
-        .properties
+      const controlProp = this.userformData[this.userFormId][control].properties
       if (this.userformData[this.userFormId][control].type !== 'Useform') {
         if (controlProp.GroupID !== '') {
           for (const divStyle of this.divStyleArray) {

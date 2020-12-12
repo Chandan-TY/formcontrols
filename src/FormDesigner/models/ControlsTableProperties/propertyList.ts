@@ -672,7 +672,7 @@ export class PropertyListDefine {
         },
         Value: {
           category: 'ID_CATEGORY_APPEARANCE',
-          type: 'Boolean'
+          type: 'String'
         },
         Visible: {
           category: 'ID_CATEGORY_APPEARANCE',
@@ -845,7 +845,7 @@ export class PropertyListDefine {
         },
         Value: {
           category: 'ID_CATEGORY_APPEARANCE',
-          type: 'Boolean'
+          type: 'String'
         },
         Visible: {
           category: 'ID_CATEGORY_APPEARANCE',
@@ -973,7 +973,7 @@ export class PropertyListDefine {
         },
         Value: {
           category: 'ID_CATEGORY_APPEARANCE',
-          type: 'Boolean'
+          type: 'String'
         },
         Visible: {
           category: 'ID_CATEGORY_APPEARANCE',
@@ -1089,7 +1089,7 @@ export class PropertyListDefine {
         },
         Value: {
           category: 'ID_CATEGORY_APPEARANCE',
-          type: 'Boolean'
+          type: 'String'
         },
         Visible: {
           category: 'ID_CATEGORY_APPEARANCE',
@@ -1584,7 +1584,7 @@ export class PropertyListDefine {
         },
         Value: {
           category: 'ID_CATEGORY_APPEARANCE',
-          type: 'Boolean'
+          type: 'String'
         },
         Visible: {
           category: 'ID_CATEGORY_APPEARANCE',
@@ -1835,7 +1835,7 @@ export class PropertyListDefine {
         },
         ColumnWidths: {
           category: 'ID_CATEGORY_DATA',
-          type: 'number'
+          type: 'String'
         },
         ControlSource: {
           category: 'ID_CATEGORY_DATA',
@@ -2086,7 +2086,7 @@ export class PropertyListDefine {
         },
         ColumnWidths: {
           category: 'ID_CATEGORY_DATA',
-          type: 'number'
+          type: 'String'
         },
         ControlSource: {
           category: 'ID_CATEGORY_DATA',

@@ -111,6 +111,7 @@ interface FdActions {
   updateControlExtraData(context: AugmentedActionContext, payload: IupdateControlExtraData): void
   updateUserFormProp(context: AugmentedActionContext, payload: IupdateUserform): void
   deleteControl(context: AugmentedActionContext, payload: IdeleteControl): void
+  deleteCopiedControl(context: AugmentedActionContext, payload: IdeleteControl): void
   setChildControls(state: AugmentedActionContext, payload: IsetChildControls): void;
   addChildControls(state: AugmentedActionContext, payload: IaddChildControls): void;
   selectControl(context: AugmentedActionContext, payload: IselectControl): void
@@ -147,6 +148,9 @@ const actions: ActionTree<fdState, rootState> & FdActions = {
   },
   deleteControl (context, payload) {
     context.commit('deleteControl', payload)
+  },
+  deleteCopiedControl (context, payload) {
+    context.commit('deleteCopiedControl', payload)
   },
   setChildControls (context, payload) {
     context.commit('setChildControls', payload)
