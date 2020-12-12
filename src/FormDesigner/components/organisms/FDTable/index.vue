@@ -16,9 +16,9 @@
       <FDTableItems
         v-for="(value, propertyName, index) in tableData"
         :key="index"
-        @change="updateAppearance"
         :controlPropertyData="value"
         :propertyName="propertyName"
+        @updateAppearance="updateAppearance"
         @emitFont="emitFont"
         @colorPaletteProp="colorPaletteProp"
       />
@@ -32,6 +32,7 @@ import { State, Action } from 'vuex-class'
 import FDTableItems from '../../molecules/FDTableItems/index.vue'
 import { IselectControl, IupdateControl, IupdateControlExtraData, IupdatedSelectedControl } from '@/storeModules/fd/actions'
 import { EventBus } from '@/FormDesigner/event-bus'
+import { checkPropertyValue } from '@/storeModules/fd/checkValidation'
 
 interface IPropControl {
   propertyName: keyof controlProperties
@@ -164,7 +165,7 @@ export default class FDTable extends Vue {
   }
   updateName (id: string, value: string) {
     const userData = Object.keys(this.userformData[this.userFormId])
-    const isUnique = userData.findIndex(val => this.userformData[this.userFormId][val].properties.Name === value)
+    const isUnique = userData.findIndex(val => this.userformData[this.userFormId][val].properties.Name === value && val !== id)
     if (isUnique === -1 && value !== '') {
       this.updatePropValue(id, 'Name', value)
       return true
@@ -173,6 +174,7 @@ export default class FDTable extends Vue {
     }
   }
   updateAppearance (e: Event) {
+    debugger
     const propertyName: keyof controlProperties = (e.target as HTMLInputElement).name as keyof controlProperties
     const inputType = this.tableData[propertyName]!.type
     let propertyValue = (e.target as HTMLInputElement).value
@@ -181,7 +183,7 @@ export default class FDTable extends Vue {
         this.handleConvertionImageToBase64(e)
       }
     } else if (inputType === 'String') {
-      if (propertyName === 'Accelerator') {
+      if (propertyName === 'Accelerator' || propertyName === 'PasswordChar') {
         this.emitUpdateProperty(
           propertyName,
           propertyValue !== '' ? propertyValue[0] : propertyValue
@@ -198,19 +200,29 @@ export default class FDTable extends Vue {
     } else if (inputType === 'number' || inputType === 'float') {
       const value = propertyValue.includes('.') ? parseFloat(propertyValue) : parseInt(propertyValue)
       if (propertyName === 'Height' || propertyName === 'Width') {
-        if (value >= 0 && value <= 32767) {
+        if (checkPropertyValue(propertyName, value)) {
           this.emitUpdateProperty(propertyName, value)
         } else {
           (e.target as HTMLInputElement).value = this.tableData![propertyName]!.value! as string
-          EventBus.$emit('showErrorPopup', true, 'overflow', 'Overflow')
+          if (value > 32767) {
+            EventBus.$emit('showErrorPopup', true, 'overflow', 'Overflow')
+          } else {
+            EventBus.$emit('showErrorPopup', true, 'invalid', `Could not set the ${propertyName} property. Invalid property value. Enter a value greater than zero or lesser than 32768`)
+          }
         }
       } else if (propertyName === 'Top' || propertyName === 'Left') {
-        console.log(value)
-        if (value > -32767 && value <= 32767) {
+        if (checkPropertyValue(propertyName, value)) {
           this.emitUpdateProperty(propertyName, value)
         } else {
           (e.target as HTMLInputElement).value = this.tableData![propertyName]!.value! as string
           EventBus.$emit('showErrorPopup', true, 'invalid', `Could not set the ${propertyName} property. Invalid property value.`)
+        }
+      } else if (propertyName === 'MaxLength') {
+        if (checkPropertyValue(propertyName, value)) {
+          this.emitUpdateProperty(propertyName, value)
+        } else {
+          (e.target as HTMLInputElement).value = this.tableData![propertyName]!.value! as string
+          EventBus.$emit('showErrorPopup', true, 'invalid', `Could not set the ${propertyName} property. Invalid property value. Enter a value greater than zero or lesser than 2147483647`)
         }
       } else {
         this.emitUpdateProperty(propertyName, value)

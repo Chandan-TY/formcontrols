@@ -1,7 +1,7 @@
 <template>
   <div>
      <CustomInput
-        v-on="$listeners"
+        @updateAppearance="updateAppearance"
         v-if="
           propertyType === 'String' ||
             propertyType === 'float' ||
@@ -11,7 +11,7 @@
         :propertyName="propertyName"
       />
       <CustomDropDown
-        v-on="$listeners"
+        @updateAppearance="updateAppearance"
         v-if="propertyType === 'array' || propertyType === 'Boolean'"
         :propertyData="controlPropertyData"
         :propertyName="propertyName"
@@ -55,12 +55,14 @@ export default class FDTableItems extends Vue {
   get propertyType () {
     return this.controlPropertyData.type
   }
-
+  @Emit('updateAppearance')
+  updateAppearance (e: Event) {
+    return e
+  }
   @Emit('emitFont')
   emitFont (tempVal: font) {
     return tempVal
   }
-
   @Emit('colorPaletteProp')
   colorPaletteProp (selectedValue: ISelectedColoPaletteValue) {
     return selectedValue

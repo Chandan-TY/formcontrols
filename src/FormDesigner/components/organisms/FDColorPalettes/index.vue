@@ -3,7 +3,6 @@
     <div class="buttonIn grid-design">
       <input
         type="text"
-        id="enter"
         :name="name"
         class="color-input"
         :value="value"

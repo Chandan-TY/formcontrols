@@ -2,7 +2,7 @@
   <div id="app">
     <div class="container">
       <div class="header">
-        <Header />
+        <Header :userFormId="userFormId" />
       </div>
       <div class="mainbody">
         <Split class="outersplit">

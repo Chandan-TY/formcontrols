@@ -138,8 +138,12 @@ const mutations: MutationTree<fdState> & FdMutations = {
     if (propName && targetData.properties) {
       if (checkPropertyValue(propName, setValue)) {
         if (propName.match(/font*/i)) {
+          if (payload.propertyName === 'Font') {
+            Vue.set(targetData.properties, payload.propertyName, payload.value)
+          } else {
           // @ts-ignore
-          Vue.set(targetData.properties, payload.propertyName, payload.value)
+            targetData.properties['Font'][propName] = setValue
+          }
         } else {
           // @ts-ignore
           targetData.properties[propName] = setValue

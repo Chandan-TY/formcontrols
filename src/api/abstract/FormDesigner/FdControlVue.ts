@@ -420,44 +420,58 @@ export default class FdControlVue extends Vue {
   }
 
   /**
+  * @description watches text properties
+  * @function valueUpdateProp
+  * @param oldVal previous string value
+  * @param newVal  new/changed string value
+  */
+ @Watch('properties.Text', { deep: true })
+  valueUpdateProp (newVal:string, oldVal:string) {
+    if (this.data.type!.includes('TextBox')) {
+      const propData: controlProperties = this.properties
+      this.updateDataModel({ propertyName: 'Value', value: newVal })
+    }
+  }
+
+ /**
   * @description watches text and value properties are same when component is mounted/changed
   * @function textAndValueUpdateProp
   * @param oldVal previous properties data
   * @param newVal  new/changed properties data
   */
  @Watch('properties.Value', { deep: true })
-  textAndValueUpdateProp (newVal:controlData, oldVal:controlData) {
-    if (this.data.type!.includes('TextBox')) {
-      const propData: controlProperties = this.properties
-      if (propData.Text !== propData.Value && propData.ControlSource === '') {
-        const propText: number = propData.Text!.length
-        const propValue: number = (propData.Value as string).length
-        this.updateDataModel({ propertyName: propText > propValue ? 'Value' : 'Text',
-          value: propText > propValue
-            ? this.properties.Text!
-            : this.properties.Value! })
-      }
-    } else if (this.data.type!.includes('CheckBox') || this.data.type!.includes('OptionButton')) {
-      const value = this.properties.Value
-      const valueType:boolean | string = typeof value
-      let isBoolean:boolean | string = ''
-      if (valueType === 'boolean') {
-        isBoolean = (value as boolean)
-      } else if (valueType === 'string') {
-        isBoolean = ((value as string).toLowerCase() === 'true') ? true : ((value as string).toLowerCase() === 'false') ? false : ''
-      }
-      const ref = this.data.type!.includes('CheckBox') ? this.checkboxRef : this.optionBtnRef
-      if (isBoolean !== '') {
-        if (isBoolean) {
-          this.setStyle((ref as HTMLInputElement), (isBoolean as boolean), !(isBoolean as boolean), 'white')
-        } else {
-          this.setStyle((ref as HTMLInputElement), false, false, 'white')
-        }
-      } else {
-        this.setStyle((ref as HTMLInputElement), true, true, 'rgba(220, 220, 220, 1)')
-      }
-    }
-  }
+ textAndValueUpdateProp (newVal:string, oldVal:string) {
+   if (this.data.type!.includes('TextBox')) {
+     const propData: controlProperties = this.properties
+     if (propData.Text !== propData.Value && propData.ControlSource === '') {
+       const propText: number = propData.Text!.length
+       const propValue: number = (propData.Value as string).length
+       this.updateDataModel({ propertyName: propText > propValue ? 'Value' : 'Text',
+         value: propText > propValue
+           ? this.properties.Text!
+           : this.properties.Value! })
+     }
+   } else if (this.data.type!.includes('CheckBox') || this.data.type!.includes('OptionButton')) {
+     const value = this.properties.Value
+     const valueType:boolean | string = typeof value
+     let isBoolean:boolean | string = ''
+     if (valueType === 'boolean') {
+       isBoolean = (value as boolean)
+     } else if (valueType === 'string') {
+       isBoolean = ((value as string).toLowerCase() === 'true') ? true : ((value as string).toLowerCase() === 'false') ? false : ''
+     }
+     const ref = this.data.type!.includes('CheckBox') ? this.checkboxRef : this.optionBtnRef
+     if (isBoolean !== '') {
+       if (isBoolean) {
+         this.setStyle((ref as HTMLInputElement), (isBoolean as boolean), !(isBoolean as boolean), 'white')
+       } else {
+         this.setStyle((ref as HTMLInputElement), false, false, 'white')
+       }
+     } else {
+       this.setStyle((ref as HTMLInputElement), true, true, 'rgba(220, 220, 220, 1)')
+     }
+   }
+ }
 
  /**
   * @description changing width and height of textarea tag by replicating style of

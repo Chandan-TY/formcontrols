@@ -151,7 +151,7 @@ export default class FDLabel extends Mixins(FdControlVue) {
         })
         this.updateDataModel({
           propertyName: 'Width',
-          value: (this.$el.childNodes[0] as HTMLSpanElement).offsetWidth
+          value: (this.$el.childNodes[0] as HTMLSpanElement).offsetWidth + 5
         })
       })
     } else {

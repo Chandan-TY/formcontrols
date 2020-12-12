@@ -28,11 +28,12 @@ import {
 } from '@/storeModules/fd/actions'
 import { State, Action } from 'vuex-class'
 import { EventBus } from '@/FormDesigner/event-bus'
+import FDCommonMethod from '@/api/abstract/FormDesigner/FDCommonMethod'
 @Component({
   name: 'GroupControl',
   components: {}
 })
-export default class GroupControl extends Vue {
+export default class GroupControl extends FDCommonMethod {
   @State((state) => state.fd.groupedControls) groupedControls!: groupedControls;
   @State((state) => state.fd.selectedControls)
   selectedControls!: fdState['selectedControls'];
@@ -260,43 +261,6 @@ export default class GroupControl extends Vue {
         })
       }
     }
-  }
-
-  /**
-   * @description  To get the selected ContainerList
-   * @function getContainerList
-   * @param selectTarget  - selcted control or group
-   */
-  getContainerList (selectTarget: string) {
-    const containerList: string[] = []
-    const controlContainer = (selectTarget: string) => {
-      for (let i in this.userformData[this.userFormId]) {
-        const controlData = this.userformData[this.userFormId][i]
-        if (
-          controlData.controls.length > 0 &&
-              controlData.controls.includes(selectTarget)
-        ) {
-          containerList.push(i)
-          controlContainer(i)
-        }
-      }
-    }
-    const getControlId = (selectTarget: string) => {
-      const userData = this.userformData[this.userFormId]
-      for (let i in userData) {
-        const controlData = userData[i]
-        if (controlData.properties.GroupID === selectTarget) {
-          return i
-        }
-      }
-    }
-    if (selectTarget) {
-      const controlId = selectTarget.startsWith('group') ? getControlId(selectTarget) : selectTarget
-      if (controlId) {
-        controlContainer(controlId)
-      }
-    }
-    return containerList || [this.userFormId]
   }
 
   handleMouseDown (event: CustomMouseEvent, handler: string) {

@@ -5,7 +5,7 @@
       <div class="select-editable" style="width: 100%; height: 17px;">
         <select
         :name="propertyName"
-        v-on="$listeners"
+        @change="updateAppearance"
         v-if="propertyType==='Boolean'"
         :value="propertyValue"
         >
@@ -14,7 +14,7 @@
         </select>
         <select
         :name="propertyName"
-        v-on="$listeners"
+        @change="updateAppearance"
         :id="propertyValues.indexOf(propertyValues[propertyValue])"
         v-if="propertyType==='array'"
         v-model="selected"
@@ -27,7 +27,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop } from 'vue-property-decorator'
+import { Component, Vue, Prop, Emit } from 'vue-property-decorator'
 
 @Component({
   name: 'FDCustomDropDown',
@@ -37,21 +37,23 @@ export default class FDCustomDropDown extends Vue {
   @Prop({ }) propertyData! : tableData
   @Prop({ default: 'default' }) propertyName!: string
 
-  selected: string | number | font | null | undefined = null
+  selected: string | number | font | null | undefined | boolean= null
 
   get propertyType () {
     return this.propertyData.type
   }
 
   get propertyValue () {
+    this.selected = this.propertyData.value
     return this.propertyData.value
   }
 
   get propertyValues () {
     return this.propertyData.values
   }
-  mounted () {
-    this.selected = this.propertyValue
+  @Emit('updateAppearance')
+  updateAppearance (e: Event) {
+    return e
   }
 }
 </script>

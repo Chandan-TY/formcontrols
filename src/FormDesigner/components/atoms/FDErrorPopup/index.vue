@@ -3,7 +3,7 @@
     <div class="outer-error-div popup">
       <div class="header-error">
         <div>
-          <span>Microsoft Visual Basic for Applications</span>
+          <span>Visual Basic for Applications IDE</span>
         </div>
         <div>
           <button class="ui-btn close" @click="isOpen=false">

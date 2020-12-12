@@ -232,6 +232,8 @@ import CodeLogo from '../../../../assets/view-code.svg'
 import ObjectLogo from '../../../../assets/view-object.svg'
 import FDSVGImage from '@/FormDesigner/components/atoms/FDSVGImage/index.vue'
 import { EventBus } from '@/FormDesigner/event-bus'
+import FDCommonMethod from '@/api/abstract/FormDesigner/FDCommonMethod'
+
 @Component({
   name: 'Header',
   components: {
@@ -254,7 +256,7 @@ import { EventBus } from '@/FormDesigner/event-bus'
     FDSVGImage
   }
 })
-export default class Header extends Vue {
+export default class Header extends FDCommonMethod {
   displaySubMenu: boolean = false;
   @Action('fd/addUserform') addControl!: (payload: IaddUserform) => void;
   @Action('fd/changeRunMode') changeRunMode!: (payload: boolean) => void;
@@ -299,40 +301,6 @@ export default class Header extends Vue {
   clickChangeMode () {
     this.changeRunMode(!this.isRunMode)
   }
-  updateZIndex (id: string, value: number) {
-    this.updateControlExtraData({
-      userFormId: this.userFormId,
-      controlId: id,
-      propertyName: 'zIndex',
-      value: value
-    })
-  }
-  swapZIndex (tempZIndex: number) {
-    const userData = this.userformData[this.userFormId]
-    const container = this.selectedControls[this.userFormId].container[0]
-    const selected = this.selectedControls[this.userFormId].selected[0]
-    const swapTabIndex = userData[selected].extraDatas!.zIndex!
-    if (tempZIndex <= userData[container].controls.length && tempZIndex > 0) {
-      const index = userData[container].controls.findIndex(
-        (val) => userData[val].extraDatas!.zIndex === tempZIndex
-      )
-      this.updateZIndex(userData[container].controls[index], swapTabIndex)
-      this.updateZIndex(selected, tempZIndex)
-    }
-  }
-  getLowestZIndex (tempControls: string[], controlLength: number) {
-    let lastControlId = controlLength
-    const userData = this.userformData[this.userFormId]
-    for (let i = 0; i < tempControls.length; i++) {
-      if (userData[tempControls[i]].extraDatas!.zIndex !== -1) {
-        const IdNum = userData[tempControls[i]].extraDatas!.zIndex!
-        if (!isNaN(IdNum) && lastControlId > IdNum) {
-          lastControlId = IdNum
-        }
-      }
-    }
-    return lastControlId
-  }
   bringFront () {
     const userData = this.userformData[this.userFormId]
     const selected = this.selectedControls[this.userFormId].selected[0]
@@ -346,7 +314,7 @@ export default class Header extends Vue {
         tempControls.push(containerControls[index])
       }
     }
-    const lastControlId = tempControls.length > 0 ? this.getLowestZIndex(tempControls, userData[container].controls.length)
+    const lastControlId = tempControls.length > 0 ? this.getLowestIndex(tempControls, userData[container].controls.length, true)
       : this.userformData[this.userFormId][container].controls.length + 1
     this.swapZIndex(lastControlId - 1)
   }

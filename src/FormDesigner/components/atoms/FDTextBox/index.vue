@@ -1,6 +1,7 @@
 <template>
-  <div class="resp-textbox" @click="selectedItem">
+  <div class="resp-textbox" @click="selectedItem" @mousedown="controlEditMode">
     <textarea
+      data-gramm="false"
       ref="textareaRef"
       :style="cssStyleProperty"
       :tabindex="properties.TabIndex"
@@ -387,6 +388,31 @@ export default class FDTextBox extends Mixins(FdControlVue) {
         value: controlSourceValue
       })
       this.updateDataModel({ propertyName: 'Text', value: controlSourceValue })
+    }
+  }
+
+  /**
+  * @description watches ControlSource property
+  * @function updateControlSourceValue
+  * @param oldVal previous string value
+  * @param newVal  new/changed string value
+  */
+  @Watch('properties.ControlSource', { deep: true })
+  updateControlSourceValue (newVal: string, oldVal: string) {
+    const propData: controlData = this.data
+    if (propData.properties.ControlSource !== '') {
+      const controlSourceValue = propData.extraDatas!.ControlSourceValue
+      this.updateDataModel({
+        propertyName: 'Value',
+        value: controlSourceValue
+      })
+      this.updateDataModel({ propertyName: 'Text', value: controlSourceValue })
+    } else {
+      this.updateDataModel({
+        propertyName: 'Value',
+        value: ''
+      })
+      this.updateDataModel({ propertyName: 'Text', value: '' })
     }
   }
   /**

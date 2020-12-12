@@ -2,11 +2,12 @@ import { Component, Emit, Prop, Vue } from 'vue-property-decorator'
 import { controlProperties } from '@/FormDesigner/controls-properties'
 import { Action, State } from 'vuex-class'
 import { IdeleteControl, IselectControl, IupdateControl, IupdateControlExtraData } from '@/storeModules/fd/actions'
+import FDCommonMethod from './FDCommonMethod'
 
 @Component({
   name: 'FdSelectVue'
 })
-export default class FdSelectVue extends Vue {
+export default class FdSelectVue extends FDCommonMethod {
   isMoveWhenMouseDown = false
   /**
    * select mode : false / edit mode : true
@@ -146,103 +147,6 @@ export default class FdSelectVue extends Vue {
       propertyName: updateData.propertyName,
       value: updateData.value
     })
-  }
-  getContainerList (selectTarget: string) {
-    const containerList: string[] = []
-    const controlContainer = (selectTarget: string) => {
-      for (let i in this.userformData[this.userFormId]) {
-        const controlData = this.userformData[this.userFormId][i]
-        if (
-          controlData.controls.length > 0 &&
-              controlData.controls.includes(selectTarget)
-        ) {
-          containerList.push(i)
-          controlContainer(i)
-        }
-      }
-    }
-    const getControlId = (selectTarget: string) => {
-      const userData = this.userformData[this.userFormId]
-      for (let i in userData) {
-        const controlData = userData[i]
-        if (controlData.properties.GroupID === selectTarget) {
-          return i
-        }
-      }
-    }
-    if (selectTarget) {
-      const controlId = selectTarget.startsWith('group') ? getControlId(selectTarget) : selectTarget
-      if (controlId) {
-        controlContainer(controlId)
-      }
-    }
-    return containerList || [this.userFormId]
-  }
-  updateZIndex (id: string, value: number) {
-    this.updateControlExtraData({
-      userFormId: this.userFormId,
-      controlId: id,
-      propertyName: 'zIndex',
-      value: value
-    })
-  }
-  updateTabIndex (id: string, value: number) {
-    this.updateControl({
-      userFormId: this.userFormId,
-      controlId: id,
-      propertyName: 'TabIndex',
-      value: value
-    })
-  }
-  updateExtraDatas (id: string, propName: keyof extraDatas, value: number) {
-    this.updateControlExtraData({
-      userFormId: this.userFormId,
-      controlId: id,
-      propertyName: propName,
-      value: value
-    })
-  }
-  deleteTabIndex (id: string) {
-    const userData = this.userformData[this.userFormId]
-    const container = this.selectedControls[this.userFormId].container[0]
-    const type = userData[id].type
-    const tempIndex: number = type === 'FDImage' ? userData[id].extraDatas!.TabIndex! : userData[id].properties!.TabIndex!
-    for (const key in userData[container].controls) {
-      const ctrltype = userData[userData[container].controls[key]].type
-      const controlData = userData[userData[container].controls[key]]
-      const controlTabIndex = ctrltype === 'FDImage' ? controlData.extraDatas!.TabIndex! : controlData.properties!.TabIndex!
-      if (controlTabIndex > tempIndex && controlTabIndex - 1 > -1) {
-        if (ctrltype !== 'FDImage') {
-          this.updateTabIndex(userData[container].controls[key], controlTabIndex - 1)
-        } else {
-          this.updateExtraDatas(userData[container].controls[key], 'TabIndex', controlTabIndex - 1)
-        }
-      }
-    }
-  }
-  deleteZIndex (id: string) {
-    const userData = this.userformData[this.userFormId]
-    const container = this.selectedControls[this.userFormId].container[0]
-    const tempIndex = userData[id].extraDatas!.zIndex!
-    for (const key in userData[container].controls) {
-      const controlZIndex = userData[userData[container].controls[key]].extraDatas!.zIndex!
-      if (controlZIndex > tempIndex) {
-        this.updateZIndex(userData[container].controls[key], controlZIndex - 1)
-      }
-    }
-  }
-  swapZIndex (tempZIndex: number) {
-    const userData = this.userformData[this.userFormId]
-    const container = this.selectedControls[this.userFormId].container[0]
-    const selected = this.selectedControls[this.userFormId].selected[0]
-    const swapTabIndex = userData[selected].extraDatas!.zIndex!
-    if (tempZIndex <= userData[container].controls.length && tempZIndex > 0) {
-      const index = userData[container].controls.findIndex(
-        (val) => userData[val].extraDatas!.zIndex === tempZIndex
-      )
-      this.updateZIndex(userData[container].controls[index], swapTabIndex)
-      this.updateZIndex(selected, tempZIndex)
-    }
   }
   bringFront () {
     const container = this.selectedControls[this.userFormId].container[0]

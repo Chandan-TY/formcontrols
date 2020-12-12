@@ -26,11 +26,12 @@
 import { Component, Vue, Prop, Emit, Watch } from 'vue-property-decorator'
 import { State } from 'vuex-class'
 import { EventBus } from '@/FormDesigner/event-bus'
+import FDCommonMethod from '@/api/abstract/FormDesigner/FDCommonMethod'
 @Component({
   name: 'Resizehandler',
   components: {}
 })
-export default class Resizehandler extends Vue {
+export default class Resizehandler extends FDCommonMethod {
   $el: HTMLDivElement
   @State((state) => state.fd.selectedControls) selectedControls!: fdState['selectedControls'];
   @State((state) => state.fd.userformData) userformData!: userformData;
@@ -320,38 +321,6 @@ export default class Resizehandler extends Vue {
 
   get getIsMoveTarget () {
     return this.getMainSelected
-  }
-
-  getContainerList (selectTarget: string) {
-    const containerList: string[] = []
-    const controlContainer = (selectTarget: string) => {
-      for (let i in this.userformData[this.userFormId]) {
-        const controlData = this.userformData[this.userFormId][i]
-        if (
-          controlData.controls.length > 0 &&
-              controlData.controls.includes(selectTarget)
-        ) {
-          containerList.push(i)
-          controlContainer(i)
-        }
-      }
-    }
-    const getControlId = (selectTarget: string) => {
-      const userData = this.userformData[this.userFormId]
-      for (let i in userData) {
-        const controlData = userData[i]
-        if (controlData.properties.GroupID === selectTarget) {
-          return i
-        }
-      }
-    }
-    if (selectTarget) {
-      const controlId = selectTarget.startsWith('group') ? getControlId(selectTarget) : selectTarget
-      if (controlId) {
-        controlContainer(controlId)
-      }
-    }
-    return containerList || [this.userFormId]
   }
 }
 </script>

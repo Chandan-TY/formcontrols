@@ -89,7 +89,7 @@ export const dropButtonStyle = {
 
 export const style = {
   '0-fmStyleDropDownCombo': 0,
-  '2-fmStyleDropDownList': 2
+  '2-fmStyleDropDownList': 1
 }
 export const listStyle = {
   '0-fmListStylePlain': 0,
@@ -107,7 +107,7 @@ export const multiSelect = {
 }
 export const cycle = {
   '0 - fmCycleAllForms': 0,
-  '2 - fmCycleCurrentForms': 2
+  '2 - fmCycleCurrentForms': 1
 }
 export const keepScrollBarsVisible = {
   'fmScrollBarsNone': 0,
@@ -125,7 +125,7 @@ export const pictureAlignment = {
 export const pictureSizeMode = {
   '0 - fmPictureSizeModeClip': 0,
   '1 - fmPictureSizeModeStretch': 1,
-  '3 - fmPictureSizeModeZoom': 3
+  '3 - fmPictureSizeModeZoom': 2
 }
 export const startUpPosition = {
   '0 - Manual': 0,
@@ -135,14 +135,14 @@ export const startUpPosition = {
 }
 
 export const orientation = {
-  '-1 - fmOrientationAuto': -1,
-  '0 - fmOrientationVertical': 0,
-  '1 - fmOrientationHorizontal': 1
+  '-1 - fmOrientationAuto': 0,
+  '0 - fmOrientationVertical': 1,
+  '1 - fmOrientationHorizontal': 2
 }
 
 export const buttonSpecialEffect = {
   '0-fmSpecialEffectFlat': 0,
-  '2-fmSpecialEffectSunken': 2
+  '2-fmSpecialEffectSunken': 1
 }
 
 export const tabOrientation = {
@@ -160,7 +160,7 @@ export const styleOfTabs = {
 
 export const styleOfComboBox = {
   '0-fmStyleDropDownCombo': 0,
-  '2-fmStyleDropDownList': 2
+  '2-fmStyleDropDownList': 1
 }
 
 export const showDropButtonWhen = {

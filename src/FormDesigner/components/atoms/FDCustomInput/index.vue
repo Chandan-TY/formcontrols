@@ -6,14 +6,14 @@
       class="custom-input-ele"
       :value="(inputType)?null:propertyValue"
       :type="propertyType"
-      v-on="$listeners"
+      @change="updateAppearance"
     />
   </div>
 </template>
 
 <script lang="ts">
 
-import { Component, Vue, Prop } from 'vue-property-decorator'
+import { Component, Vue, Prop, Emit } from 'vue-property-decorator'
 @Component({
   name: 'FDCustomInput',
   components: {}
@@ -45,6 +45,11 @@ export default class FDCustomInput extends Vue {
       }
     })
     return isFile
+  }
+
+  @Emit('updateAppearance')
+  updateAppearance (e: Event) {
+    return e
   }
 }
 </script>
