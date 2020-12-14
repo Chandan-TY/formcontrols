@@ -89,7 +89,15 @@ export default class FDCheckBox extends Mixins(FdControlVue) {
       if (!this.isRunMode) {
         let tempValue = newVal.toLowerCase()
         const checkDiv = this.checkboxInput
-        if (tempValue === 'true') {
+        if (!isNaN(parseInt(newVal))) {
+          if (parseInt(newVal) === 0) {
+            this.spanRef.style.backgroundColor = 'white'
+            checkDiv.checked = false
+          } else {
+            this.spanRef.style.backgroundColor = 'white'
+            checkDiv.checked = true
+          }
+        } else if (tempValue === 'true') {
           this.spanRef.style.backgroundColor = 'white'
           checkDiv.checked = true
         } else if (tempValue === 'false') {

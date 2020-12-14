@@ -115,21 +115,20 @@ export const controlProperties = {
     return controlProperties.getPositionProp(picture, pictureAlignment, pictureSizeMode)
   },
   getPositionProp: (picture: string, pictureAlignment: number, pictureSizeMode: number) => {
-    if (picture !== '' && pictureSizeMode === 2) {
-      return 'center'
-    } else if (pictureAlignment === 0) {
-      return 'top left'
-    } else if (pictureAlignment === 1) {
-      return 'top right'
-    } else if (pictureAlignment === 2) {
-      return 'center'
-    } else if (pictureAlignment === 3) {
-      return 'bottom left'
-    } else if (pictureAlignment === 4) {
-      return 'bottom right'
-    } else {
-      return ''
+    if (picture !== '') {
+      if (pictureAlignment === 0) {
+        return 'top left'
+      } else if (pictureAlignment === 1) {
+        return 'top right'
+      } else if (pictureAlignment === 2) {
+        return 'center'
+      } else if (pictureAlignment === 3) {
+        return 'bottom left'
+      } else if (pictureAlignment === 4) {
+        return 'bottom right'
+      }
     }
+    return ''
   },
   /**
 * @description pictureXYPositionProp returns background-position-x and
@@ -194,7 +193,7 @@ export const controlProperties = {
     const propData:KeyValueProp = {
       0: 'initial',
       1: '100% 100%',
-      3: 'contain'
+      2: 'contain'
     }
     if (index !== undefined) {
       return propData[index]

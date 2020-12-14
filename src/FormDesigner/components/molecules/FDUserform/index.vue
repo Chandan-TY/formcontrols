@@ -89,13 +89,8 @@ export default class UserForm extends FdContainerVue {
    * @function createBackgroundString
    *
    */
-  protected get createBackgroundString (): string {
-    const data = this.properties.Picture
-    if (typeof data === 'object' && data !== null) {
-      return `url(${this.properties.Picture})`
-    }
-    return this.getSampleDotPattern.backgroundImage
-    // return `linear-gradient(-90deg, ${this.properties.ForeColor} 1px, transparent 1px), linear-gradient(${this.properties.ForeColor} 1px, transparent 1px)`
+  protected get createBackgroundString () {
+    return `url(${this.properties.Picture})`
   }
 
   protected get getSampleDotPattern () {

@@ -135,6 +135,7 @@
                 </div>
               </div>
               <div class="wrapper-21">
+                <div class="outerSample">
                 <div class="fieldset fieldsetDiv">
                   <h1>
                     <span>Sample</span>
@@ -145,6 +146,7 @@
                     </div>
                   </div>
                 </div>
+              </div>
               </div>
               <div class="wrapper22">
                 Script:
@@ -374,6 +376,10 @@ h1 {
   float: right;
   width: 100%;
   height: 14px;
+}
+
+.outerSample {
+  overflow: hidden;
 }
 
 .button {
@@ -639,6 +645,8 @@ h1 {
 .fieldsetDiv {
   width: 192px;
   height: 50px;
+  margin: 0px;
+  margin-top: 4px;
 }
 .sampleDiv {
   width: 192px;

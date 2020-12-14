@@ -475,7 +475,7 @@ export const userDataNew = {
         TextAlign: 1,
         Top: 10,
         TripleState: false,
-        Value: 'true',
+        Value: 'True',
         Visible: true,
         Width: 55,
         WordWrap: true,

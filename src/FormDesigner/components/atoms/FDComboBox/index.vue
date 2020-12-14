@@ -21,6 +21,7 @@
           @click="setSelection"
         ></span>
         <textarea
+          data-gramm="false"
           ref="textareaRef"
           :style="cssStyleProperty"
           wrap="off"

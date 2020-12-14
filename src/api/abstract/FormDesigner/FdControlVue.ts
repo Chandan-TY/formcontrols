@@ -609,6 +609,7 @@ topIndexCheck (newVal:number, oldVal:number) {
  *
  */
 handleMultiSelect (e: MouseEvent) {
+  debugger
   if (e.target instanceof HTMLTableCellElement || e.target instanceof HTMLTableRowElement) {
     this.tempListBoxComboBoxEvent = e
     const targetElement = e.target
@@ -729,6 +730,11 @@ handleMultiSelect (e: MouseEvent) {
         }
       }
     }
+  } else {
+    if (this.properties.MultiSelect !== 1) {
+      this.clearOptionBGColorAndChecked(e)
+    }
+    this.setOptionBGColorAndChecked(e)
   }
 }
 /**
@@ -1003,14 +1009,14 @@ clearOptionBGColorAndChecked (e: any) {
 * @param event KeyboardEvent or MouseEvent
 */
 setOptionBGColorAndChecked (e: KeyboardEvent | MouseEvent) {
-  if ((e.target instanceof HTMLTableCellElement || e.target instanceof HTMLTableRowElement)) {
-    const currentTargetElement = e.currentTarget as HTMLTableElement
-    const targetEvent = e.target
-    const childNodeChecked = currentTargetElement.children[0].childNodes[0] as HTMLInputElement
-    currentTargetElement.style.backgroundColor =
+  const currentTargetElement = e.currentTarget as HTMLTableElement
+  const childNodeChecked = currentTargetElement.children[0].childNodes[0] as HTMLInputElement
+  currentTargetElement.style.backgroundColor =
    currentTargetElement.style.backgroundColor === 'rgb(59, 122, 231)'
      ? ''
      : 'rgb(59, 122, 231)'
+  if ((e.target instanceof HTMLTableCellElement || e.target instanceof HTMLTableRowElement)) {
+    const targetEvent = e.target
     if (this.data.type === 'ComboBox') {
       currentTargetElement.style.backgroundColor = ''
     }
@@ -1030,6 +1036,8 @@ setOptionBGColorAndChecked (e: KeyboardEvent | MouseEvent) {
     } else {
       childNodeChecked.checked = !childNodeChecked.checked
     }
+  } else if (this.properties.MultiSelect === 2) {
+    currentTargetElement.style.backgroundColor = 'rgb(59, 122, 231)'
   }
 }
 
