@@ -74,7 +74,10 @@ export default class FdSelectVue extends FDCommonMethod {
   }
   private updateResize (value: IResizeValue) {
     const controlType = this.userformData[this.userFormId][this.controlId].type
-    const dragResizectrlArray = (controlType === 'Frame' || controlType === 'MultiPage') ? [this.controlId] : this.selectedControlArray
+    const dragResizectrlArray =
+    (controlType === 'Frame' || controlType === 'MultiPage') && !this.selectedControlArray.includes(this.controlId)
+      ? [this.controlId]
+      : this.selectedControlArray
     for (let i of dragResizectrlArray) {
       if (!i.startsWith('group')) {
         const dragResizeControl: controlProperties = this.userformData[this.userFormId][i].properties

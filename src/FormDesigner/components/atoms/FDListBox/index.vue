@@ -3,7 +3,7 @@
     class="listStyle"
     :style="listStyleObj"
     :title="properties.ControlTipText"
-    @click="selectedItem"
+    @click.stop="selectedItem"
     @mousedown="controlEditMode"
     tabindex="0"
     @keydown.stop="forMatchEntry"
@@ -38,7 +38,7 @@
           @mouseenter.stop="handleDrag"
           @keydown.stop="handleExtendArrowKeySelect"
           @blur.stop="clearMatchEntry"
-          @mousedown.stop="isRunMode || isEditMode ? handleMultiSelect($event) : setInitial($event)"
+          @mousedown="isRunMode || isEditMode ? handleMultiSelect($event) : setInitial($event)"
         >
           <td
             :style="tdStyleObj"

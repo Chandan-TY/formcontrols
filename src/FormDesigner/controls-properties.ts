@@ -84,10 +84,6 @@ export const controlProperties = {
     const pictureSizeMode = controlData.properties.PictureSizeMode!
 
     return controlProperties.getRepeatDataProp(picture, pictureTiling, pictureSizeMode)
-    // if (controlData.properties.Picture !== '') {
-    //   return 'no-repeat'
-    // }
-    // return ''
   },
   getRepeatDataProp: (picture: string, pictureTiling: boolean, pictureSizeMode: number) => {
     if (picture === '') {
@@ -119,7 +115,7 @@ export const controlProperties = {
     return controlProperties.getPositionProp(picture, pictureAlignment, pictureSizeMode)
   },
   getPositionProp: (picture: string, pictureAlignment: number, pictureSizeMode: number) => {
-    if (picture !== '' && pictureSizeMode === 3) {
+    if (picture !== '' && pictureSizeMode === 2) {
       return 'center'
     } else if (pictureAlignment === 0) {
       return 'top left'
@@ -206,22 +202,6 @@ export const controlProperties = {
     return propData[0]
   },
   /**
-* @description pictureTilingProp returns background-repeat css style value
-* @function pictureTilingProp
-* @param controlData propControlData passed as input
-* @returns string value
-*/
-  // pictureTilingProp: (controlData: controlData): string => {
-  //   if (controlData.properties.PictureTiling === true) {
-  //     if (controlData.properties.PictureSizeMode === 1) {
-  //       return 'no-repeat'
-  //     }
-  //     return 'repeat'
-  //   } else {
-  //     return 'no-repeat'
-  //   }
-  // },
-  /**
 * @description scrollBarProp returns overflow css style value
 * @function scrollBarProp
 * @param controlData propControlData passed as input
@@ -298,9 +278,9 @@ export const controlProperties = {
   * @returns boolean value
   */
   controlsOrientationProp: (controlData: controlData): boolean => {
-    if (controlData.properties.Orientation === 1) {
+    if (controlData.properties.Orientation === 2) {
       return false
-    } else if (controlData.properties.Orientation === -1) {
+    } else if (controlData.properties.Orientation === 0) {
       if (controlData.properties.Height! >= controlData.properties.Width!) {
         return true
       } else {

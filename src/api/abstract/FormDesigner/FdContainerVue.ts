@@ -375,7 +375,7 @@ export default abstract class FdContainerVue extends FdControlVue {
           this.selectedControlArray.push(key)
         }
       }
-      const selectedGroup = []
+      const selectedGroup: string[] = []
       for (const val of this.selectedControlArray) {
         const controlGroupId: string = this.userformData[this.userFormId][val]
           .properties.GroupID!

@@ -87,10 +87,6 @@ export const dropButtonStyle = {
   '3-fmDropButtonStyleReduce': 3
 }
 
-export const style = {
-  '0-fmStyleDropDownCombo': 0,
-  '2-fmStyleDropDownList': 1
-}
 export const listStyle = {
   '0-fmListStylePlain': 0,
   '1-fmListStyleOption': 1

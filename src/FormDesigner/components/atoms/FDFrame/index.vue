@@ -1,5 +1,5 @@
 <template>
-<div :style="outerDivStyle">
+<div :style="outerDivStyle" class="outerDivClass" ref="frame">
   <fieldset
     class="fieldset"
     :style="cssStyleProperty"
@@ -12,7 +12,6 @@
     @contextmenu.stop="showContextMenu($event, userFormId, controlId)"
     @mousedown="frameMouseDown"
     @mouseup="dragSelectorControl($event)"
-    ref="frame"
   >
     <legend :style="legendCssStyleProperty">{{ properties.Caption }}</legend>
     <Container
@@ -49,7 +48,7 @@ import { controlProperties } from '@/FormDesigner/controls-properties'
 })
 export default class FDFrame extends FdContainerVue {
   @Ref('containerRef') readonly containerRef!: Container;
-  @Ref('frame') readonly frame!: FDFrame;
+  @Ref('frame') readonly frame!: HTMLDivElement;
   @Prop({ required: true, type: Boolean }) public readonly isEditMode: boolean;
   mode: boolean = false;
 
@@ -114,9 +113,18 @@ export default class FDFrame extends FdContainerVue {
     const controlProp = this.data.properties
     return {
       backgroundColor: controlProp.BackColor,
-      width: `${controlProp.Width! + 15}px`,
+      width: `${controlProp.Width!}px`,
       height: `${controlProp.Height}px`,
-      overflow: 'hidden'
+      boxShadow: controlProp.SpecialEffect ? this.getSpecialEffectData : 'none',
+      borderLeft: controlProp.BorderStyle
+        ? `0.3px solid ${controlProp.BorderColor}`
+        : '0.3px solid gray',
+      borderRight: controlProp.BorderStyle
+        ? `0.3px solid ${controlProp.BorderColor}`
+        : '0.3px solid gray',
+      borderBottom: controlProp.BorderStyle
+        ? `0.3px solid ${controlProp.BorderColor}`
+        : '0.3px solid gray'
     }
   }
 
@@ -146,9 +154,11 @@ export default class FDFrame extends FdContainerVue {
       display = 'block'
     }
     return {
-      width: 'calc(100% - 3px)',
-      height: 'calc(100% - 3px)',
+      position: 'relative',
+      width: `${controlProp.Width!}px`,
+      height: `${controlProp.Height}px`,
       marginLeft: '2px',
+      padding: '0px',
       outline: 'none',
       cursor: controlProp.MousePointer !== 0 || controlProp.MouseIcon !== ''
         ? `${this.getMouseCursorData} !important`
@@ -168,9 +178,12 @@ export default class FDFrame extends FdContainerVue {
           ? this.tempWeight
           : '',
       fontStretch: font.FontStyle !== '' ? this.tempStretch : '',
-      border: controlProp.BorderStyle
+      borderTop: controlProp.BorderStyle
         ? `1px solid ${controlProp.BorderColor}`
-        : '2px solid gray',
+        : '1px solid gray',
+      borderLeft: 'none',
+      borderRight: 'none',
+      borderBottom: 'none',
       backgroundImage: controlProp.Picture === ''
         ? this.getSampleDotPattern.backgroundImage
         : this.createBackgroundString,
@@ -184,10 +197,11 @@ export default class FDFrame extends FdContainerVue {
         : this.getSampleDotPattern.backgroundPosition,
       overflowX: this.getScrollBarX,
       overflowY: this.getScrollBarY,
-      top: `${controlProp.Top}px`,
-      boxShadow: controlProp.SpecialEffect ? this.getSpecialEffectData : 'none',
       display: display,
-      zoom: `${controlProp.Zoom}%`
+      zoom: `${controlProp.Zoom}%`,
+      whiteSpace: 'nowrap',
+      textOverflow: 'ellipsis',
+      maxWidth: `${controlProp.Width!}px`
     }
   }
   /**
@@ -199,11 +213,15 @@ export default class FDFrame extends FdContainerVue {
   protected get legendCssStyleProperty (): Partial<CSSStyleDeclaration> {
     const controlProp = this.data.properties
     return {
+      position: 'sticky',
+      top: '0px',
       color:
         controlProp.Enabled === true ? controlProp.ForeColor : this.getEnabled,
       background: controlProp.BackColor,
       whiteSpace: 'pre',
-      wordBreak: 'normal'
+      wordBreak: 'normal',
+      overflow: 'hidden',
+      maxWidth: `${controlProp.Width! - 20}px`
     }
   }
 
@@ -252,6 +270,10 @@ export default class FDFrame extends FdContainerVue {
 </script>
 
 <style scoped>
+.outerDivClass {
+  overflow: hidden;
+}
+
 .fieldset {
   box-sizing: border-box;
   margin: 0px;

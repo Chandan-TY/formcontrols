@@ -1,10 +1,11 @@
 <template>
-  <div @click="selectedItem" @mousedown="controlEditMode">
+  <div @mousedown="controlEditMode">
     <div
       class="outerSpinDiv"
       :class="classStyle"
       :style="styleObj"
       :title="properties.ControlTipText"
+      @click="selectedItem"
     >
       <div
         @click="
@@ -217,9 +218,9 @@ export default class FDSpinButton extends Mixins(FdControlVue) {
    */
   @Watch('orientationValues', { deep: true })
   checkOrientation (newVal: IOrientationvalues, oldVal: IOrientationvalues) {
-    if (newVal.orientation === 0) {
+    if (newVal.orientation === 1) {
       this.classStyle = 'spin'
-    } else if (newVal.orientation === 1) {
+    } else if (newVal.orientation === 2) {
       this.classStyle = 'spin-oriented'
     } else {
       this.orientedValue = this.checkOtherOrientations()

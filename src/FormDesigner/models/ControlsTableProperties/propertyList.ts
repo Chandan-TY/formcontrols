@@ -387,7 +387,7 @@ export class PropertyListDefine {
         BackStyle: {
           category: 'ID_CATEGORY_APPEARANCE',
           type: 'array',
-          values: ['1-fmBackStyleOpaque', '0-fmBackStyleTransparent']
+          values: ['0-fmBackStyleTransparent', '1-fmBackStyleOpaque']
         },
         Cancel: {
           category: 'ID_CATEGORY_BEHAVIOR',
@@ -399,7 +399,7 @@ export class PropertyListDefine {
         },
         ControlTipText: {
           category: 'ID_CATEGORY_APPEARANCE',
-          type: 'number'
+          type: 'String'
         },
         Default: {
           category: 'ID_CATEGORY_BEHAVIOR',
@@ -487,7 +487,7 @@ export class PropertyListDefine {
         },
         TabStop: {
           category: 'ID_CATEGORY_MISC',
-          type: 'number'
+          type: 'Boolean'
         },
         Tag: {
           category: 'ID_CATEGORY_MISC',
@@ -539,7 +539,7 @@ export class PropertyListDefine {
         BackStyle: {
           category: 'ID_CATEGORY_APPEARANCE',
           type: 'array',
-          values: ['1-fmBackStyleOpaque', '0-fmBackStyleTransparent']
+          values: ['0-fmBackStyleTransparent', '1-fmBackStyleOpaque']
         },
         Caption: {
           category: 'ID_CATEGORY_APPEARANCE',
@@ -551,7 +551,7 @@ export class PropertyListDefine {
         },
         ControlTipText: {
           category: 'ID_CATEGORY_APPEARANCE',
-          type: 'number'
+          type: 'String'
         },
         Enabled: {
           category: 'ID_CATEGORY_BEHAVIOR',
@@ -647,7 +647,7 @@ export class PropertyListDefine {
         },
         TabStop: {
           category: 'ID_CATEGORY_MISC',
-          type: 'number'
+          type: 'Boolean'
         },
         Tag: {
           category: 'ID_CATEGORY_MISC',
@@ -712,7 +712,7 @@ export class PropertyListDefine {
         BackStyle: {
           category: 'ID_CATEGORY_APPEARANCE',
           type: 'array',
-          values: ['1-fmBackStyleOpaque', '0-fmBackStyleTransparent']
+          values: ['0-fmBackStyleTransparent', '1-fmBackStyleOpaque']
         },
         Caption: {
           category: 'ID_CATEGORY_APPEARANCE',
@@ -724,7 +724,7 @@ export class PropertyListDefine {
         },
         ControlTipText: {
           category: 'ID_CATEGORY_APPEARANCE',
-          type: 'number'
+          type: 'String'
         },
         Enabled: {
           category: 'ID_CATEGORY_BEHAVIOR',
@@ -820,7 +820,7 @@ export class PropertyListDefine {
         },
         TabStop: {
           category: 'ID_CATEGORY_MISC',
-          type: 'number'
+          type: 'Boolean'
         },
         Tag: {
           category: 'ID_CATEGORY_MISC',
@@ -875,7 +875,7 @@ export class PropertyListDefine {
         },
         ControlTipText: {
           category: 'ID_CATEGORY_APPEARANCE',
-          type: 'number'
+          type: 'String'
         },
         Delay: {
           category: 'ID_CATEGORY_SCROLLING',
@@ -961,7 +961,7 @@ export class PropertyListDefine {
         },
         TabStop: {
           category: 'ID_CATEGORY_MISC',
-          type: 'number'
+          type: 'Boolean'
         },
         Tag: {
           category: 'ID_CATEGORY_MISC',
@@ -999,7 +999,7 @@ export class PropertyListDefine {
         },
         ControlTipText: {
           category: 'ID_CATEGORY_APPEARANCE',
-          type: 'number'
+          type: 'String'
         },
         Delay: {
           category: 'ID_CATEGORY_SCROLLING',
@@ -1077,7 +1077,7 @@ export class PropertyListDefine {
         },
         TabStop: {
           category: 'ID_CATEGORY_MISC',
-          type: 'number'
+          type: 'Boolean'
         },
         Tag: {
           category: 'ID_CATEGORY_MISC',
@@ -1111,7 +1111,7 @@ export class PropertyListDefine {
         },
         ControlTipText: {
           category: 'ID_CATEGORY_APPEARANCE',
-          type: 'number'
+          type: 'String'
         },
         Enabled: {
           category: 'ID_CATEGORY_BEHAVIOR',
@@ -1199,7 +1199,7 @@ export class PropertyListDefine {
         },
         TabStop: {
           category: 'ID_CATEGORY_MISC',
-          type: 'number'
+          type: 'Boolean'
         },
         Tag: {
           category: 'ID_CATEGORY_MISC',
@@ -1233,7 +1233,7 @@ export class PropertyListDefine {
         },
         ControlTipText: {
           category: 'ID_CATEGORY_APPEARANCE',
-          type: 'number'
+          type: 'String'
         },
         Enabled: {
           category: 'ID_CATEGORY_BEHAVIOR',
@@ -1296,7 +1296,7 @@ export class PropertyListDefine {
         },
         TabStop: {
           category: 'ID_CATEGORY_MISC',
-          type: 'number'
+          type: 'Boolean'
         },
         Tag: {
           category: 'ID_CATEGORY_MISC',
@@ -1463,7 +1463,7 @@ export class PropertyListDefine {
         BackStyle: {
           category: 'ID_CATEGORY_APPEARANCE',
           type: 'array',
-          values: ['1-fmBackStyleOpaque', '0-fmBackStyleTransparent']
+          values: ['0-fmBackStyleTransparent', '1-fmBackStyleOpaque']
         },
         Caption: {
           category: 'ID_CATEGORY_APPEARANCE',
@@ -1475,7 +1475,7 @@ export class PropertyListDefine {
         },
         ControlTipText: {
           category: 'ID_CATEGORY_APPEARANCE',
-          type: 'number'
+          type: 'String'
         },
         Enabled: {
           category: 'ID_CATEGORY_BEHAVIOR',
@@ -1559,7 +1559,7 @@ export class PropertyListDefine {
         },
         TabStop: {
           category: 'ID_CATEGORY_MISC',
-          type: 'number'
+          type: 'Boolean'
         },
         Tag: {
           category: 'ID_CATEGORY_MISC',

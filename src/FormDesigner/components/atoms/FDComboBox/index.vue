@@ -25,7 +25,7 @@
           :style="cssStyleProperty"
           wrap="off"
           :tabindex="properties.TabIndex"
-          :readonly="getDisableValue || properties.Style === 2"
+          :readonly="getDisableValue || properties.Style === 1"
           :maxlength="properties.MaxLength !==0 ? properties.MaxLength : ''"
           @blur="handleBlur($event, textareaRef, hideSelectionDiv)"
           @click="handleClick($event, textareaRef, hideSelectionDiv)"
@@ -250,7 +250,6 @@ export default class FDComboBox extends Mixins(FdControlVue) {
     textareaRef: HTMLTextAreaElement,
     hideSelectionDiv: HTMLDivElement
   ) {
-    this.open = true
     if (this.properties.EnterFieldBehavior === 1 && event.target instanceof HTMLTextAreaElement) {
       const eventTarget = event.target
       let tempField = this.tempInputValue.slice(

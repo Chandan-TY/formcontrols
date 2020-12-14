@@ -352,7 +352,7 @@ export default class Container extends FDCommonMethod {
           }
         )
       }
-      if (mainSelect) {
+      if (mainSelect && !this.selectedControls[this.userFormId].selected.includes(this.containerId)) {
         count = count + 1
         let frameCondition: boolean = false
         if (this.handler === 'frameDrag') {
@@ -391,7 +391,6 @@ export default class Container extends FDCommonMethod {
             event.stopPropagation()
             document.onmouseup(event)
           } else {
-            debugger
             if (this.selectedContainer !== this.containerId) {
               const mainSelContainer = this.getContainerList(mainSelect)[0]
               if (this.selectedControls[this.userFormId].selected.includes(mainSelect) || this.grouphandler === 'groupdrag') {

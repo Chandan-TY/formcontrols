@@ -56,7 +56,7 @@
 <h4>ControlTipText</h4>
 <span>Control tooltip text, text that appears when the mouse is hovered over the control</span>
 
-<h4>DragBehavior</h4>
+<h4>DragBehavior <span style="color:red;">(3)</span></h4>
 <span>Whether to drag & drop text</span>
 
 <h4>DropButtonStyle</h4>
