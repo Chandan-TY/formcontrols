@@ -39,6 +39,7 @@ import Vue from 'vue'
 import FdContainerVue from '@/api/abstract/FormDesigner/FdContainerVue'
 import Container from '@/FormDesigner/components/organisms/FDContainer/index.vue'
 import { controlProperties } from '@/FormDesigner/controls-properties'
+import { EventBus } from '@/FormDesigner/event-bus'
 @Component({
   name: 'FDFrame',
   components: {
@@ -240,6 +241,7 @@ export default class FDFrame extends FdContainerVue {
   }
 
   frameMouseDown (e: MouseEvent) {
+    EventBus.$emit('isEditMode', this.isEditMode)
     this.selectedItem(e)
     const selContainer = this.selectedControls[this.userFormId].container[0]
     if (selContainer === this.controlId) {

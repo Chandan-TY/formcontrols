@@ -89,12 +89,13 @@ export default class FDTabStrip extends FdControlVue {
   tempTabWidth: number = 0;
   tempWidth: number = 0;
   tempHeight: number = 0;
+  multiRowCount: number = 1;
 
   rightClickSelect (value: number) {
     this.updateDataModel({ propertyName: 'Value', value: value })
   }
+
   contextMenuVisible (e: MouseEvent, selected: number) {
-    console.log('Selected value', selected)
     if (this.isEditMode) {
       if (selected !== -1) {
         this.top = `${e.offsetY}px`
@@ -210,7 +211,7 @@ export default class FDTabStrip extends FdControlVue {
     }
     return {
       ...bottomTopStyle,
-      display: controlProp.Style === 2 ? 'none' : controlProp.TabOrientation === 1 ? 'flex' : 'inline-block',
+      display: controlProp.Style === 2 ? 'none' : 'inline-block',
       alignSelf: controlProp.TabOrientation === 1 ? 'flex-end' : '',
       marginTop: controlProp.TabOrientation === 1 ? `${controlProp.Height! - 35}px` : '0px',
       whiteSpace: controlProp.MultiRow === true ? 'break-spaces' : 'nowrap',
@@ -235,7 +236,7 @@ export default class FDTabStrip extends FdControlVue {
 
     return {
       position: 'absolute',
-      zIndex: '3',
+      zIndex: '30001',
       marginTop:
         controlProp.TabOrientation === 2 || controlProp.TabOrientation === 3
           ? `${controlProp.Height! - 20}px` : controlProp.TabOrientation === 1 ? `${controlProp.Height! - 22}px` : '0px',
@@ -305,9 +306,10 @@ export default class FDTabStrip extends FdControlVue {
           : controlProp.Width! < 30 || controlProp.Height! < 30
             ? 'none'
             : 'block',
-      top: controlProp.TabOrientation === 0 ? controlProp.TabFixedHeight! > 0 ? (controlProp.TabFixedHeight! + 12) + 'px' : controlProp.TabFixedHeight! === 0 ? (controlProp.Font!.FontSize! + 20) + 'px' : '33px' : controlProp.TabOrientation === 1 ? controlProp.TabFixedHeight! > 0 ? '0px' : '0px' : '0px',
+      backgroundColor: 'red',
+      top: controlProp.TabOrientation === 0 ? controlProp.MultiRow ? (this.tempHeight + 12) * this.multiRowCount + 'px' : controlProp.TabFixedHeight! > 0 ? (controlProp.TabFixedHeight! + 10) + 'px' : controlProp.TabFixedHeight! === 0 ? (this.tempHeight + 9) + 'px' : '33px' : controlProp.TabOrientation === 1 ? controlProp.MultiRow ? '-' + (this.tempHeight + 12) * (this.multiRowCount - 1) + 'px' : controlProp.TabFixedHeight! > 0 ? '0px' : '0px' : '0px',
       height: controlProp.TabOrientation === 0 || controlProp.TabOrientation === 1
-        ? controlProp.TabFixedHeight! > 0 ? (controlProp.Height! - controlProp.TabFixedHeight! - 5) + 'px' : controlProp.TabFixedHeight! === 0 ? (controlProp.Height! - controlProp.Font!.FontSize! - 20) + 'px'
+        ? controlProp.TabFixedHeight! > 0 ? (controlProp.Height! - controlProp.TabFixedHeight! - 5) + 'px' : controlProp.TabFixedHeight! === 0 ? (controlProp.Height! - controlProp.Font!.FontSize! - 10) + 'px'
           : controlProp.TabOrientation === 1
             ? `${controlProp.Height! - 21}px`
             : `${controlProp.Height! - 35}px`
@@ -345,7 +347,25 @@ export default class FDTabStrip extends FdControlVue {
   @Watch('properties.Width', { deep: true })
   isScrollUsed (newVal: controlData, oldVal: controlData) {
     this.tempScrollWidth = this.scrolling.offsetWidth!
-    this.scrollCheck()
+    if (this.properties.MultiRow) {
+      const initialLength = this.extraDatas.Tabs!.length!
+      const len = (this.tempWidth + 12) * initialLength
+      if ((len - this.properties.Width!) >= 0) {
+        const a = Math.floor(len / this.properties.Width!) + 1
+        this.multiRowCount = a
+        if (this.properties.Width! <= ((this.tempWidth + 12) * 2)) {
+          this.multiRowCount = a + 2
+        } else if (newVal > oldVal) {
+          this.multiRowCount = this.controls.length!
+          const a = Math.ceil(len / this.properties.Width!)
+          this.multiRowCount = a
+        }
+      } else {
+        this.multiRowCount = 1
+      }
+    } else {
+      this.scrollCheck()
+    }
   }
   mounted () {
     this.tempScrollWidth = this.scrolling.offsetWidth!

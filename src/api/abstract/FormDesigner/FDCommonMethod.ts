@@ -163,4 +163,45 @@ export default class FDCommonMethod extends Vue {
       }
     }
   }
+  get getSelectedControlsDatas () {
+    if (this.selectedControls[this.userFormId].selected.length > 0 && this.selectedControls[this.userFormId].container.length > 0) {
+      if (this.selectedControls[this.userFormId].selected.length === 1 && !this.selectedControls[this.userFormId].selected[0].startsWith('group')) {
+        return this.selectedControls[this.userFormId].selected
+      } else {
+        const filteredSelectedControls = []
+        const controls = this.userformData[this.userFormId][this.selectedControls[this.userFormId].container[0]].controls
+        const selControls = this.selectedControls[this.userFormId].selected
+        for (let i = 0; i < selControls.length; i++) {
+          if (selControls[i].startsWith('group')) {
+            for (let j = 0; j < controls.length; j++) {
+              if (this.userformData[this.userFormId][controls[j]].properties.GroupID === selControls[i]) {
+                filteredSelectedControls.push(controls[j])
+              }
+            }
+          } else {
+            filteredSelectedControls.push(selControls[i])
+          }
+        }
+        return filteredSelectedControls
+      }
+    }
+  }
+  getChildControl (mainSelect: string) {
+    const containerList: string[] = []
+    const findControlChild = (mainSelect: string) => {
+      for (let i in this.userformData[this.userFormId]) {
+        if (i === mainSelect) {
+          const controlData = this.userformData[this.userFormId][i]
+          if (controlData.controls && controlData.controls.length > 0) {
+            for (let j of controlData.controls) {
+              containerList.push(j)
+              findControlChild(j)
+            }
+          }
+        }
+      }
+    }
+    findControlChild(mainSelect)
+    return containerList
+  }
 }

@@ -611,7 +611,7 @@ export class ControlPropertyData {
         },
         controls: [],
         extraDatas: {
-          ControlSourceValue: '',
+          ControlSourceValue: '1',
           zIndex: -1
         },
         type: 'SpinButton'

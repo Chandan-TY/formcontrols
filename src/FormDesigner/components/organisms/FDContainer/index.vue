@@ -84,7 +84,6 @@ import FDCommonMethod from '@/api/abstract/FormDesigner/FDCommonMethod'
   }
 })
 export default class Container extends FDCommonMethod {
-  [x: string]: any
   $el!: HTMLDivElement;
   currentSelectedGroup: string = '';
 
@@ -279,31 +278,6 @@ export default class Container extends FDCommonMethod {
       this.updateControlProp(presenetControl[0], 'GroupID', '')
     }
   }
-
-  /**
-   * @description To get childControls of selcted Container
-   * @function getChildControl
-   * @param mainSelect  - selected Container
-   */
-  getChildControl (mainSelect: string) {
-    const containerList: string[] = []
-    const findControlChild = (mainSelect: string) => {
-      for (let i in this.userformData[this.userFormId]) {
-        if (i === mainSelect) {
-          const controlData = this.userformData[this.userFormId][i]
-          if (controlData.controls && controlData.controls.length > 0) {
-            for (let j of controlData.controls) {
-              containerList.push(j)
-              findControlChild(j)
-            }
-          }
-        }
-      }
-    }
-    findControlChild(mainSelect)
-    return containerList
-  }
-
   /**
    * @description to drag and drop the control and group into respective container
    * @function onMouseUp
@@ -312,115 +286,123 @@ export default class Container extends FDCommonMethod {
    */
   onMouseUp (event: MouseEvent) {
     if (document.onmousemove && document.onmouseup && (this.handler === 'drag' || this.handler === 'frameDrag' || this.grouphandler === 'groupdrag')) {
-      let moveValueX: number = 0
-      let moveValueY: number = 0
-      let mainSelect: string = ''
-      let parentConatiner = ''
-      let count = 0
-      this.selectedGroup = this.selectedControls[this.userFormId].selected
-      if (this.grouphandler === 'groupdrag') {
-        EventBus.$emit(
-          'getGroupMoveValue',
-          (offsetX: number, offsetY: number, id: string) => {
-            moveValueX = offsetX
-            moveValueY = offsetY
-          }
-        )
-        if (this.selectedContainer === this.containerId) {
-          EventBus.$emit('getClientValue', event)
-          mainSelect = this.selectedSelect[0]
-        } else {
-          mainSelect = this.selectedSelect[0]
+      const userData = this.userformData[this.userFormId]
+      const containerType = userData[this.containerId].type === 'Page' && userData[this.getContainerList(this.containerId)[0]].properties.Value === -1
+      if (!containerType) {
+        let moveValueX: number = 0
+        let moveValueY: number = 0
+        let mainSelect: string = ''
+        let parentConatiner = ''
+        let count = 0
+        let tempEvent = {}
+        this.selectedGroup = this.selectedControls[this.userFormId].selected
+        if (this.grouphandler === 'groupdrag') {
+          EventBus.$emit(
+            'getGroupMoveValue',
+            (offsetX: number, offsetY: number, id: string, tempEventObj: MouseEvent) => {
+              console.log(tempEventObj)
+              moveValueX = offsetX
+              moveValueY = offsetY
+              tempEvent = Object.keys(tempEventObj).length === 0 ? tempEvent : tempEventObj
+            }
+          )
+          mainSelect = this.getSelectedControlsDatas![0]
+        } else if (this.handler === 'drag') {
+          EventBus.$emit(
+            'getMoveValue',
+            (offsetX: number, offsetY: number, id: string) => {
+              moveValueX = offsetX
+              moveValueY = offsetY
+              mainSelect = id
+            }
+          )
+        } else if (this.handler === 'frameDrag') {
+          EventBus.$emit(
+            'getMoveValue',
+            (offsetX: number, offsetY: number, id: string, parentControl: string) => {
+              moveValueX = offsetX
+              moveValueY = offsetY
+              mainSelect = id
+              parentConatiner = parentControl
+            }
+          )
         }
-      } else if (this.handler === 'drag') {
-        EventBus.$emit(
-          'getMoveValue',
-          (offsetX: number, offsetY: number, id: string) => {
-            moveValueX = offsetX
-            moveValueY = offsetY
-            mainSelect = id
-          }
-        )
-      } else if (this.handler === 'frameDrag') {
-        EventBus.$emit(
-          'getMoveValue',
-          (offsetX: number, offsetY: number, id: string, parentControl: string) => {
-            moveValueX = offsetX
-            moveValueY = offsetY
-            mainSelect = id
-            parentConatiner = parentControl
-          }
-        )
-      }
-      if (mainSelect && !this.selectedControls[this.userFormId].selected.includes(this.containerId)) {
-        count = count + 1
-        let frameCondition: boolean = false
-        if (this.handler === 'frameDrag') {
-          const isChild = this.getChildControl(mainSelect).includes(this.containerId) || this.containerId === mainSelect
-          frameCondition = (isChild === false && parentConatiner === this.containerId) ||
+        if (mainSelect && !this.getSelectedControlsDatas!.includes(this.containerId)) {
+          count = count + 1
+          let frameCondition: boolean = false
+          if (this.handler === 'frameDrag') {
+            const isChild = this.getChildControl(mainSelect).includes(this.containerId) || this.containerId === mainSelect
+            frameCondition = (isChild === false && parentConatiner === this.containerId) ||
           (isChild === false && this.selectedControls[this.userFormId].selected.includes(mainSelect)) ||
           (isChild === false && count === 1)
-        }
-        if ((this.handler === 'frameDrag' && frameCondition) || this.handler === 'drag' || this.grouphandler === 'groupdrag') {
-          const currentControlsData = this.userformData[this.userFormId]
-          const mainSelectData = currentControlsData[mainSelect]
-          const mainSelectX = mainSelectData.properties.Left
-          const mainSelectY = mainSelectData.properties.Top
-          const containerX = event.clientX - this.$el.getClientRects()[0].x
-          const containerY = event.clientY - this.$el.getClientRects()[0].y
-          const mainSelectGroup: string = mainSelectData.properties.GroupID!
-          const selectedSelect = this.handler === 'frameDrag' ? (this.selectedSelect.includes(mainSelect) ? this.selectedSelect : [mainSelect]) : this.selectedSelect
-          if (typeof mainSelectX === 'number' && typeof mainSelectY === 'number') {
-            selectedSelect.forEach((id) => {
-              const targetData = currentControlsData[id].properties
-              const targetLeft = targetData.Left
-              const targetTop = targetData.Top
-              if (typeof targetTop === 'number' && typeof targetLeft === 'number') {
-                this.updateControlProp(id, 'Left', containerX + targetLeft - mainSelectX - moveValueX)
-                this.updateControlProp(id, 'Top', containerY + targetTop - mainSelectY - moveValueY)
-                if (this.handler === 'drag') {
-                  if (mainSelectGroup !== '' && this.selectedContainer !== this.containerId) {
-                    this.updateControlProp(id, 'GroupID', '')
-                    this.updateGroupControl(mainSelectGroup)
-                  }
-                }
-              }
-            })
           }
-          if (this.handler === 'frameDrag' && this.userformData[this.userFormId][this.containerId].controls.includes(mainSelect)) {
-            event.stopPropagation()
-            document.onmouseup(event)
-          } else {
-            if (this.selectedContainer !== this.containerId) {
-              const mainSelContainer = this.getContainerList(mainSelect)[0]
-              if (this.selectedControls[this.userFormId].selected.includes(mainSelect) || this.grouphandler === 'groupdrag') {
-                this.removeChildControl(this.selectedContainer, this.fromContainerControls)
-                this.addChildControl(selectedSelect)
-              } else {
-                const controls = this.userformData[this.userFormId][mainSelContainer].controls
-                const removeControl = controls.filter(e => e !== mainSelect)
-                this.removeChildControl(mainSelContainer, removeControl)
-                this.addChildControl([mainSelect])
-              }
-              if (this.grouphandler === 'groupdrag') {
-                for (let k = 0; k < this.selectedGroup.length; k++) {
-                  if (this.selectedGroup[k].startsWith('group')) {
-                    this.createGroup(this.selectedGroup[k])
+          if ((this.handler === 'frameDrag' && frameCondition) || this.handler === 'drag' || this.grouphandler === 'groupdrag') {
+            const currentControlsData = this.userformData[this.userFormId]
+            const mainSelectData = currentControlsData[mainSelect]
+            const mainSelectX = mainSelectData.properties.Left
+            const mainSelectY = mainSelectData.properties.Top
+            const containerX = event.clientX - this.$el.getClientRects()[0].x
+            const containerY = event.clientY - this.$el.getClientRects()[0].y
+            const mainSelectGroup: string = mainSelectData.properties.GroupID!
+            const selectedSelect = this.handler === 'frameDrag' ? (this.selectedSelect.includes(mainSelect) ? this.selectedSelect : [mainSelect]) : this.selectedSelect
+            if (typeof mainSelectX === 'number' && typeof mainSelectY === 'number') {
+              selectedSelect.forEach((id) => {
+                const targetData = currentControlsData[id].properties
+                const targetLeft = targetData.Left
+                const targetTop = targetData.Top
+                if (typeof targetTop === 'number' && typeof targetLeft === 'number') {
+                  this.updateControlProp(id, 'Left', containerX + targetLeft - mainSelectX - moveValueX)
+                  this.updateControlProp(id, 'Top', containerY + targetTop - mainSelectY - moveValueY)
+                  if (this.handler === 'drag') {
+                    if (mainSelectGroup !== '' && this.selectedContainer !== this.containerId) {
+                      this.updateControlProp(id, 'GroupID', '')
+                      this.updateGroupControl(mainSelectGroup)
+                    }
                   }
                 }
-              }
-
-              if (this.grouphandler === 'groupdrag') {
-                const selected = this.selectedControls[this.userFormId].selected
-                this.updatedSelect(this.getContainerList(selected[0]), selected)
-              } else {
-                this.updatedSelect(this.getContainerList(this.selectedSelect[0]), this.selectedControls[this.userFormId].selected)
-              }
+              })
             }
-            event.stopPropagation()
-            document.onmouseup(event)
+            if (this.handler === 'frameDrag' && this.userformData[this.userFormId][this.containerId].controls.includes(mainSelect)) {
+              event.stopPropagation()
+              document.onmouseup(event)
+            } else {
+              if (this.selectedContainer !== this.containerId) {
+                const mainSelContainer = this.getContainerList(mainSelect)[0]
+                if (this.selectedControls[this.userFormId].selected.includes(mainSelect) || this.grouphandler === 'groupdrag') {
+                  this.removeChildControl(this.selectedContainer, this.fromContainerControls)
+                  this.addChildControl(selectedSelect)
+                } else {
+                  const controls = this.userformData[this.userFormId][mainSelContainer].controls
+                  const removeControl = controls.filter(e => e !== mainSelect)
+                  this.removeChildControl(mainSelContainer, removeControl)
+                  this.addChildControl([mainSelect])
+                }
+                if (this.grouphandler === 'groupdrag') {
+                  for (let k = 0; k < this.selectedGroup.length; k++) {
+                    if (this.selectedGroup[k].startsWith('group')) {
+                      this.createGroup(this.selectedGroup[k])
+                    }
+                  }
+                }
+
+                if (this.grouphandler === 'groupdrag') {
+                  if (this.grouphandler === 'groupdrag' && this.selectedContainer !== this.containerId) {
+                    EventBus.$emit('getClientValue', 'different', containerX, containerY, event, this.containerId, tempEvent)
+                  }
+                  const selected = this.selectedControls[this.userFormId].selected
+                  this.updatedSelect(this.getContainerList(selected[0]), selected)
+                } else {
+                  this.updatedSelect(this.getContainerList(this.selectedSelect[0]), this.selectedControls[this.userFormId].selected)
+                }
+              }
+              event.stopPropagation()
+              document.onmouseup(event)
+            }
           }
         }
+      } else {
+        event.stopPropagation()
+        document.onmouseup(event)
       }
     }
   }

@@ -53,13 +53,15 @@
       </div>
       <div
         class="selected"
-        @click.stop="enabledCheck($event)"
+        @click="enabledCheck($event)"
         :style="selectedStyleObj"
       ></div>
       <div class="items" :class="{ selectHide: !open }" :style="itemsStyleObj">
-        <div class="listStyle" :title="properties.ControlTipText" :style="listStyleObj">
+        <div class="listStyle" :title="properties.ControlTipText" :style="listStyleObj" @mousedown="scrollingOnListItems">
           <table :style="tableStyleObj" class="table-style" @click="tableClick" ref="comboRef" tabindex="1">
-            <th v-if="properties.ColumnHeads === true" class="thClass" :style="colHeadsStyle">
+            <thead class="tHeadStyle" v-if="properties.ColumnHeads === true">
+              <!-- <tr> -->
+            <th class="thClass" :style="colHeadsStyle">
                 <template
                   :style="tdStyleObj"
                   v-if="properties.ListStyle === 1"
@@ -76,11 +78,13 @@
                     {{ a }}
                   </th>
                 </template>
+                <hr class="hrStyle">
             </th>
-            <th v-else></th>
+            <!-- </tr> -->
+            </thead>
+            <thead v-else></thead>
             <tbody
-              ref="style"
-              class="table-body"
+            class="tBodyStyle"
               :style="tableBodyObj"
               @click="open = false"
             >
@@ -135,7 +139,7 @@ import {
 } from 'vue-property-decorator'
 import FdControlVue from '@/api/abstract/FormDesigner/FdControlVue'
 import { Mutation, Action, Getter } from 'vuex-class'
-
+// import '../../../../assets/sort-down.png'
 @Component({
   name: 'FDComboBox'
 })
@@ -155,6 +159,7 @@ export default class FDComboBox extends Mixins(FdControlVue) {
   selectionEnd: number = 0;
   tempInputValue: string = '';
   tempWidth: string = '0px';
+  isScrolling: boolean = false;
   get getDisableValue () {
     if (this.isRunMode || this.isEditMode) {
       return this.properties.Enabled === false || this.properties.Locked
@@ -163,12 +168,17 @@ export default class FDComboBox extends Mixins(FdControlVue) {
     }
   }
 
-  toBlur () {
-    this.open = false
+  updateColumnValue (index: number) {
+    console.log('this.updateColumnWidths(index)', this.updateColumnWidths(index))
+    return this.updateColumnWidths(index)
   }
 
   toFocus () {
-    this.isVisible = true
+    if (this.isEditMode) {
+      this.isVisible = true
+    } else {
+      this.isVisible = false
+    }
   }
   tableClick (e: Event) {
     this.tempListBoxComboBoxEvent = e
@@ -176,13 +186,13 @@ export default class FDComboBox extends Mixins(FdControlVue) {
 
   handleTextInput (e: Event) {
     if (e.target instanceof HTMLTextAreaElement) {
-      debugger
       this.open = true
       const tempEvent = e.target
       this.eTargetValue = e.target.value
       var code = this.eTargetValue.toUpperCase().charCodeAt(0)
       this.comboRef.children[1].children[0].dispatchEvent(new MouseEvent('mousedown'))
       this.comboRef.children[1].children[0].dispatchEvent(new KeyboardEvent('keydown', { key: e.target.value, keyCode: code }))
+      this.selectionData[0] = this.eTargetValue
       if (this.properties.MatchEntry !== 0) {
         this.textareaRef.focus()
       }
@@ -228,6 +238,7 @@ export default class FDComboBox extends Mixins(FdControlVue) {
   protected get tableBodyObj (): Partial<CSSStyleDeclaration> {
     const controlProp = this.properties
     return {
+      // display: 'inline',
       width: `${controlProp.Width}px !important`
     }
   }
@@ -238,6 +249,10 @@ export default class FDComboBox extends Mixins(FdControlVue) {
       backgroundColor: controlProp.BackColor,
       width: '100%'
     }
+  }
+
+  scrollingOnListItems (e : Event) {
+    this.isScrolling = true
   }
   /**
    * @description  show selection when TextBox loses focus
@@ -251,6 +266,17 @@ export default class FDComboBox extends Mixins(FdControlVue) {
     textareaRef: HTMLTextAreaElement,
     hideSelectionDiv: HTMLDivElement
   ) {
+    // this.open = false
+    if (this.isScrolling) {
+      this.open = true
+      this.textareaRef.focus()
+    } else {
+      this.open = false
+    }
+    this.isScrolling = false
+    if (this.properties.ShowDropButtonWhen === 1) {
+      this.isVisible = false
+    }
     if (this.properties.EnterFieldBehavior === 1 && event.target instanceof HTMLTextAreaElement) {
       const eventTarget = event.target
       let tempField = this.tempInputValue.slice(
@@ -263,8 +289,8 @@ export default class FDComboBox extends Mixins(FdControlVue) {
       const eventTarget = event.target
 
       hideSelectionDiv.style.display = 'block'
-      hideSelectionDiv.style.height = this.properties.Height! + 2 + 'px'
-      hideSelectionDiv.style.width = this.properties.Width! + 2 + 'px'
+      hideSelectionDiv.style.height = this.properties.Height! + 'px'
+      hideSelectionDiv.style.width = this.properties.Width! + 'px'
       textareaRef.style.display = 'none'
       let textarea = eventTarget.value
       let firstPart =
@@ -382,7 +408,7 @@ export default class FDComboBox extends Mixins(FdControlVue) {
         })
         tempLabel.innerText = ''
         tempLabel.style.display = 'none'
-        this.selectionData[0] = this.tempInputValue
+        this.selectionData[0] = this.eTargetValue
       })
     } else {
       return undefined
@@ -428,11 +454,11 @@ export default class FDComboBox extends Mixins(FdControlVue) {
       fontWeight: font.FontBold ? 'bold' : (font.FontStyle !== '') ? this.tempWeight : '',
       fontStretch: (font.FontStyle !== '') ? this.tempStretch : '',
       width:
-        controlProp.ColumnWidths === ''
-          ? `${controlProp.Width}px`
-          : `${controlProp.Width}px` +
-            parseInt(controlProp.ColumnWidths!) +
-            'px',
+      controlProp.ColumnWidths === ''
+        ? `${controlProp.Width}px`
+        : `${controlProp.Width}px` +
+          parseInt(controlProp.ColumnWidths!) +
+          'px',
       outline: 'none'
     }
   }
@@ -451,8 +477,7 @@ export default class FDComboBox extends Mixins(FdControlVue) {
       }
     return {
       left: `${controlProp.Left}px`,
-      // width: controlProp.AutoSize ? `${controlProp.Width}px` : `${controlProp.Width! - 20}px`,
-      width: controlProp.ShowDropButtonWhen === 0 ? `${controlProp.Width! - 10}px` : controlProp.SelectionMargin ? `${controlProp.Width! - 30}px` : `${controlProp.Width! - 25}px`,
+      width: controlProp.ShowDropButtonWhen === 0 ? `${controlProp.Width! - 4}px` : controlProp.ShowDropButtonWhen === 1 && this.isVisible === false ? `${controlProp.Width! - 4}px` : controlProp.SelectionMargin ? `${controlProp.Width! - 30}px` : `${controlProp.Width! - 25}px`,
       height: `${controlProp.Height! - 5}px`,
       top: `${controlProp.Top}px`,
       fontFamily: (font.FontStyle! !== '') ? this.setFontStyle : font.FontName!,
@@ -495,9 +520,9 @@ export default class FDComboBox extends Mixins(FdControlVue) {
     return {
       ...styleObject,
       display: 'none',
-      paddingTop: '2px',
-      paddingLeft: '2px',
-      whiteSpace: 'break-spaces'
+      whiteSpace: 'break-spaces',
+      width: `${this.properties.Width! - 10}px`,
+      height: `${this.properties.Height!}px`
     }
   }
 
@@ -545,7 +570,7 @@ export default class FDComboBox extends Mixins(FdControlVue) {
 
   @Watch('properties.SelectionMargin', { deep: true })
   checkSelectionMargin (newVal: boolean, oldVal: boolean) {
-    this.selectionData[0] = this.tempInputValue
+    this.selectionData[0] = this.eTargetValue
   }
   mounted () {
     const initialRowSourceData = this.extraDatas.RowSourceData!
@@ -562,23 +587,23 @@ export default class FDComboBox extends Mixins(FdControlVue) {
 
   expandWidth () {
     if (this.properties.ShowDropButtonWhen === 0) {
-      return 'none'
+      return 'hidden'
     } else if (this.properties.ShowDropButtonWhen === 1) {
       if (this.isVisible) {
-        return 'block'
+        return 'visible'
       } else {
-        return 'none'
+        return 'hidden'
       }
     }
   }
 
   changeDropButtonStyle () {
     if (this.properties.DropButtonStyle === 1) {
-      return `url('https://img.icons8.com/android/24/000000/sort-down.png')`
+      return '../../../../assets/sort-down.png'
     } else if (this.properties.DropButtonStyle === 2) {
-      return `url('https://img.icons8.com/ios-glyphs/30/000000/ellipsis.png')`
+      return '../../../../assets/ellipsis.png'
     } else if (this.properties.DropButtonStyle === 3) {
-      return `url('https://img.icons8.com/android/24/000000/minus.png')`
+      return '../../../../assets/minus.png'
     }
   }
 
@@ -642,8 +667,7 @@ export default class FDComboBox extends Mixins(FdControlVue) {
   protected get selectedStyleObj (): Partial<CSSStyleDeclaration> {
     const controlProp = this.properties
     return {
-      display:
-        controlProp.ShowDropButtonWhen === 2 ? 'block' : this.expandWidth(),
+      visibility: controlProp.ShowDropButtonWhen === 2 ? 'visible' : this.expandWidth(),
       backgroundImage:
         controlProp.DropButtonStyle === 0
           ? 'none'
@@ -661,6 +685,7 @@ export default class FDComboBox extends Mixins(FdControlVue) {
       if (this.properties.Enabled) {
         if (!this.properties.Locked) {
           this.open = !this.open
+          this.textareaRef.focus()
         }
       } else {
         this.open = false
@@ -850,4 +875,13 @@ export default class FDComboBox extends Mixins(FdControlVue) {
 .inputClass {
   margin: 0;
 }
+.hrStyle {
+  margin: 0px;
+}
+/* .tHeadStyle {
+  display: block;
+}
+.tBodyStyle {
+  display: block;
+} */
 </style>

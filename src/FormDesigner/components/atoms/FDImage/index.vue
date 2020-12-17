@@ -32,19 +32,36 @@ export default class FDImage extends Mixins(FdControlVue) {
    * @param oldVal previous AutoSize value
    * @param newVal  new/changed AutoSize value
    */
-  @Watch('properties.AutoSize', { deep: true })
+  @Watch('properties.AutoSize')
   updateAutoSize (newVal: boolean, oldVal: boolean) {
-    if (newVal && this.properties.Picture) {
+    this.setHeightWidth(newVal)
+  }
+
+  @Watch('properties.Picture')
+  pictureChanges (newVal: string, oldVal: string) {
+    this.setHeightWidth(this.properties.AutoSize!)
+  }
+  /**
+   * @description When AutoSize is true update width and height property
+   * @function setHeightWidth
+   * @param isAutoSize AutoSize property value
+   *
+   */
+  setHeightWidth (isAutoSize: boolean) {
+    const that = this
+    if (isAutoSize && this.properties.Picture) {
       const img = new Image()
+      img.onload = function () {
+        that.updateDataModel({
+          propertyName: 'Height',
+          value: img.height
+        })
+        that.updateDataModel({
+          propertyName: 'Width',
+          value: img.width
+        })
+      }
       img.src = this.properties.Picture
-      this.updateDataModel({
-        propertyName: 'Height',
-        value: img.height
-      })
-      this.updateDataModel({
-        propertyName: 'Width',
-        value: img.width
-      })
     } else {
       return undefined
     }

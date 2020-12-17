@@ -62,11 +62,15 @@ export default class GroupControl extends FDCommonMethod {
   groupName: string = '';
   count: number = 0;
   currentMouseDownEvent: CustomMouseEvent | null = null;
+  control: string = ''
+  container: string = ''
   createGroup (groupName: string) {
     this.groupStyle(groupName)
   }
+  value = 'different'
   isMainSelect = false;
   isMove: boolean = false
+  tempEvent = {}
 
   created () {
     EventBus.$on('getGroupMoveValue', this.getGroupMoveValue)
@@ -81,11 +85,10 @@ export default class GroupControl extends FDCommonMethod {
     EventBus.$off('startGroupMoveControl', this.startGroupMoveControl)
     EventBus.$off('moveGroupControl', this.moveGroupControl)
     EventBus.$off('endGroupMoveControl', this.endGroupMoveControl)
-    // EventBus.$off('getClientValue', this.getClientValue)
+    EventBus.$off('getClientValue', this.getClientValue)
     EventBus.$on('updasteGroupSize', this.updasteGroupSize)
   }
   updasteGroupSize (propName: keyof controlProperties, propertyValue: string, groupIndex: number) {
-    debugger
     if (this.selectedControls[this.userFormId].container[0] === this.containerId) {
       this.groupStyle(this.divStyleArray[groupIndex].groupName!)
       this.updatedValue(groupIndex, propName, parseInt(propertyValue))
@@ -118,17 +121,24 @@ export default class GroupControl extends FDCommonMethod {
       }
     }
   }
-  getClientValue (event: MouseEvent) {
-    this.elementMouseDrag(event)
+  getClientValue (value: string, containerX: number, containerY: number, event: MouseEvent, container: string, previousEvent: MouseEvent) {
+    this.value = value
+    this.container = container
+    if (container === this.containerId) {
+      this.positions.clientX = previousEvent.clientX
+      this.positions.clientY = previousEvent.clientY
+      this.positions.offsetX = previousEvent.offsetX
+      this.positions.offsetY = previousEvent.offsetY
+      this.elementMouseDrag(event, containerX, containerY, previousEvent)
+    }
   }
   getGroupMoveValue (callBack: Function) {
-    if (this.isMainSelect) {
-      callBack(
-        this.positions.offsetX,
-        this.positions.offsetY,
-        this.selectedControls[this.userFormId].selected[0]
-      )
-    }
+    callBack(
+      this.positions.offsetX,
+      this.positions.offsetY,
+      this.control,
+      this.tempEvent
+    )
   }
   endGroupMoveControl () {
     // if (this.getIsMoveTarget) {
@@ -299,6 +309,7 @@ export default class GroupControl extends FDCommonMethod {
   }
 
   handleMouseDown (event: CustomMouseEvent, handler: string) {
+    this.tempEvent = event
     EventBus.$emit('groupDrag', 'NotDrag')
     this.isMove = false
     this.deActGroupControl()
@@ -317,81 +328,104 @@ export default class GroupControl extends FDCommonMethod {
         EventBus.$emit('moveGroupControl', event)
       }
     }
-    document.onmouseup = () => {
-      this.closeDragElement(handler)
+    document.onmouseup = (event) => {
+      this.closeDragElement(event, handler)
     }
   }
-  elementMouseDrag (event: MouseEvent): void {
+  elementMouseDrag (event: MouseEvent, containerX: number, containerY: number, previousEvent: MouseEvent): void {
     event.preventDefault()
-    this.positions.movementX = this.positions.clientX - event.clientX
-    this.positions.movementY = this.positions.clientY - event.clientY
-    const scale: number = 1
-    const grid: Array<number> = [10, 10]
-    const x: number =
+    if (this.container === this.containerId) {
+      for (const i of this.selectedControls[this.userFormId].selected) {
+        if (i.startsWith('group')) {
+          const index = this.divStyleArray.findIndex(val => val.groupName === i)
+          this.divStyleArray[index].display = 'block'
+          this.groupStyle(this.divStyleArray[index].groupName!)
+        }
+      }
+      this.resizeDiv = 'drag'
+      let targetLeft = -1
+      let targetTop = -1
+      const main = this.selectedControls[this.userFormId].selected[0]
+      const isGroup = main.startsWith('group') ? this.divStyleArray.findIndex(val => val.groupName === main) : -1
+      if (isGroup === -1) {
+        const targetData = this.userformData[this.userFormId][main].properties
+        targetLeft = targetData.Left!
+        targetTop = targetData.Top!
+      } else {
+        const targetData = this.divStyleArray[isGroup]
+        targetLeft = parseInt(targetData.left!)
+        targetTop = parseInt(targetData.top!)
+      }
+      this.positions.movementX = (targetLeft) - (containerX - (this.positions.offsetX!))
+      this.positions.movementY = (targetTop) - (containerY - (this.positions.offsetY!))
+      const scale: number = 1
+      const grid: Array<number> = [10, 10]
+      const x: number =
       Math.round(this.positions.movementX / scale / grid[0]) * grid[0]
-    const y: number =
+      const y: number =
       Math.round(this.positions.movementY / scale / grid[1]) * grid[1]
 
-    if (this.currentMouseDownEvent && (x !== 0 || y !== 0)) {
-      this.currentMouseDownEvent.customCallBack &&
+      if (this.currentMouseDownEvent && (x !== 0 || y !== 0)) {
+        this.currentMouseDownEvent.customCallBack &&
         this.currentMouseDownEvent.customCallBack()
-    }
-    const diffGridX: number = x - this.positions.movementX
-    const diffGridY: number = y - this.positions.movementY
+      }
+      let dragResizeControl: IGroupStyle = {}
+      let dragResizeControl1: controlProperties = { ID: '' }
 
-    this.positions.clientX = event.clientX - diffGridX
-    this.positions.clientY = event.clientY - diffGridY
+      for (let i = 0; i < this.divStyleArray.length; i++) {
+        this.groupName = this.divStyleArray[i].groupName!
+        dragResizeControl = this.divStyleArray[i]
+        if (dragResizeControl.display === 'block') {
+          let top: number = -1
+          let left: number = -1
+          let decHeight: number = -1
+          top = parseInt(dragResizeControl.top!) - y
+          left = parseInt(dragResizeControl.left!) - x
 
-    let dragResizeControl: IGroupStyle = {}
-    let dragResizeControl1: controlProperties = { ID: '' }
-
-    for (let i = 0; i < this.divStyleArray.length; i++) {
-      this.groupName = this.divStyleArray[i].groupName!
-      dragResizeControl = this.divStyleArray[i]
-      if (dragResizeControl.display === 'block') {
-        if (this.resizeDiv === 'drag') {
-          dragResizeControl.top = `${this.positions.offsetY}px`
-          dragResizeControl.left = `${this.positions.offsetX}px`
-        }
-        for (const j in this.userformData[this.userFormId][this.containerId]
-          .controls) {
-          const index = this.userformData[this.userFormId][this.containerId]
-            .controls[j]
-          const controlProp = this.userformData[this.userFormId][index]
-            .properties
-          if (
-            controlProp.GroupID === this.divStyleArray[i].groupName &&
+          if (this.resizeDiv === 'drag') {
+            dragResizeControl.top = `${top}px`
+            dragResizeControl.left = `${left}px`
+          }
+          for (const j in this.userformData[this.userFormId][this.containerId]
+            .controls) {
+            const index = this.userformData[this.userFormId][this.containerId]
+              .controls[j]
+            const controlProp = this.userformData[this.userFormId][index]
+              .properties
+            if (
+              controlProp.GroupID === this.divStyleArray[i].groupName &&
             this.divStyleArray[i].display === 'block'
-          ) {
-            dragResizeControl1 = controlProp
-            if (this.resizeDiv === 'drag') {
-              const top = dragResizeControl1.Top! - y
-              const left = dragResizeControl1.Left! - x
-              this.updateControlAction('Top', top, index)
-              this.updateControlAction('Left', left, index)
+            ) {
+              dragResizeControl1 = controlProp
+              if (this.resizeDiv === 'drag') {
+                top = dragResizeControl1.Top! - y
+                left = dragResizeControl1.Left! - x
+                this.updateControlAction('Top', top, index)
+                this.updateControlAction('Left', left, index)
+              }
             }
           }
         }
       }
-    }
-    for (let k of this.selectedControls[this.userFormId].selected) {
-      if (!k.startsWith('ID_USERFORM') && !k.startsWith('group')) {
-        let dragResizeReffer: IdragResizeRefStyle = {}
-        const control: controlProperties = this.userformData[this.userFormId][k]
-          .properties
-        for (const key in this.controlRef.resizeControl) {
-          if (
-            this.controlRef.resizeControl[key].$refs['draRef'.concat(control.ID)] !== undefined
-          ) {
-            dragResizeReffer = this.controlRef.resizeControl[key].$refs['draRef'.concat(control.ID)]
+      for (let k of this.selectedControls[this.userFormId].selected) {
+        if (!k.startsWith('ID_USERFORM') && !k.startsWith('group')) {
+          let dragResizeReffer: IdragResizeRefStyle = {}
+          const control: controlProperties = this.userformData[this.userFormId][k]
+            .properties
+          for (const key in this.controlRef.resizeControl) {
+            if (
+              this.controlRef.resizeControl[key].$refs['draRef'.concat(control.ID)] !== undefined
+            ) {
+              dragResizeReffer = this.controlRef.resizeControl[key].$refs['draRef'.concat(control.ID)]
+            }
           }
-        }
-        const top = dragResizeReffer.offsetTop! - y
-        const left = dragResizeReffer.offsetLeft! - x
+          const top = control.Top! - y
+          const left = control.Left! - x
 
-        if (this.resizeDiv === 'drag') {
-          this.updateControlAction('Top', top, k)
-          this.updateControlAction('Left', left, k)
+          if (this.resizeDiv === 'drag') {
+            this.updateControlAction('Top', top, k)
+            this.updateControlAction('Left', left, k)
+          }
         }
       }
     }
@@ -578,7 +612,12 @@ export default class GroupControl extends FDCommonMethod {
     }
   }
 
-  closeDragElement (handler: string): void {
+  closeDragElement (event:MouseEvent, handler: string): void {
+    if (this.value === 'same') {
+      this.elementDrag(event)
+    } else {
+      this.value = 'different'
+    }
     EventBus.$emit('groupDrag', 'NotDrag')
     EventBus.$emit('endGroupMoveControl')
     document.onmouseup = null
@@ -629,11 +668,12 @@ export default class GroupControl extends FDCommonMethod {
       }
       const selected = this.currentSelectedGroup
       const selControl = this.selectedControls[this.userFormId].selected
-      if (selControl.length > 1) {
-        for (const val of selControl) {
-          if (val.startsWith('group') && selControl.includes(val)) {
+      if (selControl.length >= 1) {
+        for (const val of this.getSelectedControlsDatas!) {
+          const groupId = this.userformData[this.userFormId][val].properties.GroupID!
+          if (groupId) {
             const index = this.divStyleArray.findIndex(
-              (p) => p.groupName === val
+              (p) => p.groupName === groupId
             )
             this.divStyleArray[index].display = 'block'
           }

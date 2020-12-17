@@ -248,6 +248,12 @@ export default class ContextMenu extends FDCommonMethod {
         propertyName: 'Tabs',
         value: tabControlData
       })
+      this.updateControl({
+        userFormId: this.userFormId,
+        controlId: this.controlId,
+        propertyName: 'Value',
+        value: prevTabId - 1
+      })
     } else if (type === 'MultiPage') {
       const parentId = this.controlId.split('MultiPage').pop()
       const controlName = `Page${parentId}_`
@@ -277,6 +283,12 @@ export default class ContextMenu extends FDCommonMethod {
         controlId: this.controlId,
         addId: item.properties.ID,
         item: item
+      })
+      this.updateControl({
+        userFormId: this.userFormId,
+        controlId: this.controlId,
+        propertyName: 'Value',
+        value: item.properties.Index
       })
       this.selectControl({
         userFormId: this.userFormId,
@@ -342,17 +354,61 @@ export default class ContextMenu extends FDCommonMethod {
           propertyName: 'Tabs',
           value: tabControlData
         })
+        this.updateTabStripValue(this.selectedTab! - 1)
       }
     } else if (type === 'MultiPage') {
       const controls = this.userformData[this.userFormId][this.controlId].controls
       if (controls.length > 0) {
         this.deletePageIndex(this.selectedControls[this.userFormId].selected[0])
+        const index = this.userformData[this.userFormId][this.selectedControls[this.userFormId].selected[0]].properties.Index
         this.deleteControl({
           userFormId: this.userFormId,
           parentId: this.selectedControls[this.userFormId].container[0],
           targetId: this.selectedControls[this.userFormId].selected[0]
         })
+        this.updateIndex(index! - 1)
       }
+    }
+  }
+  updateTabStripValue (index: number) {
+    const userData = this.userformData[this.userFormId]
+    const tabs = userData[this.controlId].extraDatas!.Tabs!
+    const tabIndex = tabs.findIndex((val, key) => key === index + 1)
+    if (tabIndex !== -1) {
+      const value = index + 1
+      this.updateControlProperty('Value', value, this.controlId)
+    } else if (tabIndex === -1 && index !== -1) {
+      const value = index
+      this.updateControlProperty('Value', value, this.controlId)
+    } else {
+      this.updateControlProperty('Value', -1, this.controlId)
+    }
+  }
+  changeSelect (control: string) {
+    this.selectControl({
+      userFormId: this.userFormId,
+      select: {
+        container: this.getContainerList(control),
+        selected: [control]
+      }
+    })
+  }
+  updateIndex (index: number) {
+    const userData = this.userformData[this.userFormId]
+    const controls = userData[this.controlId].controls
+    const pageIndex = controls.findIndex(val => userData[val].properties.Index === index + 1)
+    if (pageIndex !== -1) {
+      const value = userData[controls[pageIndex]].properties.Index!
+      this.updateControlProperty('Value', value, this.controlId)
+      this.changeSelect(controls[pageIndex])
+    } else if (pageIndex === -1 && index !== -1) {
+      const updateIndex = controls.findIndex(val => userData[val].properties.Index === index)
+      const value = userData[controls[updateIndex]].properties.Index!
+      this.updateControlProperty('Value', value, this.controlId)
+      this.changeSelect(controls[updateIndex])
+    } else {
+      this.updateControlProperty('Value', -1, this.controlId)
+      this.changeSelect(this.controlId)
     }
   }
   updateControlProperty (

@@ -39,6 +39,7 @@ import Userform from '@/FormDesigner/components/molecules/FDUserform/index.vue'
 import ResizeHandler from '@/FormDesigner/components/molecules/FDResizeHandler/index.vue'
 import FdSelectVue from '@/api/abstract/FormDesigner/FdSelectVue'
 import FdContainerVue from '@/api/abstract/FormDesigner/FdContainerVue'
+import { EventBus } from '@/FormDesigner/event-bus'
 
 @Component({
   name: 'ResizeUserForm',
@@ -51,7 +52,7 @@ export default class ResizeUserForm extends FdSelectVue {
   @Prop({ required: true, type: String }) public containerId!: string;
   @Ref('userFormRef') readonly userFormRef!: Userform;
 
-  tabCounter = 0;
+  containerEditMode: boolean = false
   /**
    * @description To perform ContextMenu actions(for example: selectAll, paste etc.) on UserForm  and Control
    * @function handleKeyDown
@@ -88,41 +89,92 @@ export default class ResizeUserForm extends FdSelectVue {
       this.controlId
     )
   }
+  created () {
+    EventBus.$on('isEditMode', (isEditMode: boolean) => { this.containerEditMode = isEditMode })
+  }
+  destroyed () {
+    EventBus.$off('isEditMode')
+  }
   tabAction (event: KeyboardEvent) {
     event.preventDefault()
+    let cycleForm: boolean = false
     const userData = this.userformData[this.userFormId]
-    let selected = this.selectedControls[this.userFormId].selected[0]
-    const container = this.selectedControls[this.userFormId].container[0]
-    const containerControls = userData[container].controls
-    if (containerControls.length > 0) {
-      let type = userData[selected].type
-      let selectedTab = -1
-      if (type === 'Userform') {
-        selectedTab = 0
-      } else if (type === 'FDImage') {
-        selectedTab = userData[selected].extraDatas!.TabIndex! + 1
-      } else {
-        selectedTab = userData[selected].properties!.TabIndex! + 1
-      }
-      if (selectedTab > containerControls.length - 1) {
-        selectedTab = 0
-      }
-      const nextControlId = containerControls.findIndex((val) => {
-        const type = userData[val].type
-        if (type === 'FDImage') {
-          return userData[val].extraDatas!.TabIndex! === selectedTab
-        } else {
-          return userData[val].properties!.TabIndex! === selectedTab
-        }
-      })
-      console.log('nextControlId', nextControlId)
+    let selected = this.getSelectedControlsDatas![0]
+    let container = this.selectedControls[this.userFormId].container[0]
+    const selectType = userData[selected].type
+    if ((selectType === 'Frame' || selectType === 'Page') && this.containerEditMode) {
+      container = selected
+      selected = userData[container].controls[0]
       this.selectControl({
         userFormId: this.userFormId,
         select: {
-          container: [container],
-          selected: [containerControls[nextControlId]]
+          container: this.getContainerList(selected),
+          selected: [selected]
         }
       })
+    } else {
+      let containerControls = userData[container].controls
+      if (containerControls.length > 0) {
+        let type = selected ? userData[selected].type : userData[container].type
+        let selectedTab = -1
+        if (type === 'Userform') {
+          selectedTab = 0
+        } else if (type === 'FDImage') {
+          selectedTab = userData[selected].extraDatas!.TabIndex! + 1
+        } else {
+          selectedTab = userData[selected].properties!.TabIndex! + 1
+        }
+        if (selectedTab > containerControls.length - 1) {
+          const continerType = userData[container].type
+          if (continerType === 'Userform') {
+            selectedTab = 0
+          } else if (continerType === 'Frame' || continerType === 'Page') {
+            if (userData[container].properties.Cycle === 0) {
+              cycleForm = true
+              this.containerEditMode = false
+            } else {
+              selectedTab = 0
+            }
+          }
+        }
+        if (cycleForm) {
+          if (userData[container].type === 'Frame') {
+            this.selectControl({
+              userFormId: this.userFormId,
+              select: {
+                container: this.getContainerList(container),
+                selected: [container]
+              }
+            })
+          } else if (userData[container].type === 'Page') {
+            console.log('container', container)
+            this.selectControl({
+              userFormId: this.userFormId,
+              select: {
+                container: this.getContainerList(this.getContainerList(container)[0]),
+                selected: [this.getContainerList(container)[0]]
+              }
+            })
+          }
+        } else {
+          const nextControlId = containerControls.findIndex((val) => {
+            const type = userData[val].type
+            if (type === 'FDImage') {
+              return userData[val].extraDatas!.TabIndex! === selectedTab
+            } else {
+              return userData[val].properties!.TabIndex! === selectedTab
+            }
+          })
+          console.log('nextControlId', nextControlId)
+          this.selectControl({
+            userFormId: this.userFormId,
+            select: {
+              container: this.getContainerList(containerControls[nextControlId]),
+              selected: [containerControls[nextControlId]]
+            }
+          })
+        }
+      }
     }
   }
 }

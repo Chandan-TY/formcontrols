@@ -182,7 +182,7 @@ export default class FDControlTabs extends Vue {
     return {
       height: controlProp.TabFixedHeight! > 0 ? controlProp.TabFixedHeight + 'px' : '',
       width: controlProp.TabFixedWidth! > 0 ? controlProp.TabFixedWidth + 'px' : controlProp.TabOrientation === 2 || controlProp.TabOrientation === 3 ? this.tempWidth + 'px' : '',
-      top: controlProp.TabOrientation === 1 ? '10px' : '0px',
+      top: controlProp.TabOrientation === 1 ? '5px' : '0px',
       fontFamily: (font.FontStyle! !== '') ? this.setFontStyle : font.FontName!,
       fontSize: `${font.FontSize}px`,
       fontStyle: font.FontItalic || this.isItalic ? 'italic' : '',
@@ -201,7 +201,7 @@ export default class FDControlTabs extends Vue {
         controlProp.MousePointer !== 0 || controlProp.MouseIcon !== ''
           ? this.getMouseCursorData
           : 'default',
-      zIndex: controlProp.MultiRow ? '3' : ''
+      zIndex: controlProp.MultiRow ? '30000' : ''
     }
   }
 }
@@ -227,6 +227,7 @@ export default class FDControlTabs extends Vue {
   border-bottom: none;
   border-radius: 3px;
   width: fit-content;
+  overflow: hidden;
 }
 .page [type="radio"]:checked ~ label.forLeft {
   border-bottom: 2px solid gray;

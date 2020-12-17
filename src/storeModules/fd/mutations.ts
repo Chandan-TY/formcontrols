@@ -195,7 +195,6 @@ const mutations: MutationTree<fdState> & FdMutations = {
     }
   },
   deleteCopiedControl (state, payload) {
-    debugger
     const userFormData = state.copiedControl[payload.userFormId]
     const parentData = userFormData[payload.parentId]
     const deleteAll = function (daTarget: string) {

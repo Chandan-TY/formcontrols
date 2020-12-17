@@ -390,8 +390,13 @@ export default class FdControlVue extends Vue {
   controlSource () {
     const propData: controlData = this.data
     if (this.data.type === 'SpinButton' || this.data.type === 'ScrollBar') {
-      if (propData.properties.ControlSource) {
-        this.updateDataModel({ propertyName: 'Value', value: propData.extraDatas!.ControlSourceValue })
+      if (propData.properties.ControlSource && propData.extraDatas) {
+        if (propData.extraDatas.ControlSourceValue !== null && propData.extraDatas.ControlSourceValue !== undefined) {
+          const a = propData.extraDatas.ControlSourceValue
+          if (parseInt(a) <= propData.properties.Max! && parseInt(a) >= propData.properties.Min!) {
+            this.updateDataModel({ propertyName: 'Value', value: propData.extraDatas!.ControlSourceValue })
+          }
+        }
       }
     } else if (propData.properties.ControlSource) {
       const controlSourceValue = propData.extraDatas!.ControlSourceValue!.toLowerCase()
@@ -531,7 +536,8 @@ export default class FdControlVue extends Vue {
      accelerator = this.properties.Accelerator!.charAt(0)
    }
    return controlProperties.acceleratorProp(this.properties.Caption!, accelerator)
- } updateColumnWidths (index: number) {
+ }
+ updateColumnWidths (index: number) {
    const controlProp = this.properties
    const updateColWidth = controlProp.ColumnWidths!.split(';')
    const colChangeCheck: boolean = controlProp.ColumnCount! - 1 < index
@@ -609,7 +615,6 @@ topIndexCheck (newVal:number, oldVal:number) {
  *
  */
 handleMultiSelect (e: MouseEvent) {
-  debugger
   if (e.target instanceof HTMLTableCellElement || e.target instanceof HTMLTableRowElement) {
     this.tempListBoxComboBoxEvent = e
     const targetElement = e.target
@@ -619,7 +624,6 @@ handleMultiSelect (e: MouseEvent) {
     targetElement.focus()
     let data = targetElement.innerText
     let splitData = data.replace(/\t/g, ' ').split(' ')
-    // this.selectionData[0] = this.data.properties.ListStyle === 0 ? tempData.innerText : tempDataOption.innerText
     if (this.data.properties.ListStyle === 0) {
       this.selectionData[0] = tempData.innerText
     } else {
@@ -863,48 +867,62 @@ handleExtendArrowKeySelect (e: KeyboardEvent) {
       }
     }
   }
-
   if (
     e.key === 'ArrowDown' &&
    e.shiftKey === true &&
-   eventTarget.nextSibling !== null
+   (nextSiblingEvent !== null || prevSiblingEvent.nextSibling !== null)
   ) {
-    if (eventTarget.style.backgroundColor !== 'rgb(59, 122, 231)') {
-      this.setOptionBGColorAndChecked(e)
-    } else if (
-      eventTarget.style.backgroundColor === 'rgb(59, 122, 231)' &&
-     nextSiblingEvent.style.backgroundColor !== ''
-    ) {
-      this.setOptionBGColorAndChecked(e)
-    } else if (eventTarget.nextSibling.nextSibling !== null) {
-      this.setBGColorForNextSibling(e)
-    } else if (
-      eventTarget.nextSibling.nextSibling === null &&
-     nextSiblingEvent.style.backgroundColor !== 'rgb(59, 122, 231)'
-    ) {
-      this.setBGColorForNextSibling(e)
+    let currentElement: HTMLTableElement
+    if (nextSiblingEvent === null) {
+      currentElement = prevSiblingEvent.nextSibling! as HTMLTableElement
+    } else {
+      currentElement = nextSiblingEvent
     }
-
-    nextSiblingEvent.focus()
+    if (this.properties.MultiSelect === 2) {
+      if (eventTarget.style.backgroundColor !== 'rgb(59, 122, 231)') {
+        this.setOptionBGColorAndChecked(e)
+      } else if (
+        eventTarget.style.backgroundColor === 'rgb(59, 122, 231)' &&
+        currentElement!.style.backgroundColor !== ''
+      ) {
+        this.setOptionBGColorAndChecked(e)
+      } else if (eventTarget.nextSibling!.nextSibling !== null) {
+        this.setBGColorForNextSibling(e)
+      } else if (
+      eventTarget.nextSibling!.nextSibling === null &&
+      currentElement!.style.backgroundColor !== 'rgb(59, 122, 231)'
+      ) {
+        this.setBGColorForNextSibling(e)
+      }
+        currentElement!.focus()
+    }
   } else if (
     e.key === 'ArrowUp' &&
    e.shiftKey === true &&
-   eventTarget.previousSibling !== null
+   (prevSiblingEvent !== null || nextSiblingEvent.previousSibling !== null)
   ) {
-    if (
-      eventTarget.style.backgroundColor === 'rgb(59, 122, 231)' &&
-     prevSiblingEvent.style.backgroundColor !== ''
-    ) {
-      this.setOptionBGColorAndChecked(e)
-    } else if (eventTarget.previousSibling.previousSibling !== null) {
-      this.setBGColorForPreviousSibling(e)
-    } else if (
-      eventTarget.previousSibling.previousSibling === null &&
-     prevSiblingEvent.style.backgroundColor !== 'rgb(59, 122, 231)'
-    ) {
-      this.setBGColorForPreviousSibling(e)
+    let currentElement: HTMLTableElement
+    if (prevSiblingEvent === null) {
+      currentElement = nextSiblingEvent.previousSibling! as HTMLTableElement
+    } else {
+      currentElement = prevSiblingEvent
     }
-    prevSiblingEvent.focus()
+    if (this.properties.MultiSelect === 2) {
+      if (
+        eventTarget.style.backgroundColor === 'rgb(59, 122, 231)' &&
+        currentElement.style.backgroundColor !== ''
+      ) {
+        this.setOptionBGColorAndChecked(e)
+      } else if (eventTarget.previousSibling!.previousSibling !== null) {
+        this.setBGColorForPreviousSibling(e)
+      } else if (
+        eventTarget.previousSibling!.previousSibling === null &&
+        currentElement.style.backgroundColor !== 'rgb(59, 122, 231)'
+      ) {
+        this.setBGColorForPreviousSibling(e)
+      }
+      currentElement.focus()
+    }
   }
   // }
 }
@@ -953,11 +971,11 @@ setBGColorForNextSibling (e: MouseEvent | KeyboardEvent) {
 
 /**
 * @description set Background Color foe previous siblings
-* @function setBGColorForNextSibling
+* @function setBGColorForPreviousSibling
 * @param event its of type MouseEvent or KeyboardEvent
 */
 setBGColorForPreviousSibling (e: KeyboardEvent) {
-  if (e.target instanceof HTMLTableCellElement) {
+  if (e.target instanceof HTMLTableCellElement || e.target instanceof HTMLTableRowElement) {
     const targetEvent = e.target
     const prevSiblingEvent = targetEvent.previousSibling as HTMLTableElement
     const prevSiblingCheckedEvent = prevSiblingEvent.children[0].childNodes[0] as HTMLInputElement

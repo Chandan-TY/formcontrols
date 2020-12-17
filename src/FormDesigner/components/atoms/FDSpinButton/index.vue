@@ -121,8 +121,8 @@ export default class FDSpinButton extends Mixins(FdControlVue) {
   protected get svgTopBottomStyle (): Partial<CSSStyleDeclaration> {
     const controlProp = this.properties
     return {
-      width: controlProp.Width! < 10 ? '2px' : '40%',
-      height: controlProp.Height! < 10 ? '2px' : '40%',
+      width: (controlProp.Width! / 10) + 'px',
+      // height: (controlProp.Height! / 10) + 'px',
       margin: 'auto'
     }
   }
@@ -136,8 +136,8 @@ export default class FDSpinButton extends Mixins(FdControlVue) {
   protected get svgLeftRightStyle (): Partial<CSSStyleDeclaration> {
     const controlProp = this.properties
     return {
-      width: controlProp.Width! < 50 ? '5%' : '10%',
-      height: controlProp.Height! < 50 ? '5%' : '10%',
+      width: (controlProp.Width! / 10) + 'px',
+      // height: (controlProp.Height! / 10) + 'px',
       margin: 'auto'
     }
   }
@@ -285,11 +285,11 @@ export default class FDSpinButton extends Mixins(FdControlVue) {
 }
 .svgTopBottomStyle {
   position: relative;
-  top: 33%;
+  // top: 33%;
 }
 .svgLeftRightStyle {
-  position: relative;
-  top: -33%;
+  // position: relative;
+  // top: -33%;
 }
 .button-element-top[runmode]:active {
   border-style: outset !important;

@@ -9,7 +9,8 @@ const image1 = controlObj.data.Image
 const propsObj = {
   userFormId: 'ID_USERFORM1',
   controlId: 'ID_Image1',
-  containerId: 'ID_USERFORM1'
+  containerId: 'ID_USERFORM1',
+  isRunMode: false
 }
 
 const factory = (propsArg: Object) => {

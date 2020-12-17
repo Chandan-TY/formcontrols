@@ -26,7 +26,7 @@
           :value="userFormId"
         >{{displayName ? containerData.properties.Name + ' '+ containerData.type : ''}}</option>
         <template v-if="displayName">
-         <option  v-for="control in containerData.controls" :value="control" :key="userData[control].properties.Name">
+         <option  v-for="control in containerDataControl" :value="control" :key="userData[control].properties.Name">
           <b>{{displayName ?  userData[control].properties.Name + ' ' + userData[control].type : ''}}</b>
         </option>
         </template>
@@ -45,6 +45,7 @@ import { Action, State } from 'vuex-class'
 import FDTable from '@/FormDesigner/components/organisms/FDTable/index.vue'
 import { PropertyListDefine } from '@/FormDesigner/models/ControlsTableProperties/propertyList'
 import { IselectControl } from '@/storeModules/fd/actions'
+import FDCommonMethod from '@/api/abstract/FormDesigner/FDCommonMethod'
 
 @Component({
   name: 'PropertiesList',
@@ -52,7 +53,7 @@ import { IselectControl } from '@/storeModules/fd/actions'
     FDTable
   }
 })
-export default class PropertiesList extends Vue {
+export default class PropertiesList extends FDCommonMethod {
   @State(state => state.fd.userformData) userformData!: userformData
   @State((state) => state.fd.selectedControls) selectedControls!: fdState['selectedControls'];
   @Prop({ required: true, type: String }) public readonly userFormId! : string
@@ -176,8 +177,8 @@ export default class PropertiesList extends Vue {
         this.selectControl({
           userFormId: this.userFormId,
           select: {
-            container: this.selectedContainer,
-            selected: value
+            container: this.getContainerList(value[0]),
+            selected: [value[0]]
           }
         })
       }
@@ -190,7 +191,12 @@ export default class PropertiesList extends Vue {
     return this.selectedControls[this.userFormId].container
   }
   get containerData () {
-    return this.userData[this.selectedContainer[0]]
+    const type = this.userData[this.selectedContainer[0]].type
+    return type === 'Page' ? this.userData[this.selectedContainer[1]] : this.userData[this.selectedContainer[0]]
+  }
+  get containerDataControl () {
+    const type = this.userData[this.selectedContainer[0]].type
+    return type === 'Page' ? this.getChildControl(this.selectedContainer[1]) : this.userData[this.selectedContainer[0]].controls
   }
   get userData () {
     return this.userformData[this.userFormId]
