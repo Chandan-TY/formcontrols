@@ -156,6 +156,11 @@ export default class FDTable extends Vue {
         return this.updatePageIndex(parseInt(arg.value))
       } else if (arg.propertyName === 'Name') {
         return this.updateName(selected[i], arg.value)
+      } else if (arg.propertyName === 'Value' && (this.userformData[this.userFormId][selected[i]].type === 'SpinButton' || this.userformData[this.userFormId][selected[i]].type === 'ScrollBar')) {
+        return this.updateSpinButtonScrollBarValueProp(selected[i], arg.value)
+      } else if (arg.propertyName === 'Min' || arg.propertyName === 'Max') {
+        this.updatePropValue(selected[i], arg.propertyName, arg.value)
+        this.validateValueProperty(selected[i], arg.value)
       } else {
         this.updatePropValue(selected[i], arg.propertyName, arg.value)
       }
@@ -168,6 +173,30 @@ export default class FDTable extends Vue {
       propertyName: propName,
       value: propValue
     })
+  }
+  validateValueProperty (id: string, value: number) {
+    let actualValue = this.userformData[this.userFormId][id].properties.Value! as number
+    if (!this.checkValueRangeMinMax(id, actualValue)) {
+      this.updatePropValue(id, 'Value', value)
+    }
+  }
+  updateSpinButtonScrollBarValueProp (id: string, value: number) {
+    if (this.checkValueRangeMinMax(id, value)) {
+      this.updatePropValue(id, 'Value', value)
+      return true
+    }
+    return false
+  }
+  checkValueRangeMinMax (id: string, value: number) {
+    let maxValue = this.userformData[this.userFormId][id].properties.Max!
+    let minValue = this.userformData[this.userFormId][id].properties.Min!
+    let min = Math.min(minValue, maxValue)
+    let max = Math.max(minValue, maxValue)
+    if (value >= min && value <= max) {
+      return true
+    } else {
+      return false
+    }
   }
   updateName (id: string, value: string) {
     const userData = Object.keys(this.userformData[this.userFormId])
@@ -318,12 +347,31 @@ export default class FDTable extends Vue {
           } else {
             this.emitUpdateProperty(propertyName, value)
           }
-        } else if (controlType === 'SpinButton') {
-
-        } else if (controlType === 'ScrollBar') {
-
+        } else if (controlType === 'SpinButton' || controlType === 'ScrollBar') {
+          if (this.isDecimalNumber(propertyValue)) {
+            (e.target as HTMLInputElement).value = this.tableData![propertyName]!.value! as string
+          } else {
+            const isSuccess = this.updateProperty({ propertyName: propertyName, value: value })
+            if (!isSuccess) {
+              (e.target as HTMLInputElement).value = this.tableData![propertyName]!.value! as string
+              EventBus.$emit('showErrorPopup', true, 'invalid', `Could not set the ${propertyName} property. Invalid property value.`)
+            }
+          }
         } else {
           this.emitUpdateProperty(propertyName, propertyValue)
+        }
+      } else if (propertyName === 'Min' || propertyName === 'Max' || propertyName === 'SmallChange') {
+        if (this.isDecimalNumber(propertyValue)) {
+          (e.target as HTMLInputElement).value = this.tableData![propertyName]!.value! as string
+        } else if (checkPropertyValue(propertyName, value)) {
+          if (propertyName === 'Min' || propertyName === 'Max') {
+            this.updateProperty({ propertyName: propertyName, value: value })
+          } else {
+            this.emitUpdateProperty(propertyName, value)
+          }
+        } else {
+          (e.target as HTMLInputElement).value = this.tableData![propertyName]!.value! as string
+          EventBus.$emit('showErrorPopup', true, 'invalid', `Could not set the ${propertyName} property. Invalid property value. Enter a value between 0 and 7200`)
         }
       } else if (propertyName === 'TabFixedHeight' || propertyName === 'TabFixedWidth') {
         if (checkPropertyValue(propertyName, value)) {
@@ -333,16 +381,29 @@ export default class FDTable extends Vue {
           EventBus.$emit('showErrorPopup', true, 'invalid', `Could not set the ${propertyName} property. Invalid property value. Enter a value between 0 and 7200`)
         }
       } else if (propertyName === 'TabIndex') {
-        const isSuccess = this.updateProperty({ propertyName: propertyName, value: propertyValue })
-        if (!isSuccess) {
-          (e.target as HTMLInputElement).value = this.tableData!.TabIndex!.value! as string
-          EventBus.$emit('showErrorPopup', true, 'invalid', 'Could not set the TabIndex property.')
+        if (this.isDecimalNumber(propertyValue)) {
+          (e.target as HTMLInputElement).value = this.tableData![propertyName]!.value! as string
+        } else if (checkPropertyValue(propertyName, value)) {
+          const isSuccess = this.updateProperty({ propertyName: propertyName, value: value })
+          if (!isSuccess) {
+            (e.target as HTMLInputElement).value = this.tableData![propertyName]!.value! as string
+          }
+        } else {
+          (e.target as HTMLInputElement).value = this.tableData![propertyName]!.value! as string
+          EventBus.$emit('showErrorPopup', true, 'invalid', `Could not set the ${propertyName} property. Invalid property value. Enter a value greater than or equal to zero.`)
         }
       } else if (propertyName === 'Index') {
-        const isSuccess = this.updateProperty({ propertyName: propertyName, value: propertyValue })
-        if (!isSuccess) {
+        if (this.isDecimalNumber(propertyValue)) {
           (e.target as HTMLInputElement).value = this.tableData!.Index!.value! as string
-          EventBus.$emit('showErrorPopup', true, 'invalid', 'Could not set the TabIndex property.')
+        } else if (value < 0) {
+          (e.target as HTMLInputElement).value = this.tableData!.Index!.value! as string
+          EventBus.$emit('showErrorPopup', true, 'invalid', `Could not set the ${propertyName} property. Invalid property value. Enter a value between 0 and 32767`)
+        } else {
+          const isSuccess = this.updateProperty({ propertyName: propertyName, value: propertyValue })
+          if (!isSuccess) {
+            (e.target as HTMLInputElement).value = this.tableData!.Index!.value! as string
+            EventBus.$emit('showErrorPopup', true, 'invalid', `Could not set the ${propertyName} property. Invalid property value.`)
+          }
         }
       } else {
         this.emitUpdateProperty(propertyName, value)
@@ -360,12 +421,19 @@ export default class FDTable extends Vue {
     }
   }
 
+  isDecimalNumber (propValue : string) {
+    if (propValue.indexOf('.') > -1) {
+      EventBus.$emit('showErrorPopup', true, 'invalid', `Invalid property value.`)
+      return true
+    }
+    return false
+  }
   handleConvertionImageToBase64 (e: Event) {
     let that = this
     const reader = new FileReader()
     const fileInput = (e.target as HTMLInputElement)
     const filePath = fileInput.value
-    // Allowing file type
+    // Allowed file type
     const allowedExtensions = /(\.jpg|\.jpeg|\.bmp|\.ico|\.gif)$/i
     if (!allowedExtensions.exec(filePath)) {
       fileInput.value = ''

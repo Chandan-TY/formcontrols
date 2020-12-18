@@ -973,7 +973,7 @@ export class PropertyListDefine {
         },
         Value: {
           category: 'ID_CATEGORY_APPEARANCE',
-          type: 'String'
+          type: 'number'
         },
         Visible: {
           category: 'ID_CATEGORY_APPEARANCE',
@@ -1089,7 +1089,7 @@ export class PropertyListDefine {
         },
         Value: {
           category: 'ID_CATEGORY_APPEARANCE',
-          type: 'String'
+          type: 'number'
         },
         Visible: {
           category: 'ID_CATEGORY_APPEARANCE',

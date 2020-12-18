@@ -7,10 +7,12 @@ export function checkPropertyValue (propertyName: keyof controlProperties, value
       break
     case 'Width':
     case 'Height':
+    case 'TabIndex':
       result = value >= 0 && value <= 32767
       break
     case 'ListRows':
     case 'MaxLength':
+    case 'Delay':
       result = value >= 0 && value < 2147483647
       break
     case 'TabFixedHeight':
