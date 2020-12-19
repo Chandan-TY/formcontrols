@@ -443,11 +443,9 @@ export default class FDMultiPage extends FdContainerVue {
           ? 'none'
           : controlProp.Width! < controlProp.TabFixedWidth!
             ? 'none'
-            : controlProp.Style === 1 || controlProp.Style === 2
+            : controlProp.Width! < 30 || controlProp.Height! < 30
               ? 'none'
-              : controlProp.Width! < 30 || controlProp.Height! < 30
-                ? 'none'
-                : 'block',
+              : 'block',
       top:
         controlProp.TabOrientation === 0
           ? controlProp.MultiRow ? (this.tempHeight + 12) * this.multiRowCount + 'px' : controlProp.TabFixedHeight! > 0
