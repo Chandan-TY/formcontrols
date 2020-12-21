@@ -276,6 +276,7 @@ export default class FDTextBox extends Mixins(FdControlVue) {
     if (this.properties.TabKeyBehavior) {
       const TABKEY = 9
       if (event.target instanceof HTMLTextAreaElement) {
+        event.stopPropagation()
         const eventTaget = event.target
         const selectionStart = eventTaget.selectionStart
         const selectionEnd = eventTaget.selectionEnd

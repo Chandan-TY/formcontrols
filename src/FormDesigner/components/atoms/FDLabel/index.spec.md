@@ -75,7 +75,7 @@ The default property for a Label is the Caption property. The default event for 
 <h4>PicturePosition<span style='color:red'>(3)</span></h4>
 <span>Set the position of the image inserted in the label control</span>
 
-<h4>SpecilalEffect</h4>
+<h4>SpecialEffect</h4>
 <span>Control showing effect on label control</span>
 
 <h4>TabIndex <span style='color:red'>(2)</span></h4>

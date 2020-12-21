@@ -291,19 +291,111 @@ export default class FdControlVue extends Vue {
    */
   protected increaseTheValue () {
     let tempVal, tempMax
-    tempVal = (this.properties.Value as number)!
-    tempMax = this.properties.Max!
-    if (
-      tempVal <= tempMax &&
+    if (this.properties.Max! >= 0 && this.properties.Min! >= 0) {
+      if (this.properties.Max! < this.properties.Min!) {
+        tempMax = this.properties.Max!
+        if (this.properties.Value! < this.properties.Max! && this.properties.Value! > this.properties.Min!) {
+          this.updateDataModel({ propertyName: 'Value', value: this.properties.Min })
+        }
+        tempVal = this.properties.Value! as number
+        if (
+          tempVal >= tempMax &&
+              tempVal - tempMax > this.properties.SmallChange!
+        ) {
+          tempVal = tempVal - this.properties.SmallChange!
+        } else if (tempVal >= tempMax) {
+          tempVal = tempMax
+        } else {
+          tempVal = tempMax
+        }
+      } else {
+        tempMax = this.properties.Max!
+        if (this.properties.Value! > this.properties.Max! && this.properties.Value! < this.properties.Min!) {
+          this.updateDataModel({ propertyName: 'Value', value: this.properties.Min })
+        }
+        tempVal = this.properties.Value! as number
+        if (
+          tempVal <= tempMax &&
         tempMax - tempVal > this.properties.SmallChange!
-    ) {
-      tempVal = tempVal + this.properties.SmallChange!
-    } else if (tempVal <= tempMax) {
-      tempVal = tempMax
+        ) {
+          tempVal = tempVal + this.properties.SmallChange!
+        } else if (tempVal <= tempMax) {
+          tempVal = tempMax
+        } else {
+          tempVal = tempMax
+        }
+      }
+      this.updateDataModel({ propertyName: 'Value', value: tempVal })
+    } else if (this.properties.Max! < 0 && this.properties.Min! < 0) {
+      if (this.properties.Max! > this.properties.Min!) {
+        tempMax = this.properties.Max!
+        if (this.properties.Value! > this.properties.Max! && this.properties.Value! < this.properties.Min!) {
+          this.updateDataModel({ propertyName: 'Value', value: this.properties.Max })
+        }
+        tempVal = this.properties.Value! as number
+        if (
+          tempVal <= tempMax &&
+          Math.abs(tempVal) - Math.abs(tempMax) > this.properties.SmallChange!
+        ) {
+          tempVal = Math.abs(tempVal) - this.properties.SmallChange!
+        } else if (tempVal <= tempMax) {
+          tempVal = Math.abs(tempMax)
+        } else {
+          tempVal = Math.abs(tempMax)
+        }
+      } else {
+        tempMax = Math.abs(this.properties.Max!)
+        if (this.properties.Value! < this.properties.Max! && this.properties.Value! > this.properties.Min!) {
+          this.updateDataModel({ propertyName: 'Value', value: this.properties.Min })
+        }
+        tempVal = Math.abs(this.properties.Value! as number)
+        if (
+          tempVal <= tempMax &&
+        tempMax - tempVal > this.properties.SmallChange!
+        ) {
+          tempVal = tempVal + this.properties.SmallChange!
+        } else if (tempVal <= tempMax) {
+          tempVal = tempMax
+        } else {
+          tempVal = tempMax
+        }
+      }
+      this.updateDataModel({ propertyName: 'Value', value: '-' + tempVal })
+    } else if (this.properties.Max! < this.properties.Min!) {
+      tempMax = this.properties.Max!
+      if (this.properties.Value! > this.properties.Min! && this.properties.Value! < this.properties.Max!) {
+        this.updateDataModel({ propertyName: 'Value', value: this.properties.Max })
+      }
+      tempVal = this.properties.Value as number
+      if (
+        tempVal >= tempMax &&
+        tempVal - tempMax >= this.properties.SmallChange!
+      ) {
+        tempVal = tempVal - this.properties.SmallChange!
+      } else if (tempVal <= tempMax) {
+        tempVal = tempMax
+      } else {
+        tempVal = tempMax
+      }
+      this.updateDataModel({ propertyName: 'Value', value: tempVal })
     } else {
-      tempVal = tempMax
+      tempMax = this.properties.Max!
+      if (this.properties.Value! > this.properties.Max! && this.properties.Value! < this.properties.Min!) {
+        this.updateDataModel({ propertyName: 'Value', value: this.properties.Min })
+      }
+      tempVal = this.properties.Value as number
+      if (
+        tempVal <= tempMax &&
+        tempMax - tempVal > this.properties.SmallChange!
+      ) {
+        tempVal = tempVal + this.properties.SmallChange!
+      } else if (tempVal <= tempMax) {
+        tempVal = tempMax
+      } else {
+        tempVal = tempMax
+      }
+      this.updateDataModel({ propertyName: 'Value', value: tempVal })
     }
-    this.updateDataModel({ propertyName: 'Value', value: tempVal })
   }
 
   /**
@@ -312,19 +404,111 @@ export default class FdControlVue extends Vue {
    */
   protected decreaseTheValue () {
     let tempVal, tempMin
-    tempVal = (this.properties.Value as number)!
-    tempMin = this.properties.Min!
-    if (
-      tempVal >= tempMin &&
-        tempVal - tempMin > this.properties.SmallChange!
-    ) {
-      tempVal = tempVal - this.properties.SmallChange!
-    } else if (tempVal >= tempMin) {
-      tempVal = tempMin
+    if (this.properties.Max! >= 0 && this.properties.Min! >= 0) {
+      if (this.properties.Max! < this.properties.Min!) {
+        tempMin = this.properties.Min!
+        if (this.properties.Value! < this.properties.Max! && this.properties.Value! > this.properties.Min!) {
+          this.updateDataModel({ propertyName: 'Value', value: this.properties.Min })
+        }
+        tempVal = this.properties.Value! as number
+        if (
+          tempVal <= tempMin &&
+          tempMin - tempVal > this.properties.SmallChange!
+        ) {
+          tempVal = tempVal + this.properties.SmallChange!
+        } else if (tempVal <= tempMin) {
+          tempVal = tempMin
+        } else {
+          tempVal = tempMin
+        }
+      } else {
+        tempMin = this.properties.Min!
+        if (this.properties.Value! > this.properties.Max! && this.properties.Value! < this.properties.Min!) {
+          this.updateDataModel({ propertyName: 'Value', value: this.properties.Min })
+        }
+        tempVal = this.properties.Value! as number
+        if (
+          tempVal >= tempMin &&
+            tempVal - tempMin > this.properties.SmallChange!
+        ) {
+          tempVal = tempVal - this.properties.SmallChange!
+        } else if (tempVal >= tempMin) {
+          tempVal = tempMin
+        } else {
+          tempVal = tempMin
+        }
+      }
+      this.updateDataModel({ propertyName: 'Value', value: tempVal })
+    } else if (this.properties.Max! < 0 && this.properties.Min! < 0) {
+      if (this.properties.Max! > this.properties.Min!) {
+        tempMin = this.properties.Min!
+        if (this.properties.Value! > this.properties.Max! && this.properties.Value! < this.properties.Min!) {
+          this.updateDataModel({ propertyName: 'Value', value: this.properties.Min })
+        }
+        tempVal = this.properties.Value! as number
+        if (
+          tempVal >= tempMin &&
+          Math.abs(tempMin) - Math.abs(tempVal) > this.properties.SmallChange!
+        ) {
+          tempVal = Math.abs(tempVal) + this.properties.SmallChange!
+        } else if (tempVal <= tempMin) {
+          tempVal = Math.abs(tempMin)
+        } else {
+          tempVal = Math.abs(tempMin)
+        }
+      } else {
+        tempMin = Math.abs(this.properties.Min!)
+        if (this.properties.Value! < this.properties.Max! && this.properties.Value! > this.properties.Min!) {
+          this.updateDataModel({ propertyName: 'Value', value: this.properties.Min })
+        }
+        tempVal = Math.abs(this.properties.Value! as number)
+        if (
+          tempVal >= tempMin &&
+            tempVal - tempMin > this.properties.SmallChange!
+        ) {
+          tempVal = tempVal - this.properties.SmallChange!
+        } else if (tempVal >= tempMin) {
+          tempVal = tempMin
+        } else {
+          tempVal = tempMin
+        }
+      }
+      this.updateDataModel({ propertyName: 'Value', value: '-' + tempVal })
+    } else if (this.properties.Max! < this.properties.Min!) {
+      tempMin = this.properties.Min!
+      if (this.properties.Value! > this.properties.Min! && this.properties.Value! < this.properties.Max!) {
+        this.updateDataModel({ propertyName: 'Value', value: this.properties.Max })
+      }
+      tempVal = this.properties.Value as number
+      if (
+        tempVal <= tempMin &&
+            tempMin - tempVal > this.properties.SmallChange!
+      ) {
+        tempVal = tempVal + this.properties.SmallChange!
+      } else if (tempVal >= tempMin) {
+        tempVal = tempMin
+      } else {
+        tempVal = tempMin
+      }
+      this.updateDataModel({ propertyName: 'Value', value: tempVal })
     } else {
-      tempVal = tempMin
+      tempMin = this.properties.Min!
+      if (this.properties.Value! > this.properties.Max! && this.properties.Value! < this.properties.Min!) {
+        this.updateDataModel({ propertyName: 'Value', value: this.properties.Min })
+      }
+      tempVal = this.properties.Value as number
+      if (
+        tempVal >= tempMin &&
+            tempVal - tempMin > this.properties.SmallChange!
+      ) {
+        tempVal = tempVal - this.properties.SmallChange!
+      } else if (tempVal >= tempMin) {
+        tempVal = tempMin
+      } else {
+        tempVal = tempMin
+      }
+      this.updateDataModel({ propertyName: 'Value', value: tempVal })
     }
-    this.updateDataModel({ propertyName: 'Value', value: tempVal })
   }
   /**
    * @description transformScrollButtonStyle returns string value from

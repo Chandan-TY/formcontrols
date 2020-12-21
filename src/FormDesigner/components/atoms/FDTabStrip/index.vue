@@ -231,9 +231,8 @@ export default class FDTabStrip extends FdControlVue {
    */
   protected get getScrollButtonStyleObj (): Partial<CSSStyleDeclaration> {
     const controlProp = this.properties
-    const tabsLength = this.properties.TabFixedWidth! > 0 ? this.extraDatas.Tabs!.length * this.properties.TabFixedWidth! + (10 * this.extraDatas.Tabs!.length) : this.extraDatas.Tabs!.length * 30 + (10 * this.extraDatas.Tabs!.length)
-    const tabsHeight = this.properties.TabFixedHeight! > 0 ? this.extraDatas.Tabs!.length * this.properties.TabFixedHeight! + (10 * this.extraDatas.Tabs!.length) : this.extraDatas.Tabs!.length * 20 + (10 * this.extraDatas.Tabs!.length)
-
+    const tabsLength = this.properties.TabFixedWidth! > 0 ? this.extraDatas.Tabs!.length * this.properties.TabFixedWidth! + (10 * this.extraDatas.Tabs!.length) : this.properties.Font!.FontSize! < 36 ? this.properties.Font!.FontSize! * 3.5 * this.extraDatas.Tabs!.length : this.properties.Font!.FontSize! * 2.3 * this.extraDatas.Tabs!.length
+    const tabsHeight = this.properties.TabFixedHeight! > 0 ? this.extraDatas.Tabs!.length * this.properties.TabFixedHeight! + (10 * this.extraDatas.Tabs!.length) : this.properties.Font!.FontSize! * 2.3 * this.extraDatas.Tabs!.length
     return {
       position: 'absolute',
       zIndex: '30001',

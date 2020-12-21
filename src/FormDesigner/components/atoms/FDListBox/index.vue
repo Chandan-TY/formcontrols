@@ -268,6 +268,19 @@ export default class FDListBox extends Mixins(FdControlVue) {
     this.listStyleRef[0].click()
     this.handleExtendArrowKeySelect(event)
   }
+
+  @Watch('properties.ControlSource')
+  controlSourceUpdate () {
+    if (this.properties.ControlSource !== '') {
+      for (let i = 0; i < this.extraDatas.RowSourceData!.length; i++) {
+        this.listStyleRef[i].style.backgroundColor = ''
+        if (this.extraDatas.RowSourceData![i][this.properties.BoundColumn! - 1] === this.extraDatas.ControlSourceValue!) {
+          const listRow = this.listStyleRef[i]
+          listRow.style.backgroundColor = 'rgb(59, 122, 231)'
+        }
+      }
+    }
+  }
 }
 </script>
 

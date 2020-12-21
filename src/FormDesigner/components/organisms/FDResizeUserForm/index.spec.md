@@ -33,7 +33,7 @@
 <h4>Caption</h4>
 <span>Text information that appears in the control</span>
 
-<h4>Cycle <span style="color:red;">(3)</span></h4>
+<h4>Cycle <span style="color:red;">(4)</span></h4>
 <span>Whether focus cycles within the frame with tabs</span>
 
 <h4>DrawBuffer <span style="color:red;">(3)</span></h4>
@@ -42,7 +42,7 @@
 <h4>Enabled <span style="color:red;">(3)</span></h4>
 <span>Indicates activation/deactivation of UserForm</span>
 
-<h4>Font</h4>
+<h4>Font<span style="color:red;">(3)</span></h4>
 <span>1. Supports Fonts (Arial, Algerian, Banschrift) <span style="color:red;">(3)</span>
 2. Supports Font styles (Bold, Itallic,...)
 3. Supports Font size
@@ -88,16 +88,16 @@
 <h4>ScrollBars</h4>
 <span>Whether to show a scrollBars</span>
 
-<h4>ScrollHeight</h4>
+<h4>ScrollHeight<span style="color:red;">(1)</span></h4>
 <span>Total scrollable height of the scroll bar</span>
 
-<h4>ScrollLeft</h4>
+<h4>ScrollLeft<span style="color:red;">(3)</span></h4>
 <span>The horizontal position of the scroll bar (x-coordinate)</span>
 
-<h4>ScrollTop</h4>
+<h4>ScrollTop<span style="color:red;">(3)</span></h4>
 <span>If set to True, Show images in checkerboard format</span>
 
-<h4>ScrollWidth</h4>
+<h4>ScrollWidth<span style="color:red;">(1)</span></h4>
 <span>The total scrollable width of the scroll bar</span>
 
 <h4>ShowModal<span style="color:red;">(3)</span></h4>
@@ -106,7 +106,7 @@
 <h4>SpecilalEffect</h4>
 <span>Control showing effect on label control</span>
 
-<h4>StartUpPosition <span style="color:red;">(3)</span></h4>
+<h4>StartUpPosition<span style="color:red;">(3)</span></h4>
 <span>specifying the position of a UserForm when it first appears. </span>
 
 <h4>Tag </h4>
@@ -124,7 +124,7 @@
 <h4>Width</h4>
 <span>The width of the control</span>
 
-<h4>Zoom</h4>
+<h4>Zoom <span style="color:red;">(3)</span></h4>
 <span>Expand or reduce the content in UserForm according to the set value ratio</span>
 
 -<span style="color:red;">(*): This function is not implemented in this control.</span>

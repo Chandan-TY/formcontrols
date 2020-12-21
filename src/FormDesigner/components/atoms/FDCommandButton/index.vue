@@ -171,9 +171,9 @@ export default class FDCommandButton extends Mixins(FdControlVue) {
       paddingRight: controlProp.WordWrap ? '0px' : '6px',
       backgroundImage: `url(${controlProp.Picture})`,
       backgroundRepeat: this.getRepeat,
-      backgroundPosition: this.getPosition,
-      backgroundPositionX: this.getPositionX,
-      backgroundPositionY: this.getPositionY
+      backgroundPosition: controlProp.Picture ? this.getPosition : '',
+      backgroundPositionX: controlProp.Picture ? this.getPositionX : '',
+      backgroundPositionY: controlProp.Picture ? this.getPositionY : ''
     }
   }
   /**
@@ -222,8 +222,5 @@ export default class FDCommandButton extends Mixins(FdControlVue) {
 }
 .commandbutton[runmode]:active {
   border-style: outset !important;
-}
-.spanClass {
-  border-bottom: 1px solid black;
 }
 </style>

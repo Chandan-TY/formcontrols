@@ -57,7 +57,7 @@
 import { Component, Prop, Vue, Ref } from 'vue-property-decorator'
 import { EventBus } from '@/FormDesigner/event-bus'
 import { State, Action } from 'vuex-class'
-import { IupdateControl } from '@/storeModules/fd/actions'
+import { IupdateControl, IsetChildControls } from '@/storeModules/fd/actions'
 import FdDialogDragVue, {
   localTabOrderItem
 } from '@/api/abstract/FormDesigner/FdDialogDragVue'
@@ -68,22 +68,35 @@ import FdDialogDragVue, {
 export default class FDUserformTabOrder extends FdDialogDragVue {
   @State((state) => state.fd.userformData) userformData!: userformData;
   @Action('fd/updateControl') updateControl!: (payload: IupdateControl) => void;
+  @Action('fd/setChildControls') setChildControls!: (
+    payload: IsetChildControls
+  ) => void;
   isTabOrderOpen: boolean = false;
   userFormId: string = '';
   currentIndex: number = -1;
   tabOrderList: localTabOrderItem[] = [];
   controlType: string = ''
-
+  containerId: string = ''
   updateControlData () {
     const controlNum = this.tabOrderList.length
-    let propertyName = this.controlType === 'MultiPage' ? 'Index' : 'TabIndex'
-
+    let propertyName: keyof controlProperties = this.controlType === 'MultiPage' ? 'Index' : 'TabIndex'
+    const controlsArray = []
     for (let tabIndex = 0; controlNum > tabIndex; tabIndex++) {
+      if (this.controlType === 'MultiPage') {
+        controlsArray.push(this.tabOrderList[tabIndex].controlId)
+      }
       this.updateControl({
         userFormId: this.userFormId,
         controlId: this.tabOrderList[tabIndex].controlId,
-        propertyName: 'TabIndex',
+        propertyName: propertyName,
         value: tabIndex
+      })
+    }
+    if (this.controlType === 'MultiPage') {
+      this.setChildControls({
+        userFormId: this.userFormId,
+        containerId: this.containerId,
+        targetControls: controlsArray
       })
     }
     this.closeDialog()
@@ -120,6 +133,7 @@ export default class FDUserformTabOrder extends FdDialogDragVue {
         this.isTabOrderOpen = true
         this.userFormId = userFormId
         this.currentIndex = 0
+        this.containerId = controlId
       }
     )
   }

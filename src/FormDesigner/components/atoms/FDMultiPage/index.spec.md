@@ -23,7 +23,7 @@ In the case of an option button, the group is set through what is in the MultiPa
 
 <h3><b>Control Properties:</b></h3>
 
-<h4>BackColor <span style='color:red'>(3)</span> </h4>
+<h4>BackColor</h4>
 <span>Control's background color - Color table appears when the button is clicked sets the selected color to MultiPage</span>
 
 <h4>ControlTipText</h4>
@@ -44,7 +44,7 @@ In the case of an option button, the group is set through what is in the MultiPa
 <h4>Height </h4>
 <span>Set height of the control </span>
 
-<h4>HelpContextID <span style='color:red'>(4)</span></h4>
+<h4>HelpContextID <span style='color:red'>(3)</span></h4>
 <span> Opens the file designated as HelpFile and shows the item set as HelpContextID</span>
 
 <h4>Left</h4>

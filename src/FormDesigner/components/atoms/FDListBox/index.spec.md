@@ -77,7 +77,7 @@
 <h4>Locked</h4>
 <span>When set to True,The Locked property is active and you cannot edit data in a controls </span>
 
-<h4>MatchEntry</h4>
+<h4>MatchEntry <span style="color:red;">(3)</span></h4>
 <span>Returns or sets a value indicating how a ListBox searches its list as the user types.</span>
 
 <h4>MouseIcon</h4>

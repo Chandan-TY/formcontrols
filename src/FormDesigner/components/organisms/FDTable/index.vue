@@ -30,7 +30,7 @@
 import { Component, Prop, Vue, Emit } from 'vue-property-decorator'
 import { State, Action } from 'vuex-class'
 import FDTableItems from '../../molecules/FDTableItems/index.vue'
-import { IselectControl, IupdateControl, IupdateControlExtraData, IupdatedSelectedControl } from '@/storeModules/fd/actions'
+import { IselectControl, IsetChildControls, IupdateControl, IupdateControlExtraData, IupdatedSelectedControl } from '@/storeModules/fd/actions'
 import { EventBus } from '@/FormDesigner/event-bus'
 import { checkPropertyValue } from '@/storeModules/fd/checkValidation'
 
@@ -53,6 +53,9 @@ export default class FDTable extends Vue {
   @Action('fd/updateControl') updateControl!: (payload: IupdateControl) => void;
   @Action('fd/updateControlExtraData') updateControlExtraData!: (
     payload: IupdateControlExtraData
+  ) => void;
+  @Action('fd/setChildControls') setChildControls!: (
+    payload: IsetChildControls
   ) => void;
   @State((state) => state.fd.selectedControls) selectedControls!: fdState['selectedControls'];
 
@@ -79,6 +82,15 @@ export default class FDTable extends Vue {
       const index = userData[container].controls.findIndex(val => userData[val].properties.Index === propValue)
       this.updatePropValue(userData[container].controls[index], 'Index', swapTabIndex)
       this.updatePropValue(selected, 'Index', propValue)
+      const controls = userData[container].controls
+      controls.sort((a, b) => {
+        return userData[a].properties.Index! - userData[b].properties.Index!
+      })
+      this.setChildControls({
+        userFormId: this.userFormId,
+        containerId: container,
+        targetControls: controls
+      })
       return true
     } else {
       return false
@@ -161,12 +173,14 @@ export default class FDTable extends Vue {
       } else if (arg.propertyName === 'Min' || arg.propertyName === 'Max') {
         this.updatePropValue(selected[i], arg.propertyName, arg.value)
         this.validateValueProperty(selected[i], arg.value)
+      } else if (arg.propertyName === 'Cancel' || arg.propertyName === 'Default') {
+        this.validateCancelDefaultProp(selected[i], arg.propertyName, arg.value)
       } else {
         this.updatePropValue(selected[i], arg.propertyName, arg.value)
       }
     }
   }
-  updatePropValue (id: string, propName: keyof controlProperties, propValue: string|number) {
+  updatePropValue (id: string, propName: keyof controlProperties, propValue: any) {
     this.updateControl({
       userFormId: this.userFormId,
       controlId: id,
@@ -186,6 +200,18 @@ export default class FDTable extends Vue {
       return true
     }
     return false
+  }
+  validateCancelDefaultProp (id: string, propName: keyof controlProperties, value: boolean) {
+    const userFormControls = Object.keys(this.userformData[this.userFormId])
+    for (let controlId of userFormControls) {
+      if (this.userformData[this.userFormId][controlId].type === 'CommandButton') {
+        if (controlId === id) {
+          this.updatePropValue(id, propName, value)
+        } else {
+          this.updatePropValue(controlId, propName, false)
+        }
+      }
+    }
   }
   checkValueRangeMinMax (id: string, value: number) {
     let maxValue = this.userformData[this.userFormId][id].properties.Max!
@@ -409,10 +435,14 @@ export default class FDTable extends Vue {
         this.emitUpdateProperty(propertyName, value)
       }
     } else if (inputType === 'Boolean') {
-      this.emitUpdateProperty(
-        propertyName,
-        (e.target as HTMLInputElement).value === 'true'
-      )
+      if ((propertyName === 'Cancel' || propertyName === 'Default') && ((e.target as HTMLInputElement).value) === 'true') {
+        this.updateProperty({ propertyName: propertyName, value: true })
+      } else {
+        this.emitUpdateProperty(
+          propertyName,
+          (e.target as HTMLInputElement).value === 'true'
+        )
+      }
     } else if (inputType === 'array') {
       this.emitUpdateProperty(
         propertyName,

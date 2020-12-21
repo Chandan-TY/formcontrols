@@ -88,15 +88,21 @@ export default class GroupControl extends FDCommonMethod {
     EventBus.$off('moveGroupControl', this.moveGroupControl)
     EventBus.$off('endGroupMoveControl', this.endGroupMoveControl)
     EventBus.$off('getClientValue', this.getClientValue)
-    EventBus.$off('updasteGroupSize', this.updasteGroupSize)
-    EventBus.$off('IncDecspacing', this.IncDecspacing)
-    EventBus.$off('getGroupSize', this.getGroupSize)
+    EventBus.$on('updasteGroupSize', this.updasteGroupSize)
   }
   updasteGroupSize (propName: keyof controlProperties, propertyValue: number, groupIndex: number) {
+    debugger
     if (this.selectedControls[this.userFormId].container[0] === this.containerId) {
-      this.groupStyle(this.divStyleArray[groupIndex].groupName!)
-      this.updatedValue(groupIndex, propName, propertyValue)
-      this.groupStyle(this.divStyleArray[groupIndex].groupName!)
+      if (propName === 'GroupID') {
+        this.divStyleArray[groupIndex].left = `${Math.trunc(parseInt(this.divStyleArray[groupIndex].left!))}px`
+        this.divStyleArray[groupIndex].height = `${Math.trunc(parseInt(this.divStyleArray[groupIndex].height!))}px`
+        this.divStyleArray[groupIndex].top = `${Math.trunc(parseInt(this.divStyleArray[groupIndex].top!))}px`
+        this.divStyleArray[groupIndex].width = `${Math.trunc(parseInt(this.divStyleArray[groupIndex].width!))}px`
+      } else {
+        this.groupStyle(this.divStyleArray[groupIndex].groupName!)
+        this.updatedValue(groupIndex, propName, propertyValue)
+        this.groupStyle(this.divStyleArray[groupIndex].groupName!)
+      }
     }
   }
   IncDecspacing (groupName: string, type: keyof controlProperties, value: number) {

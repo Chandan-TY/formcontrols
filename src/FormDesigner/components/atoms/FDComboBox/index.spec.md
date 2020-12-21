@@ -19,7 +19,7 @@
 <h4>AutoSize</h4>
 <span>When set to True, the size of the control is changed to fit the contents</span>
 
-<h4>AutoTab <span style="color:red;">(2)</span></h4>
+<h4>AutoTab <span style="color:red;">(1)</span></h4>
 <span>When MaxLength property is present, hitting MaxLength will shift focus to the next control</span>
 
 <h4>AutoWordSelect <span style="color:red;">(1)</span></h4>
@@ -47,7 +47,7 @@
 <h4>ColumnHeads</h4>
 <span>Displays a single row of column headings for</span>
 
-<h4>ColumnWidths</h4>
+<h4>ColumnWidths <span style="color:red;">(3)</span></h4>
 <span>Specifies the width of each column in a multicolumn combo box</span>
 
 <h4>ControlSource</h4>
@@ -56,7 +56,7 @@
 <h4>ControlTipText</h4>
 <span>Control tooltip text, text that appears when the mouse is hovered over the control</span>
 
-<h4>DragBehavior <span style="color:red;">(3)</span></h4>
+<h4>DragBehavior <span style="color:red;">(1)</span></h4>
 <span>Whether to drag & drop text</span>
 
 <h4>DropButtonStyle</h4>
@@ -105,7 +105,7 @@
 <h4>Locked</h4>
 <span>When set to True,The Locked property is active and you cannot edit data in a controls </span>
 
-<h4>MatchEntry</h4>
+<h4>MatchEntry <span style="color:red;">(3)</span></h4>
 <span>Returns or sets a value indicating how a ComboBox searches its list as the user types.</span>
 
 <h4>MatchRequired</h4>
@@ -156,7 +156,7 @@
 <h4>Top</h4>
 <span>Move's away from the top of the UserForm (Y coordinate)</span>
 
-<h4>TopIndex</h4>
+<h4>TopIndex<span style="color:red;">(1)</span></h4>
 <span>Sets and returns the item that appears in the topmost position in the list.
 </span>
 

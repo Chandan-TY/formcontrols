@@ -153,7 +153,7 @@ export const controlProperties = {
       11: { backgroundPositionX: 'right', backgroundPositionY: 'bottom' },
       12: { backgroundPositionX: 'center', backgroundPositionY: 'center' }
     }
-    if (controlData.properties.PicturePosition !== undefined) {
+    if (!isNaN(controlData.properties.PicturePosition!) && (controlData.properties.PicturePosition !== undefined)) {
       return positionProp[controlData.properties.PicturePosition]
     }
     return positionProp[7]
@@ -249,7 +249,6 @@ export const controlProperties = {
     const width:number = controlData.properties.Width!
     const scrollingWidth:number = controlData.properties.ScrollWidth!
     propData = { scrollWidth: (scrollingWidth < width) ? '100%' : `${scrollingWidth}px`, scrollHeight: (scrollingHeight < height) ? '100%' : `${scrollingHeight}px` }
-    console.log(propData)
     return propData
   },
   /**

@@ -179,9 +179,9 @@ export default class FDToggleButton extends Mixins(FdControlVue) {
             : 'right',
       backgroundImage: `url(${controlProp.Picture})`,
       backgroundRepeat: this.getRepeat,
-      backgroundPosition: this.getPosition,
-      backgroundPositionX: this.getPositionX,
-      backgroundPositionY: this.getPositionY
+      backgroundPosition: controlProp.Picture ? this.getPosition : '',
+      backgroundPositionX: controlProp.Picture ? this.getPositionX : '',
+      backgroundPositionY: controlProp.Picture ? this.getPositionY : ''
     }
   }
 
@@ -255,9 +255,5 @@ export default class FDToggleButton extends Mixins(FdControlVue) {
   overflow: hidden;
   outline: none;
   box-sizing: border-box;
-}
-
-.spanClass {
-  border-bottom: 1px solid black;
 }
 </style>

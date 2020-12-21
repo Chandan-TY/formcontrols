@@ -585,6 +585,12 @@ export default class FDComboBox extends Mixins(FdControlVue) {
     }
   }
 
+  @Watch('properties.ControlSource')
+  controlSourceUpdate () {
+    if (this.properties.ControlSource !== '') {
+      this.selectionData[0] = this.extraDatas.ControlSourceValue!
+    }
+  }
   expandWidth () {
     if (this.properties.ShowDropButtonWhen === 0) {
       return 'hidden'
@@ -878,10 +884,4 @@ export default class FDComboBox extends Mixins(FdControlVue) {
 .hrStyle {
   margin: 0px;
 }
-/* .tHeadStyle {
-  display: block;
-}
-.tBodyStyle {
-  display: block;
-} */
 </style>

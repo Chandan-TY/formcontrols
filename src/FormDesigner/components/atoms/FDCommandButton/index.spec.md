@@ -93,7 +93,6 @@ Creates a button the user can choose to carry out a command</h4>
 <h4>Top</h4>
 <span>Move's away from the top of the UserForm (Y coordinate)</span>
 
-
 <h4>Visible</h4>
 <span>Whether it is visible or invisible when running UserForm</span>
 

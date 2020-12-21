@@ -168,6 +168,12 @@ export default class FDMultiPage extends FdContainerVue {
     return this.userformData[this.userFormId][value]
   }
 
+  get outerDivStyleObj () {
+    return {
+      width: `${this.properties.Width!}px`,
+      height: `${this.properties.Width!}px`
+    }
+  }
   /**
    * @description style object is passed to :style attribute in div tag
    * dynamically changing the styles of the component based on data
@@ -187,6 +193,7 @@ export default class FDMultiPage extends FdContainerVue {
       width: `${controlProp.Width}px`,
       height: `${controlProp.Height}px`,
       top: `${controlProp.Top}px`,
+      backgroundColor: controlProp.BackColor,
       display: display
     }
   }
@@ -200,7 +207,6 @@ export default class FDMultiPage extends FdContainerVue {
   protected get styleTabsObj (): Partial<CSSStyleDeclaration> {
     const controlProp = this.properties
     return {
-      backgroundColor: controlProp.BackColor,
       overflow: 'hidden'
     }
   }
@@ -221,10 +227,11 @@ export default class FDMultiPage extends FdContainerVue {
       bottomTopStyle = { [a[1]]: '0px' }
     }
     return {
-      position:
-        controlProp.TabOrientation === 1
-          ? 'absolute'
-          : 'inherit',
+      // position:
+      //   controlProp.TabOrientation === 1
+      //     ? 'absolute'
+      //     : 'inherit',
+      position: 'absolute',
       ...bottomTopStyle,
       float: controlProp.TabOrientation === 3 ? 'right' : '',
       whiteSpace: controlProp.MultiRow === true ? 'break-spaces' : 'nowrap',
@@ -237,7 +244,7 @@ export default class FDMultiPage extends FdContainerVue {
       width:
         controlProp.TabOrientation === 2 || controlProp.TabOrientation === 3
           ? ''
-          : '100%',
+          : `${controlProp.Width!}px`,
       right: controlProp.TabOrientation === 3 ? '0px' : '',
       overflow: 'hidden'
     }
@@ -285,12 +292,12 @@ export default class FDMultiPage extends FdContainerVue {
       this.properties.TabFixedWidth! > 0
         ? this.controls.length * this.properties.TabFixedWidth! +
           10 * this.controls!.length
-        : this.controls.length * 30 + 10 * this.controls!.length
+        : this.properties.Font!.FontSize! < 36 ? this.properties.Font!.FontSize! * 3.5 * this.controls!.length : this.properties.Font!.FontSize! * 2.3 * this.controls!.length
     const tabsHeight =
       this.properties.TabFixedHeight! > 0
         ? this.controls.length * this.properties.TabFixedHeight! +
-          10 * this.controls!.length
-        : this.controls.length * 20 + 10 * this.controls!.length
+          this.properties.Font!.FontSize! * this.controls!.length
+        : this.properties.Font!.FontSize! * 2.3 * this.controls!.length
     return {
       position: 'absolute',
       zIndex: '3',
@@ -323,7 +330,7 @@ export default class FDMultiPage extends FdContainerVue {
           ? '-14px'
           : controlProp.TabOrientation === 2
             ? `${controlProp.Width! - 40}px`
-            : '-14px',
+            : '0px',
       top: '0px'
     }
   }
@@ -464,7 +471,7 @@ export default class FDMultiPage extends FdContainerVue {
           : `${controlProp.Height!}px`,
       width:
         controlProp.TabOrientation === 0 || controlProp.TabOrientation === 1
-          ? 'calc(100% - 0px)'
+          ? `${controlProp.Width!}px`
           : controlProp.TabFixedWidth! > 0
             ? controlProp.Width! - controlProp.TabFixedWidth! - 10 + 'px'
             : controlProp.TabFixedWidth! === 0 ? controlProp.TabOrientation === 2 || controlProp.TabOrientation === 3 ? `${controlProp.Width! - this.tempWidth - 12}px` : (controlProp.Width! - controlProp.Font!.FontSize! - 20) + 'px'
@@ -714,8 +721,8 @@ export default class FDMultiPage extends FdContainerVue {
 .pages {
   /* display: grid; */
   margin: 0;
-  width: calc(100%);
-  height: calc(100%);
+  /* width: calc(100%);
+  height: calc(100%); */
   white-space: nowrap;
   overflow-x: hidden;
   overflow-y: hidden;

@@ -1019,7 +1019,7 @@ export default class ContextMenu extends FDCommonMethod {
           EventBus.$emit('updasteGroupSize', 'Top', value, groupIndex)
         } else {
           const propertyname: keyof controlProperties = propName as keyof controlProperties
-          EventBus.$emit('updasteGroupSize', propertyname, `${propValue}px`, groupIndex)
+          EventBus.$emit('updasteGroupSize', propertyname, propValue, groupIndex)
         }
       }
     }

@@ -1,4 +1,3 @@
-
 export const label1 = {
   properties: {
     Accelerator: '',
@@ -42,6 +41,7 @@ export const label1 = {
   },
   controls: [],
   extraDatas: {
+    zIndex: 1
   },
   type: 'Label'
 }
@@ -51,7 +51,7 @@ export const label2 = {
     Accelerator: '',
     AutoSize: false,
     BackColor: '#D6D5D5',
-    BackStyle: 0,
+    BackStyle: 1,
     BorderColor: '#D6D5D5',
     BorderStyle: 1,
     Caption: 'Label2',
@@ -89,100 +89,7 @@ export const label2 = {
   },
   controls: [],
   extraDatas: {
-  },
-  type: 'Label'
-}
-
-export const label3 = {
-  properties: {
-    Accelerator: '',
-    AutoSize: false,
-    BackColor: '#D6D5D5',
-    BackStyle: 1,
-    BorderColor: '#D6D5D5',
-    BorderStyle: 1,
-    Caption: 'Label3',
-    ControlTipText: 'helptext',
-    Enabled: true,
-    Font: {
-      FontName: 'Arial',
-      FontSize: 10,
-      FontBold: false,
-      FontItalic: false,
-      FontUnderline: false,
-      FontStrikethrough: false,
-      FontStyle: 'Arial Narrow Italic'
-    },
-    ForeColor: '#000000',
-    Height: 50,
-    HelpContextID: 0,
-    Left: 0,
-    MouseIcon: '',
-    MousePointer: 0,
-    Name: 'Label3',
-    ID: 'ID_Label3',
-    Picture: '',
-    PicturePosition: 7,
-    SpecialEffect: 0,
-    TabIndex: 1,
-    TabStop: true,
-    Tag: '',
-    TextAlign: 0,
-    Top: 0,
-    Visible: true,
-    Width: 72,
-    WordWrap: true,
-    GroupID: ''
-  },
-  controls: [],
-  extraDatas: {
-  },
-  type: 'Label'
-}
-
-export const label4 = {
-  properties: {
-    Accelerator: 'a',
-    AutoSize: false,
-    BackColor: '#D6D5D5',
-    BackStyle: 1,
-    BorderColor: '#D6D5D5',
-    BorderStyle: 1,
-    Caption: 'Label4',
-    ControlTipText: 'helptext',
-    Enabled: true,
-    Font: {
-      FontName: 'Arial',
-      FontSize: 10,
-      FontBold: false,
-      FontItalic: false,
-      FontUnderline: false,
-      FontStrikethrough: false,
-      FontStyle: 'Arial Narrow Italic'
-    },
-    ForeColor: '#000000',
-    Height: 50,
-    HelpContextID: 0,
-    Left: 350,
-    MouseIcon: '',
-    MousePointer: 0,
-    Name: 'Label4',
-    ID: 'ID_Label4',
-    Picture: '',
-    PicturePosition: 7,
-    SpecialEffect: 0,
-    TabIndex: 2,
-    TabStop: true,
-    Tag: '',
-    TextAlign: 0,
-    Top: 100,
-    Visible: true,
-    Width: 72,
-    WordWrap: true,
-    GroupID: ''
-  },
-  controls: [],
-  extraDatas: {
+    zIndex: 2
   },
   type: 'Label'
 }

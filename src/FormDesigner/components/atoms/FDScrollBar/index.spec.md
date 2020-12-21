@@ -41,7 +41,7 @@ Provides a graphical tool for quickly navigating through a long list of items or
 <h4>HelpContextID <span style="color:red;">(3)</span></h4>
 <span> Opens the file designated as HelpFile and shows the item set as HelpContextID</span>
 
-<h4>LargeChange</h4>
+<h4>LargeChange <span style="color:red;">(1)</span></h4>
 <span> Scroll buttons and scroll them as you click when you change the value , the scroll bar to the size affected Zoom</span>
 
 <h4>Left</h4>
@@ -59,10 +59,10 @@ Provides a graphical tool for quickly navigating through a long list of items or
 <h4>MousePointer</h4>
 <span>Changes the shape of the mouse cursor when the mouse is over the control </span>
 
-<h4>Orientation</h4>
+<h4>Orientation <span style="color:red;">(1)</span></h4>
 <span>Specifies whether the control is oriented vertically or horizontally.</span>
 
-<h4>ProportionalThumb</h4>
+<h4>ProportionalThumb <span style="color:red;">(1)</span></h4>
 <span>It specifies Scroll bars and Scroll Box ( and Scroll Thumb) Size Information.If True, automatic ( scrolling the area proportion ),else, a fixed scroll box of a size having
 </span>
 

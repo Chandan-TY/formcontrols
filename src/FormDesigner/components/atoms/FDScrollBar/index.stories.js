@@ -35,19 +35,10 @@ const scrollBarObj = {
         </label>
         <br>
         <label>
-          Check Text :
-          <span>{{curText}}</span>
-        </label>
-        <br>
-        <label>
           Check Name :
           <span>{{curName}}</span>
         </label>
         <br>
-        <label>
-          Check Tag :
-          <span>{{curTag}}</span>
-        </label>
       </div>
     </div>
     `,
@@ -72,15 +63,15 @@ const scrollBarObj = {
   curValue () {
     return this.curData[this.UserFormId][this.ControlId].properties.Value
   },
-  curText () {
-    return this.curData[this.UserFormId][this.ControlId].properties.Text
-  },
+  // curText () {
+  //   return this.curData[this.UserFormId][this.ControlId].properties.Text
+  // },
   curName () {
     return this.curData[this.UserFormId][this.ControlId].properties.Name
   },
-  curTag () {
-    return this.curData[this.UserFormId][this.ControlId].properties.Tag
-  },
+  // curTag () {
+  //   return this.curData[this.UserFormId][this.ControlId].properties.Tag
+  // },
   extraData () {
     return this.curData[this.UserFormId][this.ControlId].extraDatas
   },

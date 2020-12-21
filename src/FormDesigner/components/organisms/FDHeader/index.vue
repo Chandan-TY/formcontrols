@@ -130,7 +130,7 @@
                   <span></span>
                   <span><u>S</u>ize to Fit</span>
                 </li>
-                <li class="sub-menu-li">
+                <li class="sub-menu-li" @click="sizeToGrid">
                   <span></span>
                   <span><u>S</u>ize to Grid</span>
                 </li>
@@ -185,6 +185,14 @@
                 <li class="sub-menu-li">
                   <span></span>
                   <span>A<u>r</u>range Buttons</span>
+                </li>
+                <li class="sub-menu-li" @click="arrangeButton('right')">
+                  <span></span>
+                  <span><u>R</u>ight</span>
+                </li>
+                <li class="sub-menu-li" @click="arrangeButton('bottom')">
+                  <span></span>
+                  <span><u>B</u>ottom</span>
                 </li>
                 <hr />
                 <li class="sub-menu-li" @click="groupControl">
@@ -361,6 +369,30 @@ export default class Header extends FDCommonMethod {
   unGroupControl () {
     EventBus.$emit('groupControl', 'ungroup')
   }
+  sizeToGrid () {
+    let divstyle: Array<IGroupStyle> = []
+    const usrFrmData = this.userformData[this.userFormId]
+    const ctrlSel = this.selectedControls[this.userFormId].selected
+    let ctrlContainer = this.selectedControls[this.userFormId].container[0]
+    for (let index = 0; index < ctrlSel.length; index++) {
+      if (!ctrlSel[index].startsWith('group')) {
+        const controlprop = usrFrmData[ctrlSel[index]].properties
+        this.updateControlProperty('Left', Math.trunc(controlprop.Left!), ctrlSel[index])
+        this.updateControlProperty('Top', Math.trunc(controlprop.Top!), ctrlSel[index])
+        this.updateControlProperty('Width', Math.trunc(controlprop.Width!), ctrlSel[index])
+        this.updateControlProperty('Height', Math.trunc(controlprop.Height!), ctrlSel[index])
+      } else {
+        EventBus.$emit(
+          'getGroupSize',
+          (divstayleArray: Array<IGroupStyle>) => {
+            divstyle = divstayleArray
+          }
+        )
+        const getIndex = divstyle.findIndex(val => val.groupName === ctrlSel[index])
+        EventBus.$emit('updasteGroupSize', 'GroupID', 0, getIndex)
+      }
+    }
+  }
   IncDecspacing (type: keyof controlProperties, value: number) {
     let divstyle: Array<IGroupStyle> = []
     const ctrlSel = this.selectedControls[this.userFormId].selected
@@ -478,6 +510,22 @@ export default class Header extends FDCommonMethod {
               }
             }
           }
+        } else if (type === 'Top') {
+          if (groupTop <= selTop!) {
+            for (let ctrl of groupConrol) {
+              const prop = this.userformData[this.userFormId][ctrl].properties
+              if (Math.floor(prop.Top!) === groupTop) {
+                leftArray.push(ctrl)
+              }
+            }
+          } else {
+            for (let ctrl of groupConrol) {
+              const prop = this.userformData[this.userFormId][ctrl].properties
+              if (Math.floor(prop.Top!) === groupTop) {
+                rightArray.push(ctrl)
+              }
+            }
+          }
         }
       }
     }
@@ -490,6 +538,14 @@ export default class Header extends FDCommonMethod {
         for (let ctrl of groupConrol) {
           const prop = this.userformData[this.userFormId][ctrl].properties
           if (Math.floor(prop.Left!) === groupLeft) {
+            leftArray.push(ctrl)
+            rightArray.push(ctrl)
+          }
+        }
+      } else if (type === 'Top') {
+        for (let ctrl of groupConrol) {
+          const prop = this.userformData[this.userFormId][ctrl].properties
+          if (Math.floor(prop.Top!) === groupTop) {
             leftArray.push(ctrl)
             rightArray.push(ctrl)
           }
@@ -507,7 +563,7 @@ export default class Header extends FDCommonMethod {
       rightArray.sort((a, b) => {
         return usrFrmData[a].properties.Left! - usrFrmData[b].properties.Left!
       })
-    } else {
+    } else if (type === 'Top') {
       leftArray.sort((a, b) => {
         return usrFrmData[b].properties.Top! - usrFrmData[a].properties.Top!
       })
@@ -543,13 +599,31 @@ export default class Header extends FDCommonMethod {
             EventBus.$emit('updasteGroupSize', type, propValue, controlPropIndex)
           }
         }
+      } else if (type === 'Top') {
+        if (prevCtrlProp.GroupID === '' && ctrlProp.GroupID === '') {
+          propValue = prevCtrlProp.Top! - ctrlProp.Height!
+          this.updateControlProperty(type, propValue, leftArray[index])
+        } else {
+          if (prevCtrlProp.GroupID !== '') {
+            if (ctrlProp.GroupID === '') {
+              prevIndex = divstyle.findIndex(val => val.groupName === prevCtrlProp.GroupID)
+              propValue = parseInt(divstyle[prevIndex].top!) - ctrlProp.Height!
+              this.updateControlProperty(type, propValue, leftArray[index])
+            }
+          } if (ctrlProp.GroupID !== '') {
+            controlPropIndex = divstyle.findIndex(val => val.groupName === ctrlProp.GroupID)
+            if (prevCtrlProp.GroupID === '') {
+              propValue = prevCtrlProp.Top! - parseInt(divstyle[controlPropIndex].height!)
+            } else {
+              prevIndex = divstyle.findIndex(val => val.groupName === prevCtrlProp.GroupID)
+              propValue = parseInt(divstyle[prevIndex].top!) - parseInt(divstyle[controlPropIndex].height!)
+            }
+            EventBus.$emit('updasteGroupSize', type, propValue, controlPropIndex)
+          }
+        }
       }
-      /* else {
-        propValue = prevCtrlProp.Top! - ctrlProp.Height!
-      } */
     }
     for (let index = 1; index < rightArray.length; index++) {
-      debugger
       const prevCtrlProp = usrFrmData[rightArray[index - 1]].properties
       const ctrlProp = usrFrmData[rightArray[index]].properties
       let prevIndex = -1
@@ -572,10 +646,25 @@ export default class Header extends FDCommonMethod {
             this.updateControlProperty(type, propValue, rightArray[index])
           }
         }
+      } else if (type === 'Top') {
+        if (prevCtrlProp.GroupID === '' && ctrlProp.GroupID === '') {
+          propValue = prevCtrlProp.Top! + prevCtrlProp.Height!
+          this.updateControlProperty(type, propValue, rightArray[index])
+        } else {
+          if (prevCtrlProp.GroupID !== '') {
+            prevIndex = divstyle.findIndex(val => val.groupName === prevCtrlProp.GroupID)
+            propValue = parseInt(divstyle[prevIndex].top!) + parseInt(divstyle[prevIndex].height!)
+          } else {
+            propValue = prevCtrlProp.Top! + prevCtrlProp.Height!
+          }
+          if (ctrlProp.GroupID !== '') {
+            const getIndex = divstyle.findIndex(val => val.groupName === ctrlProp.GroupID)
+            EventBus.$emit('updasteGroupSize', type, propValue, getIndex)
+          } else {
+            this.updateControlProperty(type, propValue, rightArray[index])
+          }
+        }
       }
-      /* else {
-        propValue = prevCtrlProp.Top! - ctrlProp.Height!
-      } */
     }
   }
   updatePropVal (propName: string, propValue: number) {
@@ -631,6 +720,70 @@ export default class Header extends FDCommonMethod {
     } else if (value === 'vertical') {
       const selMiddle = ctrlProp.Top! + ctrlProp.Height! / 2
       this.updatePropVal('selMiddle', selMiddle)
+    }
+  }
+  arrangeButton (type: string) {
+    const usrFrmData = this.userformData[this.userFormId]
+    const ctrlSel = this.selectedControls[this.userFormId].selected
+    let ctrlContainer = this.selectedControls[this.userFormId].container[0]
+    ctrlContainer = usrFrmData[ctrlContainer].type === 'Page' ? this.selectedControls[this.userFormId].container[1] : ctrlContainer
+    const buttonArray = []
+    for (let index = 0; index < ctrlSel.length; index++) {
+      if (!ctrlSel[index].startsWith('group')) {
+        const controlprop = usrFrmData[ctrlSel[index]]
+        if (controlprop.type === 'CommandButton') {
+          buttonArray.push(ctrlSel[index])
+        }
+      }
+    }
+    if (type === 'bottom') {
+      buttonArray.sort((a, b) => {
+        return usrFrmData[a].properties.Left! - usrFrmData[b].properties.Left!
+      })
+    } else if (type === 'right') {
+      buttonArray.sort((a, b) => {
+        return usrFrmData[a].properties.Top! - usrFrmData[b].properties.Top!
+      })
+    }
+    console.log(buttonArray)
+    const containerProp = usrFrmData[ctrlContainer].properties
+    let value: number = 0
+    if (type === 'bottom') {
+      value = (containerProp.Height!) - usrFrmData[buttonArray[0]].properties.Height!
+      this.updateControlProperty('Top', value, buttonArray[0])
+      this.updateControlProperty('Left', 0, buttonArray[0])
+    } else if (type === 'right') {
+      value = (containerProp.Width!) - usrFrmData[buttonArray[0]].properties.Width!
+      this.updateControlProperty('Left', value, buttonArray[0])
+      this.updateControlProperty('Top', 0, buttonArray[0])
+    }
+
+    for (let index = 1; index < buttonArray.length; index++) {
+      const prevCtrlProp = usrFrmData[buttonArray[index - 1]].properties
+      const ctrlProp = usrFrmData[buttonArray[index]].properties
+      if (type === 'bottom') {
+        let propValue = prevCtrlProp.Left! + prevCtrlProp.Width!
+        value = (containerProp.Height!) - usrFrmData[buttonArray[index]].properties.Height!
+        if ((propValue + ctrlProp.Width!) <= (containerProp.Width!)) {
+          this.updateControlProperty('Left', propValue, buttonArray[index])
+          this.updateControlProperty('Top', value, buttonArray[index])
+        } else {
+          propValue = containerProp.Width! - ctrlProp.Width!
+          this.updateControlProperty('Left', propValue, buttonArray[index])
+          this.updateControlProperty('Top', value, buttonArray[index])
+        }
+      } else if (type === 'right') {
+        let propValue = prevCtrlProp.Top! + prevCtrlProp.Height!
+        value = (containerProp.Width!) - usrFrmData[buttonArray[index]].properties.Width!
+        if ((propValue + ctrlProp.Height!) <= (containerProp.Height!)) {
+          this.updateControlProperty('Top', propValue, buttonArray[index])
+          this.updateControlProperty('Left', value, buttonArray[index])
+        } else {
+          propValue = containerProp.Height! - ctrlProp.Height!
+          this.updateControlProperty('Top', propValue, buttonArray[index])
+          this.updateControlProperty('Left', value, buttonArray[index])
+        }
+      }
     }
   }
   updateControlProperty (

@@ -38,13 +38,13 @@
 <h4>BorderStyle</h4>
 <span>When set to '0 - fmBordersStyleNone' , the Border style changes to none</span>
 
-<h4>Control Source</h4>
+<h4>ControlSource</h4>
 <span>Data location to connect</span>
 
 <h4>ControlTipText</h4>
 <span>Control tooltip text, text that appears when the mouse is hovered over the control</span>
 
-<h4>DragBehavior <span style="color:red;">(3)</span></h4>
+<h4>DragBehavior <span style="color:red;">(1)</span></h4>
 <span>Whether to drag & drop text</span>
 
 <h4>Enabled</h4>
@@ -53,6 +53,8 @@
 <h4>EnterFieldBehavior <span style="color:red;">(1)</span></h4>
 <span>Property about whether to select the entire text or apply the previous selection when focus comes with EnterKey or tab</span>
 
+<h4>EnterKeyBehavior </h4>
+<span>Property specifies whether to allow the behavior of EnterKey</span>
 
 <h4>Font</h4>
 <span>1. Supports Fonts (Arial, Algerian, Banschrift)

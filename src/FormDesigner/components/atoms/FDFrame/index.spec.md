@@ -23,7 +23,7 @@ In the case of an option button, the group is set through what is in the frame c
 
 <h3><b>Control Properties:</b></h3>
 
-<h4>BackColor <span style='color:red'>(3)</span> </h4>
+<h4>BackColor </h4>
 <span>Control's background color - Color table appears when the button is clicked sets the selected color to Frame</span>
 
 <h4>BorderColor</h4>
@@ -32,7 +32,7 @@ In the case of an option button, the group is set through what is in the frame c
 <h4>BorderStyle </h4>
 <span>When set to '0 - fmBordersStyleNone' , the Border style changes to none</span>
 
-<h4>Caption <span style='color:red'>(3)</span> </h4>
+<h4>Caption </h4>
 <span>Text information that appears in the control</span>
 
 <h4>ControlTipText</h4>
@@ -89,10 +89,10 @@ In the case of an option button, the group is set through what is in the frame c
 <h4>ScrollHeight <span style='color:red'>(1)</span></h4>
 <span>Total scrollable height of the scroll bar</span>
 
-<h4>ScrollLeft <span style='color:red'>(3)</span></h4>
+<h4>ScrollLeft <span style='color:red'>(1)</span></h4>
 <span>The horizontal position of the scroll bar (x-coordinate)</span>
 
-<h4>ScrollTop <span style='color:red'>(3)</span></h4>
+<h4>ScrollTop <span style='color:red'>(1)</span></h4>
 <span>If set to True, Show images in checkerboard format</span>
 
 <h4>ScrollWidth <span style='color:red'>(1)</span></h4>

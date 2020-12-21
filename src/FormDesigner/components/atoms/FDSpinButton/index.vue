@@ -22,21 +22,31 @@
           :runmode="getDisableValue"
           @blur="isClicked = false"
         >
-          <div v-if="checkOtherOrientations()" :style="svgTopBottomStyle">
-            <FdSvgImage
-              key="topArrow"
-              name="top-arrow.svg"
-              @hook:mounted="changeForeColor"
-              class="svgTopBottomStyle"
-            />
+          <div v-if="checkOtherOrientations()" >
+            <svg version="1.0" xmlns="http://www.w3.org/2000/svg" :height="(properties.Height/2 > 60 && properties.Height < 850) ? properties.Height/2 - 45 : properties.Height >= 850 ? 425 : 15" :width="(properties.Width/2 > 60 && properties.Width < 850) ? properties.Width/2 - 45  : properties.Width >= 850 ? 425 : 15"
+        viewBox="0 0 810.000000 460.000000"
+        preserveAspectRatio="xMidYMid meet">
+          <g :fill="properties.ForeColor"
+          transform="translate(0.000000,460.000000) scale(0.100000,-0.100000)"
+          stroke="none">
+          <path d="M2055 2320 c-1089 -1254 -1980 -2288 -1980 -2298 0 -16 213 -17 3975
+          -17 3525 0 3975 2 3977 15 5 23 -3942 4574 -3969 4578 -19 2 -357 -382 -2003
+          -2278z"/>
+          </g>
+      </svg>
           </div>
-          <div v-else :style="svgLeftRightStyle">
-            <FdSvgImage
-              key="leftArrow"
-              name="left-arrow.svg"
-              @hook:mounted="changeForeColor"
-              class="svgLeftRightStyle"
-            />
+          <div v-else>
+            <svg version="1.0" xmlns="http://www.w3.org/2000/svg" id="la" class="leftRightArrow"
+        viewBox="0 0 460.000000 810.000000"  :height="(properties.Height/2 > 60 && properties.Height < 850) ? properties.Height/2 - 45 : properties.Height >= 850 ? 425 : 15" :width="(properties.Width/2 > 60 && properties.Width < 850) ? properties.Width/2 - 45  : properties.Width >= 850 ? 425 : 15"
+        preserveAspectRatio="xMidYMid meet">
+          <g :fill="properties.ForeColor"
+          transform="translate(0.000000,810.000000) scale(0.100000,-0.100000)"
+          stroke="none">
+            <path d="M2285 6055 c-1874 -1623 -2280 -1980 -2280 -2000 0 -20 408 -378
+             2280 -2005 1254 -1089 2287 -1979 2295 -1977 13 2 15 452 15 3977 0 3525 -2
+             3975 -15 3977 -8 2 -1041 -886 -2295 -1972z"/>
+          </g>
+        </svg>
           </div>
         </button>
       </div>
@@ -55,21 +65,31 @@
           :runmode="getDisableValue"
           @blur="isClicked = false"
         >
-          <div v-if="checkOtherOrientations()" :style="svgTopBottomStyle">
-            <FdSvgImage
-              key="bottomArrow"
-              name="bottom-arrow.svg"
-              @hook:mounted="changeForeColor"
-              class="svgTopBottomStyle"
-            />
+          <div v-if="checkOtherOrientations()">
+            <svg version="1.0" xmlns="http://www.w3.org/2000/svg" :height="(properties.Height/2 > 60 && properties.Height < 850) ? properties.Height/2 - 45 : properties.Height >= 850 ? 425 : 15" :width="(properties.Width/2 > 60 && properties.Width < 850) ? properties.Width/2 - 45  : properties.Width >= 850 ? 425 : 15"
+        viewBox="0 0 810.000000 460.000000"
+        preserveAspectRatio="xMidYMid meet">
+          <g :fill="properties.ForeColor"
+          transform="translate(0.000000,460.000000) scale(0.100000,-0.100000)"
+          stroke="none">
+          <path d="M74 4585 c-4 -8 0 -23 7 -32 8 -9 897 -1036 1977 -2282 1612 -1862
+          1967 -2266 1987 -2266 20 0 378 408 2005 2280 1089 1254 1979 2287 1977 2295
+          -2 13 -453 15 -3975 18 -3540 2 -3973 0 -3978 -13z"/>
+          </g>
+      </svg>
           </div>
-          <div v-else :style="svgLeftRightStyle">
-            <FdSvgImage
-              key="rightArrow"
-              name="right-arrow.svg"
-              @hook:mounted="changeForeColor"
-              class="svgLeftRightStyle"
-            />
+          <div v-else>
+            <svg version="1.0" xmlns="http://www.w3.org/2000/svg" id="ra" class="leftRightArrow" :height="(properties.Height/2 > 60 && properties.Height < 850) ? properties.Height/2 - 45 : properties.Height >= 850 ? 425 : 15" :width="(properties.Width/2 > 60 && properties.Width < 850) ? properties.Width/2 - 45  : properties.Width >= 850 ? 425 : 15"
+        viewBox="0 0 460.000000 810.000000"
+        preserveAspectRatio="xMidYMid meet">
+          <g :fill="properties.ForeColor"
+          transform="translate(0.000000,810.000000) scale(0.100000,-0.100000)"
+          stroke="none">
+            <path d="M5 8018 c-3 -7 -4 -1797 -3 -3978 3 -3515 5 -3965 18 -3967 8 -2
+            1041 886 2295 1972 1874 1623 2280 1980 2280 2000 0 20 -408 378 -2280 2004
+            -1254 1090 -2286 1981 -2293 1981 -7 0 -15 -6 -17 -12z"/>
+            </g>
+      </svg>
           </div>
         </button>
       </div>
@@ -80,7 +100,6 @@
 <script lang="ts">
 import { Component, Watch, Emit, Mixins } from 'vue-property-decorator'
 import FdControlVue from '@/api/abstract/FormDesigner/FdControlVue'
-import FdSvgImage from '@/FormDesigner/components/atoms/FDSVGImage/index.vue'
 import { controlProperties } from '@/FormDesigner/controls-properties'
 export interface IOrientationvalues {
   orientation?: number;
@@ -91,7 +110,6 @@ export interface IOrientationvalues {
 @Component({
   name: 'FDSpinButton',
   components: {
-    FdSvgImage
   }
 })
 export default class FDSpinButton extends Mixins(FdControlVue) {
@@ -99,6 +117,7 @@ export default class FDSpinButton extends Mixins(FdControlVue) {
   isClicked: boolean = false;
   classStyle: string = 'spin';
   orientedValue: boolean = true;
+  svgWidth: number = 0;
 
   /**
    * @description getDisableValue checks for the RunMode or the EditMode of the control and then returns after checking for the Enabled  property
@@ -112,33 +131,12 @@ export default class FDSpinButton extends Mixins(FdControlVue) {
     }
   }
 
-  /**
-   * @description style object is passed to :style attribute in div tag
-   * dynamically changing the styles of the component based on properties
-   * @function svgTopBottomStyle
-   *
-   */
-  protected get svgTopBottomStyle (): Partial<CSSStyleDeclaration> {
-    const controlProp = this.properties
-    return {
-      width: (controlProp.Width! / 10) + 'px',
-      // height: (controlProp.Height! / 10) + 'px',
-      margin: 'auto'
-    }
-  }
-
-  /**
-   * @description style object is passed to :style attribute in div tag
-   * dynamically changing the styles of the component based on properties
-   * @function svgLeftRightStyle
-   *
-   */
-  protected get svgLeftRightStyle (): Partial<CSSStyleDeclaration> {
-    const controlProp = this.properties
-    return {
-      width: (controlProp.Width! / 10) + 'px',
-      // height: (controlProp.Height! / 10) + 'px',
-      margin: 'auto'
+  setSvgWidth () {
+    if (this.properties.Width! / this.properties.Height! < 6) {
+      this.svgWidth = this.properties.Width! / 10
+      return this.svgWidth - 20
+    } else {
+      return this.svgWidth - 20
     }
   }
 
@@ -152,6 +150,7 @@ export default class FDSpinButton extends Mixins(FdControlVue) {
     const controlProp = this.properties
     return {
       ...this.baseStyle,
+      overflow: 'hidden',
       left: `${controlProp.Left}px`,
       width: `${controlProp.Width}px`,
       height: `${controlProp.Height}px`,
@@ -184,10 +183,10 @@ export default class FDSpinButton extends Mixins(FdControlVue) {
           : 'default',
       display:
         controlProp.Visible && this.isRunMode
-          ? 'block'
+          ? 'flex'
           : controlProp.Visible === false && this.isRunMode
             ? 'none'
-            : 'block',
+            : 'flex',
       outline: controlProp.Enabled
         ? this.isClicked
           ? '1px solid black'
@@ -195,7 +194,9 @@ export default class FDSpinButton extends Mixins(FdControlVue) {
         : 'none',
       outlineOffset: this.isClicked ? '-5px' : '-5px',
       width: '100%',
-      height: '100%'
+      height: '100%',
+      justifyContent: 'center',
+      alignItems: 'center'
     }
   }
 
@@ -282,14 +283,6 @@ export default class FDSpinButton extends Mixins(FdControlVue) {
 }
 :focus {
   outline: none;
-}
-.svgTopBottomStyle {
-  position: relative;
-  // top: 33%;
-}
-.svgLeftRightStyle {
-  // position: relative;
-  // top: -33%;
 }
 .button-element-top[runmode]:active {
   border-style: outset !important;
