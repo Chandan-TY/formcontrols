@@ -1,9 +1,9 @@
 <template>
   <div v-if="groupedControls[userFormId].groupArray.length!==0">
    <div
-      v-for="groupName in groupedControls[userFormId].groupArray"
+      v-for="(groupName, index) in groupedControls[userFormId].groupArray"
       :class="getGroupEditStyle(groupName)"
-      :key="groupName"
+      :key="groupName.concat(index)"
       :style="getGroupStyle(groupName)"
       @mousedown.stop="handleMouseDown($event,'drag')"
     >
@@ -701,11 +701,10 @@ export default class GroupControl extends FDCommonMethod {
         }
       }
     }
-    if (this.divStyleArray.length > 0) {
+    if (this.divStyleArray.length > 0 && selectedContainer === this.containerId) {
       for (const index in this.divStyleArray) {
         this.divStyleArray[index].display = 'none'
       }
-      const selected = this.currentSelectedGroup
       const selControl = this.selectedControls[this.userFormId].selected
       if (selControl.length >= 1) {
         for (const val of this.getSelectedControlsDatas!) {
@@ -721,7 +720,7 @@ export default class GroupControl extends FDCommonMethod {
         if (
           selControl[0].startsWith('group') ||
           (!selControl[0].startsWith('group') &&
-            selected.includes(
+            selControl.includes(
               this.userformData[this.userFormId][selControl[0]].properties
                 .GroupID!
             ))
@@ -745,6 +744,10 @@ export default class GroupControl extends FDCommonMethod {
             }
           }
         }
+      }
+    } else {
+      for (const index in this.divStyleArray) {
+        this.divStyleArray[index].display = 'none'
       }
     }
   }

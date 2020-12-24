@@ -1,7 +1,7 @@
 <template>
 <div>
     <input
-        name="page-group-1"
+        :name="data.type === 'TabStrip' ? 'tab-group-1' : 'page-group-1'"
         type="radio"
         :checked="indexValue === data.properties.Value ? setValueEmit(indexValue) : false"
     />

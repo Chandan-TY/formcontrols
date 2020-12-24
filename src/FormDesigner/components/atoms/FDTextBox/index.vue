@@ -1,5 +1,10 @@
 <template>
-  <div class="resp-textbox" @click="selectedItem" @mousedown="controlEditMode">
+  <div class="resp-textbox"
+  @click="selectedItem"
+  @mousedown="controlEditMode"
+  :tabindex="properties.TabIndex"
+  @keydown.enter="setContentEditable($event, true)"
+  >
     <textarea
       data-gramm="false"
       ref="textareaRef"
@@ -9,6 +14,7 @@
       :disabled="getDisableValue"
       :title="properties.ControlTipText"
       :readonly="properties.Locked"
+      @keydown.escape.exact="releaseEditMode"
       v-cursorDirective="{
         start: data.properties.CursorStartPosition,
         end: data.properties.CursorEndPosition,
@@ -107,6 +113,7 @@ export default class FDTextBox extends Mixins(FdControlVue) {
   @Ref('hideSelectionDiv') readonly hideSelectionDiv!: HTMLDivElement;
   @Ref('autoSizeTextarea') readonly autoSizeTextarea!: HTMLLabelElement;
   @Ref('textareaRef') textareaRef: HTMLTextAreaElement;
+  $el: HTMLDivElement
   get getDisableValue () {
     if (this.isRunMode || this.isEditMode) {
       return (
@@ -514,6 +521,14 @@ export default class FDTextBox extends Mixins(FdControlVue) {
       textareaRef.focus()
       textareaRef.selectionStart = textareaRef.selectionEnd
     }
+  }
+
+  mounted () {
+    this.$el.focus()
+  }
+  releaseEditMode (event: KeyboardEvent) {
+    this.$el.focus()
+    this.setContentEditable(event, false)
   }
 }
 </script>

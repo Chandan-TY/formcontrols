@@ -375,7 +375,6 @@ h1 {
   overflow: hidden;
   float: right;
   width: 100%;
-  height: 14px;
 }
 
 .outerSample {

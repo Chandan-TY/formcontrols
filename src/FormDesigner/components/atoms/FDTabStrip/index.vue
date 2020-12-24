@@ -6,6 +6,9 @@
       @contextmenu="contextMenuVisible($event, -1)"
       @click.stop="selectedItem"
       @mousedown="controlEditMode"
+      @keydown.enter="setContentEditable($event, true)"
+      @keydown.esc="setContentEditable($event, false)"
+      :tabindex="properties.TabIndex"
       :title="properties.ControlTipText"
     >
       <div class="pages" :style="styleTabsObj" :title="properties.ControlTipText">
@@ -77,6 +80,7 @@ export default class FDTabStrip extends FdControlVue {
   @Ref('tabstripContextMenu') tabstripContextMenu: HTMLDivElement
   @Ref('scrolling') scrolling:HTMLDivElement
   @Ref('controlTabsRef') controlTabsRef: HTMLDivElement[];
+  $el: HTMLDivElement
 
   isScroll = true;
   viewMenu?: boolean = false;
@@ -342,7 +346,7 @@ export default class FDTabStrip extends FdControlVue {
    * @param oldVal previous propControlData data
    * @param newVal  new/changed propControlData data
    */
-  @Watch('properties.Width', { deep: true })
+  @Watch('properties.Width')
   isScrollUsed (newVal: controlData, oldVal: controlData) {
     this.tempScrollWidth = this.scrolling.offsetWidth!
     if (this.properties.MultiRow) {
@@ -366,6 +370,7 @@ export default class FDTabStrip extends FdControlVue {
     }
   }
   mounted () {
+    this.$el.focus()
     this.tempScrollWidth = this.scrolling.offsetWidth!
     this.scrollCheck()
     this.calculateWidthHeight()

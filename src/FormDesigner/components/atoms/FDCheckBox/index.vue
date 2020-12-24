@@ -4,6 +4,8 @@
     class="outer-check"
     :style="cssStyleProperty"
     @click.stop="selectedItem"
+    @keydown.enter="setContentEditable($event, true)"
+    :tabindex="properties.TabIndex"
   >
     <label class="control">
       <input
@@ -38,7 +40,7 @@
           :caption="properties.Caption"
           :style="editCssObj"
           @updateCaption="updateCaption"
-          @releaseEditMode="setContentEditable($event, false)"
+          @releaseEditMode="releaseEditMode"
         >
         </FDEditableText>
       </div>
@@ -61,6 +63,7 @@ export default class FDCheckBox extends Mixins(FdControlVue) {
   @Ref('checkboxInput') checkboxInput!: HTMLInputElement;
   @Ref('divAutoSize') autoSizecheckbox!: HTMLDivElement;
   @Ref('spanRef') spanRef!: HTMLSpanElement;
+  $el: HTMLDivElement
 
   /**
    * @description  watches Enabled property and the sets the backgroundColor
@@ -220,6 +223,7 @@ export default class FDCheckBox extends Mixins(FdControlVue) {
             : font.FontStrikethrough
               ? 'line-through'
               : '',
+      textUnderlinePosition: 'under',
       fontWeight: font.FontBold
         ? 'bold'
         : font.FontStyle !== ''
@@ -327,7 +331,12 @@ export default class FDCheckBox extends Mixins(FdControlVue) {
    * @function controlSource
    */
   mounted () {
+    this.$el.focus()
     this.controlSource()
+  }
+  releaseEditMode (event: KeyboardEvent) {
+    this.$el.focus()
+    this.setContentEditable(event, false)
   }
 }
 </script>

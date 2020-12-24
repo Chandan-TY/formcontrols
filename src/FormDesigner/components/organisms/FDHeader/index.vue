@@ -126,7 +126,7 @@
                   <span><u>M</u>ake Same Size</span>
                 </li>
                 <hr />
-                <li class="sub-menu-li">
+                <li class="sub-menu-li" @click="sizeToFit">
                   <span></span>
                   <span><u>S</u>ize to Fit</span>
                 </li>
@@ -139,11 +139,15 @@
                   <span></span>
                   <span><u>H</u>orizontal Spacing</span>
                 </li>
-                 <li class="sub-menu-li" @click="IncDecspacing('Left', 10)">
+                <li class="sub-menu-li" @click="makeEqual('Left')">
+                  <span></span>
+                  <span><u>M</u>ake Equal</span>
+                </li>
+                 <li class="sub-menu-li" @click="incDecspacing('Left', 10)">
                   <span></span>
                   <span><u>I</u>ncrease</span>
                 </li>
-                 <li class="sub-menu-li" @click="IncDecspacing('Left', -10)">
+                 <li class="sub-menu-li" @click="incDecspacing('Left', -10)">
                   <span></span>
                   <span><u>D</u>ecrease</span>
                 </li>
@@ -156,11 +160,15 @@
                   <span></span>
                   <span><u>V</u>ertical Spacing</span>
                 </li>
-                <li class="sub-menu-li" @click="IncDecspacing('Top', 10)">
+                <li class="sub-menu-li" @click="makeEqual('Top')">
+                  <span></span>
+                  <span><u>M</u>ake Equal</span>
+                </li>
+                <li class="sub-menu-li" @click="incDecspacing('Top', 10)">
                   <span></span>
                   <span><u>I</u>ncrease</span>
                 </li>
-                 <li class="sub-menu-li" @click="IncDecspacing('Top', -10)">
+                 <li class="sub-menu-li" @click="incDecspacing('Top', -10)">
                   <span></span>
                   <span><u>D</u>ecrease</span>
                 </li>
@@ -343,6 +351,234 @@ export default class Header extends FDCommonMethod {
   clickChangeMode () {
     this.changeRunMode(!this.isRunMode)
   }
+  makeEqual (type: keyof controlProperties) {
+    const usrFrmData = this.userformData[this.userFormId]
+    const ctrlSel = this.selectedControls[this.userFormId].selected
+    const ctrlContainer = this.selectedControls[this.userFormId].container[0]
+    const controls = usrFrmData[ctrlContainer].controls
+    let divstyle: Array<IGroupStyle> = []
+    let getGroupIndex = -1
+    EventBus.$emit(
+      'getGroupSize',
+      (divstayleArray: Array<IGroupStyle>) => {
+        divstyle = divstayleArray
+      }
+    )
+    if (ctrlSel[0].startsWith('group')) {
+      getGroupIndex = divstyle.findIndex(val => val.groupName === ctrlSel[0])
+    }
+    let propValue = 0
+    const leftArray: string[] = []
+    const rightArray: string[] = []
+    for (let index = 1; index < ctrlSel.length; index++) {
+      const selLeft = ctrlSel[0].startsWith('group') ? parseInt(divstyle[getGroupIndex].left!) : usrFrmData[ctrlSel[0]].properties.Left
+      const selTop = ctrlSel[0].startsWith('group') ? parseInt(divstyle[getGroupIndex].top!) : usrFrmData[ctrlSel[0]].properties.Top
+      if (!ctrlSel[index].startsWith('group')) {
+        const ctrlProp = usrFrmData[ctrlSel[index]].properties
+        if (type === 'Left') {
+          if (ctrlProp.Left! <= selLeft!) {
+            leftArray.push(ctrlSel[index])
+          } else {
+            rightArray.push(ctrlSel[index])
+          }
+        } else if (type === 'Top') {
+          if (ctrlProp.Top! <= selTop!) {
+            leftArray.push(ctrlSel[index])
+          } else {
+            rightArray.push(ctrlSel[index])
+          }
+        }
+      } else {
+        EventBus.$emit('getGroupSize', (divstayleArray: Array<IGroupStyle>) => {
+          divstyle = divstayleArray
+        })
+        const getIndex = divstyle.findIndex(val => val.groupName === ctrlSel[index])
+        const groupLeft = parseInt(divstyle[getIndex].left!)
+        const groupTop = parseInt(divstyle[getIndex].top!)
+        const groupConrol = this.getGroupControl(ctrlSel[index])
+        if (type === 'Left') {
+          if (groupLeft <= selLeft!) {
+            for (let ctrl of groupConrol) {
+              const prop = this.userformData[this.userFormId][ctrl].properties
+              if (Math.floor(prop.Left!) === groupLeft) {
+                leftArray.push(ctrl)
+              }
+            }
+          } else {
+            for (let ctrl of groupConrol) {
+              const prop = this.userformData[this.userFormId][ctrl].properties
+              if (Math.floor(prop.Left!) === groupLeft) {
+                rightArray.push(ctrl)
+              }
+            }
+          }
+        } else if (type === 'Top') {
+          if (groupTop <= selTop!) {
+            for (let ctrl of groupConrol) {
+              const prop = this.userformData[this.userFormId][ctrl].properties
+              if (Math.floor(prop.Top!) === groupTop) {
+                leftArray.push(ctrl)
+              }
+            }
+          } else {
+            for (let ctrl of groupConrol) {
+              const prop = this.userformData[this.userFormId][ctrl].properties
+              if (Math.floor(prop.Top!) === groupTop) {
+                rightArray.push(ctrl)
+              }
+            }
+          }
+        }
+      }
+    }
+    if (ctrlSel[0].startsWith('group')) {
+      const getIndex = divstyle.findIndex(val => val.groupName === ctrlSel[0])
+      const groupLeft = parseInt(divstyle[getIndex].left!)
+      const groupTop = parseInt(divstyle[getIndex].top!)
+      const groupConrol = this.getGroupControl(ctrlSel[0])
+      if (type === 'Left') {
+        for (let ctrl of groupConrol) {
+          const prop = this.userformData[this.userFormId][ctrl].properties
+          if (Math.floor(prop.Left!) === groupLeft) {
+            leftArray.push(ctrl)
+            rightArray.push(ctrl)
+          }
+        }
+      } else if (type === 'Top') {
+        for (let ctrl of groupConrol) {
+          const prop = this.userformData[this.userFormId][ctrl].properties
+          if (Math.floor(prop.Top!) === groupTop) {
+            leftArray.push(ctrl)
+            rightArray.push(ctrl)
+          }
+        }
+      }
+    } else {
+      leftArray.unshift(ctrlSel[0])
+      rightArray.push(ctrlSel[0])
+    }
+    console.log(leftArray, '', rightArray)
+    if (type === 'Left') {
+      leftArray.sort((a, b) => {
+        return usrFrmData[a].properties.Left! - usrFrmData[b].properties.Left!
+      })
+      rightArray.sort((a, b) => {
+        return usrFrmData[a].properties.Left! - usrFrmData[b].properties.Left!
+      })
+    } else if (type === 'Top') {
+      leftArray.sort((a, b) => {
+        return usrFrmData[a].properties.Top! - usrFrmData[b].properties.Top!
+      })
+      rightArray.sort((a, b) => {
+        return usrFrmData[a].properties.Top! - usrFrmData[b].properties.Top!
+      })
+    }
+    let leftControl = { ...usrFrmData[leftArray[0]].properties }
+    if (leftControl.GroupID !== '') {
+      const groupIndex = divstyle.findIndex(val => val.groupName === leftControl.GroupID)
+      const groupSize = divstyle[groupIndex]
+      leftControl = {
+        ...leftControl,
+        Width: parseInt(divstyle[groupIndex].width!),
+        Height: parseInt(divstyle[groupIndex].height!),
+        Left: parseInt(divstyle[groupIndex].left!),
+        Top: parseInt(divstyle[groupIndex].top!)
+      }
+    }
+    let rightControl = { ...usrFrmData[rightArray[rightArray.length - 1]].properties }
+    if (rightControl.GroupID !== '') {
+      const groupIndex = divstyle.findIndex(val => val.groupName === rightControl.GroupID)
+      const groupSize = divstyle[groupIndex]
+      rightControl = {
+        ...leftControl,
+        Width: parseInt(divstyle[groupIndex].width!),
+        Height: parseInt(divstyle[groupIndex].height!),
+        Left: parseInt(divstyle[groupIndex].left!),
+        Top: parseInt(divstyle[groupIndex].top!)
+      }
+    }
+    let totalSize = 0
+    for (let index = 0; index < ctrlSel.length; index++) {
+      if (type === 'Left') {
+        if (!ctrlSel[index].startsWith('group')) {
+          const ctrlProp = usrFrmData[ctrlSel[index]].properties
+          totalSize = totalSize + ctrlProp.Width!
+        } else {
+          const groupIndex = divstyle.findIndex(val => val.groupName === ctrlSel[index])
+          totalSize = totalSize + parseInt(divstyle[groupIndex].width!)
+        }
+      } else if (type === 'Top') {
+        if (!ctrlSel[index].startsWith('group')) {
+          const ctrlProp = usrFrmData[ctrlSel[index]].properties
+          totalSize = totalSize + ctrlProp.Height!
+        } else {
+          const groupIndex = divstyle.findIndex(val => val.groupName === ctrlSel[index])
+          totalSize = totalSize + parseInt(divstyle[groupIndex].height!)
+        }
+      }
+    }
+    let diffrence = 0
+    if (type === 'Left') {
+      diffrence = (((rightControl.Left! + rightControl.Width!) - (leftControl.Left!)) - totalSize) / (ctrlSel.length - 1)
+    } else if (type === 'Top') {
+      diffrence = (((rightControl.Top! + rightControl.Height!) - (leftControl.Top!)) - totalSize) / (ctrlSel.length - 1)
+    }
+    const unique = () => {
+      var a = leftArray.concat(rightArray)
+      for (var i = 0; i < a.length; ++i) {
+        for (var j = i + 1; j < a.length; ++j) {
+          if (a[i] === a[j]) { a.splice(j--, 1) }
+        }
+      }
+      return a
+    }
+    const combineArray = unique()
+    for (let index = 1; index < combineArray.length - 1; index++) {
+      const prevCtrlProp = usrFrmData[combineArray[index - 1]].properties
+      const ctrlProp = usrFrmData[combineArray[index]].properties
+      let prevIndex = -1
+      const controlPropIndex = -1
+      if (type === 'Left') {
+        if (prevCtrlProp.GroupID === '' && ctrlProp.GroupID === '') {
+          propValue = prevCtrlProp.Left! + prevCtrlProp.Width! + diffrence
+          this.updateControlProperty(type, propValue, combineArray[index])
+        } else {
+          if (prevCtrlProp.GroupID !== '') {
+            prevIndex = divstyle.findIndex(val => val.groupName === prevCtrlProp.GroupID)
+            propValue = parseInt(divstyle[prevIndex].left!) + parseInt(divstyle[prevIndex].width!) + diffrence
+          } else {
+            propValue = prevCtrlProp.Left! + prevCtrlProp.Width! + diffrence
+          }
+          if (ctrlProp.GroupID !== '') {
+            const getIndex = divstyle.findIndex(val => val.groupName === ctrlProp.GroupID)
+            EventBus.$emit('updasteGroupSize', type, propValue, getIndex)
+          } else {
+            this.updateControlProperty(type, propValue, combineArray[index])
+          }
+        }
+      } else {
+        if (type === 'Top') {
+          if (prevCtrlProp.GroupID === '' && ctrlProp.GroupID === '') {
+            propValue = prevCtrlProp.Top! + prevCtrlProp.Height! + diffrence
+            this.updateControlProperty(type, propValue, combineArray[index])
+          } else {
+            if (prevCtrlProp.GroupID !== '') {
+              prevIndex = divstyle.findIndex(val => val.groupName === prevCtrlProp.GroupID)
+              propValue = parseInt(divstyle[prevIndex].top!) + parseInt(divstyle[prevIndex].height!) + diffrence
+            } else {
+              propValue = prevCtrlProp.Top! + prevCtrlProp.Height! + diffrence
+            }
+            if (ctrlProp.GroupID !== '') {
+              const getIndex = divstyle.findIndex(val => val.groupName === ctrlProp.GroupID)
+              EventBus.$emit('updasteGroupSize', type, propValue, getIndex)
+            } else {
+              this.updateControlProperty(type, propValue, combineArray[index])
+            }
+          }
+        }
+      }
+    }
+  }
   bringFront () {
     const userData = this.userformData[this.userFormId]
     const selected = this.selectedControls[this.userFormId].selected[0]
@@ -369,6 +605,32 @@ export default class Header extends FDCommonMethod {
   unGroupControl () {
     EventBus.$emit('groupControl', 'ungroup')
   }
+  sizeToFit () {
+    // const usrFrmData = this.userformData[this.userFormId]
+    // const ctrlSel = this.selectedControls[this.userFormId].selected
+    // const sizeToFitArr: string[] = []
+    // const sizeToFitVal: boolean[] = []
+    // for (let index = 0; index < ctrlSel.length; index++) {
+    //   if (!ctrlSel[index].startsWith('group')) {
+    //     const controlprop = usrFrmData[ctrlSel[index]].properties
+    //     if ('AutoSize' in controlprop) {
+    //       sizeToFitArr.push(ctrlSel[index])
+    //       sizeToFitVal.push(controlprop.AutoSize!)
+    //       this.updateControlProperty('AutoSize', true, ctrlSel[index])
+    //     }
+    //   }
+    // }
+    // setTimeout(() => {
+    //   for (let index = 0; index < sizeToFitArr.length; index++) {
+    //     if (!sizeToFitArr[index].startsWith('group')) {
+    //       const controlprop = usrFrmData[sizeToFitArr[index]].properties
+    //       if ('AutoSize' in controlprop) {
+    //         this.updateControlProperty('AutoSize', sizeToFitVal[index], sizeToFitArr[index])
+    //       }
+    //     }
+    //   }
+    // }, 100)
+  }
   sizeToGrid () {
     let divstyle: Array<IGroupStyle> = []
     const usrFrmData = this.userformData[this.userFormId]
@@ -393,7 +655,7 @@ export default class Header extends FDCommonMethod {
       }
     }
   }
-  IncDecspacing (type: keyof controlProperties, value: number) {
+  incDecspacing (type: keyof controlProperties, value: number) {
     let divstyle: Array<IGroupStyle> = []
     const ctrlSel = this.selectedControls[this.userFormId].selected
     const usrFrmData = this.userformData[this.userFormId]
@@ -788,7 +1050,7 @@ export default class Header extends FDCommonMethod {
   }
   updateControlProperty (
     propertyName: keyof controlProperties,
-    propertyValue: number | string,
+    propertyValue: any,
     controlId: string
   ) {
     this.updateControl({

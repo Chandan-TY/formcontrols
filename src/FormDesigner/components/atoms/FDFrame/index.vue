@@ -1,5 +1,5 @@
 <template>
-<div :style="outerDivStyle" class="outerDivClass" ref="frame">
+<div :style="outerDivStyle" class="outerDivClass">
   <fieldset
     class="fieldset"
     :style="cssStyleProperty"
@@ -14,6 +14,7 @@
     @mouseup="dragSelectorControl($event)"
   >
     <legend :style="legendCssStyleProperty">{{ properties.Caption }}</legend>
+    <div :style="scrollSize" ref="frame" @scroll="updateScrollingLeftTop">
     <Container
       :contextMenuType="contextMenuType"
       :viewMenu="viewMenu"
@@ -27,6 +28,7 @@
       @closeMenu="closeMenu"
       @openMenu="(e, parentID, controlID) => showContextMenu(e, parentID, controlID)"
     />
+  </div>
   </fieldset>
 </div>
 </template>
@@ -78,12 +80,12 @@ export default class FDFrame extends FdContainerVue {
     this.scrollLeftTop(this.data)
   }
 
-  @Watch('properties.ScrollLeft', { deep: true })
+  @Watch('properties.ScrollLeft')
   updateScrollLeft () {
     this.scrollLeftTop(this.data)
   }
 
-  @Watch('properties.ScrollTop', { deep: true })
+  @Watch('properties.ScrollTop')
   updateScrollTop () {
     this.scrollLeftTop(this.data)
   }
@@ -100,7 +102,7 @@ export default class FDFrame extends FdContainerVue {
       (this.frame as IScrollRef).scrollLeft = scrollLeft
     }
     if (scrollTop > 0) {
-      (this.frame as IScrollRef).scrollLeft = scrollTop
+      (this.frame as IScrollRef).scrollTop = scrollTop
     }
   }
 
@@ -196,8 +198,6 @@ export default class FDFrame extends FdContainerVue {
       backgroundPosition: controlProp.Picture !== ''
         ? this.getPosition
         : this.getSampleDotPattern.backgroundPosition,
-      overflowX: this.getScrollBarX,
-      overflowY: this.getScrollBarY,
       display: display,
       zoom: `${controlProp.Zoom}%`,
       whiteSpace: 'nowrap',
@@ -223,6 +223,15 @@ export default class FDFrame extends FdContainerVue {
       wordBreak: 'normal',
       overflow: 'hidden',
       maxWidth: `${controlProp.Width! - 20}px`
+    }
+  }
+  get scrollSize (): Partial<CSSStyleDeclaration> {
+    const controlProp = this.data.properties!
+    return {
+      width: `${controlProp.Width!}px`,
+      height: `${controlProp.Height! - 10}px`,
+      overflowX: this.getScrollBarX,
+      overflowY: this.getScrollBarY
     }
   }
 
@@ -268,12 +277,27 @@ export default class FDFrame extends FdContainerVue {
       this.handleKeyDown(event)
     }
   }
+  updateScrollingLeftTop (e: MouseEvent) {
+    const refName = this.frame
+    this.updateControl({
+      userFormId: this.userFormId,
+      controlId: this.controlId,
+      propertyName: 'ScrollLeft',
+      value: refName.scrollLeft
+    })
+    this.updateControl({
+      userFormId: this.userFormId,
+      controlId: this.controlId,
+      propertyName: 'ScrollTop',
+      value: refName.scrollTop
+    })
+  }
 }
 </script>
 
 <style scoped>
 .outerDivClass {
-  overflow: hidden;
+  /* overflow: hidden; */
 }
 
 .fieldset {

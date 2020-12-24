@@ -5,10 +5,12 @@
     :title="properties.ControlTipText"
     @click.stop="selectedItem"
     @mousedown="controlEditMode"
-    tabindex="0"
+    @click.self="selectListBox"
+    :tabindex="properties.TabIndex"
     @keydown.stop="forMatchEntry"
+    @keydown.esc="setContentEditable($event, false)"
   >
-    <table class="table-style" :style="tableStyleObj" >
+    <table class="table-style" :style="tableStyleObj" ref="listBoxTableRef">
       <thead v-if="properties.ColumnHeads === true" class="theadClass">
         <tr>
           <td
@@ -37,6 +39,7 @@
           :key="index"
           @mouseenter.stop="handleDrag"
           @keydown.stop="handleExtendArrowKeySelect"
+          @keydown.esc="releaseEditMode"
           @blur.stop="clearMatchEntry"
           @mousedown="isRunMode || isEditMode ? handleMultiSelect($event) : setInitial($event)"
         >
@@ -86,9 +89,13 @@ import FdControlVue from '@/api/abstract/FormDesigner/FdControlVue'
 })
 export default class FDListBox extends Mixins(FdControlVue) {
   @Ref('listStyleRef') listStyleRef : HTMLTableRowElement[]
-  $el: HTMLDivElement
-  clickCount: number = 0
+  @Ref('listBoxTableRef') listBoxTableRef!: HTMLTableElement
 
+  $el: HTMLDivElement
+
+  selectListBox () {
+    this.listBoxTableRef.children[1].children[0].dispatchEvent(new MouseEvent('mousedown'))
+  }
   clearMatchEntry () {
     this.updateDataModelExtraData({ propertyName: 'MatchData', value: '' })
   }
@@ -221,6 +228,7 @@ export default class FDListBox extends Mixins(FdControlVue) {
    * @description mounted initializes the values which are required for the component
    */
   mounted () {
+    this.$el.focus()
     var event = new MouseEvent('mousedown.stop')
     this.setInitial(event)
     const initialRowSourceData = this.extraDatas.RowSourceData!
@@ -264,9 +272,16 @@ export default class FDListBox extends Mixins(FdControlVue) {
   }
 
   forMatchEntry (event: KeyboardEvent) {
-    this.clickCount += 1
-    this.listStyleRef[0].click()
-    this.handleExtendArrowKeySelect(event)
+    if (event.key === 'Enter' && event.keyCode === 13) {
+      this.setContentEditable(event, true)
+    }
+    if (this.isEditMode) {
+      this.listStyleRef[0].click()
+      this.handleExtendArrowKeySelect(event)
+    }
+    if (event.key === 'Escape' && event.keyCode === 27) {
+      this.releaseEditMode(event)
+    }
   }
 
   @Watch('properties.ControlSource')
@@ -280,6 +295,10 @@ export default class FDListBox extends Mixins(FdControlVue) {
         }
       }
     }
+  }
+  releaseEditMode (event: KeyboardEvent) {
+    this.$el.focus()
+    this.setContentEditable(event, false)
   }
 }
 </script>

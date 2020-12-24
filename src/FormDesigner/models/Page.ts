@@ -120,7 +120,7 @@ export const Page4 = {
   },
   extraDatas: {
   },
-  controls: ['ID_Label1'],
+  controls: [],
   type: 'Page'
 }
 export const Page5 = {

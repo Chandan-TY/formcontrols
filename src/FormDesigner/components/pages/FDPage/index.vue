@@ -99,7 +99,8 @@ import { Payload } from 'vuex'
 import {
   IupdateControl,
   IdeleteControl,
-  IupdateControlExtraData
+  IupdateControlExtraData,
+  IselectControl
 } from '../../../../storeModules/fd/actions'
 import { EventBus } from '@/FormDesigner/event-bus'
 
@@ -134,6 +135,7 @@ export default class FDPage extends Vue {
   @Action('fd/updateControl') updateControl!: (payload: IupdateControl) => void;
   @Action('fd/updateControlExtraData') updateControlExtraData!: (payload: IupdateControlExtraData) => void;
   @Action('fd/deleteControl') deleteControl!: (payload: IdeleteControl) => void;
+  @Action('fd/selectControl') selectControl!: (payload: IselectControl) => void;
   testPropName: keyof controlProperties = 'Width';
   testPropValue = '100';
 
@@ -160,6 +162,13 @@ export default class FDPage extends Vue {
   }
   setUserForm (userformId: string) {
     this.userFormId = userformId
+    this.selectControl({
+      userFormId: this.userFormId,
+      select: {
+        container: [this.userFormId],
+        selected: [this.userFormId]
+      }
+    })
   }
 }
 </script>
@@ -302,7 +311,7 @@ export default class FDPage extends Vue {
 }
 .splitAreaClass {
   background: gray;
-  overflow: hidden;
+  overflow: auto;
 }
 .splitAreaDiv {
   position: relative;

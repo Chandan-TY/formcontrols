@@ -1,7 +1,15 @@
 <template>
-  <div @click.stop="selectedItem" @mousedown="controlEditMode" :style="outerScrollBarDivObj" :title="properties.ControlTipText">
+  <div
+  @click.stop="selectedItem"
+  :style="outerScrollBarDivObj"
+  :title="properties.ControlTipText"
+  @keydown.enter="setContentEditable($event, true)"
+  @keydown.esc="setContentEditable($event, false)"
+  :tabindex="0"
+  @mousedown="controlEditMode"
+  >
     <div class="slidecontainer" :style="cssVars">
-      <button :style="scrollBarButtonStyleObj" @click="!getDisableValue?decreaseTheValue():''">
+      <button :style="scrollBarButtonStyleObj" @click="!getDisableValue?properties.Min > properties.Max ? increaseTheValue() : decreaseTheValue():''">
         <FdSvgImage
           key="leftArrow"
           name="left-arrow.svg"
@@ -12,15 +20,15 @@
       <input
         :disabled="getDisableValue"
         type="range"
-        :min="properties.Min"
-        :max="properties.Max"
+        :min="properties.Min > properties.Max ? properties.Max : properties.Min"
+        :max="properties.Min > properties.Max ? properties.Min : properties.Max"
         :value="properties.Value"
         class="slider"
         :style="inputStyleObj"
         @input="updateValueProperty"
         orient="vertical"
       />
-      <button :style="scrollBarButtonStyleObj" @click="!getDisableValue?increaseTheValue():''">
+      <button :style="scrollBarButtonStyleObj" @click="!getDisableValue?properties.Min > properties.Max ? decreaseTheValue() : increaseTheValue():''">
         <FdSvgImage
           key="rightArrow"
           name="right-arrow.svg"
@@ -45,9 +53,10 @@ import { controlProperties } from '@/FormDesigner/controls-properties'
   }
 })
 export default class FDScrollBar extends Mixins(FdControlVue) {
+  $el: HTMLDivElement
   updateValueProperty (e: Event) {
     if (e.target instanceof HTMLInputElement) {
-      const targetValue = e.target!.value
+      const targetValue = parseInt(e.target!.value)
       this.updateDataModel({ propertyName: 'Value', value: targetValue })
     }
   }
@@ -55,9 +64,21 @@ export default class FDScrollBar extends Mixins(FdControlVue) {
   get cssVars () {
     const controlProp = this.properties
     return {
+      position: 'relative',
+      left: '0px',
+      top: (this.properties.Min! > this.properties.Max!) ? this.checkOtherOrientations() ? `${controlProp.Height!}px` : '0px' : '0px',
+      gridTemplateColumns: this.checkOtherOrientations() ? '20px ' + `${controlProp.Height! - 40}px` + ' 20px' : '',
       '--bg-color': this.properties.BackColor,
-      '--height': `${this.properties.Height!}px`
+      '--height': this.checkOtherOrientations() ? `${this.properties.Width!}px` : `${this.properties.Height!}px`,
+      transform: (this.properties.Min! > this.properties.Max!) ? this.scrollReAlign() : this.checkOtherOrientations() ? 'rotate(90deg)' : '',
+      transformOrigin: (this.properties.Min! > this.properties.Max!) ? this.checkOtherOrientations() ? '0% 0%' : '' : ''
     }
+  }
+  scrollReAlign () {
+    if (this.checkOtherOrientations()) {
+      return 'rotate(-90deg)'
+    }
+    return 'ScaleX(-1)'
   }
   get getDisableValue () {
     if (this.isRunMode || this.isEditMode) {
@@ -111,15 +132,13 @@ export default class FDScrollBar extends Mixins(FdControlVue) {
     }
 
     return {
-      width: controlProp.Orientation === 1 ? this.cssVars['--height'] : `${controlProp.Width! - 44}px`,
-      height: controlProp.Orientation === 1 ? `${controlProp.Width! - 44}px` : this.cssVars['--height'],
+      width: this.checkOtherOrientations() ? `${controlProp.Height! - 44}px` : `${controlProp.Width! - 44}px`,
+      height: this.checkOtherOrientations() ? `${controlProp.Width!}px` : `${controlProp.Height! - 4}px`,
       cursor:
         controlProp.MousePointer !== 0 || controlProp.MouseIcon !== ''
           ? this.getMouseCursorData
           : 'default',
-      backgroundColor: controlProp.BackColor!.startsWith('rgb') ? `rgba(${a![0]},${a![1]},${a![2]},0.4)` : temprgba,
-      transform: controlProp.Orientation === 1 ? 'rotateZ(-90deg)' : 'rotate(0deg)'
-      // transformOrigin: 'center center'
+      backgroundColor: controlProp.BackColor!.startsWith('rgb') ? `rgba(${a![0]},${a![1]},${a![2]},0.4)` : temprgba
     }
   }
   hexToRgbA (hex: string) {
@@ -144,13 +163,25 @@ export default class FDScrollBar extends Mixins(FdControlVue) {
           : 'default'
     }
   }
+  mounted () {
+    this.$el.focus()
+  }
+
+  /**
+   * @description checkOtherOrientations returns string value from
+   * controlProperties.controlsOrientationProp
+   * @function checkOtherOrientations
+   * @returns boolean value
+   * @override
+   */
+  checkOtherOrientations (): boolean {
+    return controlProperties.controlsOrientationProp(this.data)
+  }
 }
 </script>
 
 <style scoped>
 .slidecontainer {
-  width: 100%;
-  height: 100%;
   display: grid;
   grid-template-columns: 20px auto 20px;
 }

@@ -725,6 +725,14 @@ export default class ContextMenu extends FDCommonMethod {
       for (let j in presentGroupId) {
         const newId = this.createGroupId()
         newGroupId.push(newId)
+        let groupArray: string[] = [
+          ...this.groupedControls[this.userFormId]!.groupArray!,
+          newId
+        ]
+        this.updateGroup({
+          userFormId: this.userFormId,
+          groupArray: groupArray!
+        })
       }
 
       const recCopyControl = (daTarget: string) => {
@@ -736,7 +744,7 @@ export default class ContextMenu extends FDCommonMethod {
             const controlID:| string| undefined = `ID_${Name}`
             const controlObj = { ...this.copiedControl[this.userFormId][key] }
             let groupIdIndex = -1
-            groupIdIndex = presentGroupId.findIndex((val) => controlObj.properties.GroupID)
+            groupIdIndex = presentGroupId.findIndex((val) => val === controlObj.properties.GroupID)
             const item: controlData = {
               ...controlObj,
               properties: {
@@ -762,7 +770,7 @@ export default class ContextMenu extends FDCommonMethod {
           newControlId.push(controlID)
           let groupIdIndex = -1
           groupIdIndex = presentGroupId.findIndex(
-            (val) => controlObj.properties.GroupID
+            (val) => controlObj.properties.GroupID === val
           )
           const item: controlData = {
             ...controlObj,
@@ -789,7 +797,7 @@ export default class ContextMenu extends FDCommonMethod {
 
                 let groupIdIndex = -1
                 groupIdIndex = presentGroupId.findIndex(
-                  (val) => controlObj.properties.GroupID
+                  (val) => controlObj.properties.GroupID === val
                 )
                 const item: controlData = {
                   ...controlObj,
@@ -808,17 +816,6 @@ export default class ContextMenu extends FDCommonMethod {
             }
           }
         }
-      }
-      for (let j in presentGroupId) {
-        const newId = this.createGroupId()
-        let groupArray: string[] = [
-          ...this.groupedControls[this.userFormId]!.groupArray!,
-          newId
-        ]
-        this.updateGroup({
-          userFormId: this.userFormId,
-          groupArray: groupArray!
-        })
       }
       for (let j of newGroupId) {
         this.createGroup(j)
@@ -913,14 +910,16 @@ export default class ContextMenu extends FDCommonMethod {
    */
   clickDelete () {
     const selControl = []
+    const userData = this.userformData[this.userFormId]
     const selected = this.selectedControls[this.userFormId].selected
+    const filterControls = []
+    const controls = this.userformData[this.userFormId][this.selectedControls[this.userFormId].container[0]].controls
     for (const control of selected) {
       if (!control.startsWith('ID_USERFORM')) {
         if (control.startsWith('group')) {
-          for (const key in this.userformData[this.userFormId]) {
+          for (const key in userData) {
             if (
-              this.userformData[this.userFormId][key].properties.GroupID ===
-              control
+              userData[key].properties.GroupID === control
             ) {
               selControl.push(key)
             }
@@ -928,6 +927,23 @@ export default class ContextMenu extends FDCommonMethod {
         } else {
           selControl.push(control)
         }
+      }
+    }
+    if (selected.length === 1 && !selected[0].startsWith('group') && this.userformData[this.userFormId][selected[0]].properties.GroupID !== '') {
+      for (let j = 0; j < controls.length; j++) {
+        if (userData[controls[j]].properties.GroupID === userData[selected[0]].properties.GroupID) {
+          filterControls.push(controls[j])
+        }
+      }
+      if (filterControls.length === 2) {
+        const selGroupId = userData[selected[0]].properties.GroupID
+        this.updateControlProperty('GroupID', '', filterControls[1])
+        const groups = [...this.groupedControls[this.userFormId].groupArray]
+        const findIndex = groups.findIndex(val => selGroupId)
+        this.updateGroup({
+          userFormId: this.userFormId,
+          groupArray: groups.splice(findIndex, 1)
+        })
       }
     }
     for (let i = 0; i < selControl.length; i++) {

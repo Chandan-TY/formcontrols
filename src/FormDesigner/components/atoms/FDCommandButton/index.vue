@@ -26,7 +26,7 @@
       :style="editCssObj"
       :caption="properties.Caption"
       @updateCaption="updateCaption"
-      @releaseEditMode="setContentEditable($event, false)"
+      @releaseEditMode="releaseEditMode"
     >
     </FDEditableText>
   </button>
@@ -163,6 +163,7 @@ export default class FDCommandButton extends Mixins(FdControlVue) {
             : font.FontStrikethrough
               ? 'line-through'
               : '',
+      textUnderlinePosition: 'under',
       fontWeight: font.FontBold ? 'bold' : (font.FontStyle !== '') ? this.tempWeight : '',
       fontStretch: (font.FontStyle !== '') ? this.tempStretch : '',
       whiteSpace: controlProp.WordWrap ? 'pre-wrap' : 'pre',
@@ -205,7 +206,12 @@ export default class FDCommandButton extends Mixins(FdControlVue) {
    * @description mounted initializes the values which are required for the component
    */
   mounted () {
+    this.$el.focus()
     this.updateAutoSize()
+  }
+  releaseEditMode (event: KeyboardEvent) {
+    this.$el.focus()
+    this.setContentEditable(event, false)
   }
 }
 </script>

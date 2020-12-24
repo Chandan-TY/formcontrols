@@ -88,6 +88,5 @@ export default class FDCustomFontDialog extends Vue {
   overflow: hidden;
   float: right;
   width: 100%;
-  height: 14px;
 }
 </style>

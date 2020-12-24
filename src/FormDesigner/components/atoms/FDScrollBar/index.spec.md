@@ -59,7 +59,7 @@ Provides a graphical tool for quickly navigating through a long list of items or
 <h4>MousePointer</h4>
 <span>Changes the shape of the mouse cursor when the mouse is over the control </span>
 
-<h4>Orientation <span style="color:red;">(1)</span></h4>
+<h4>Orientation</h4>
 <span>Specifies whether the control is oriented vertically or horizontally.</span>
 
 <h4>ProportionalThumb <span style="color:red;">(1)</span></h4>

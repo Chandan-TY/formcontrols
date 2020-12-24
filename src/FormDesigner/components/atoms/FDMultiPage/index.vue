@@ -156,6 +156,37 @@ export default class FDMultiPage extends FdContainerVue {
     this.viewMenu = false
   }
 
+  @Watch('selectedPageData.properties.ScrollLeft')
+  updateScrollLeft () {
+    if (this.selectedPageData) {
+      this.scrollLeftTop(this.selectedPageData!)
+    }
+  }
+
+  @Watch('selectedPageData.properties.ScrollTop')
+  updateScrollTop () {
+    if (this.selectedPageData) {
+      this.scrollLeftTop(this.selectedPageData!)
+    }
+  }
+  /**
+   * @description sets scrollbar left and top position
+   * @function scrollLeftTop
+   * @param controlData propControlData passed as input
+   */
+  scrollLeftTop (controlData: controlData) {
+    if (this.selectedPageData) {
+      const scrollLeft: number = controlData!.properties.ScrollLeft!
+      const scrollTop: number = controlData!.properties.ScrollTop!
+      console.log(this.$refs)
+      if (scrollLeft > 0) {
+        (this.contentRef as IScrollRef).scrollLeft = scrollLeft
+      }
+      if (scrollTop > 0) {
+        (this.contentRef as IScrollRef).scrollTop = scrollTop
+      }
+    }
+  }
   closeContextMenu () {
     this.multiPageContextMenu = false
   }
@@ -564,7 +595,7 @@ export default class FDMultiPage extends FdContainerVue {
    * @param oldVal previous propControlData data
    * @param newVal  new/changed propControlData data
    */
-  @Watch('properties.Width', { deep: true })
+  @Watch('properties.Width')
   isScrollUsed (newVal: number, oldVal: number) {
     if (this.properties.MultiRow) {
       const initialLength = this.controls.length!
@@ -630,6 +661,7 @@ export default class FDMultiPage extends FdContainerVue {
     }
   }
   mounted () {
+    this.scrollLeftTop(this.data)
     this.selectedPageID = this.controls[0]
     this.calculateWidthHeight()
   }

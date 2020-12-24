@@ -300,7 +300,7 @@ interface tableDatas {
   [propName: string]: tableData
 }
 interface ICommonProp {
-  [propName: string]: string[]
+  [propName: string]: any
 }
 
 interface ICommonPropVal {

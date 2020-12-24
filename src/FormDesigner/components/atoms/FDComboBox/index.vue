@@ -5,6 +5,8 @@
     :style="customSelectObj"
     :title="properties.ControlTipText"
     @click="selectedItem"
+    @keydown.enter="setContentEditable($event, true)"
+    @keydown.esc="releaseEditMode"
   >
     <div
       class="combobox"
@@ -169,7 +171,6 @@ export default class FDComboBox extends Mixins(FdControlVue) {
   }
 
   updateColumnValue (index: number) {
-    console.log('this.updateColumnWidths(index)', this.updateColumnWidths(index))
     return this.updateColumnWidths(index)
   }
 
@@ -189,9 +190,8 @@ export default class FDComboBox extends Mixins(FdControlVue) {
       this.open = true
       const tempEvent = e.target
       this.eTargetValue = e.target.value
-      var code = this.eTargetValue.toUpperCase().charCodeAt(0)
       this.comboRef.children[1].children[0].dispatchEvent(new MouseEvent('mousedown'))
-      this.comboRef.children[1].children[0].dispatchEvent(new KeyboardEvent('keydown', { key: e.target.value, keyCode: code }))
+      this.comboRef.children[1].children[0].dispatchEvent(new KeyboardEvent('keydown', { key: e.target.value }))
       this.selectionData[0] = this.eTargetValue
       if (this.properties.MatchEntry !== 0) {
         this.textareaRef.focus()
@@ -199,7 +199,6 @@ export default class FDComboBox extends Mixins(FdControlVue) {
       if ((this.properties.MatchEntry === 0)) {
         for (let i = 0; i < this.tempArray.length; i++) {
           if (this.tempArray[i][0][0] === this.textareaRef.value[0]) {
-            console.log('Insde')
             this.textareaRef.value = this.tempArray[i][0]
             this.updateDataModel({ propertyName: 'Text', value: this.tempArray[i][0] })
             break
@@ -491,9 +490,9 @@ export default class FDComboBox extends Mixins(FdControlVue) {
             : font.FontStrikethrough
               ? 'line-through'
               : '',
+      textUnderlinePosition: 'under',
       fontWeight: font.FontBold ? 'bold' : (font.FontStyle !== '') ? this.tempWeight : '',
       fontStretch: (font.FontStyle !== '') ? this.tempStretch : '',
-
       backgroundColor: controlProp.BackStyle ? controlProp.BackColor : 'transparent',
       color: controlProp.ForeColor,
       textAlign:
@@ -572,7 +571,13 @@ export default class FDComboBox extends Mixins(FdControlVue) {
   checkSelectionMargin (newVal: boolean, oldVal: boolean) {
     this.selectionData[0] = this.eTargetValue
   }
+  releaseEditMode (event: KeyboardEvent) {
+    this.$el.focus()
+    this.setContentEditable(event, false)
+  }
+
   mounted () {
+    this.$el.focus()
     const initialRowSourceData = this.extraDatas.RowSourceData!
     if (initialRowSourceData) {
       this.tempArray = initialRowSourceData

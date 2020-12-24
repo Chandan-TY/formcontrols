@@ -1,6 +1,11 @@
 <template>
-  <div @mousedown="controlEditMode">
-    <div
+  <div
+  @mousedown="controlEditMode"
+  :tabindex="properties.TabIndex"
+  @keydown.enter="setContentEditable($event, true)"
+  @keydown.esc="setContentEditable($event, false)"
+  >
+<div
       class="outerSpinDiv"
       :class="classStyle"
       :style="styleObj"
@@ -118,6 +123,7 @@ export default class FDSpinButton extends Mixins(FdControlVue) {
   classStyle: string = 'spin';
   orientedValue: boolean = true;
   svgWidth: number = 0;
+  $el: HTMLDivElement
 
   /**
    * @description getDisableValue checks for the RunMode or the EditMode of the control and then returns after checking for the Enabled  property
@@ -253,6 +259,17 @@ export default class FDSpinButton extends Mixins(FdControlVue) {
       orientation: this.properties.Orientation,
       width: this.properties.Width,
       height: this.properties.Height
+    }
+  }
+
+  mounted () {
+    this.$el.focus()
+    if (this.properties.Orientation === 0) {
+      this.orientationValues.orientation = 0
+      this.orientationValues.width = 0
+      this.orientationValues.height = 0
+      const newValues:IOrientationvalues = this.orientationValues
+      this.checkOrientation(newValues, this.orientationValues)
     }
   }
 }

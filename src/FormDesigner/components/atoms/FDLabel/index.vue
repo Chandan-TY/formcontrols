@@ -20,7 +20,7 @@
       :style="editCssObj"
       :caption="properties.Caption"
       @updateCaption="updateCaption"
-      @releaseEditMode="setContentEditable($event, false)"
+      @releaseEditMode="releaseEditMode"
     >
     </FDEditableText>
   </label>
@@ -157,6 +157,13 @@ export default class FDLabel extends Mixins(FdControlVue) {
     } else {
       return undefined
     }
+  }
+  mounted () {
+    this.$el.focus()
+  }
+  releaseEditMode (event: KeyboardEvent) {
+    this.$el.focus()
+    this.setContentEditable(event, false)
   }
 }
 </script>

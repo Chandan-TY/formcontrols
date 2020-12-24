@@ -818,7 +818,6 @@ handleMultiSelect (e: MouseEvent) {
         if (this.properties.ControlSource !== '') {
           this.updateDataModel({ propertyName: 'Text', value: this.selectionData[0] })
           this.updateDataModel({ propertyName: 'Value', value: this.selectionData[0] })
-          this.updateDataModelExtraData({ propertyName: 'ControlSourceValue', value: this.selectionData[0] })
         }
         this.clearOptionBGColorAndChecked(e)
         this.setOptionBGColorAndChecked(e)
@@ -897,13 +896,11 @@ handleMultiSelect (e: MouseEvent) {
         if (this.properties.ControlSource !== '') {
           this.updateDataModel({ propertyName: 'Text', value: this.selectionData[0] })
           this.updateDataModel({ propertyName: 'Value', value: this.selectionData[0] })
-          this.updateDataModelExtraData({ propertyName: 'ControlSourceValue', value: this.selectionData[0] })
         }
         this.clearOptionBGColorAndChecked(e)
         this.setOptionBGColorAndChecked(e)
         let isListStyle = 0
         if (this.properties.TextColumn === -1 || this.properties.TextColumn === 1) {
-        // 0th index is empty string
           if (this.properties.ListStyle === 0) {
             isListStyle = -1
           }
@@ -934,13 +931,14 @@ handleMultiSelect (e: MouseEvent) {
  */
 handleExtendArrowKeySelect (e: KeyboardEvent) {
   // if (e.target instanceof HTMLTableRowElement) {
+  const x = e.key.toUpperCase().charCodeAt(0)
   const tempPath = e.composedPath()
   const eventTarget = e.target as HTMLTableRowElement
   const nextSiblingEvent = eventTarget.nextSibling as HTMLTableElement
   const prevSiblingEvent = eventTarget.previousSibling as HTMLTableElement
   if (
    this.properties.MatchEntry! === 0 &&
-   e.keyCode >= 48 && e.keyCode <= 90
+   x >= 48 && x <= 90
   ) {
     this.matchEntry = []
     const prevMatchData =
@@ -1003,7 +1001,7 @@ handleExtendArrowKeySelect (e: KeyboardEvent) {
     }
   } else if (
     this.properties.MatchEntry === 1 &&
-   e.keyCode >= 48 && e.keyCode <= 90
+    x >= 48 && x <= 90
   ) {
     let temp = this.extraDatas.MatchData + e.key
     this.updateDataModelExtraData({ propertyName: 'MatchData', value: temp })

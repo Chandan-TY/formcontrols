@@ -209,11 +209,17 @@ export default class Container extends FDCommonMethod {
    * @param selectedSelect  - control array to be added
    */
   addChildControl (selectedSelect: string[]) {
-    this.addChildControls({
-      userFormId: this.userFormId,
-      containerId: this.containerId,
-      targetControls: selectedSelect
-    })
+    const userData = this.userformData[this.userFormId]
+    for (const control of selectedSelect) {
+      if (!userData[this.containerId].controls.includes(control)) {
+        this.addChildControls({
+          userFormId: this.userFormId,
+          containerId: this.containerId,
+          targetControls: selectedSelect
+        })
+      }
+    }
+
     for (const id of selectedSelect) {
       this.updateTabIndexValue(id)
       this.updateZIndexValue(id)
@@ -346,21 +352,25 @@ export default class Container extends FDCommonMethod {
             const mainSelectGroup: string = mainSelectData.properties.GroupID!
             const selectedSelect = this.handler === 'frameDrag' ? (this.selectedSelect.includes(mainSelect) ? this.selectedSelect : [mainSelect]) : this.selectedSelect
             if (typeof mainSelectX === 'number' && typeof mainSelectY === 'number') {
-              selectedSelect.forEach((id) => {
-                const targetData = currentControlsData[id].properties
-                const targetLeft = targetData.Left
-                const targetTop = targetData.Top
-                if (typeof targetTop === 'number' && typeof targetLeft === 'number') {
-                  this.updateControlProp(id, 'Left', containerX + targetLeft - mainSelectX - moveValueX)
-                  this.updateControlProp(id, 'Top', containerY + targetTop - mainSelectY - moveValueY)
-                  if (this.handler === 'drag') {
-                    if (mainSelectGroup !== '' && this.selectedContainer !== this.containerId) {
-                      this.updateControlProp(id, 'GroupID', '')
-                      this.updateGroupControl(mainSelectGroup)
+              if ((this.handler === 'frameDrag' || this.handler === 'drag')) {
+                selectedSelect.forEach((id) => {
+                  const targetData = currentControlsData[id].properties
+                  const targetLeft = targetData.Left
+                  const targetTop = targetData.Top
+                  if (typeof targetTop === 'number' && typeof targetLeft === 'number') {
+                    this.updateControlProp(id, 'Left', containerX + targetLeft - mainSelectX - moveValueX)
+                    this.updateControlProp(id, 'Top', containerY + targetTop - mainSelectY - moveValueY)
+                    if (this.handler === 'drag') {
+                      if (mainSelectGroup !== '' && this.selectedContainer !== this.containerId) {
+                        this.updateControlProp(id, 'GroupID', '')
+                        this.updateGroupControl(mainSelectGroup)
+                      }
                     }
                   }
-                }
-              })
+                })
+              } else if (this.grouphandler === 'groupdrag' && this.selectedContainer === this.containerId) {
+                EventBus.$emit('getClientValue', 'same')
+              }
             }
             if (this.handler === 'frameDrag' && this.userformData[this.userFormId][this.containerId].controls.includes(mainSelect)) {
               event.stopPropagation()
@@ -456,7 +466,7 @@ export default class Container extends FDCommonMethod {
     const sh = this.propControlData.properties.ScrollHeight!
     const sw = this.propControlData.properties.ScrollWidth!
     return {
-      height: ph > sh ? `${ph - 50}px` : `${sh! - 50}px`,
+      height: type === 'Frame' ? (ph > sh ? `${ph - 50}px` : `${sh! - 27}px`) : ph > sh ? `${ph - 50}px` : `${sh! - 50}px`,
       width: pw > sw ? `${pw - 20}px` : `${sw! - 20}px`,
       cursor:
         this.propControlData.properties.MousePointer !== 0 ||

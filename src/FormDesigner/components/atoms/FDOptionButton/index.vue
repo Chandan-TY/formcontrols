@@ -4,6 +4,8 @@
     class="outer-check"
     :style="cssStyleProperty"
     @click="selectedItem"
+    :tabindex="properties.TabIndex"
+    @keydown.enter="setContentEditable($event, true)"
   >
     <label class="control"
       ><input
@@ -39,7 +41,7 @@
           :style="editCssObj"
           :caption="properties.Caption"
           @updateCaption="updateCaption"
-          @releaseEditMode="setContentEditable($event, false)"
+          @releaseEditMode="releaseEditMode"
         >
         </FDEditableText>
       </div>
@@ -62,6 +64,7 @@ export default class FDOptionButton extends Mixins(FdControlVue) {
   @Ref('divAutoSize') autoSizeOptionButton!: HTMLDivElement;
   @Ref('optBtnInput') optBtnInput!: HTMLInputElement;
   @Ref('spanRef') spanRef!: HTMLSpanElement;
+  $el: HTMLDivElement
 
   /**
    * @description  updates Value property and the sets the backGround in runMode
@@ -209,6 +212,7 @@ export default class FDOptionButton extends Mixins(FdControlVue) {
         : font.FontStyle !== ''
           ? this.tempWeight
           : '',
+      textUnderlinePosition: 'under',
       fontStretch: font.FontStyle !== '' ? this.tempStretch : '',
       display: display,
       direction: controlProp.Alignment ? 'ltr' : 'rtl',
@@ -322,7 +326,12 @@ export default class FDOptionButton extends Mixins(FdControlVue) {
    * @function controlSource
    */
   mounted () {
+    this.$el.focus()
     this.controlSource()
+  }
+  releaseEditMode (event: KeyboardEvent) {
+    this.$el.focus()
+    this.setContentEditable(event, false)
   }
 }
 </script>
