@@ -59,7 +59,7 @@ export default class FDCustomInput extends Vue {
   position: relative;
   width: 100%;
   display: grid;
-  grid-template-columns: 100px 1fr;
+  grid-template-columns: 118px 1fr;
 }
 .custom-label-ele {
   outline: none;

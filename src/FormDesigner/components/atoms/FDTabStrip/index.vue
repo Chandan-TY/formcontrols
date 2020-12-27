@@ -113,6 +113,13 @@ export default class FDTabStrip extends FdControlVue {
       e.stopPropagation()
       const controlLeft: number = this.userformData['ID_USERFORM1'][this.controlId].properties.Left!
       const controlTop: number = this.userformData['ID_USERFORM1'][this.controlId].properties.Top!
+      for (const val of this.contextMenuValue) {
+        if (val.id === 'ID_DELETEPAGE' || val.id === 'ID_RENAME') {
+          val.disabled = this.extraDatas.Tabs!.length === 0
+        } else if (val.id === 'ID_MOVE') {
+          val.disabled = this.extraDatas.Tabs!.length <= 1
+        }
+      }
       this.viewMenu = true
       Vue.nextTick(() => this.tabstripContextMenu.focus())
     } else {
@@ -649,5 +656,8 @@ export default class FDTabStrip extends FdControlVue {
 .spanClass {
   text-decoration: underline;
   text-underline-position: under;
+}
+:focus{
+  outline: none;
 }
 </style>

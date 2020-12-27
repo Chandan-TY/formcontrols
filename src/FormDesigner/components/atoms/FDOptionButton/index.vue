@@ -271,7 +271,13 @@ export default class FDOptionButton extends Mixins(FdControlVue) {
           : controlProp.TextAlign === 1
             ? 'center'
             : 'flex-end',
-      alignItems: 'center'
+      alignItems: 'center',
+      textAlign:
+        controlProp.TextAlign === 0
+          ? 'start'
+          : controlProp.TextAlign === 1
+            ? 'center'
+            : 'end'
     }
   }
 
@@ -298,7 +304,7 @@ export default class FDOptionButton extends Mixins(FdControlVue) {
    * @override
    */
   @Watch('properties.AutoSize', { deep: true })
-  updateAutoSize (newVal: boolean, oldVal: boolean) {
+  updateAutoSize () {
     if (this.properties.AutoSize) {
       this.$nextTick(() => {
         let divRef: HTMLDivElement = this.autoSizeOptionButton
@@ -318,6 +324,13 @@ export default class FDOptionButton extends Mixins(FdControlVue) {
       })
     } else {
       return undefined
+    }
+  }
+
+  @Watch('properties.Caption', { deep: true })
+  handleCaption () {
+    if (this.properties.AutoSize) {
+      this.updateAutoSize()
     }
   }
 

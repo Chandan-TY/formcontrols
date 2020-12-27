@@ -3,6 +3,8 @@
     @keydown.ctrl="handleKeyDown"
     @keydown.delete.exact="handleKeyDown"
     @keydown.tab.exact="tabAction"
+    @keydown.ctrl.exact="selectMultipleCtrl(true)"
+    @keyup="selectMultipleCtrl(false)"
     tabindex="0"
   >
     <div
@@ -176,6 +178,9 @@ export default class ResizeUserForm extends FdSelectVue {
         }
       }
     }
+  }
+  selectMultipleCtrl (val: string) {
+    EventBus.$emit('selectMultipleCtrl', val)
   }
 }
 </script>

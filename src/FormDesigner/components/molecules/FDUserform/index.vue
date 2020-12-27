@@ -50,6 +50,7 @@ import FDSVGImage from '@/FormDesigner/components/atoms/FDSVGImage/index.vue'
 import { controlProperties } from '@/FormDesigner/controls-properties'
 import FdContainerVue from '@/api/abstract/FormDesigner/FdContainerVue'
 import { IupdateControl } from '@/storeModules/fd/actions'
+import { EventBus } from '@/FormDesigner/event-bus'
 @Component({
   name: 'UserForm',
   components: {
@@ -214,6 +215,14 @@ export default class UserForm extends FdContainerVue {
   showContextMenu (e: MouseEvent, parentID: string, controlID: string) {
     this.openMenu(e, parentID, controlID)
     Vue.nextTick(() => this.containerRef.contextmenu.focus())
+  }
+  created () {
+    EventBus.$on('selectMultipleCtrl', (val: boolean) => {
+      this.selMultipleCtrl = val
+    })
+  }
+  destroyed () {
+    EventBus.$off('selectMultipleCtrl')
   }
 }
 </script>

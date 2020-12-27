@@ -270,11 +270,13 @@ export default class FDTable extends Vue {
         this.emitUpdateProperty(
           propertyName,
           propertyValue !== '' ? propertyValue[0] : propertyValue
-        )
+        );
+        (e.target as HTMLInputElement).value = propertyValue && propertyValue[0]
+
       } else if (propertyName === 'Name') {
         const isSuccess = this.updateProperty({ propertyName: propertyName, value: propertyValue })
         if (!isSuccess) {
-          (e.target as HTMLInputElement).value = this.tableData!.Name!.value! as string
+          (e.target as HTMLInputElement).value = this.tableData![propertyName]!.value! as string
           EventBus.$emit('showErrorPopup', true, 'invalid', 'Could not set the Name property. Ambiguous name.')
         }
       } else if (propertyName === 'Value') {

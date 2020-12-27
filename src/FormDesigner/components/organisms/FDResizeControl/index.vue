@@ -312,10 +312,24 @@ export default class ResizeControl extends FdSelectVue {
 
   @Watch('selectedControls', { deep: true })
   updateSelectedControls () {
-    if (this.isMoving === false) {
-      this.isEditMode = false
+    const type = this.userformData[this.userFormId][this.selectedContainer[0]].type
+    const controlType = this.userformData[this.userFormId][this.controlId].type
+    if (type === 'Frame' || type === 'Page' || type === 'MultiPage') {
+      if (controlType === 'Frame' || controlType === 'MultiPage') {
+        this.isEditMode = true
+      } else {
+        if (this.isMoving === false) {
+          this.isEditMode = false
+        } else {
+          this.isMoving = false
+        }
+      }
     } else {
-      this.isMoving = false
+      if (this.isMoving === false) {
+        this.isEditMode = false
+      } else {
+        this.isMoving = false
+      }
     }
   }
 

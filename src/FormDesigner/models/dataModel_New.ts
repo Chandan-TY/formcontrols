@@ -16,9 +16,9 @@ export const userDataNew = {
           FontName: 'Arial',
           FontSize: 10,
           FontBold: false,
-          FontItalic: true,
-          FontUnderline: true,
-          FontStrikethrough: true,
+          FontItalic: false,
+          FontUnderline: false,
+          FontStrikethrough: false,
           FontStyle: 'Arial Narrow Italic'
         },
         ForeColor: '#ffffff',
@@ -487,9 +487,9 @@ export const userDataNew = {
           FontName: 'Arial',
           FontSize: 10,
           FontBold: false,
-          FontItalic: true,
-          FontUnderline: true,
-          FontStrikethrough: true,
+          FontItalic: false,
+          FontUnderline: false,
+          FontStrikethrough: false,
           FontStyle: 'Arial Narrow Italic'
         },
         ForeColor: '#000000',
@@ -571,31 +571,31 @@ export const userDataNew = {
             Name: 'Tab1',
             Caption: 'Tab1',
             ToolTip: 'Select Tab1',
-            Accelerator: '1'
+            Accelerator: ''
           },
           {
             Name: 'Tab2',
             Caption: 'Tab2',
             ToolTip: 'Select Tab2',
-            Accelerator: '2'
+            Accelerator: ''
           },
           {
             Name: 'Tab3',
             Caption: 'Tab3',
             ToolTip: 'Select Tab3',
-            Accelerator: '3'
+            Accelerator: ''
           },
           {
             Name: 'Tab4',
             Caption: 'Tab4',
             ToolTip: 'Select Tab4',
-            Accelerator: '4'
+            Accelerator: ''
           },
           {
             Name: 'Tab5',
             Caption: 'Tab5',
             ToolTip: 'Select Tab5',
-            Accelerator: '5'
+            Accelerator: ''
           }
         ]
       },
@@ -763,9 +763,9 @@ export const userDataNew = {
           FontName: 'Arial',
           FontSize: 10,
           FontBold: false,
-          FontItalic: true,
-          FontUnderline: true,
-          FontStrikethrough: true,
+          FontItalic: false,
+          FontUnderline: false,
+          FontStrikethrough: false,
           FontStyle: 'Arial Narrow Italic'
         },
         ForeColor: '#ffffff',
@@ -818,9 +818,9 @@ export const userDataNew = {
           FontName: 'Arial',
           FontSize: 10,
           FontBold: false,
-          FontItalic: true,
-          FontUnderline: true,
-          FontStrikethrough: true,
+          FontItalic: false,
+          FontUnderline: false,
+          FontStrikethrough: false,
           FontStyle: 'Arial Narrow Italic'
         },
         ForeColor: '#000000',

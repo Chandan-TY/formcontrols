@@ -91,7 +91,6 @@ export default class GroupControl extends FDCommonMethod {
     EventBus.$on('updasteGroupSize', this.updasteGroupSize)
   }
   updasteGroupSize (propName: keyof controlProperties, propertyValue: number, groupIndex: number) {
-    debugger
     if (this.selectedControls[this.userFormId].container[0] === this.containerId) {
       if (propName === 'GroupID') {
         this.divStyleArray[groupIndex].left = `${Math.trunc(parseInt(this.divStyleArray[groupIndex].left!))}px`

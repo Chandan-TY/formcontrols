@@ -36,6 +36,7 @@ export default abstract class FdContainerVue extends FdControlVue {
   userformContextMenu: Array<IcontextMenu> = userformContextMenu;
   selectedControlArray: Array<string> = [];
   selectedAreaStyle: ISelectedArea | undefined
+  selMultipleCtrl: boolean = false
   /**
  * @description  close the contextMenu
  * @function closeMenu
@@ -46,6 +47,9 @@ export default abstract class FdContainerVue extends FdControlVue {
     this.viewMenu = false
   }
 
+  selectMultipleCtrl (val: boolean) {
+    this.selMultipleCtrl = val
+  }
   get selConatiner () {
     return this.selectedControls[this.userFormId].container
   }
@@ -83,7 +87,7 @@ export default abstract class FdContainerVue extends FdControlVue {
         controlContainer(controlId)
       }
     }
-    return containerList || [this.userFormId]
+    return containerList.length > 0 ? containerList : [this.userFormId]
   }
 
   generateControlId (controlName: string) {
@@ -250,10 +254,12 @@ export default abstract class FdContainerVue extends FdControlVue {
    */
   deActiveControl (this: this) {
     const controlType: string = this.userformData[this.userFormId][this.controlId].type
-    this.selectControl({
-      userFormId: this.userFormId,
-      select: { container: controlType === 'Userform' ? [this.controlId] : this.getContainerList(this.controlId), selected: [this.controlId] }
-    })
+    if (this.selMultipleCtrl === false) {
+      this.selectControl({
+        userFormId: this.userFormId,
+        select: { container: controlType === 'Userform' ? [this.controlId] : this.getContainerList(this.controlId), selected: [this.controlId] }
+      })
+    }
   }
 
   /**
@@ -387,13 +393,39 @@ export default abstract class FdContainerVue extends FdControlVue {
         }
       }
       if (this.selectedControlArray.length !== 0) {
-        this.selectControl({
-          userFormId: this.userFormId,
-          select: {
-            container: this.getContainerList(selectedGroup[0]),
-            selected: [...selectedGroup]
+        if (this.selMultipleCtrl) {
+          let selected = [...this.selectedControls[this.userFormId].selected]
+          if (selected[0] === controlData.properties.ID) {
+            selected = []
+          } else {
+            selected = [...selected]
           }
-        })
+          const unique = () => {
+            var a = selected.concat(selectedGroup)
+            for (var i = 0; i < a.length; ++i) {
+              for (var j = i + 1; j < a.length; ++j) {
+                if (a[i] === a[j]) { a.splice(j--, 1) }
+              }
+            }
+            return a
+          }
+          const combineArray = unique()
+          this.selectControl({
+            userFormId: this.userFormId,
+            select: {
+              container: this.getContainerList(selectedGroup[0]),
+              selected: combineArray
+            }
+          })
+        } else {
+          this.selectControl({
+            userFormId: this.userFormId,
+            select: {
+              container: this.getContainerList(selectedGroup[0]),
+              selected: [...selectedGroup]
+            }
+          })
+        }
       }
     }
   }

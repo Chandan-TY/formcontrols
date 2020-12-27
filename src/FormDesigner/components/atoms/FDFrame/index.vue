@@ -5,12 +5,13 @@
     :style="cssStyleProperty"
     :title="properties.ControlTipText"
     :tabindex="properties.TabIndex"
-    @keydown.ctrl.exact.stop="handleKeyDown"
+    @keydown.ctrl.exact.stop="selectMultipleCtrl(true)"
+    @keydown.ctrl.stop="handleKeyDown"
     @keydown.delete.stop.exact="deleteFrame"
     @keydown.enter.exact="setContentEditable($event, true)"
     @click.stop="!isEditMode ? selectedItem : addControlObj($event)"
     @contextmenu.stop="showContextMenu($event, userFormId, controlId)"
-    @mousedown="frameMouseDown"
+    @mousedown.stop="frameMouseDown"
     @mouseup="dragSelectorControl($event)"
   >
     <legend :style="legendCssStyleProperty">{{ properties.Caption }}</legend>
@@ -251,7 +252,9 @@ export default class FDFrame extends FdContainerVue {
 
   frameMouseDown (e: MouseEvent) {
     EventBus.$emit('isEditMode', this.isEditMode)
-    this.selectedItem(e)
+    if (this.isEditMode === false) {
+      this.selectedItem(e)
+    }
     const selContainer = this.selectedControls[this.userFormId].container[0]
     if (selContainer === this.controlId) {
       this.deActiveControl()
@@ -291,6 +294,14 @@ export default class FDFrame extends FdContainerVue {
       propertyName: 'ScrollTop',
       value: refName.scrollTop
     })
+  }
+  created () {
+    EventBus.$on('selectMultipleCtrl', (val: boolean) => {
+      this.selMultipleCtrl = val
+    })
+  }
+  destroyed () {
+    EventBus.$off('selectMultipleCtrl')
   }
 }
 </script>

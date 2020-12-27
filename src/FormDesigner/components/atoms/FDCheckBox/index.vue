@@ -261,7 +261,13 @@ export default class FDCheckBox extends Mixins(FdControlVue) {
           : controlProp.TextAlign === 1
             ? 'center'
             : 'flex-end',
-      alignItems: 'center'
+      alignItems: 'center',
+      textAlign:
+        controlProp.TextAlign === 0
+          ? 'start'
+          : controlProp.TextAlign === 1
+            ? 'center'
+            : 'end'
     }
   }
 
@@ -303,7 +309,7 @@ export default class FDCheckBox extends Mixins(FdControlVue) {
   @Watch('properties.AutoSize', {
     deep: true
   })
-  updateAutoSize (newVal: boolean, oldVal: boolean) {
+  updateAutoSize () {
     if (this.properties.AutoSize) {
       this.$nextTick(() => {
         let divRef: HTMLDivElement = this.autoSizecheckbox
@@ -326,6 +332,12 @@ export default class FDCheckBox extends Mixins(FdControlVue) {
     }
   }
 
+  @Watch('properties.Caption', { deep: true })
+  handleCaption () {
+    if (this.properties.AutoSize) {
+      this.updateAutoSize()
+    }
+  }
   /**
    * @description  sets controlSource if present and updates Value property
    * @function controlSource

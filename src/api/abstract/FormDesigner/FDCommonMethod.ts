@@ -55,7 +55,7 @@ export default class FDCommonMethod extends Vue {
         controlContainer(controlId)
       }
     }
-    return containerList || [this.userFormId]
+    return containerList.length > 0 ? containerList : [this.userFormId]
   }
   updateExtraDatas (id: string, propertyName: keyof extraDatas, value: number) {
     this.updateControlExtraData({

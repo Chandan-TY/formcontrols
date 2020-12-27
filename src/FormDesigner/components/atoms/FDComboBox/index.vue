@@ -55,6 +55,7 @@
       </div>
       <div
         class="selected"
+        :class="[properties.DropButtonStyle === 1 ? 'forArrow' : properties.DropButtonStyle === 2 ? 'forEllipsis' : properties.DropButtonStyle === 3 ? 'forReduce' : 'forPlain']"
         @click="enabledCheck($event)"
         :style="selectedStyleObj"
       ></div>
@@ -141,7 +142,6 @@ import {
 } from 'vue-property-decorator'
 import FdControlVue from '@/api/abstract/FormDesigner/FdControlVue'
 import { Mutation, Action, Getter } from 'vuex-class'
-// import '../../../../assets/sort-down.png'
 @Component({
   name: 'FDComboBox'
 })
@@ -237,7 +237,6 @@ export default class FDComboBox extends Mixins(FdControlVue) {
   protected get tableBodyObj (): Partial<CSSStyleDeclaration> {
     const controlProp = this.properties
     return {
-      // display: 'inline',
       width: `${controlProp.Width}px !important`
     }
   }
@@ -265,7 +264,6 @@ export default class FDComboBox extends Mixins(FdControlVue) {
     textareaRef: HTMLTextAreaElement,
     hideSelectionDiv: HTMLDivElement
   ) {
-    // this.open = false
     if (this.isScrolling) {
       this.open = true
       this.textareaRef.focus()
@@ -608,16 +606,6 @@ export default class FDComboBox extends Mixins(FdControlVue) {
     }
   }
 
-  changeDropButtonStyle () {
-    if (this.properties.DropButtonStyle === 1) {
-      return '../../../../assets/sort-down.png'
-    } else if (this.properties.DropButtonStyle === 2) {
-      return '../../../../assets/ellipsis.png'
-    } else if (this.properties.DropButtonStyle === 3) {
-      return '../../../../assets/minus.png'
-    }
-  }
-
   protected get labelStyleObj (): Partial<CSSStyleDeclaration> {
     const controlProp = this.properties
     const font: font = controlProp.Font
@@ -663,7 +651,7 @@ export default class FDComboBox extends Mixins(FdControlVue) {
         ? this.getSpecialEffectData
         : '-1px -1px lightgray',
       display: 'grid',
-      gridTemplateColumns: `${controlProp.Width! - 20}px` + ' 20px',
+      gridTemplateColumns: `${controlProp.Width! - 20}px` + ' 21px',
       gridTemplateRows: `${controlProp.Height!}px`,
       outline: 'none'
     }
@@ -679,12 +667,9 @@ export default class FDComboBox extends Mixins(FdControlVue) {
     const controlProp = this.properties
     return {
       visibility: controlProp.ShowDropButtonWhen === 2 ? 'visible' : this.expandWidth(),
-      backgroundImage:
-        controlProp.DropButtonStyle === 0
-          ? 'none'
-          : this.changeDropButtonStyle(),
       backgroundPosition:
         controlProp.DropButtonStyle === 1 ? 'center' : 'bottom',
+      backgroundSize: '6px 6px',
       cursor:
         controlProp.MousePointer !== 0 || controlProp.MouseIcon !== ''
           ? this.getMouseCursorData
@@ -695,8 +680,12 @@ export default class FDComboBox extends Mixins(FdControlVue) {
     if (this.isRunMode || this.isEditMode) {
       if (this.properties.Enabled) {
         if (!this.properties.Locked) {
-          this.open = !this.open
-          this.textareaRef.focus()
+          if (this.open) {
+            this.textareaRef.focus()
+            this.open = false
+          } else {
+            this.open = true
+          }
         }
       } else {
         this.open = false
@@ -725,16 +714,13 @@ export default class FDComboBox extends Mixins(FdControlVue) {
 }
 .selected {
   background-color: lightgray;
-  /* border-radius: 6px; */
   border: 1px solid #858586;
   border-left: 0px;
   color: black;
-  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="50" border="1px solid red"><polygon points="0,0 100,0 50,50" style="fill:%23666666;stroke-width:3;stroke:rgb(0,0,250)" /></svg>');
   background-size: 40%;
   background-position: center;
   background-repeat: no-repeat;
   cursor: pointer;
-  /* user-select: none; */
   width: 20px;
   height: calc(100% - 2px);
 }
@@ -749,7 +735,6 @@ export default class FDComboBox extends Mixins(FdControlVue) {
 }
 .item {
   color: black;
-  /* padding-left: 8px; */
   cursor: pointer;
   border-left: 1px solid black;
   border-right: 1px solid black;
@@ -779,7 +764,6 @@ export default class FDComboBox extends Mixins(FdControlVue) {
   background-color: lightgray;
   border: 1px solid gray;
   overflow: auto;
-  /* box-shadow: -1px -1px lightgray; */
 }
 .list-outer {
   border: 0.1px solid lightgray;
@@ -805,7 +789,6 @@ export default class FDComboBox extends Mixins(FdControlVue) {
   padding-inline-start: 0px;
 }
 .li {
-  /* padding: 3px; */
   margin: 1px;
   text-align: left;
   font-size: 14px;
@@ -824,7 +807,6 @@ export default class FDComboBox extends Mixins(FdControlVue) {
   margin-top: 3px;
 }
 .span {
-  /* margin: 4px;  */
   margin-left: 7px;
   margin-top: 0px;
   font-family: Arial, Helvetica, sans-serif;
@@ -888,5 +870,17 @@ export default class FDComboBox extends Mixins(FdControlVue) {
 }
 .hrStyle {
   margin: 0px;
+}
+.forArrow {
+  background-image: url('../../../../assets/sort-down.png');
+}
+.forEllipsis {
+  background-image: url('../../../../assets/ellipsis.png');
+}
+.forReduce {
+  background-image: url('../../../../assets/minus.png');
+}
+.forPlain {
+  background-image: none;
 }
 </style>

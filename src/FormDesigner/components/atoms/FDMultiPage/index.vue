@@ -4,7 +4,7 @@
       class="outer-page"
       :style="pageStyleObj"
       :title="properties.ControlTipText"
-      @mousedown="multiPageMouseDown"
+      @mousedown.stop="multiPageMouseDown"
       @click.stop="!isEditMode ? selectedItem : addControlObj($event, selectedPageID)"
       @mouseup="dragSelectorControl($event)"
       @contextmenu.stop="handleContextMenu"
@@ -51,13 +51,15 @@
           :style="styleContentObj"
           ref="contentRef"
           :title="properties.ControlTipText"
+          @scroll="updateScrollingLeftTop"
         >
           <div
             v-if="controls.includes(selectedPageID)"
             :style="containerDivStyle"
             :title="properties.ControlTipText"
             :tabindex="properties.TabIndex"
-            @keydown.ctrl.exact.stop="handleKeyDown"
+            @keydown.ctrl.exact.stop="selectMultipleCtrl(true)"
+            @keydown.ctrl.stop="handleKeyDown"
             @keydown.enter.exact="setContentEditable($event, true)"
             @contextmenu.stop="showContextMenu($event, userFormId, controlId)"
           >
@@ -675,20 +677,24 @@ export default class FDMultiPage extends FdContainerVue {
 
   multiPageMouseDown (e: MouseEvent) {
     EventBus.$emit('isEditMode', this.isEditMode)
-    this.selectedItem(e)
-    const selContainer = this.selectedControls[this.userFormId].container[0]
-    if (this.controls.length > 0) {
-      this.selectControl({
-        userFormId: this.userFormId,
-        select: { container: this.getContainerList(this.selectedPageID), selected: [this.selectedPageID] }
-      })
+    if (this.isEditMode === false) {
+      this.selectedItem(e)
     }
-    if (selContainer === this.controlId) {
+    if (this.selMultipleCtrl === false) {
+      const selContainer = this.selectedControls[this.userFormId].container[0]
+      if (this.controls.length > 0) {
+        this.selectControl({
+          userFormId: this.userFormId,
+          select: { container: this.getContainerList(this.selectedPageID), selected: [this.selectedPageID] }
+        })
+      }
+      if (selContainer === this.controlId) {
       // this.deActiveControl()
-      this.selectControl({
-        userFormId: this.userFormId,
-        select: { container: this.getContainerList(this.selectedPageID), selected: [this.selectedPageID] }
-      })
+        this.selectControl({
+          userFormId: this.userFormId,
+          select: { container: this.getContainerList(this.selectedPageID), selected: [this.selectedPageID] }
+        })
+      }
     }
   }
   showContextMenu (e: MouseEvent, parentID: string, controlID: string) {
@@ -735,6 +741,29 @@ export default class FDMultiPage extends FdContainerVue {
     } else {
       this.handleKeyDown(event)
     }
+  }
+  updateScrollingLeftTop (e: MouseEvent) {
+    const refName = this.contentRef
+    this.updateControl({
+      userFormId: this.userFormId,
+      controlId: this.selectedPageID,
+      propertyName: 'ScrollLeft',
+      value: refName.scrollLeft
+    })
+    this.updateControl({
+      userFormId: this.userFormId,
+      controlId: this.selectedPageID,
+      propertyName: 'ScrollTop',
+      value: refName.scrollTop
+    })
+  }
+  created () {
+    EventBus.$on('selectMultipleCtrl', (val: boolean) => {
+      this.selMultipleCtrl = val
+    })
+  }
+  destroyed () {
+    EventBus.$off('selectMultipleCtrl')
   }
 }
 </script>

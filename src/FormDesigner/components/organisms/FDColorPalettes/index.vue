@@ -184,7 +184,7 @@ grid-design1 {
 .tab label {
   background: rgb(238, 238, 238);
   height: 12px;
-  border: 1px solid rgb(238, 238, 238);
+  border: 1px solid lightgray;
   margin-left: -1px;
   position: relative;
   left: 1px;
@@ -205,10 +205,8 @@ grid-design1 {
   margin-top: 1px;
 }
 [type="radio"]:checked ~ label {
-  background: ccc;
-  box-shadow: 1px 0px gray;
-  border-bottom: 1px solid ccc;
-  border: 0.5px solid white;
+  background: white;
+  border: 2px solid lightgray;
   z-index: 2;
 }
 [type="radio"]:unchecked ~ label {

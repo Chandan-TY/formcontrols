@@ -182,7 +182,7 @@ export default class ContextMenu extends FDCommonMethod {
       if (type === 'MultiPage') {
         EventBus.$emit('userFormTabOrder', this.userFormId, this.controlId, type)
       } else {
-        EventBus.$emit('tabStripTabOrder', this.userFormId, this.containerId, type)
+        EventBus.$emit('tabStripTabOrder', this.userFormId, this.controlId, type)
       }
     } else if (controlActionName === 'ID_TABORDER') {
       EventBus.$emit('userFormTabOrder', this.userFormId, this.containerId, '')
@@ -772,6 +772,9 @@ export default class ContextMenu extends FDCommonMethod {
           groupIdIndex = presentGroupId.findIndex(
             (val) => controlObj.properties.GroupID === val
           )
+          if (selSelected.length === 1 && userFormData[selSelected[0]].properties.GroupID! !== '') {
+            groupIdIndex = -1
+          }
           const item: controlData = {
             ...controlObj,
             properties: {
@@ -862,6 +865,9 @@ export default class ContextMenu extends FDCommonMethod {
             const controlObj = JSON.parse(
               JSON.stringify(this.copiedControl[this.userFormId][key])
             )
+            if (selSelected.length === 1 && userFormData[selSelected[0]].properties.GroupID! !== '') {
+              controlObj.properties.GroupID = ''
+            }
             const item: controlData = {
               ...controlObj
             }
@@ -936,14 +942,10 @@ export default class ContextMenu extends FDCommonMethod {
         }
       }
       if (filterControls.length === 2) {
+        const curSelect = filterControls[0] === selected[0] ? filterControls[1] : filterControls[0]
         const selGroupId = userData[selected[0]].properties.GroupID
-        this.updateControlProperty('GroupID', '', filterControls[1])
-        const groups = [...this.groupedControls[this.userFormId].groupArray]
-        const findIndex = groups.findIndex(val => selGroupId)
-        this.updateGroup({
-          userFormId: this.userFormId,
-          groupArray: groups.splice(findIndex, 1)
-        })
+        this.updateControlProperty('GroupID', '', curSelect)
+        console.log(curSelect, userData[curSelect].properties.GroupID)
       }
     }
     for (let i = 0; i < selControl.length; i++) {

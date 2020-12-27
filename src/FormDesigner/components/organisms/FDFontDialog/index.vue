@@ -22,7 +22,7 @@
               <div>
                 Font:
                 <br />
-                <input type="text" class="font-input-1" :value="this.font" />
+                <input type="text" class="font-input-1" :value="this.font" @input="setFont"/>
                 <br />
                 <div class="font-first-frame">
                   <div
@@ -74,7 +74,7 @@
                 <div>
                   Font Style:
                   <br />
-                  <input type="text" class="font-input-2" :value="fontStyle" />
+                  <input type="text" class="font-input-2" :value="fontStyle" @input="setFontStyle"/>
                   <br />
                   <div class="font-second-frame">
                     <div
@@ -116,7 +116,7 @@
                 <div>
                   Size:
                   <br />
-                  <input type="text" class="font-input-3" :value="this.size" />
+                  <input type="number" class="font-input-3" :value="this.size" @input="setFontSize"/>
                   <br />
                   <div class="font-third-frame">
                     <div v-for="size11 in size1" :key="size11">
@@ -193,7 +193,7 @@ import FDSVGImage from '@/FormDesigner/components/atoms/FDSVGImage/index.vue'
 import FdDialogDragVue from '@/api/abstract/FormDesigner/FdDialogDragVue'
 
 export interface INewFont {
-  [key: string]: Array<string>;
+  [key: string]: string[];
 }
 @Component({
   name: 'FDFontDialog',
@@ -212,8 +212,7 @@ export default class FDFontDialog extends FdDialogDragVue {
     top: '20px'
   };
   size: number = 8;
-  fontDataValue: font = { FontName: '' };
-  font: string = this.fontDataValue.FontName;
+  font: string = ''
   fontWeight: string = 'normal';
   fontStyle: string | undefined = 'Regular';
   fontStyle1: string = '';
@@ -236,7 +235,6 @@ export default class FDFontDialog extends FdDialogDragVue {
     48,
     72
   ];
-  fontData: font = this.fontDataValue;
   newFont: INewFont = newFont;
   temp: Array<string> = newFont.Arial;
   tempVal: font = {
@@ -248,6 +246,42 @@ export default class FDFontDialog extends FdDialogDragVue {
     FontStrikethrough: false,
     FontStyle: 'Arial Narrow Italic'
   };
+  setFontSize (event : KeyboardEvent) {
+    if (event.target instanceof HTMLInputElement) {
+      const val = parseInt(event.target.value)
+      if (val > 0 && val <= 72) {
+        this.sizeValue(val)
+      }
+    }
+  }
+  setFontStyle (event : KeyboardEvent) {
+    if (event.target instanceof HTMLInputElement) {
+      const val = event.target.value
+      if (val) {
+        for (let fontStyleValue of this.temp) {
+          if (val === fontStyleValue) {
+            this.tempVal.FontStyle = fontStyleValue
+            this.changeStyle(val)
+          }
+        }
+      }
+    }
+  }
+  setFont (event : KeyboardEvent) {
+    if (event.target instanceof HTMLInputElement) {
+      const val = event.target.value
+      if (val) {
+        for (let fontNameValue in newFont) {
+          if (val === fontNameValue) {
+            this.tempVal.FontName = fontNameValue
+            this.temp = this.newFont[val]
+            this.changeStyle(this.newFont[val][0])
+            this.changeFont(val)
+          }
+        }
+      }
+    }
+  }
   sizeValue (data: number) {
     this.size = data
     this.tempVal.FontSize = this.size
@@ -255,45 +289,51 @@ export default class FDFontDialog extends FdDialogDragVue {
   fontEffects () {
     if (this.isFontStrikeOut === true && this.isFontUnderline === true) {
       this.dataDecorator = 'underline line-through'
-      this.tempVal.FontStrikethrough = true
-      this.tempVal.FontUnderline = true
     } else if (this.isFontStrikeOut === true) {
       this.dataDecorator = 'line-through'
-      this.tempVal.FontStrikethrough = true
-      this.tempVal.FontUnderline = false
     } else if (this.isFontUnderline === true) {
       this.dataDecorator = 'underline'
-      this.tempVal.FontStrikethrough = false
-      this.tempVal.FontUnderline = true
     } else {
       this.dataDecorator = ''
     }
+    this.tempVal.FontStrikethrough = this.isFontStrikeOut
+    this.tempVal.FontUnderline = this.isFontUnderline
   }
   changeFont (i: string) {
     this.temp = this.newFont[i]
     this.font = i
+    this.tempVal.FontStyle = this.newFont[i][0]
+    this.changeStyle(this.newFont[i][0])
   }
   changeStyle (value: string) {
     const refName = 'fontStyleRef'.concat(value)
-    const targetRef = this.$refs[refName]
-    let fontRef = null
-    if (targetRef instanceof Array) {
-      fontRef = targetRef[0]
-      if (fontRef instanceof HTMLDivElement) {
-        this.fontStyle = value
-        this.fontStyle1 = fontRef.style.fontStyle
-        this.fontWeight = fontRef.style.fontWeight
-        this.fontStretch = fontRef.style.fontStretch
-        this.tempVal.FontName = fontRef.style.fontFamily
-        this.tempVal.FontStyle = this.fontStyle
+    this.$nextTick(() => {
+      const targetRef = this.$refs[refName]
+      let fontRef = null
+      if (targetRef instanceof Array) {
+        fontRef = targetRef[0]
+        if (fontRef instanceof HTMLDivElement) {
+          this.fontStyle = value
+          this.fontStyle1 = fontRef.style.fontStyle
+          this.fontWeight = fontRef.style.fontWeight
+          this.fontStretch = fontRef.style.fontStretch
+          this.tempVal.FontName = fontRef.style.fontFamily
+          this.tempVal.FontStyle = this.fontStyle
+        } else {
+          throw new Error('Expected div element but found different element')
+        }
       } else {
-        throw new Error('Expected div element but found different element')
+        return undefined
       }
-    } else {
-      return undefined
-    }
+    })
   }
   updateFont () {
+    if (!this.tempVal.FontName) {
+      this.tempVal.FontName = this.newFont[0][0]
+    }
+    if (!this.tempVal.FontStyle) {
+      this.tempVal.FontStyle = this.newFont[this.tempVal.FontName][0]
+    }
     if (this.fontWeight === 'bold' && this.fontStyle1 === 'italic') {
       this.tempVal.FontBold = true
       this.tempVal.FontItalic = true
@@ -336,12 +376,13 @@ export default class FDFontDialog extends FdDialogDragVue {
     }
   }
   mounted () {
-    this.fontDataValue = this.fontPropValue
-    this.font = this.fontDataValue.FontName
-    this.fontStyle = this.fontDataValue.FontStyle
-    this.isFontStrikeOut = this.fontDataValue.FontStrikethrough!
-    this.isFontUnderline = this.fontDataValue.FontUnderline!
-    this.size = this.fontDataValue.FontSize!
+    this.tempVal = { ...this.fontPropValue }
+    this.font = this.tempVal.FontName
+    this.fontStyle = this.tempVal.FontStyle
+    this.isFontStrikeOut = this.tempVal.FontStrikethrough!
+    this.isFontUnderline = this.tempVal.FontUnderline!
+    this.size = this.tempVal.FontSize!
+    this.temp = this.newFont[this.font]
   }
 }
 </script>
