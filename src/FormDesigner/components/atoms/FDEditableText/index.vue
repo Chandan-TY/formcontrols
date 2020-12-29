@@ -24,6 +24,7 @@ export default class FDEditableText extends Vue {
 
   mounted () {
     this.labelArea.innerText = this.caption
+    this.labelArea.focus()
   }
 
   eventStoppers () {
@@ -53,6 +54,7 @@ export default class FDEditableText extends Vue {
 
 <style scoped>
   .editText {
+    display: block;
     text-align: inherit;
     background: inherit;
     font: inherit;

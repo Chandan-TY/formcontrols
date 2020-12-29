@@ -335,6 +335,23 @@ export default class FDTextBox extends Mixins(FdControlVue) {
     } else {
       throw new Error('Expected HTMLTextAreaElement but found different element')
     }
+    if (this.properties.AutoSize) {
+      this.updateAutoSize()
+    }
+  }
+
+  @Watch('properties.Font.FontSize', { deep: true })
+  autoSizeValidateOnFontChange () {
+    if (this.properties.AutoSize) {
+      this.updateAutoSize()
+    }
+  }
+
+  @Watch('properties.WordWrap', { deep: true })
+  autoSizeValidateOnWordWrapChange () {
+    if (this.properties.AutoSize) {
+      this.updateAutoSize()
+    }
   }
 
   /**
@@ -355,7 +372,7 @@ export default class FDTextBox extends Mixins(FdControlVue) {
    * @override
    */
   @Watch('properties.AutoSize', { deep: true })
-  updateAutoSize (newVal: boolean, oldVal: boolean) {
+  updateAutoSize () {
     if (this.properties.AutoSize === true) {
       this.$nextTick(() => {
         const textareaRef: HTMLTextAreaElement = this.textareaRef

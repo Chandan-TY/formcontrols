@@ -15,7 +15,7 @@
     <div
       class="inner-window-content"
       :style="innerWindowBodyStyle"
-      @click="addControlObj($event)"
+      @click="addControlObj($event, data)"
       @mousedown="deActiveControl(this)"
       @contextmenu.stop="showContextMenu($event, userFormId, controlId)"
       @mouseup="dragSelectorControl($event)"
@@ -220,9 +220,13 @@ export default class UserForm extends FdContainerVue {
     EventBus.$on('selectMultipleCtrl', (val: boolean) => {
       this.selMultipleCtrl = val
     })
+    EventBus.$on('actMultipleCtrl', (val: boolean) => {
+      this.activateCtrl = val
+    })
   }
   destroyed () {
     EventBus.$off('selectMultipleCtrl')
+    EventBus.$off('actMultipleCtrl')
   }
 }
 </script>

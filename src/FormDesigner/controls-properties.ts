@@ -23,10 +23,10 @@ export const controlProperties = {
   specialEffectProp: (controlData: controlData): string => {
     const propObject: KeyValueProp = {
       0: 'none',
-      1: '2px 3px #848484',
-      2: '-2px -2px #848484',
-      3: '1px 1px #848484',
-      4: '-1px -1px #848484'
+      1: '1px 1px #848484',
+      2: '-1px -1px #848484',
+      3: '0.5px 0.5px #848484',
+      4: '-0.5px -0.5px #848484'
     }
     if (propObject[controlData.properties.SpecialEffect!] !== undefined) {
       return propObject[controlData.properties.SpecialEffect!]

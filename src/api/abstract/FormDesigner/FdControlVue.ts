@@ -1297,4 +1297,18 @@ get setFontStyle () {
 setInitial (e: Event) {
   this.tempListBoxComboBoxEvent = e
 }
+
+@Watch('properties.BorderStyle', { deep: true })
+borderStyleValidate () {
+  if (this.properties.BorderStyle === 1) {
+    this.updateDataModel({ propertyName: 'SpecialEffect', value: 0 })
+  }
+}
+
+@Watch('properties.SpecialEffect', { deep: true })
+specialEffectValidate () {
+  if (this.properties.BorderStyle === 1 && this.properties.SpecialEffect !== 0) {
+    this.updateDataModel({ propertyName: 'BorderStyle', value: 0 })
+  }
+}
 }

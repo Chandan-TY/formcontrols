@@ -3,9 +3,9 @@
     :title="properties.ControlTipText"
     class="outer-check"
     :style="cssStyleProperty"
-    @click="selectedItem"
+    @click.stop="optionBtnClick"
     :tabindex="properties.TabIndex"
-    @keydown.enter="setContentEditable($event, true)"
+    @keydown.enter.prevent="setContentEditable($event, true)"
   >
     <label class="control"
       ><input
@@ -40,6 +40,7 @@
           :editable="isRunMode === false && syncIsEditMode"
           :style="editCssObj"
           :caption="properties.Caption"
+          ref="optionBtnSpanRef"
           @updateCaption="updateCaption"
           @releaseEditMode="releaseEditMode"
         >
@@ -64,6 +65,7 @@ export default class FDOptionButton extends Mixins(FdControlVue) {
   @Ref('divAutoSize') autoSizeOptionButton!: HTMLDivElement;
   @Ref('optBtnInput') optBtnInput!: HTMLInputElement;
   @Ref('spanRef') spanRef!: HTMLSpanElement;
+  @Ref('optionBtnSpanRef') optionBtnSpanRef!: FDEditableText
   $el: HTMLDivElement
 
   /**
@@ -85,29 +87,56 @@ export default class FDOptionButton extends Mixins(FdControlVue) {
     deep: true
   })
   verifyValue (newVal: string, oldVal: string) {
-    if (this.properties.Enabled && !this.properties.Locked) {
-      if (!this.isRunMode) {
-        let tempValue = newVal.toLowerCase()
-        const checkDiv = this.optBtnInput
-        if (!isNaN(parseInt(newVal))) {
-          if (parseInt(newVal) === 0) {
-            this.spanRef.style.backgroundColor = 'white'
-            checkDiv.checked = false
-          } else {
-            this.spanRef.style.backgroundColor = 'white'
-            checkDiv.checked = true
-          }
-        } else if (tempValue === 'true') {
-          this.spanRef.style.backgroundColor = 'white'
-          checkDiv.checked = true
-        } else if (tempValue === 'false') {
-          this.spanRef.style.backgroundColor = 'white'
-          checkDiv.checked = false
-        } else {
-          checkDiv.checked = true
-          this.spanRef.style.backgroundColor = 'rgba(220, 220, 220, 1)'
-        }
+    if (this.isRunMode) {
+      if (this.properties.Enabled && !this.properties.Locked) {
+        this.handleValue(newVal)
       }
+    } else {
+      this.handleValue(newVal)
+    }
+  }
+
+  handleValue (newVal: string) {
+    let tempValue = newVal.toLowerCase()
+    const checkDiv = this.optBtnInput
+    if (!isNaN(parseInt(newVal))) {
+      if (parseInt(newVal) === 0) {
+        this.spanRef.style.backgroundColor = 'white'
+        checkDiv.checked = false
+      } else {
+        this.spanRef.style.backgroundColor = 'white'
+        checkDiv.checked = true
+      }
+    } else if (tempValue === 'true') {
+      this.spanRef.style.backgroundColor = 'white'
+      checkDiv.checked = true
+    } else if (tempValue === 'false') {
+      this.spanRef.style.backgroundColor = 'white'
+      checkDiv.checked = false
+    } else {
+      checkDiv.checked = true
+      this.spanRef.style.backgroundColor = 'rgba(220, 220, 220, 1)'
+    }
+  }
+
+  @Watch('properties.Font.FontSize', { deep: true })
+  autoSizeValidateOnFontChange () {
+    if (this.properties.AutoSize) {
+      this.updateAutoSize()
+    }
+  }
+
+  @Watch('properties.WordWrap', { deep: true })
+  autoSizeValidateOnWordWrapChange () {
+    if (this.properties.AutoSize) {
+      this.updateAutoSize()
+    }
+  }
+
+  @Watch('properties.Caption', { deep: true })
+  autoSizeValidateOnCaptionChange () {
+    if (this.properties.AutoSize) {
+      this.updateAutoSize()
     }
   }
 
@@ -345,6 +374,12 @@ export default class FDOptionButton extends Mixins(FdControlVue) {
   releaseEditMode (event: KeyboardEvent) {
     this.$el.focus()
     this.setContentEditable(event, false)
+  }
+  optionBtnClick (event: MouseEvent) {
+    this.selectedItem(event)
+    if (this.isEditMode) {
+      (this.optionBtnSpanRef.$el as HTMLSpanElement).focus()
+    }
   }
 }
 </script>

@@ -185,7 +185,17 @@ export default class FDComboBox extends Mixins(FdControlVue) {
     this.tempListBoxComboBoxEvent = e
   }
 
+  @Watch('properties.Font.FontSize', { deep: true })
+  autoSizeValidateOnFontChange () {
+    if (this.properties.AutoSize) {
+      this.updateAutoSize()
+    }
+  }
+
   handleTextInput (e: Event) {
+    if (this.properties.AutoSize) {
+      this.updateAutoSize()
+    }
     if (e.target instanceof HTMLTextAreaElement) {
       this.open = true
       const tempEvent = e.target
@@ -379,7 +389,7 @@ export default class FDComboBox extends Mixins(FdControlVue) {
    * @override
    */
   @Watch('properties.AutoSize', { deep: true })
-  updateAutoSize (newVal: boolean, oldVal: boolean) {
+  updateAutoSize () {
     if (this.properties.AutoSize === true) {
       this.updateDataModel({ propertyName: 'SelectionMargin', value: false })
       this.$nextTick(() => {
@@ -415,7 +425,8 @@ export default class FDComboBox extends Mixins(FdControlVue) {
   protected get listStyleObj (): Partial<CSSStyleDeclaration> {
     const controlProp = this.properties
     return {
-      height: !controlProp.ColumnHeads ? (controlProp.ListRows! > 0 && controlProp.ListRows! < this.extraDatas.RowSourceData!.length ? (controlProp.ListRows! * (controlProp.Font!.FontSize! + 3) + 'px') : '') : (controlProp.ListRows! > 0 && controlProp.ListRows! < this.extraDatas.RowSourceData!.length ? ((controlProp.ListRows! + 1) * (controlProp.Font!.FontSize! + 3) + 'px') : '')
+      height: !controlProp.ColumnHeads ? (controlProp.ListRows! > 0 && controlProp.ListRows! < this.extraDatas.RowSourceData!.length ? (controlProp.ListRows! * (controlProp.Font!.FontSize! + 3) + 'px') : '') : (controlProp.ListRows! > 0 && controlProp.ListRows! < this.extraDatas.RowSourceData!.length ? ((controlProp.ListRows! + 1) * (controlProp.Font!.FontSize! + 3) + 'px') : ''),
+      backgroundColor: controlProp.BackColor
     }
   }
 
@@ -562,6 +573,10 @@ export default class FDComboBox extends Mixins(FdControlVue) {
       } else {
         this.updateDataModel({ propertyName: 'Value', value: '' })
       }
+    }
+    if (newVal !== '') {
+      this.selectionData[0] = newVal
+      this.updateDataModel({ propertyName: 'Text', value: newVal })
     }
   }
 

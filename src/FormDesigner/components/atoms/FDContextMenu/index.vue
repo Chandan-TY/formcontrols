@@ -168,6 +168,8 @@ export default class ContextMenu extends FDCommonMethod {
       this.bringForward()
     } else if (controlActionName === 'ID_CONTROLBACKWARD') {
       this.bringBackward()
+    } else if (controlActionName === 'ID_OBJECTPROP') {
+      this.displayProp()
     } else if (controlActionName === 'ID_RENAME') {
       const selectedPageID = this.selectedControls[this.userFormId].selected[0]
       EventBus.$emit(
@@ -211,6 +213,10 @@ export default class ContextMenu extends FDCommonMethod {
   @Emit('closeMenu')
   closeMenu () {
     return 0
+  }
+
+  displayProp () {
+    EventBus.$emit('dispProp', false)
   }
 
   addNewPage () {
@@ -915,6 +921,7 @@ export default class ContextMenu extends FDCommonMethod {
    * @function clickDelete
    */
   clickDelete () {
+    debugger
     const selControl = []
     const userData = this.userformData[this.userFormId]
     const selected = this.selectedControls[this.userFormId].selected

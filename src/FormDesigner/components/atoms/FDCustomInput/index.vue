@@ -2,9 +2,19 @@
   <div class="custom-input-outer">
     <label class="custom-label-ele">{{propertyName}}</label>
     <input
+      v-if="propertyType === 'file'"
       :name="propertyName"
       class="custom-input-ele"
       :value="(inputType)?null:propertyValue"
+      :type="propertyType"
+      @change="updateAppearance"
+      accept="image/gif, image/jpeg, image/x-icon, image/jpg, image/bmp"
+    />
+    <input
+      v-else
+      :name="propertyName"
+      class="custom-input-ele"
+      :value="propertyValue"
       :type="propertyType"
       @change="updateAppearance"
     />

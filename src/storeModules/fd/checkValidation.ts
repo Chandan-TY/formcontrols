@@ -36,6 +36,10 @@ export function checkPropertyValue (propertyName: keyof controlProperties, value
     case 'SmallChange':
       result = value >= -2147483648 && value <= 2147483647
       break
+    case 'Name':
+      const nameRegex = /^[a-zA-Z][a-zA-Z0-9_]+$/
+      result = nameRegex.test(value)
+      break
   }
   return result
 }

@@ -6,8 +6,8 @@
     :tabindex="properties.TabIndex"
     :title="properties.ControlTipText"
     @mousedown="addEventCustomCallback"
-    @keydown.enter="setContentEditable($event, true)"
-    @click.stop="selectedItem"
+    @keydown.enter.prevent="setContentEditable($event, true)"
+    @click.stop="labelClick"
   >
     <span v-if="!syncIsEditMode">
       <span>{{ computedCaption.afterbeginCaption }}</span>
@@ -132,9 +132,29 @@ export default class FDLabel extends Mixins(FdControlVue) {
    * @param newVal  new/changed propControlData data
    */
   @Watch('properties.AutoSize', { deep: true })
-  autoSize (newVal: boolean, oldVal: boolean) {
-    // if autoSize is true then height and width value will not get updated
+  autoSize () {
     this.updateAutoSize()
+  }
+
+  @Watch('properties.Font.FontSize', { deep: true })
+  autoSizeValidateOnFontChange () {
+    if (this.properties.AutoSize) {
+      this.updateAutoSize()
+    }
+  }
+
+  @Watch('properties.WordWrap', { deep: true })
+  autoSizeValidateOnWordWrapChange () {
+    if (this.properties.AutoSize) {
+      this.updateAutoSize()
+    }
+  }
+
+  @Watch('properties.Caption', { deep: true })
+  autoSizeValidateOnCaptionChange () {
+    if (this.properties.AutoSize) {
+      this.updateAutoSize()
+    }
   }
 
   /**
@@ -164,6 +184,12 @@ export default class FDLabel extends Mixins(FdControlVue) {
   releaseEditMode (event: KeyboardEvent) {
     this.$el.focus()
     this.setContentEditable(event, false)
+  }
+  labelClick (event: MouseEvent) {
+    this.selectedItem(event)
+    if (this.isEditMode) {
+      (this.$el.children[0] as HTMLSpanElement).focus()
+    }
   }
 }
 </script>

@@ -46,6 +46,7 @@ import FDTable from '@/FormDesigner/components/organisms/FDTable/index.vue'
 import { PropertyListDefine } from '@/FormDesigner/models/ControlsTableProperties/propertyList'
 import { IselectControl } from '@/storeModules/fd/actions'
 import FDCommonMethod from '@/api/abstract/FormDesigner/FDCommonMethod'
+import { EventBus } from '@/FormDesigner/event-bus'
 
 @Component({
   name: 'PropertiesList',
@@ -207,6 +208,14 @@ export default class PropertiesList extends FDCommonMethod {
   @Watch('selectedControls', { deep: true })
   updateOption () {
     this.selectOption()
+  }
+  created () {
+    EventBus.$on('dispProp', (val: boolean) => {
+      this.isTableVisible = val
+    })
+  }
+  destroyed () {
+    EventBus.$off('dispProp')
   }
 }
 </script>

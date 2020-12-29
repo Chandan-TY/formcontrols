@@ -5,14 +5,16 @@
     :style="cssStyleProperty"
     :title="properties.ControlTipText"
     :tabindex="properties.TabIndex"
-    @keydown.ctrl.exact.stop="selectMultipleCtrl(true)"
+    @keydown.ctrl.exact.stop="selectMultipleCtrl($event,true)"
     @keydown.ctrl.stop="handleKeyDown"
+    @keydown.shift.exact.stop="selectMultipleCtrl($event,true)"
     @keydown.delete.stop.exact="deleteFrame"
     @keydown.enter.exact="setContentEditable($event, true)"
     @click.stop="!isEditMode ? selectedItem : addControlObj($event)"
     @contextmenu.stop="showContextMenu($event, userFormId, controlId)"
     @mousedown.stop="frameMouseDown"
     @mouseup="dragSelectorControl($event)"
+    @keyup.stop="selectMultipleCtrl($event, false)"
   >
     <legend :style="legendCssStyleProperty">{{ properties.Caption }}</legend>
     <div :style="scrollSize" ref="frame" @scroll="updateScrollingLeftTop">
@@ -295,13 +297,14 @@ export default class FDFrame extends FdContainerVue {
       value: refName.scrollTop
     })
   }
-  created () {
-    EventBus.$on('selectMultipleCtrl', (val: boolean) => {
+  selectMultipleCtrl (event: KeyboardEvent, val: boolean) {
+    if (event.key === 'Control' && event.keyCode === 17) {
       this.selMultipleCtrl = val
-    })
-  }
-  destroyed () {
-    EventBus.$off('selectMultipleCtrl')
+      EventBus.$emit('selectMultipleCtrl', val)
+    } else if (event.key === 'Shift' && event.keyCode === 16) {
+      this.activateCtrl = val
+      EventBus.$emit('actMultipleCtrl', val)
+    }
   }
 }
 </script>

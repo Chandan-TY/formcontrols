@@ -104,12 +104,12 @@ export default class FDColorPalettes extends Vue {
   selectedValue: ISelectedValue
 
   openColorPalette () {
-    this.isVisible = !this.isVisible
     if (this.isVisible) {
       this.$nextTick(function () {
         this.colorPalleteRef.focus()
       })
     }
+    this.isVisible = !this.isVisible
   }
 
   selectColor (data: ISelectedValue) {

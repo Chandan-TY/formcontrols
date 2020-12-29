@@ -3,8 +3,8 @@
     :title="properties.ControlTipText"
     class="outer-check"
     :style="cssStyleProperty"
-    @click.stop="selectedItem"
-    @keydown.enter="setContentEditable($event, true)"
+    @click.stop="checkBoxClick"
+    @keydown.enter.prevent="setContentEditable($event, true)"
     :tabindex="properties.TabIndex"
   >
     <label class="control">
@@ -36,6 +36,7 @@
         </span>
         <FDEditableText
           v-else
+          ref="checkBoxSpanRef"
           :editable="isRunMode === false && syncIsEditMode"
           :caption="properties.Caption"
           :style="editCssObj"
@@ -63,6 +64,7 @@ export default class FDCheckBox extends Mixins(FdControlVue) {
   @Ref('checkboxInput') checkboxInput!: HTMLInputElement;
   @Ref('divAutoSize') autoSizecheckbox!: HTMLDivElement;
   @Ref('spanRef') spanRef!: HTMLSpanElement;
+  @Ref('checkBoxSpanRef') checkBoxSpanRef!: FDEditableText
   $el: HTMLDivElement
 
   /**
@@ -88,32 +90,37 @@ export default class FDCheckBox extends Mixins(FdControlVue) {
     deep: true
   })
   verifyValue (newVal: string, oldVal: string) {
-    if (this.properties.Enabled && !this.properties.Locked) {
-      if (!this.isRunMode) {
-        let tempValue = newVal.toLowerCase()
-        const checkDiv = this.checkboxInput
-        if (!isNaN(parseInt(newVal))) {
-          if (parseInt(newVal) === 0) {
-            this.spanRef.style.backgroundColor = 'white'
-            checkDiv.checked = false
-          } else {
-            this.spanRef.style.backgroundColor = 'white'
-            checkDiv.checked = true
-          }
-        } else if (tempValue === 'true') {
-          this.spanRef.style.backgroundColor = 'white'
-          checkDiv.checked = true
-        } else if (tempValue === 'false') {
-          this.spanRef.style.backgroundColor = 'white'
-          checkDiv.checked = false
-        } else {
-          checkDiv.checked = true
-          this.spanRef.style.backgroundColor = 'rgba(220, 220, 220, 1)'
-        }
+    if (this.isRunMode) {
+      if (this.properties.Enabled && !this.properties.Locked) {
+        this.handleValue(newVal)
       }
+    } else {
+      this.handleValue(newVal)
     }
   }
 
+  handleValue (newVal: string) {
+    let tempValue = newVal.toLowerCase()
+    const checkDiv = this.checkboxInput
+    if (!isNaN(parseInt(newVal))) {
+      if (parseInt(newVal) === 0) {
+        this.spanRef.style.backgroundColor = 'white'
+        checkDiv.checked = false
+      } else {
+        this.spanRef.style.backgroundColor = 'white'
+        checkDiv.checked = true
+      }
+    } else if (tempValue === 'true') {
+      this.spanRef.style.backgroundColor = 'white'
+      checkDiv.checked = true
+    } else if (tempValue === 'false') {
+      this.spanRef.style.backgroundColor = 'white'
+      checkDiv.checked = false
+    } else {
+      checkDiv.checked = true
+      this.spanRef.style.backgroundColor = 'rgba(220, 220, 220, 1)'
+    }
+  }
   /**
    * @description  makeChecked controls the checked of the control in RunMode
    * @function makeChecked
@@ -332,12 +339,27 @@ export default class FDCheckBox extends Mixins(FdControlVue) {
     }
   }
 
-  @Watch('properties.Caption', { deep: true })
-  handleCaption () {
+  @Watch('properties.Font.FontSize', { deep: true })
+  autoSizeValidateOnFontChange () {
     if (this.properties.AutoSize) {
       this.updateAutoSize()
     }
   }
+
+  @Watch('properties.WordWrap', { deep: true })
+  autoSizeValidateOnWordWrapChange () {
+    if (this.properties.AutoSize) {
+      this.updateAutoSize()
+    }
+  }
+
+  @Watch('properties.Caption', { deep: true })
+  autoSizeValidateOnCaptionChange () {
+    if (this.properties.AutoSize) {
+      this.updateAutoSize()
+    }
+  }
+
   /**
    * @description  sets controlSource if present and updates Value property
    * @function controlSource
@@ -349,6 +371,12 @@ export default class FDCheckBox extends Mixins(FdControlVue) {
   releaseEditMode (event: KeyboardEvent) {
     this.$el.focus()
     this.setContentEditable(event, false)
+  }
+  checkBoxClick (event: MouseEvent) {
+    this.selectedItem(event)
+    if (this.isEditMode) {
+      (this.checkBoxSpanRef.$el as HTMLSpanElement).focus()
+    }
   }
 }
 </script>

@@ -7,6 +7,7 @@ import { IaddControl, IchangeToolBoxSelect, IdeleteControl, IselectControl, Iupd
 import { controlContextMenu } from '@/FormDesigner/models/controlContextMenuData'
 import { userformContextMenu } from '@/FormDesigner/models/userformContextMenuData'
 import { ControlPropertyData } from '@/FormDesigner/models/ControlsTableProperties/ControlPropertyData.ts'
+import { EventBus } from '@/FormDesigner/event-bus'
 
 export default abstract class FdContainerVue extends FdControlVue {
   @Prop({ required: true, type: String }) public readonly userFormId!: string
@@ -37,6 +38,7 @@ export default abstract class FdContainerVue extends FdControlVue {
   selectedControlArray: Array<string> = [];
   selectedAreaStyle: ISelectedArea | undefined
   selMultipleCtrl: boolean = false
+  activateCtrl: boolean = false
   /**
  * @description  close the contextMenu
  * @function closeMenu
@@ -47,9 +49,6 @@ export default abstract class FdContainerVue extends FdControlVue {
     this.viewMenu = false
   }
 
-  selectMultipleCtrl (val: boolean) {
-    this.selMultipleCtrl = val
-  }
   get selConatiner () {
     return this.selectedControls[this.userFormId].container
   }
@@ -89,7 +88,22 @@ export default abstract class FdContainerVue extends FdControlVue {
     }
     return containerList.length > 0 ? containerList : [this.userFormId]
   }
-
+  generateUniqueName (controlName: string) {
+    let lastControlId = 0
+    const userformControlIds = Object.keys(this.userformData[this.userFormId])
+    for (let i = 0; i < userformControlIds.length; i++) {
+      const ctrlProp = this.userformData[this.userFormId][userformControlIds[i]].properties
+      if (ctrlProp.Name!.indexOf(controlName) !== -1) {
+        const IdNum =
+        ctrlProp.Name!.split(controlName).pop() || '-1'
+        const pasreId = parseInt(IdNum, 10)
+        if (!isNaN(pasreId) && lastControlId < pasreId) {
+          lastControlId = pasreId
+        }
+      }
+    }
+    return `${controlName}${lastControlId + 1}`
+  }
   generateControlId (controlName: string) {
     let lastControlId = 0
     const userformControlIds = Object.keys(this.userformData[this.userFormId])
@@ -109,7 +123,7 @@ export default abstract class FdContainerVue extends FdControlVue {
     lastControlId += 1
     item.properties.ID = `ID_${controlName}${lastControlId}`
     item.properties.Caption = `${controlName}${lastControlId}`
-    item.properties.Name = `${controlName}${lastControlId}`
+    item.properties.Name = this.generateUniqueName(controlName)
     return item
   }
 
@@ -140,13 +154,13 @@ export default abstract class FdContainerVue extends FdControlVue {
     const container = this.getContainerList(id)[0]
     const containerControls = this.userformData[this.userFormId][container].controls
     const controlType = userData[id].type
-    if (controlType === 'MultiPage' || controlType === 'Frame') {
+    if (controlType === 'MultiPage' || controlType === 'Frame' || controlType === 'ListBox') {
       this.updateExtraDatas(id, 'zIndex', userData[container].controls.length)
     } else {
       const tempControls = []
       for (const index in containerControls) {
         const cntrlData = this.userformData[this.userFormId][containerControls[index]]
-        if (cntrlData.type === 'MultiPage' || cntrlData.type === 'Frame') {
+        if (cntrlData.type === 'MultiPage' || cntrlData.type === 'Frame' || cntrlData.type === 'ListBox') {
           tempControls.push(containerControls[index])
         }
       }
@@ -244,6 +258,109 @@ export default abstract class FdContainerVue extends FdControlVue {
       })
     }
     this.changeToolBoxSelect('Select')
+    if (this.activateCtrl) {
+      const type = this.userformData[this.userFormId][this.controlId].type
+      const userData = this.userformData[this.userFormId]
+      const controlData: controlData = type === 'MultiPage' ? userData[pageId] : this.data
+      if (controlData.properties.ID === this.selectedControls[this.userFormId].container[0]) {
+        let left = 0
+        let right = 0
+        let top = 0
+        let bottom = 0
+        if (this.activateCtrl) {
+          let mainSelected = this.selectedControls[this.userFormId].selected[0]
+          let divstyle: Array<IGroupStyle> = []
+          if (mainSelected.startsWith('group') || userData[this.controlId].properties.GroupID !== '') {
+            EventBus.$emit('getGroupSize', (divstayleArray: Array<IGroupStyle>) => {
+              divstyle = divstayleArray
+            })
+          }
+          let mainCtrl: controlProperties = { ID: '' }
+          if (mainSelected.startsWith('group')) {
+            const getIndex = divstyle.findIndex(val => val.groupName === mainSelected)
+            mainCtrl = {
+              Left: parseInt(divstyle[getIndex].left!),
+              Top: parseInt(divstyle[getIndex].top!),
+              Width: parseInt(divstyle[getIndex].width!),
+              Height: parseInt(divstyle[getIndex].height!),
+              ID: ''
+            }
+          } else {
+            mainCtrl = userData[mainSelected].properties
+            if (this.selectedControls[this.userFormId].selected.length === 1) {
+              const selType = this.userformData[this.userFormId][mainSelected].type
+              if (selType === 'Userform' || selType === 'Frame' || selType === 'Page' || selType === 'MultiPage') {
+                mainSelected = ''
+              }
+            }
+          }
+          if (mainSelected !== '') {
+            let sideCtrl = {
+              Left: e.offsetX,
+              Top: e.offsetY,
+              Width: 0,
+              Height: 0,
+              ID: ''
+            }
+            const selectedSize = {
+              Left: mainCtrl.Left! < sideCtrl.Left! ? mainCtrl.Left! : sideCtrl.Left!,
+              Top: mainCtrl.Top! < sideCtrl.Top! ? mainCtrl.Top! : sideCtrl.Top!,
+              Width: (mainCtrl.Left! + mainCtrl.Width!) > (sideCtrl.Left! + sideCtrl.Width!) ? mainCtrl.Left! + mainCtrl.Width! : sideCtrl.Left! + sideCtrl.Width!,
+              Height: (mainCtrl.Top! + mainCtrl.Height!) > (sideCtrl.Top! + sideCtrl.Height!) ? mainCtrl.Top! + mainCtrl.Height! : sideCtrl.Top! + sideCtrl.Height!
+            }
+            left = selectedSize.Left
+            top = selectedSize.Top
+            right = selectedSize.Width
+            bottom = selectedSize.Height
+          }
+        } else {
+          left = parseInt(this.selectedAreaStyle!.left)
+          right =
+        parseInt(this.selectedAreaStyle!.left) +
+        parseInt(this.selectedAreaStyle!.width)
+          top = parseInt(this.selectedAreaStyle!.top)
+          bottom =
+        parseInt(this.selectedAreaStyle!.top) +
+        parseInt(this.selectedAreaStyle!.height)
+        }
+        const leftArray: Array<number> = []
+        if (left !== right || top !== bottom) {
+          this.selectedControlArray = []
+          for (let i in controlData.controls) {
+            const key: string = controlData.controls[i]
+            const controlProp: controlProperties = this.userformData[this.userFormId][key].properties
+            if (
+              left <= controlProp!.Left! + controlProp!.Width! &&
+            right >= controlProp!.Left! &&
+            top <= controlProp!.Top! + controlProp!.Height! &&
+            bottom >= controlProp!.Top!
+            ) {
+              if (!this.selectedControlArray.includes(key)) { this.selectedControlArray.push(key) }
+            }
+          }
+          const selectedGroup: string[] = []
+          for (const val of this.selectedControlArray) {
+            const controlGroupId: string = this.userformData[this.userFormId][val]
+              .properties.GroupID!
+            if (controlGroupId && controlGroupId !== '') {
+              !selectedGroup.includes(controlGroupId)! &&
+              selectedGroup.push(controlGroupId)
+            } else {
+              selectedGroup.push(val)
+            }
+          }
+          if (this.selectedControlArray.length !== 0) {
+            this.selectControl({
+              userFormId: this.userFormId,
+              select: {
+                container: this.getContainerList(selectedGroup[0]),
+                selected: [...selectedGroup]
+              }
+            })
+          }
+        }
+      }
+    }
   }
 
   /**
@@ -254,7 +371,7 @@ export default abstract class FdContainerVue extends FdControlVue {
    */
   deActiveControl (this: this) {
     const controlType: string = this.userformData[this.userFormId][this.controlId].type
-    if (this.selMultipleCtrl === false) {
+    if (this.selMultipleCtrl === false && this.activateCtrl === false) {
       this.selectControl({
         userFormId: this.userFormId,
         select: { container: controlType === 'Userform' ? [this.controlId] : this.getContainerList(this.controlId), selected: [this.controlId] }
@@ -342,7 +459,7 @@ export default abstract class FdContainerVue extends FdControlVue {
               this.selectedControls[this.userFormId].selected.length <= 1
         }
       }
-      if (val.id === 'ID_ALIGN') {
+      if (val.id === 'ID_ALIGN' || val.id === 'ID_MAKESAMESIZE') {
         for (let index = 0; index < val.values.length; index++) {
           val.values[index].disabled = this.selectedControls[this.userFormId].selected.length <= 1
         }
@@ -400,21 +517,12 @@ export default abstract class FdContainerVue extends FdControlVue {
           } else {
             selected = [...selected]
           }
-          const unique = () => {
-            var a = selected.concat(selectedGroup)
-            for (var i = 0; i < a.length; ++i) {
-              for (var j = i + 1; j < a.length; ++j) {
-                if (a[i] === a[j]) { a.splice(j--, 1) }
-              }
-            }
-            return a
-          }
-          const combineArray = unique()
+          let combineArray = selected.filter(x => !selectedGroup.includes(x)).concat(selectedGroup.filter(x => !selected.includes(x)))
           this.selectControl({
             userFormId: this.userFormId,
             select: {
-              container: this.getContainerList(selectedGroup[0]),
-              selected: combineArray
+              container: combineArray.length > 0 ? this.getContainerList(combineArray[0]) : this.selectedControls[this.userFormId].container,
+              selected: combineArray.length > 0 ? combineArray : [this.selectedControls[this.userFormId].container[0]]
             }
           })
         } else {

@@ -272,12 +272,16 @@ export default class FDTable extends Vue {
           propertyValue !== '' ? propertyValue[0] : propertyValue
         );
         (e.target as HTMLInputElement).value = propertyValue && propertyValue[0]
-
       } else if (propertyName === 'Name') {
-        const isSuccess = this.updateProperty({ propertyName: propertyName, value: propertyValue })
-        if (!isSuccess) {
+        if (checkPropertyValue(propertyName, propertyValue)) {
+          const isSuccess = this.updateProperty({ propertyName: propertyName, value: propertyValue })
+          if (!isSuccess) {
+            (e.target as HTMLInputElement).value = this.tableData![propertyName]!.value! as string
+            EventBus.$emit('showErrorPopup', true, 'invalid', 'Could not set the Name property. Ambiguous name.')
+          }
+        } else {
           (e.target as HTMLInputElement).value = this.tableData![propertyName]!.value! as string
-          EventBus.$emit('showErrorPopup', true, 'invalid', 'Could not set the Name property. Ambiguous name.')
+          EventBus.$emit('showErrorPopup', true, 'invalid', `Not a legal object name: '${propertyValue}'`)
         }
       } else if (propertyName === 'Value') {
         const controlType = this.userformData[this.userFormId][this.getSelectedControlsDatas[0]].type
@@ -399,7 +403,7 @@ export default class FDTable extends Vue {
           }
         } else {
           (e.target as HTMLInputElement).value = this.tableData![propertyName]!.value! as string
-          EventBus.$emit('showErrorPopup', true, 'invalid', `Could not set the ${propertyName} property. Invalid property value. Enter a value between 0 and 7200`)
+          EventBus.$emit('showErrorPopup', true, 'invalid', `Invalid property value.`)
         }
       } else if (propertyName === 'TabFixedHeight' || propertyName === 'TabFixedWidth') {
         if (checkPropertyValue(propertyName, value)) {

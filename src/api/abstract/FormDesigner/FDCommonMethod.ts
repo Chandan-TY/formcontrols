@@ -120,13 +120,13 @@ export default class FDCommonMethod extends Vue {
     const container = this.getContainerList(id)[0]
     const containerControls = this.userformData[this.userFormId][container].controls
     const controlType = userData[id].type
-    if (controlType === 'MultiPage' || controlType === 'Frame') {
+    if (controlType === 'MultiPage' || controlType === 'Frame' || controlType === 'ListBox') {
       this.updateExtraDatas(id, 'zIndex', userData[container].controls.length)
     } else {
       const tempControls = []
       for (const index in containerControls) {
         const cntrlData = this.userformData[this.userFormId][containerControls[index]]
-        if (cntrlData.type === 'MultiPage' || cntrlData.type === 'Frame') {
+        if (cntrlData.type === 'MultiPage' || cntrlData.type === 'Frame' || cntrlData.type === 'ListBox') {
           tempControls.push(containerControls[index])
         }
       }

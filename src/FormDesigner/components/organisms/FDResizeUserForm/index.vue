@@ -3,8 +3,9 @@
     @keydown.ctrl="handleKeyDown"
     @keydown.delete.exact="handleKeyDown"
     @keydown.tab.exact="tabAction"
-    @keydown.ctrl.exact="selectMultipleCtrl(true)"
-    @keyup="selectMultipleCtrl(false)"
+    @keydown.ctrl.exact="selectMultipleCtrl($event,true)"
+    @keydown.shift.exact="selectMultipleCtrl($event,true)"
+    @keyup="selectMultipleCtrl($event,false)"
     tabindex="0"
   >
     <div
@@ -179,8 +180,12 @@ export default class ResizeUserForm extends FdSelectVue {
       }
     }
   }
-  selectMultipleCtrl (val: string) {
-    EventBus.$emit('selectMultipleCtrl', val)
+  selectMultipleCtrl (event: KeyboardEvent, val: boolean) {
+    if (event.key === 'Control' && event.keyCode === 17) {
+      EventBus.$emit('selectMultipleCtrl', val)
+    } else if (event.key === 'Shift' && event.keyCode === 16) {
+      EventBus.$emit('actMultipleCtrl', val)
+    }
   }
 }
 </script>

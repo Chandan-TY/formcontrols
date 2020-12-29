@@ -606,30 +606,30 @@ export default class Header extends FDCommonMethod {
     EventBus.$emit('groupControl', 'ungroup')
   }
   sizeToFit () {
-    // const usrFrmData = this.userformData[this.userFormId]
-    // const ctrlSel = this.selectedControls[this.userFormId].selected
-    // const sizeToFitArr: string[] = []
-    // const sizeToFitVal: boolean[] = []
-    // for (let index = 0; index < ctrlSel.length; index++) {
-    //   if (!ctrlSel[index].startsWith('group')) {
-    //     const controlprop = usrFrmData[ctrlSel[index]].properties
-    //     if ('AutoSize' in controlprop) {
-    //       sizeToFitArr.push(ctrlSel[index])
-    //       sizeToFitVal.push(controlprop.AutoSize!)
-    //       this.updateControlProperty('AutoSize', true, ctrlSel[index])
-    //     }
-    //   }
-    // }
-    // setTimeout(() => {
-    //   for (let index = 0; index < sizeToFitArr.length; index++) {
-    //     if (!sizeToFitArr[index].startsWith('group')) {
-    //       const controlprop = usrFrmData[sizeToFitArr[index]].properties
-    //       if ('AutoSize' in controlprop) {
-    //         this.updateControlProperty('AutoSize', sizeToFitVal[index], sizeToFitArr[index])
-    //       }
-    //     }
-    //   }
-    // }, 100)
+    const usrFrmData = this.userformData[this.userFormId]
+    const ctrlSel = this.selectedControls[this.userFormId].selected
+    const sizeToFitArr: string[] = []
+    const sizeToFitVal: boolean[] = []
+    for (let index = 0; index < ctrlSel.length; index++) {
+      if (!ctrlSel[index].startsWith('group')) {
+        const controlprop = usrFrmData[ctrlSel[index]].properties
+        if ('AutoSize' in controlprop) {
+          sizeToFitArr.push(ctrlSel[index])
+          sizeToFitVal.push(controlprop.AutoSize!)
+          this.updateControlProperty('AutoSize', true, ctrlSel[index])
+        }
+      }
+    }
+    setTimeout(() => {
+      for (let index = 0; index < sizeToFitArr.length; index++) {
+        if (!sizeToFitArr[index].startsWith('group')) {
+          const controlprop = usrFrmData[sizeToFitArr[index]].properties
+          if ('AutoSize' in controlprop) {
+            this.updateControlProperty('AutoSize', sizeToFitVal[index], sizeToFitArr[index])
+          }
+        }
+      }
+    }, 100)
   }
   sizeToGrid () {
     let divstyle: Array<IGroupStyle> = []

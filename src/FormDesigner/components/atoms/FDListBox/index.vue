@@ -208,10 +208,16 @@ export default class FDListBox extends Mixins(FdControlVue) {
       let tempData = [...this.extraDatas.RowSourceData!]
       let tempBoundColumn = this.properties.BoundColumn! - 1
       for (let i = 0; i < this.extraDatas.RowSourceData!.length; i++) {
+        if (newVal !== '' && tempData[i][tempBoundColumn] !== newVal && this.listStyleRef[i].style.backgroundColor === 'rgb(59, 122, 231)') {
+          this.listStyleRef[i].style.backgroundColor = ''
+        }
         if (tempData[i][tempBoundColumn] === newVal) {
           this.clearOptionBGColorAndChecked(this.tempListBoxComboBoxEvent)
           this.listStyleRef[i].style.backgroundColor = 'rgb(59, 122, 231)'
-          break
+          this.updateDataModel({ propertyName: 'Text', value: newVal })
+        }
+        if (newVal !== '' && tempData[i][tempBoundColumn] !== newVal && this.listStyleRef[i].style.backgroundColor === 'rgb(59, 122, 231)') {
+          this.listStyleRef[i].style.backgroundColor = ''
         }
       }
       if (tempData![0][this.properties.BoundColumn! - 1] === newVal) {
@@ -281,6 +287,9 @@ export default class FDListBox extends Mixins(FdControlVue) {
     }
     if (event.key === 'Escape' && event.keyCode === 27) {
       this.releaseEditMode(event)
+    }
+    if (event.key === 'Delete') {
+      this.deleteItem(event)
     }
   }
 

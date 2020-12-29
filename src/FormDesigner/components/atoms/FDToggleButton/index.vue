@@ -7,7 +7,7 @@
     :title="properties.ControlTipText"
     :runmode="getDisableValue"
     @mousedown="controlEditMode"
-    @keydown.enter="setContentEditable($event, true)"
+    @keydown.enter.prevent="setContentEditable($event, true)"
     @blur="
       () => {
         isClicked = false;
@@ -95,6 +95,9 @@ export default class FDToggleButton extends Mixins(FdControlVue) {
       }
     }
     this.selectedItem(e)
+    if (this.isEditMode) {
+      (this.$el.children[0] as HTMLSpanElement).focus()
+    }
   }
 
   /**
@@ -209,6 +212,27 @@ export default class FDToggleButton extends Mixins(FdControlVue) {
   autoSize (newVal: boolean, oldVal: boolean) {
     // if autoSize is true then height and width value will not get updated
     this.updateAutoSize()
+  }
+
+  @Watch('properties.Font.FontSize', { deep: true })
+  autoSizeValidateOnFontChange () {
+    if (this.properties.AutoSize) {
+      this.updateAutoSize()
+    }
+  }
+
+  @Watch('properties.WordWrap', { deep: true })
+  autoSizeValidateOnWordWrapChange () {
+    if (this.properties.AutoSize) {
+      this.updateAutoSize()
+    }
+  }
+
+  @Watch('properties.Caption', { deep: true })
+  autoSizeValidateOnCaptionChange () {
+    if (this.properties.AutoSize) {
+      this.updateAutoSize()
+    }
   }
 
   /**

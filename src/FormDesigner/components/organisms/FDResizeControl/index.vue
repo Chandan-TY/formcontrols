@@ -87,6 +87,7 @@ import MultiPage from '@/FormDesigner/components/atoms/FDMultiPage/index.vue'
 import ResizeHandler from '@/FormDesigner/components/molecules/FDResizeHandler/index.vue'
 import FdSelectVue from '@/api/abstract/FormDesigner/FdSelectVue'
 import Container from '../FDContainer/index.vue'
+import { EventBus } from '@/FormDesigner/event-bus'
 @Component({
   name: 'ResizeControl',
   components: {
@@ -111,9 +112,10 @@ export default class ResizeControl extends FdSelectVue {
   @PropSync('currentSelectedGroup') public syncCurrentSelectedGroup!: string;
   @Prop({ required: true, type: String }) public containerId!: string;
   @Ref('resize') readonly resize!: ResizeHandler;
+  selMultipleCtrl: boolean = false
 
   handleDrag (event: MouseEvent) {
-    if (this.selectedControls[this.userFormId].selected.length > 1) {
+    if (this.selectedControls[this.userFormId].selected.length > 1 && this.selMultipleCtrl === false) {
       this.selectedItem(event)
     }
     this.isMoveWhenMouseDown = false
@@ -128,9 +130,12 @@ export default class ResizeControl extends FdSelectVue {
   dragControl (event: MouseEvent) {
     return event
   }
+  selectMultipleCtrl (val: boolean) {
+    this.selMultipleCtrl = val
+  }
 
   dragGroupControl (event: MouseEvent) {
-    if (this.selectedControls[this.userFormId].selected.length > 1) {
+    if (this.selectedControls[this.userFormId].selected.length > 1 && this.selMultipleCtrl === false) {
       this.selectedItem(event)
     }
     this.propControlData.properties.GroupID && this.dragControl(event)
@@ -227,62 +232,149 @@ export default class ResizeControl extends FdSelectVue {
     }
   }
   selectedItem (e: MouseEvent) {
-    const userData = this.userformData[this.userFormId]
-    const groupId = this.propControlData.properties.GroupID
-      ? this.propControlData.properties.GroupID
-      : ''
-    const currentSelect = this.selectedControls[this.userFormId].selected
-    if (currentSelect.length === 1 && currentSelect[0] === this.controlId) {
-      if (
-        this.isMoveWhenMouseDown !== true &&
+    if (this.selMultipleCtrl === false) {
+      const userData = this.userformData[this.userFormId]
+      const groupId = this.propControlData.properties.GroupID
+        ? this.propControlData.properties.GroupID
+        : ''
+      const currentSelect = this.selectedControls[this.userFormId].selected
+      if (currentSelect.length === 1 && currentSelect[0] === this.controlId) {
+        if (
+          this.isMoveWhenMouseDown !== true &&
         this.propControlData.type !== 'FDImage' &&
         this.propControlData.type !== 'Frame'
-      ) {
-        this.isEditMode = true
-        this.isMoveWhenMouseDown = false
-      }
-    } else {
-      if (currentSelect.length > 1) {
-        if (currentSelect.includes(this.controlId)) {
-          this.exchangeSelect()
-        } else {
-          if (
-            this.userformData[this.userFormId][this.controlId].properties
-              .GroupID !== ''
-          ) {
-            const selGrpName = this.userformData[this.userFormId][this.controlId].properties.GroupID!
-            this.groupExchange(selGrpName)
-          }
+        ) {
+          this.isEditMode = true
+          this.isMoveWhenMouseDown = false
         }
       } else {
-        let selectTarget = null
-        let currentGroup = ''
-        if (groupId !== '') {
-          if (
-            this.syncCurrentSelectedGroup === groupId &&
-            currentSelect[0] === groupId
-          ) {
-            selectTarget = this.controlId
+        if (currentSelect.length > 1) {
+          if (currentSelect.includes(this.controlId)) {
+            this.exchangeSelect()
           } else {
-            selectTarget = groupId
+            if (
+              this.userformData[this.userFormId][this.controlId].properties
+                .GroupID !== ''
+            ) {
+              const selGrpName = this.userformData[this.userFormId][this.controlId].properties.GroupID!
+              this.groupExchange(selGrpName)
+            }
           }
-          currentGroup = groupId
         } else {
-          selectTarget = this.controlId
-        }
+          let selectTarget = null
+          let currentGroup = ''
+          if (groupId !== '') {
+            if (
+              this.syncCurrentSelectedGroup === groupId &&
+            currentSelect[0] === groupId
+            ) {
+              selectTarget = this.controlId
+            } else {
+              selectTarget = groupId
+            }
+            currentGroup = groupId
+          } else {
+            selectTarget = this.controlId
+          }
 
-        this.selectControl({
-          userFormId: this.userFormId,
-          select: { container: this.getContainerList(selectTarget), selected: [selectTarget] }
-        })
-        this.syncCurrentSelectedGroup = currentGroup
+          this.selectControl({
+            userFormId: this.userFormId,
+            select: { container: this.getContainerList(selectTarget), selected: [selectTarget] }
+          })
+          this.syncCurrentSelectedGroup = currentGroup
+        }
       }
-    }
-    if ((this.propControlData.type === 'Frame' || this.propControlData.type === 'MultiPage') && currentSelect.length === 1) {
-      this.isMoving = true
-      this.isEditMode = true
-      this.bringFront()
-      e.stopPropagation()
+      if ((this.propControlData.type === 'Frame' || this.propControlData.type === 'MultiPage' || this.propControlData.type === 'ListBox') && currentSelect.length === 1) {
+        this.bringFront()
+        if (this.propControlData.type !== 'ListBox') {
+          this.isMoving = true
+          this.isEditMode = true
+          e.stopPropagation()
+        }
+      }
+    } else {
+      const userData = this.userformData[this.userFormId]
+      let mainSelected = this.selectedControls[this.userFormId].selected[0]
+      const controlData: controlData = userData[this.containerId]
+      let divstyle: Array<IGroupStyle> = []
+      if (mainSelected.startsWith('group') || userData[this.controlId].properties.GroupID !== '') {
+        EventBus.$emit('getGroupSize', (divstayleArray: Array<IGroupStyle>) => {
+          divstyle = divstayleArray
+        })
+      }
+      let mainCtrl: controlProperties = { ID: '' }
+      if (mainSelected.startsWith('group')) {
+        const getIndex = divstyle.findIndex(val => val.groupName === mainSelected)
+        mainCtrl = {
+          Left: parseInt(divstyle[getIndex].left!),
+          Top: parseInt(divstyle[getIndex].top!),
+          Width: parseInt(divstyle[getIndex].width!),
+          Height: parseInt(divstyle[getIndex].height!),
+          ID: ''
+        }
+      } else {
+        mainCtrl = userData[mainSelected].properties
+        if (mainSelected === this.containerId) {
+          mainSelected = ''
+          mainCtrl = userData[this.controlId].properties
+        }
+      }
+      let sideCtrl = userData[this.controlId].properties
+      if (userData[this.controlId].properties.GroupID !== '') {
+        const getIndex = divstyle.findIndex(val => val.groupName === userData[this.controlId].properties.GroupID)
+        sideCtrl = {
+          Left: parseInt(divstyle[getIndex].left!),
+          Top: parseInt(divstyle[getIndex].top!),
+          Width: parseInt(divstyle[getIndex].width!),
+          Height: parseInt(divstyle[getIndex].height!),
+          ID: ''
+        }
+      }
+      const selectedSize = {
+        Left: mainCtrl.Left! < sideCtrl.Left! ? mainCtrl.Left! : sideCtrl.Left!,
+        Top: mainCtrl.Top! < sideCtrl.Top! ? mainCtrl.Top! : sideCtrl.Top!,
+        Width: (mainCtrl.Left! + mainCtrl.Width!) > (sideCtrl.Left! + sideCtrl.Width!) ? mainCtrl.Left! + mainCtrl.Width! : sideCtrl.Left! + sideCtrl.Width!,
+        Height: (mainCtrl.Top! + mainCtrl.Height!) > (sideCtrl.Top! + sideCtrl.Height!) ? mainCtrl.Top! + mainCtrl.Height! : sideCtrl.Top! + sideCtrl.Height!
+      }
+      const left = selectedSize.Left
+      const top = selectedSize.Top
+      const right = selectedSize.Width
+      const bottom = selectedSize.Height
+      const multipleCtrl = []
+      if (left !== right || top !== bottom) {
+        for (let i in controlData.controls) {
+          const key: string = controlData.controls[i]
+          const controlProp: controlProperties = this.userformData[this.userFormId][key].properties
+          if (
+            left <= controlProp!.Left! + controlProp!.Width! &&
+            right >= controlProp!.Left! &&
+            top <= controlProp!.Top! + controlProp!.Height! &&
+            bottom >= controlProp!.Top!
+          ) {
+            multipleCtrl.push(key)
+          }
+        }
+        const selectedGroup: string[] = []
+        for (const val of multipleCtrl) {
+          const controlGroupId: string = this.userformData[this.userFormId][val]
+            .properties.GroupID!
+          if (controlGroupId && controlGroupId !== '') {
+            !selectedGroup.includes(controlGroupId)! &&
+              selectedGroup.push(controlGroupId)
+          } else {
+            selectedGroup.push(val)
+          }
+        }
+        if (this.selectedControlArray.length !== 0) {
+          this.selectControl({
+            userFormId: this.userFormId,
+            select: {
+              container: this.getContainerList(selectedGroup[0]),
+              selected: [...selectedGroup]
+            }
+          })
+        }
+      }
     }
   }
 
@@ -344,6 +436,14 @@ export default class ResizeControl extends FdSelectVue {
       return null
     }
   }
+  created () {
+    EventBus.$on('actMultipleCtrl', (val: boolean) => {
+      this.selMultipleCtrl = val
+    })
+  }
+  // destroyed () {
+  //   EventBus.$off('actMultipleCtrl')
+  // }
 }
 </script>
 

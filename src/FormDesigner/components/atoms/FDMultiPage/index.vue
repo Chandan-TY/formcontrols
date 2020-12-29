@@ -9,6 +9,7 @@
       @mouseup="dragSelectorControl($event)"
       @contextmenu.stop="handleContextMenu"
       @keydown.delete.stop.exact="deleteMultiPage"
+      @keyup.stop="selectMultipleCtrl($event, false)"
     >
       <div
         class="pages"
@@ -58,9 +59,10 @@
             :style="containerDivStyle"
             :title="properties.ControlTipText"
             :tabindex="properties.TabIndex"
-            @keydown.ctrl.exact.stop="selectMultipleCtrl(true)"
+            @keydown.ctrl.exact.stop="selectMultipleCtrl($event,true)"
             @keydown.ctrl.stop="handleKeyDown"
             @keydown.enter.exact="setContentEditable($event, true)"
+            @keydown.shift.exact.stop="selectMultipleCtrl($event,true)"
             @contextmenu.stop="showContextMenu($event, userFormId, controlId)"
           >
             <Container
@@ -680,7 +682,7 @@ export default class FDMultiPage extends FdContainerVue {
     if (this.isEditMode === false) {
       this.selectedItem(e)
     }
-    if (this.selMultipleCtrl === false) {
+    if (this.selMultipleCtrl === false && this.activateCtrl === false) {
       const selContainer = this.selectedControls[this.userFormId].container[0]
       if (this.controls.length > 0) {
         this.selectControl({
@@ -689,11 +691,12 @@ export default class FDMultiPage extends FdContainerVue {
         })
       }
       if (selContainer === this.controlId) {
-      // this.deActiveControl()
-        this.selectControl({
-          userFormId: this.userFormId,
-          select: { container: this.getContainerList(this.selectedPageID), selected: [this.selectedPageID] }
-        })
+        if (this.selMultipleCtrl === false && this.activateCtrl === false) {
+          this.selectControl({
+            userFormId: this.userFormId,
+            select: { container: this.getContainerList(this.selectedPageID), selected: [this.selectedPageID] }
+          })
+        }
       }
     }
   }
@@ -757,13 +760,14 @@ export default class FDMultiPage extends FdContainerVue {
       value: refName.scrollTop
     })
   }
-  created () {
-    EventBus.$on('selectMultipleCtrl', (val: boolean) => {
+  selectMultipleCtrl (event: KeyboardEvent, val: boolean) {
+    if (event.key === 'Control' && event.keyCode === 17) {
       this.selMultipleCtrl = val
-    })
-  }
-  destroyed () {
-    EventBus.$off('selectMultipleCtrl')
+      EventBus.$emit('selectMultipleCtrl', val)
+    } else if (event.key === 'Shift' && event.keyCode === 16) {
+      this.activateCtrl = val
+      EventBus.$emit('actMultipleCtrl', val)
+    }
   }
 }
 </script>
