@@ -2506,10 +2506,10 @@ export class PropertyListDefine {
           category: 'ID_CATEGORY_SCROLLING',
           type: 'array',
           values: [
-            'fmScrollBarsNone',
-            'fmScrollBarsHorizontal',
-            'fmScrollBarsVertical',
-            'fmScrollBarsBoth'
+            '0 - fmScrollBarsNone',
+            '1 - fmScrollBarsHorizontal',
+            '2 - fmScrollBarsVertical',
+            '3 - fmScrollBarsBoth'
           ]
         },
         Picture: {

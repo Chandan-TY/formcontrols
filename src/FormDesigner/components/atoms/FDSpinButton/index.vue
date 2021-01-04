@@ -4,6 +4,7 @@
   :tabindex="properties.TabIndex"
   @keydown.enter="setContentEditable($event, true)"
   @keydown.esc="setContentEditable($event, false)"
+  v-on="eventStoppers()"
   >
 <div
       class="outerSpinDiv"
@@ -31,7 +32,7 @@
             <svg version="1.0" xmlns="http://www.w3.org/2000/svg" :height="(properties.Height/2 > 60 && properties.Height < 850) ? properties.Height/2 - 45 : properties.Height >= 850 ? 425 : 15" :width="(properties.Width/2 > 60 && properties.Width < 850) ? properties.Width/2 - 45  : properties.Width >= 850 ? 425 : 15"
         viewBox="0 0 810.000000 460.000000"
         preserveAspectRatio="xMidYMid meet">
-          <g :fill="properties.ForeColor"
+          <g :fill="properties.Enabled?properties.ForeColor:'rgb(200,200,200)'"
           transform="translate(0.000000,460.000000) scale(0.100000,-0.100000)"
           stroke="none">
           <path d="M2055 2320 c-1089 -1254 -1980 -2288 -1980 -2298 0 -16 213 -17 3975
@@ -44,7 +45,7 @@
             <svg version="1.0" xmlns="http://www.w3.org/2000/svg" id="la" class="leftRightArrow"
         viewBox="0 0 460.000000 810.000000"  :height="(properties.Height/2 > 60 && properties.Height < 850) ? properties.Height/2 - 45 : properties.Height >= 850 ? 425 : 15" :width="(properties.Width/2 > 60 && properties.Width < 850) ? properties.Width/2 - 45  : properties.Width >= 850 ? 425 : 15"
         preserveAspectRatio="xMidYMid meet">
-          <g :fill="properties.ForeColor"
+          <g :fill="properties.Enabled?properties.ForeColor:'rgb(200,200,200)'"
           transform="translate(0.000000,810.000000) scale(0.100000,-0.100000)"
           stroke="none">
             <path d="M2285 6055 c-1874 -1623 -2280 -1980 -2280 -2000 0 -20 408 -378
@@ -74,7 +75,7 @@
             <svg version="1.0" xmlns="http://www.w3.org/2000/svg" :height="(properties.Height/2 > 60 && properties.Height < 850) ? properties.Height/2 - 45 : properties.Height >= 850 ? 425 : 15" :width="(properties.Width/2 > 60 && properties.Width < 850) ? properties.Width/2 - 45  : properties.Width >= 850 ? 425 : 15"
         viewBox="0 0 810.000000 460.000000"
         preserveAspectRatio="xMidYMid meet">
-          <g :fill="properties.ForeColor"
+          <g :fill="properties.Enabled?properties.ForeColor:'rgb(200,200,200)'"
           transform="translate(0.000000,460.000000) scale(0.100000,-0.100000)"
           stroke="none">
           <path d="M74 4585 c-4 -8 0 -23 7 -32 8 -9 897 -1036 1977 -2282 1612 -1862
@@ -87,7 +88,7 @@
             <svg version="1.0" xmlns="http://www.w3.org/2000/svg" id="ra" class="leftRightArrow" :height="(properties.Height/2 > 60 && properties.Height < 850) ? properties.Height/2 - 45 : properties.Height >= 850 ? 425 : 15" :width="(properties.Width/2 > 60 && properties.Width < 850) ? properties.Width/2 - 45  : properties.Width >= 850 ? 425 : 15"
         viewBox="0 0 460.000000 810.000000"
         preserveAspectRatio="xMidYMid meet">
-          <g :fill="properties.ForeColor"
+          <g :fill="properties.Enabled?properties.ForeColor:'rgb(200,200,200)'"
           transform="translate(0.000000,810.000000) scale(0.100000,-0.100000)"
           stroke="none">
             <path d="M5 8018 c-3 -7 -4 -1797 -3 -3978 3 -3515 5 -3965 18 -3967 8 -2
@@ -207,18 +208,6 @@ export default class FDSpinButton extends Mixins(FdControlVue) {
   }
 
   /**
-   * @description changes ForeColor property and then updates the getForeColor variable which is given to fill attribute of the svg element
-   * @function getForeColorValue
-   *
-   */
-  @Watch('properties.ForeColor', { deep: true })
-  changeForeColor (newVal: string, oldVal: string) {
-    this.$el.querySelectorAll('.foreColor').forEach((e) => {
-      (e as SVGGElement).style.fill = this.getForeColorValue
-    })
-  }
-
-  /**
    * @description changes the syling of the SpinButton based on the values of the getter orientedValues
    * @function checkOrientation
    *
@@ -270,6 +259,12 @@ export default class FDSpinButton extends Mixins(FdControlVue) {
       this.orientationValues.height = 0
       const newValues:IOrientationvalues = this.orientationValues
       this.checkOrientation(newValues, this.orientationValues)
+    }
+  }
+  eventStoppers () {
+    const eventStop = (event: Event) => event.stopPropagation()
+    return this.isEditMode === false ? null : {
+      keydown: eventStop
     }
   }
 }

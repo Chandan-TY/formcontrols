@@ -7,6 +7,7 @@
     @click="selectedItem"
     @keydown.enter="setContentEditable($event, true)"
     @keydown.esc="releaseEditMode"
+    v-on="eventStoppers()"
   >
     <div
       class="combobox"
@@ -662,9 +663,10 @@ export default class FDComboBox extends Mixins(FdControlVue) {
         controlProp.MousePointer !== 0 || controlProp.MouseIcon !== ''
           ? this.getMouseCursorData
           : 'default',
-      boxShadow: controlProp.SpecialEffect
-        ? this.getSpecialEffectData
-        : '-1px -1px lightgray',
+      borderLeft: controlProp.SpecialEffect === 2 ? '2px solid gray' : controlProp.SpecialEffect === 3 ? '1.5px solid gray' : controlProp.SpecialEffect === 4 ? '0.5px solid gray' : '',
+      borderRight: controlProp.SpecialEffect === 1 ? '2px solid gray' : controlProp.SpecialEffect === 4 ? '1.5px solid gray' : controlProp.SpecialEffect === 3 ? '0.5px solid gray' : '',
+      borderTop: controlProp.SpecialEffect === 2 ? '2px solid gray' : controlProp.SpecialEffect === 3 ? '1.5px solid gray' : controlProp.SpecialEffect === 4 ? '0.5px solid gray' : '',
+      borderBottom: controlProp.SpecialEffect === 1 ? '2px solid gray' : controlProp.SpecialEffect === 4 ? '1.5px solid gray' : controlProp.SpecialEffect === 3 ? '0.5px solid gray' : '',
       display: 'grid',
       gridTemplateColumns: `${controlProp.Width! - 20}px` + ' 21px',
       gridTemplateRows: `${controlProp.Height!}px`,
@@ -684,7 +686,7 @@ export default class FDComboBox extends Mixins(FdControlVue) {
       visibility: controlProp.ShowDropButtonWhen === 2 ? 'visible' : this.expandWidth(),
       backgroundPosition:
         controlProp.DropButtonStyle === 1 ? 'center' : 'bottom',
-      backgroundSize: '6px 6px',
+      backgroundSize: controlProp.DropButtonStyle === 1 ? '12px 12px' : controlProp.DropButtonStyle === 2 ? '8px 8px' : controlProp.DropButtonStyle === 3 ? '9px 14px' : '',
       cursor:
         controlProp.MousePointer !== 0 || controlProp.MouseIcon !== ''
           ? this.getMouseCursorData
@@ -707,6 +709,12 @@ export default class FDComboBox extends Mixins(FdControlVue) {
       }
     } else {
       this.open = false
+    }
+  }
+  eventStoppers () {
+    const eventStop = (event: Event) => event.stopPropagation()
+    return this.isEditMode === false ? null : {
+      keydown: eventStop
     }
   }
 }
@@ -893,7 +901,7 @@ export default class FDComboBox extends Mixins(FdControlVue) {
   background-image: url('../../../../assets/ellipsis.png');
 }
 .forReduce {
-  background-image: url('../../../../assets/minus.png');
+  background-image: url('../../../../assets/minus.png'),url('../../../../assets/minus.png');
 }
 .forPlain {
   background-image: none;

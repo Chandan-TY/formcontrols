@@ -74,6 +74,12 @@ export default class FDImage extends Mixins(FdControlVue) {
    */
   protected get cssStyleProperty (): Partial<CSSStyleDeclaration> {
     const controlProp = this.properties
+    let display = ''
+    if (this.isRunMode) {
+      display = controlProp.Visible ? 'block' : 'none'
+    } else {
+      display = 'block'
+    }
     return {
       ...this.baseStyle,
       left: `${controlProp.Left}px`,
@@ -85,7 +91,10 @@ export default class FDImage extends Mixins(FdControlVue) {
         : 'transparent',
       borderColor: controlProp.BorderColor,
       border: this.getBorderStyle,
-      boxShadow: controlProp.SpecialEffect ? this.getSpecialEffectData : 'none',
+      borderLeft: controlProp.SpecialEffect === 2 ? '2px solid gray' : controlProp.SpecialEffect === 3 ? '1.5px solid gray' : controlProp.SpecialEffect === 4 ? '0.5px solid gray' : '',
+      borderRight: controlProp.SpecialEffect === 1 ? '2px solid gray' : controlProp.SpecialEffect === 4 ? '1.5px solid gray' : controlProp.SpecialEffect === 3 ? '0.5px solid gray' : '',
+      borderTop: controlProp.SpecialEffect === 2 ? '2px solid gray' : controlProp.SpecialEffect === 3 ? '1.5px solid gray' : controlProp.SpecialEffect === 4 ? '0.5px solid gray' : '',
+      borderBottom: controlProp.SpecialEffect === 1 ? '2px solid gray' : controlProp.SpecialEffect === 4 ? '1.5px solid gray' : controlProp.SpecialEffect === 3 ? '0.5px solid gray' : '',
       cursor:
         controlProp.MousePointer !== 0 || controlProp.MouseIcon !== ''
           ? this.getMouseCursorData
@@ -94,7 +103,7 @@ export default class FDImage extends Mixins(FdControlVue) {
       backgroundSize: controlProp.Picture === '' ? '' : this.getSizeMode,
       backgroundRepeat: this.getRepeatData,
       backgroundPosition: controlProp.Picture === '' ? '' : this.getPosition,
-      display: controlProp.Visible ? 'block' : 'none'
+      display: display
     }
   }
 }

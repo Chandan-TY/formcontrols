@@ -215,8 +215,10 @@ export default class FdControlVue extends Vue {
    */
   protected get getScrollBarX (): string {
     if (this.data.type === 'TextBox') {
-      const scrollYData = controlProperties.scrollBarTextBoxProp(this.data)
-      return scrollYData.overflowY
+      if (this.isEditMode) {
+        const scrollXData = controlProperties.scrollBarTextBoxProp(this.data)
+        return scrollXData.overflowX
+      }
     }
     const scrollX: ScrollBarData = controlProperties.scrollBarProp(
       this.data
@@ -232,8 +234,10 @@ export default class FdControlVue extends Vue {
    */
   protected get getScrollBarY (): string {
     if (this.data.type === 'TextBox') {
-      const scrollYData = controlProperties.scrollBarTextBoxProp(this.data)
-      return scrollYData.overflowY
+      if (this.isEditMode) {
+        const scrollYData = controlProperties.scrollBarTextBoxProp(this.data)
+        return scrollYData.overflowY
+      }
     }
     const scrollY: ScrollBarData = controlProperties.scrollBarProp(
       this.data

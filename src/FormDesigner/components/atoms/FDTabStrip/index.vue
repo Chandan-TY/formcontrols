@@ -1,6 +1,7 @@
 <template>
   <div>
     <div
+    v-on="eventStoppers()"
       class="outer-page"
       :style="pageStyleObj"
       @contextmenu="contextMenuVisible($event, -1)"
@@ -32,8 +33,8 @@
         <div
           :style="getScrollButtonStyleObj"
         >
-          <button class="left-button" @click="leftmove"></button>
-          <button class="right-button" @click="rightmove"></button>
+          <button class="left-button" :style="scrollButtonStyle" @click="leftmove"></button>
+          <button class="right-button" :style="scrollButtonStyle" @click="rightmove"></button>
         </div>
       </div>
     </div>
@@ -88,13 +89,11 @@ export default class FDTabStrip extends FdControlVue {
   left: string = '0px';
   contextMenuValue: Array<IcontextMenu> = tabsContextMenu;
   tempScrollWidth: number;
-  tempScrollHeight: number;
   updatedValue: number = 0;
-  tempTabWidth: number = 0;
   tempWidth: number = 0;
   tempHeight: number = 0;
   multiRowCount: number = 1;
-
+  isScrollVisible: boolean = false;
   rightClickSelect (value: number) {
     this.updateDataModel({ propertyName: 'Value', value: value })
   }
@@ -227,8 +226,8 @@ export default class FDTabStrip extends FdControlVue {
       marginTop: controlProp.TabOrientation === 1 ? `${controlProp.Height! - 35}px` : '0px',
       whiteSpace: controlProp.MultiRow === true ? 'break-spaces' : 'nowrap',
       zIndex: controlProp.MultiRow === true ? '100' : '1',
-      height: controlProp.TabOrientation === 2 || controlProp.TabOrientation === 3 ? '100%' : '',
-      width: controlProp.TabOrientation === 2 || controlProp.TabOrientation === 3 ? 'fit-content' : '100%',
+      height: controlProp.TabOrientation === 2 || controlProp.TabOrientation === 3 ? this.isScrollVisible ? `${controlProp.Height! - 48}px` : `${controlProp.Height}px` : '',
+      width: controlProp.TabOrientation === 2 || controlProp.TabOrientation === 3 ? 'fit-content' : this.isScrollVisible ? `${controlProp.Width! - 62}px` : `${controlProp.Width!}px`,
       float: controlProp.TabOrientation === 3 ? 'right' : '',
       overflow: 'hidden'
     }
@@ -254,9 +253,62 @@ export default class FDTabStrip extends FdControlVue {
         controlProp.TabOrientation === 2
           ? 'rotate(90deg)'
           : this.transformScrollButtonStyle,
-      display: controlProp.Style === 2 ? 'none' : controlProp.TabOrientation === 0 || controlProp.TabOrientation === 1 ? ((this.properties.Width! > 44) ? ((tabsLength > this.properties.Width!) ? 'block' : 'none') : 'none') : controlProp.TabOrientation === 2 || controlProp.TabOrientation === 3 ? ((this.properties.Height! > 44) ? ((tabsHeight > this.properties.Height!) ? 'block' : 'none') : 'none') : 'none',
-      right: controlProp.TabOrientation === 3 ? '-14px' : controlProp.TabOrientation === 2 ? `${controlProp.Width! - 40}px` : '-14px',
+      display: this.scrollButtonVerify(),
+      right: controlProp.TabOrientation === 3 ? '0px' : controlProp.TabOrientation === 2 ? `${controlProp.Width! - 40}px` : '0px',
       top: '0px'
+    }
+  }
+
+  get scrollButtonStyle () {
+    const controlProp = this.properties
+    return {
+      cursor:
+        controlProp.MousePointer !== 0 || controlProp.MouseIcon !== ''
+          ? this.getMouseCursorData
+          : 'default'
+    }
+  }
+
+  scrollButtonVerify () {
+    const tabsLength = this.properties.TabFixedWidth! > 0 ? this.extraDatas.Tabs!.length * this.properties.TabFixedWidth! + (10 * this.extraDatas.Tabs!.length) : this.properties.Font!.FontSize! < 36 ? this.properties.Font!.FontSize! * 3.5 * this.extraDatas.Tabs!.length : this.properties.Font!.FontSize! * 2.3 * this.extraDatas.Tabs!.length
+    const tabsHeight = this.properties.TabFixedHeight! > 0 ? this.extraDatas.Tabs!.length * this.properties.TabFixedHeight! + (10 * this.extraDatas.Tabs!.length) : this.properties.Font!.FontSize! * 2.3 * this.extraDatas.Tabs!.length
+    if (this.properties.Style === 2) {
+      this.isScrollVisible = false
+      return 'none'
+    } if (!this.properties.MultiRow) {
+      if (this.properties.TabOrientation === 0 || this.properties.TabOrientation === 1) {
+        if (this.properties.Width! > 44) {
+          if (tabsLength > this.properties.Width!) {
+            this.isScrollVisible = true
+            return 'block'
+          } else {
+            this.isScrollVisible = false
+            return 'none'
+          }
+        } else {
+          this.isScrollVisible = false
+          return 'none'
+        }
+      } else if (this.properties.TabOrientation === 2 || this.properties.TabOrientation === 3) {
+        if (this.properties.Height! > 44) {
+          if (tabsHeight > this.properties.Height!) {
+            this.isScrollVisible = true
+            return 'block'
+          } else {
+            this.isScrollVisible = false
+            return 'none'
+          }
+        } else {
+          this.isScrollVisible = false
+          return 'none'
+        }
+      } else {
+        this.isScrollVisible = false
+        return 'none'
+      }
+    } else {
+      this.isScrollVisible = false
+      return 'none'
     }
   }
 
@@ -274,8 +326,8 @@ export default class FDTabStrip extends FdControlVue {
         controlProp.MousePointer !== 0 || controlProp.MouseIcon !== ''
           ? this.getMouseCursorData
           : 'default',
-      position: 'absolute',
-      display: controlProp.TabOrientation === 1 ? 'flex' : ''
+      display: controlProp.TabOrientation === 1 ? 'flex' : '',
+      position: 'absolute'
     }
   }
 
@@ -318,15 +370,15 @@ export default class FDTabStrip extends FdControlVue {
             : 'block',
       top: controlProp.TabOrientation === 0 ? controlProp.MultiRow ? (this.tempHeight + 12) * this.multiRowCount + 'px' : controlProp.TabFixedHeight! > 0 ? (controlProp.TabFixedHeight! + 10) + 'px' : controlProp.TabFixedHeight! === 0 ? (this.tempHeight + 9) + 'px' : '33px' : controlProp.TabOrientation === 1 ? controlProp.MultiRow ? '-' + (this.tempHeight + 12) * (this.multiRowCount - 1) + 'px' : controlProp.TabFixedHeight! > 0 ? '0px' : '0px' : '0px',
       height: controlProp.TabOrientation === 0 || controlProp.TabOrientation === 1
-        ? controlProp.TabFixedHeight! > 0 ? (controlProp.Height! - controlProp.TabFixedHeight! - 5) + 'px' : controlProp.TabFixedHeight! === 0 ? (controlProp.Height! - controlProp.Font!.FontSize! - 10) + 'px'
+        ? controlProp.TabFixedHeight! > 0 ? (controlProp.Height! - controlProp.TabFixedHeight! - 5) + 'px' : controlProp.TabFixedHeight! === 0 ? (controlProp.Height! - controlProp.Font!.FontSize! - 13) + 'px'
           : controlProp.TabOrientation === 1
             ? `${controlProp.Height! - 21}px`
             : `${controlProp.Height! - 35}px`
         : `${controlProp.Height! - 2}px`,
       width:
         controlProp.TabOrientation === 0 || controlProp.TabOrientation === 1
-          ? 'calc(100% - 3px)'
-          : controlProp.TabFixedWidth! > 0 ? (controlProp.Width! - controlProp.TabFixedWidth! - 15) + 'px' : controlProp.TabFixedWidth! === 0 ? controlProp.TabOrientation === 2 || controlProp.TabOrientation === 3 ? `${controlProp.Width! - this.tempWidth - 12}px` : (controlProp.Width! - controlProp.Font!.FontSize! - 20) + 'px' : 'calc(100% - 44px)',
+          ? `${controlProp.Width! - 3}px`
+          : controlProp.TabFixedWidth! > 0 ? (controlProp.Width! - controlProp.TabFixedWidth! - 15) + 'px' : controlProp.TabFixedWidth! === 0 ? controlProp.TabOrientation === 2 || controlProp.TabOrientation === 3 ? `${controlProp.Width! - this.tempWidth - 12}px` : (controlProp.Width! - controlProp.Font!.FontSize! - 20) + 'px' : `${controlProp.Width! - 34}px`,
       left: controlProp.TabOrientation === 2 ? controlProp.TabFixedWidth! > 0 ? (controlProp.TabFixedWidth! + 12) + 'px' : controlProp.TabFixedWidth! === 0 ? controlProp.TabOrientation === 2 || controlProp.TabOrientation === 3 ? `${this.tempWidth + 12}px` : (controlProp.Font!.FontSize! + 20) + 'px' : '40px' : controlProp.TabOrientation === 3 ? controlProp.TabFixedWidth! > 0 ? '0px' : '0px' : '0px',
       cursor:
         controlProp.MousePointer !== 0 || controlProp.MouseIcon !== ''
@@ -432,6 +484,12 @@ export default class FDTabStrip extends FdControlVue {
 
   closeMenu () {
     this.viewMenu = false
+  }
+  eventStoppers () {
+    const eventStop = (event: Event) => event.stopPropagation()
+    return this.isEditMode === false ? null : {
+      keydown: eventStop
+    }
   }
 }
 </script>

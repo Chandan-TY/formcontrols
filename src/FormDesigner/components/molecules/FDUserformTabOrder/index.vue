@@ -3,7 +3,7 @@
     <div class="outer-taborder-div popup" :style="tabOrderDialogInitialStyle">
       <div class="taborder-header-div" @mousedown.stop="dragTabOrderDialog">
         <div class="taborder-header-innerdiv">
-          <a>Tab Order</a>
+          <a>{{controlType === 'MultiPage' ? 'Page Order' : 'Tab Order'}}</a>
         </div>
         <button class="ui-btn close" @click="closeDialog">
           <svg viewBox="0 0 10 10">
@@ -15,7 +15,7 @@
       </div>
       <div class="wrapper">
         <div class="wrapper1">
-          <span class="inner-header">Tab Order</span>
+          <span class="inner-header">{{controlType === 'MultiPage' ? 'Page Order' : 'Tab Order'}}</span>
           <div class="frame">
             <div v-for="(value, index) in tabOrderList" :key="value.controlId">
               <button
@@ -106,10 +106,14 @@ export default class FDUserformTabOrder extends FdDialogDragVue {
       'userFormTabOrder',
       (userFormId: string, controlId: string, type: string) => {
         this.controlType = type
-        const tabOrderControlData = this.userformData[userFormId][controlId]
-        this.tabOrderList = Array(tabOrderControlData.controls.length)
-        if (tabOrderControlData.controls.length > 0) {
-          for (let control of tabOrderControlData.controls) {
+        const tabOrderControlData = JSON.parse(JSON.stringify(this.userformData[userFormId][controlId]))
+        const tabOrderControls = tabOrderControlData.controls.filter((val: string) => {
+          return (this.userformData[userFormId][val].type !== 'FDImage')
+        })
+        this.tabOrderList = Array(tabOrderControls.length)
+
+        if (tabOrderControls.length > 0) {
+          for (let control of tabOrderControls) {
             const targetData = this.userformData[userFormId][control]
             if (targetData) {
               let targetTabIndex
@@ -314,6 +318,10 @@ h1 {
   font-weight: lighter;
   font-size: 13px;
   box-shadow: 1px 1px;
+  border-top-color: rgb(238, 238, 238);
+  border-bottom-color: rgb(238, 238, 238);
+  border-left-color: rgb(238, 238, 238);
+  border-right-color: rgb(238, 238, 238);
   outline: none;
   white-space: pre;
 }

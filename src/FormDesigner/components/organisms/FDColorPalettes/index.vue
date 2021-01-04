@@ -11,7 +11,7 @@
       <button
         id="clear"
         :style="colorPalettesStyleObj"
-        @click="openColorPalette"
+        @mousedown.prevent="openColorPalette"
       >
         _
       </button>
@@ -104,12 +104,16 @@ export default class FDColorPalettes extends Vue {
   selectedValue: ISelectedValue
 
   openColorPalette () {
+    if (this.isVisible === true) {
+      this.isVisible = false
+    } else if (this.isVisible === false) {
+      this.isVisible = true
+    }
     if (this.isVisible) {
       this.$nextTick(function () {
         this.colorPalleteRef.focus()
       })
     }
-    this.isVisible = !this.isVisible
   }
 
   selectColor (data: ISelectedValue) {
@@ -121,6 +125,7 @@ export default class FDColorPalettes extends Vue {
   hideColorPallete () {
     this.isVisible = false
   }
+
   @Emit('colorPalette')
   emitColorPalette (selectedValue: string, name: string) {
     return { propertyName: name, propertyValue: selectedValue }

@@ -126,32 +126,51 @@
                   <span><u>M</u>ake Same Size</span>
                 </li>
                 <hr />
-                <li class="sub-menu-li" @click="sizeToFit">
+                <li
+                  class="sub-menu-li"
+                  :style="{ opacity: getdisableStyle('sizeToFit') ? 0.5 : 1 }"
+                  @click="getdisableStyle('sizeToFit') ? '' : sizeToFit()"
+                >
                   <span></span>
-                  <span><u>S</u>ize to Fit</span>
+                  <span>Size to <u>F</u>it</span>
                 </li>
-                <li class="sub-menu-li" @click="sizeToGrid">
+                <li class="sub-menu-li"
+                 :style="{ opacity: getdisableStyle('sizeToGrid') ? 0.5 : 1 }"
+                  @click="getdisableStyle('sizeToGrid') ? '' : sizeToGrid()"
+                >
                   <span></span>
-                  <span><u>S</u>ize to Grid</span>
+                  <span>Size to Gri<u>d</u></span>
                 </li>
                 <hr />
                 <li class="sub-menu-li">
                   <span></span>
                   <span><u>H</u>orizontal Spacing</span>
                 </li>
-                <li class="sub-menu-li" @click="makeEqual('Left')">
+                <li class="sub-menu-li"
+                :style="{ opacity: getdisableStyle('makeEqual') ? 0.5 : 1 }"
+                @click="getdisableStyle('makeEqual') ? '' : makeEqual('Left')"
+                >
                   <span></span>
-                  <span><u>M</u>ake Equal</span>
+                  <span>Make <u>E</u>qual</span>
                 </li>
-                 <li class="sub-menu-li" @click="incDecspacing('Left', 10)">
+                <li class="sub-menu-li"
+                :style="{ opacity: getdisableStyle('incDecspacing') ? 0.5 : 1 }"
+                @click="getdisableStyle('incDecspacing') ? '' : incDecspacing('Left', 10)"
+                >
                   <span></span>
                   <span><u>I</u>ncrease</span>
                 </li>
-                 <li class="sub-menu-li" @click="incDecspacing('Left', -10)">
+                <li class="sub-menu-li"
+                :style="{ opacity: getdisableStyle('incDecspacing') ? 0.5 : 1 }"
+                @click="getdisableStyle('incDecspacing') ? '' : incDecspacing('Left', -10)"
+                >
                   <span></span>
                   <span><u>D</u>ecrease</span>
                 </li>
-                <li class="sub-menu-li" @click="removeSpace('Left')">
+                <li class="sub-menu-li"
+                :style="{ opacity: getdisableStyle('removeSpace') ? 0.5 : 1 }"
+                @click="getdisableStyle('removeSpace') ? '' : removeSpace('Left')"
+                >
                   <span></span>
                   <span><u>R</u>emove</span>
                 </li>
@@ -160,32 +179,50 @@
                   <span></span>
                   <span><u>V</u>ertical Spacing</span>
                 </li>
-                <li class="sub-menu-li" @click="makeEqual('Top')">
+                <li class="sub-menu-li"
+                :style="{ opacity: getdisableStyle('makeEqual') ? 0.5 : 1 }"
+                @click="getdisableStyle('makeEqual') ? '' : makeEqual('Top')"
+                >
                   <span></span>
-                  <span><u>M</u>ake Equal</span>
+                  <span>Make <u>E</u>qual</span>
                 </li>
-                <li class="sub-menu-li" @click="incDecspacing('Top', 10)">
+                <li class="sub-menu-li"
+                :style="{ opacity: getdisableStyle('incDecspacing') ? 0.5 : 1 }"
+                @click="getdisableStyle('incDecspacing') ? '' : incDecspacing('Top', 10)"
+                >
                   <span></span>
                   <span><u>I</u>ncrease</span>
                 </li>
-                 <li class="sub-menu-li" @click="incDecspacing('Top', -10)">
+                <li class="sub-menu-li"
+                :style="{ opacity: getdisableStyle('incDecspacing') ? 0.5 : 1 }"
+                @click="getdisableStyle('incDecspacing') ? '' : incDecspacing('Top', -10)"
+                >
                   <span></span>
                   <span><u>D</u>ecrease</span>
                 </li>
-                <li class="sub-menu-li" @click="removeSpace('Top')">
+                <li class="sub-menu-li"
+                :style="{ opacity: getdisableStyle('removeSpace') ? 0.5 : 1 }"
+                @click="getdisableStyle('removeSpace') ? '' : removeSpace('Top')"
+                >
                   <span></span>
                   <span><u>R</u>emove</span>
                 </li>
                 <hr />
                 <li class="sub-menu-li">
                   <span></span>
-                  <span><u>C</u>ertre in Form</span>
+                  <span><u>C</u>enter in Form</span>
                 </li>
-                <li class="sub-menu-li" @click="centreInForm('horizontal')">
+                <li class="sub-menu-li"
+                :style="{ opacity: getdisableStyle('centreInForm') ? 0.5 : 1 }"
+                @click="getdisableStyle('centreInForm') ? '' : centreInForm('horizontal')"
+                >
                   <span></span>
                   <span><u>H</u>orizontally</span>
                 </li>
-                <li class="sub-menu-li" @click="centreInForm('vertical')">
+                <li class="sub-menu-li"
+                :style="{ opacity: getdisableStyle('centreInForm') ? 0.5 : 1 }"
+                @click="getdisableStyle('centreInForm') ? '' : centreInForm('vertical')"
+                >
                   <span></span>
                   <span><u>V</u>ertically</span>
                 </li>
@@ -194,20 +231,34 @@
                   <span></span>
                   <span>A<u>r</u>range Buttons</span>
                 </li>
-                <li class="sub-menu-li" @click="arrangeButton('right')">
+                <li class="sub-menu-li"
+                :style="{ opacity: getdisableStyle('arrangeButton') ? 0.5 : 1 }"
+                @click="getdisableStyle('arrangeButton') ? '' : arrangeButton('right')"
+                >
                   <span></span>
                   <span><u>R</u>ight</span>
                 </li>
-                <li class="sub-menu-li" @click="arrangeButton('bottom')">
+                <li class="sub-menu-li"
+                :style="{ opacity: getdisableStyle('arrangeButton') ? 0.5 : 1 }"
+                @click="getdisableStyle('arrangeButton') ? '' : arrangeButton('bottom')"
+                >
                   <span></span>
                   <span><u>B</u>ottom</span>
                 </li>
                 <hr />
-                <li class="sub-menu-li" @click="groupControl">
+                <li
+                  class="sub-menu-li"
+                  :style="{ opacity: getdisableStyle('group') ? 0.5 : 1 }"
+                  @click="getdisableStyle('group') ? '' : groupControl()"
+                >
                   <span></span>
                   <span><u>G</u>roup</span>
                 </li>
-                <li class="sub-menu-li" @click="unGroupControl">
+                <li
+                  class="sub-menu-li"
+                  :style="{ opacity: getdisableStyle('unGroup') ? 0.5 : 1 }"
+                  @click="getdisableStyle('unGroup') ? '' : unGroupControl()"
+                >
                   <span></span>
                   <span><u>U</u>nGroup</span>
                 </li>
@@ -216,11 +267,17 @@
                   <span></span>
                   <span><u>O</u>rder</span>
                 </li>
-                <li class="sub-menu-li" @click="bringFront">
+                <li class="sub-menu-li"
+                :style="{ opacity: getdisableStyle('order') ? 0.5 : 1 }"
+                @click="getdisableStyle('order') ? '' : bringFront()"
+                >
                   <span></span>
                   <span><u>B</u>ring to Front</span>
                 </li>
-                <li class="sub-menu-li" @click="sendBack">
+                <li class="sub-menu-li"
+                :style="{ opacity: getdisableStyle('order') ? 0.5 : 1 }"
+                @click="getdisableStyle('order') ? '' : sendBack()"
+                >
                   <span></span>
                   <span><u>S</u>end to Back</span>
                 </li>
@@ -358,21 +415,22 @@ export default class Header extends FDCommonMethod {
     const controls = usrFrmData[ctrlContainer].controls
     let divstyle: Array<IGroupStyle> = []
     let getGroupIndex = -1
-    EventBus.$emit(
-      'getGroupSize',
-      (divstayleArray: Array<IGroupStyle>) => {
-        divstyle = divstayleArray
-      }
-    )
+    EventBus.$emit('getGroupSize', (divstayleArray: Array<IGroupStyle>) => {
+      divstyle = divstayleArray
+    })
     if (ctrlSel[0].startsWith('group')) {
-      getGroupIndex = divstyle.findIndex(val => val.groupName === ctrlSel[0])
+      getGroupIndex = divstyle.findIndex((val) => val.groupName === ctrlSel[0])
     }
     let propValue = 0
     const leftArray: string[] = []
     const rightArray: string[] = []
     for (let index = 1; index < ctrlSel.length; index++) {
-      const selLeft = ctrlSel[0].startsWith('group') ? parseInt(divstyle[getGroupIndex].left!) : usrFrmData[ctrlSel[0]].properties.Left
-      const selTop = ctrlSel[0].startsWith('group') ? parseInt(divstyle[getGroupIndex].top!) : usrFrmData[ctrlSel[0]].properties.Top
+      const selLeft = ctrlSel[0].startsWith('group')
+        ? parseInt(divstyle[getGroupIndex].left!)
+        : usrFrmData[ctrlSel[0]].properties.Left
+      const selTop = ctrlSel[0].startsWith('group')
+        ? parseInt(divstyle[getGroupIndex].top!)
+        : usrFrmData[ctrlSel[0]].properties.Top
       if (!ctrlSel[index].startsWith('group')) {
         const ctrlProp = usrFrmData[ctrlSel[index]].properties
         if (type === 'Left') {
@@ -392,7 +450,9 @@ export default class Header extends FDCommonMethod {
         EventBus.$emit('getGroupSize', (divstayleArray: Array<IGroupStyle>) => {
           divstyle = divstayleArray
         })
-        const getIndex = divstyle.findIndex(val => val.groupName === ctrlSel[index])
+        const getIndex = divstyle.findIndex(
+          (val) => val.groupName === ctrlSel[index]
+        )
         const groupLeft = parseInt(divstyle[getIndex].left!)
         const groupTop = parseInt(divstyle[getIndex].top!)
         const groupConrol = this.getGroupControl(ctrlSel[index])
@@ -432,7 +492,9 @@ export default class Header extends FDCommonMethod {
       }
     }
     if (ctrlSel[0].startsWith('group')) {
-      const getIndex = divstyle.findIndex(val => val.groupName === ctrlSel[0])
+      const getIndex = divstyle.findIndex(
+        (val) => val.groupName === ctrlSel[0]
+      )
       const groupLeft = parseInt(divstyle[getIndex].left!)
       const groupTop = parseInt(divstyle[getIndex].top!)
       const groupConrol = this.getGroupControl(ctrlSel[0])
@@ -475,7 +537,9 @@ export default class Header extends FDCommonMethod {
     }
     let leftControl = { ...usrFrmData[leftArray[0]].properties }
     if (leftControl.GroupID !== '') {
-      const groupIndex = divstyle.findIndex(val => val.groupName === leftControl.GroupID)
+      const groupIndex = divstyle.findIndex(
+        (val) => val.groupName === leftControl.GroupID
+      )
       const groupSize = divstyle[groupIndex]
       leftControl = {
         ...leftControl,
@@ -485,9 +549,13 @@ export default class Header extends FDCommonMethod {
         Top: parseInt(divstyle[groupIndex].top!)
       }
     }
-    let rightControl = { ...usrFrmData[rightArray[rightArray.length - 1]].properties }
+    let rightControl = {
+      ...usrFrmData[rightArray[rightArray.length - 1]].properties
+    }
     if (rightControl.GroupID !== '') {
-      const groupIndex = divstyle.findIndex(val => val.groupName === rightControl.GroupID)
+      const groupIndex = divstyle.findIndex(
+        (val) => val.groupName === rightControl.GroupID
+      )
       const groupSize = divstyle[groupIndex]
       rightControl = {
         ...leftControl,
@@ -504,7 +572,9 @@ export default class Header extends FDCommonMethod {
           const ctrlProp = usrFrmData[ctrlSel[index]].properties
           totalSize = totalSize + ctrlProp.Width!
         } else {
-          const groupIndex = divstyle.findIndex(val => val.groupName === ctrlSel[index])
+          const groupIndex = divstyle.findIndex(
+            (val) => val.groupName === ctrlSel[index]
+          )
           totalSize = totalSize + parseInt(divstyle[groupIndex].width!)
         }
       } else if (type === 'Top') {
@@ -512,22 +582,36 @@ export default class Header extends FDCommonMethod {
           const ctrlProp = usrFrmData[ctrlSel[index]].properties
           totalSize = totalSize + ctrlProp.Height!
         } else {
-          const groupIndex = divstyle.findIndex(val => val.groupName === ctrlSel[index])
+          const groupIndex = divstyle.findIndex(
+            (val) => val.groupName === ctrlSel[index]
+          )
           totalSize = totalSize + parseInt(divstyle[groupIndex].height!)
         }
       }
     }
     let diffrence = 0
     if (type === 'Left') {
-      diffrence = (((rightControl.Left! + rightControl.Width!) - (leftControl.Left!)) - totalSize) / (ctrlSel.length - 1)
+      diffrence =
+        (rightControl.Left! +
+          rightControl.Width! -
+          leftControl.Left! -
+          totalSize) /
+        (ctrlSel.length - 1)
     } else if (type === 'Top') {
-      diffrence = (((rightControl.Top! + rightControl.Height!) - (leftControl.Top!)) - totalSize) / (ctrlSel.length - 1)
+      diffrence =
+        (rightControl.Top! +
+          rightControl.Height! -
+          leftControl.Top! -
+          totalSize) /
+        (ctrlSel.length - 1)
     }
     const unique = () => {
       var a = leftArray.concat(rightArray)
       for (var i = 0; i < a.length; ++i) {
         for (var j = i + 1; j < a.length; ++j) {
-          if (a[i] === a[j]) { a.splice(j--, 1) }
+          if (a[i] === a[j]) {
+            a.splice(j--, 1)
+          }
         }
       }
       return a
@@ -544,13 +628,20 @@ export default class Header extends FDCommonMethod {
           this.updateControlProperty(type, propValue, combineArray[index])
         } else {
           if (prevCtrlProp.GroupID !== '') {
-            prevIndex = divstyle.findIndex(val => val.groupName === prevCtrlProp.GroupID)
-            propValue = parseInt(divstyle[prevIndex].left!) + parseInt(divstyle[prevIndex].width!) + diffrence
+            prevIndex = divstyle.findIndex(
+              (val) => val.groupName === prevCtrlProp.GroupID
+            )
+            propValue =
+              parseInt(divstyle[prevIndex].left!) +
+              parseInt(divstyle[prevIndex].width!) +
+              diffrence
           } else {
             propValue = prevCtrlProp.Left! + prevCtrlProp.Width! + diffrence
           }
           if (ctrlProp.GroupID !== '') {
-            const getIndex = divstyle.findIndex(val => val.groupName === ctrlProp.GroupID)
+            const getIndex = divstyle.findIndex(
+              (val) => val.groupName === ctrlProp.GroupID
+            )
             EventBus.$emit('updasteGroupSize', type, propValue, getIndex)
           } else {
             this.updateControlProperty(type, propValue, combineArray[index])
@@ -563,13 +654,20 @@ export default class Header extends FDCommonMethod {
             this.updateControlProperty(type, propValue, combineArray[index])
           } else {
             if (prevCtrlProp.GroupID !== '') {
-              prevIndex = divstyle.findIndex(val => val.groupName === prevCtrlProp.GroupID)
-              propValue = parseInt(divstyle[prevIndex].top!) + parseInt(divstyle[prevIndex].height!) + diffrence
+              prevIndex = divstyle.findIndex(
+                (val) => val.groupName === prevCtrlProp.GroupID
+              )
+              propValue =
+                parseInt(divstyle[prevIndex].top!) +
+                parseInt(divstyle[prevIndex].height!) +
+                diffrence
             } else {
               propValue = prevCtrlProp.Top! + prevCtrlProp.Height! + diffrence
             }
             if (ctrlProp.GroupID !== '') {
-              const getIndex = divstyle.findIndex(val => val.groupName === ctrlProp.GroupID)
+              const getIndex = divstyle.findIndex(
+                (val) => val.groupName === ctrlProp.GroupID
+              )
               EventBus.$emit('updasteGroupSize', type, propValue, getIndex)
             } else {
               this.updateControlProperty(type, propValue, combineArray[index])
@@ -584,7 +682,8 @@ export default class Header extends FDCommonMethod {
     const selected = this.selectedControls[this.userFormId].selected[0]
     const container = this.selectedControls[this.userFormId].container[0]
     const tempZIndex = userData[selected].extraDatas!.zIndex!
-    const containerControls = this.userformData[this.userFormId][container].controls
+    const containerControls = this.userformData[this.userFormId][container]
+      .controls
     const tempControls = []
     for (const index in containerControls) {
       const cntrlData = this.userformData[this.userFormId][containerControls[index]]
@@ -592,8 +691,14 @@ export default class Header extends FDCommonMethod {
         tempControls.push(containerControls[index])
       }
     }
-    const lastControlId = tempControls.length > 0 ? this.getLowestIndex(tempControls, userData[container].controls.length, true)
-      : this.userformData[this.userFormId][container].controls.length + 1
+    const lastControlId =
+      tempControls.length > 0
+        ? this.getLowestIndex(
+          tempControls,
+          userData[container].controls.length,
+          true
+        )
+        : this.userformData[this.userFormId][container].controls.length + 1
     this.swapZIndex(lastControlId - 1)
   }
   sendBack () {
@@ -625,7 +730,11 @@ export default class Header extends FDCommonMethod {
         if (!sizeToFitArr[index].startsWith('group')) {
           const controlprop = usrFrmData[sizeToFitArr[index]].properties
           if ('AutoSize' in controlprop) {
-            this.updateControlProperty('AutoSize', sizeToFitVal[index], sizeToFitArr[index])
+            this.updateControlProperty(
+              'AutoSize',
+              sizeToFitVal[index],
+              sizeToFitArr[index]
+            )
           }
         }
       }
@@ -639,18 +748,33 @@ export default class Header extends FDCommonMethod {
     for (let index = 0; index < ctrlSel.length; index++) {
       if (!ctrlSel[index].startsWith('group')) {
         const controlprop = usrFrmData[ctrlSel[index]].properties
-        this.updateControlProperty('Left', Math.trunc(controlprop.Left!), ctrlSel[index])
-        this.updateControlProperty('Top', Math.trunc(controlprop.Top!), ctrlSel[index])
-        this.updateControlProperty('Width', Math.trunc(controlprop.Width!), ctrlSel[index])
-        this.updateControlProperty('Height', Math.trunc(controlprop.Height!), ctrlSel[index])
-      } else {
-        EventBus.$emit(
-          'getGroupSize',
-          (divstayleArray: Array<IGroupStyle>) => {
-            divstyle = divstayleArray
-          }
+        this.updateControlProperty(
+          'Left',
+          Math.trunc(controlprop.Left!),
+          ctrlSel[index]
         )
-        const getIndex = divstyle.findIndex(val => val.groupName === ctrlSel[index])
+        this.updateControlProperty(
+          'Top',
+          Math.trunc(controlprop.Top!),
+          ctrlSel[index]
+        )
+        this.updateControlProperty(
+          'Width',
+          Math.trunc(controlprop.Width!),
+          ctrlSel[index]
+        )
+        this.updateControlProperty(
+          'Height',
+          Math.trunc(controlprop.Height!),
+          ctrlSel[index]
+        )
+      } else {
+        EventBus.$emit('getGroupSize', (divstayleArray: Array<IGroupStyle>) => {
+          divstyle = divstayleArray
+        })
+        const getIndex = divstyle.findIndex(
+          (val) => val.groupName === ctrlSel[index]
+        )
         EventBus.$emit('updasteGroupSize', 'GroupID', 0, getIndex)
       }
     }
@@ -662,19 +786,38 @@ export default class Header extends FDCommonMethod {
     const isGroup = ctrlSel[0].startsWith('group')
     const ctrlProp = !isGroup && usrFrmData[ctrlSel[0]].properties
     if (ctrlSel[0].startsWith('group')) {
-      EventBus.$emit(
-        'getGroupSize',
-        (divstayleArray: Array<IGroupStyle>) => {
-          divstyle = divstayleArray
-        }
-      )
+      EventBus.$emit('getGroupSize', (divstayleArray: Array<IGroupStyle>) => {
+        divstyle = divstayleArray
+      })
     }
-    const groupIndex: number = divstyle.findIndex(val => val.groupName === ctrlSel[0])
+    const groupIndex: number = divstyle.findIndex(
+      (val) => val.groupName === ctrlSel[0]
+    )
     const newObject = {
-      Left: isGroup && groupIndex !== -1 ? parseInt(divstyle[groupIndex].left!) : ctrlProp ? ctrlProp.Left! : 0,
-      Top: isGroup && groupIndex !== -1 ? parseInt(divstyle[groupIndex].top!) : ctrlProp ? ctrlProp.Top! : 0,
-      Width: isGroup && groupIndex !== -1 ? parseInt(divstyle[groupIndex].width!) : ctrlProp ? ctrlProp.Width! : 0,
-      Height: isGroup && groupIndex !== -1 ? parseInt(divstyle[groupIndex].height!) : ctrlProp ? ctrlProp.Height! : 0
+      Left:
+        isGroup && groupIndex !== -1
+          ? parseInt(divstyle[groupIndex].left!)
+          : ctrlProp
+            ? ctrlProp.Left!
+            : 0,
+      Top:
+        isGroup && groupIndex !== -1
+          ? parseInt(divstyle[groupIndex].top!)
+          : ctrlProp
+            ? ctrlProp.Top!
+            : 0,
+      Width:
+        isGroup && groupIndex !== -1
+          ? parseInt(divstyle[groupIndex].width!)
+          : ctrlProp
+            ? ctrlProp.Width!
+            : 0,
+      Height:
+        isGroup && groupIndex !== -1
+          ? parseInt(divstyle[groupIndex].height!)
+          : ctrlProp
+            ? ctrlProp.Height!
+            : 0
     }
     let propValue = 0
     for (let index = 1; index < ctrlSel.length; index++) {
@@ -719,20 +862,21 @@ export default class Header extends FDCommonMethod {
     let divstyle: Array<IGroupStyle> = []
     let getGroupIndex = -1
     if (ctrlSel[0].startsWith('group')) {
-      EventBus.$emit(
-        'getGroupSize',
-        (divstayleArray: Array<IGroupStyle>) => {
-          divstyle = divstayleArray
-        }
-      )
-      getGroupIndex = divstyle.findIndex(val => val.groupName === ctrlSel[0])
+      EventBus.$emit('getGroupSize', (divstayleArray: Array<IGroupStyle>) => {
+        divstyle = divstayleArray
+      })
+      getGroupIndex = divstyle.findIndex((val) => val.groupName === ctrlSel[0])
     }
     let propValue = 0
     const leftArray: string[] = []
     const rightArray: string[] = []
     for (let index = 1; index < ctrlSel.length; index++) {
-      const selLeft = ctrlSel[0].startsWith('group') ? parseInt(divstyle[getGroupIndex].left!) : usrFrmData[ctrlSel[0]].properties.Left
-      const selTop = ctrlSel[0].startsWith('group') ? parseInt(divstyle[getGroupIndex].top!) : usrFrmData[ctrlSel[0]].properties.Top
+      const selLeft = ctrlSel[0].startsWith('group')
+        ? parseInt(divstyle[getGroupIndex].left!)
+        : usrFrmData[ctrlSel[0]].properties.Left
+      const selTop = ctrlSel[0].startsWith('group')
+        ? parseInt(divstyle[getGroupIndex].top!)
+        : usrFrmData[ctrlSel[0]].properties.Top
       if (!ctrlSel[index].startsWith('group')) {
         const ctrlProp = usrFrmData[ctrlSel[index]].properties
         if (type === 'Left') {
@@ -752,7 +896,9 @@ export default class Header extends FDCommonMethod {
         EventBus.$emit('getGroupSize', (divstayleArray: Array<IGroupStyle>) => {
           divstyle = divstayleArray
         })
-        const getIndex = divstyle.findIndex(val => val.groupName === ctrlSel[index])
+        const getIndex = divstyle.findIndex(
+          (val) => val.groupName === ctrlSel[index]
+        )
         const groupLeft = parseInt(divstyle[getIndex].left!)
         const groupTop = parseInt(divstyle[getIndex].top!)
         const groupConrol = this.getGroupControl(ctrlSel[index])
@@ -792,7 +938,9 @@ export default class Header extends FDCommonMethod {
       }
     }
     if (ctrlSel[0].startsWith('group')) {
-      const getIndex = divstyle.findIndex(val => val.groupName === ctrlSel[0])
+      const getIndex = divstyle.findIndex(
+        (val) => val.groupName === ctrlSel[0]
+      )
       const groupLeft = parseInt(divstyle[getIndex].left!)
       const groupTop = parseInt(divstyle[getIndex].top!)
       const groupConrol = this.getGroupControl(ctrlSel[0])
@@ -846,19 +994,35 @@ export default class Header extends FDCommonMethod {
         } else {
           if (prevCtrlProp.GroupID !== '') {
             if (ctrlProp.GroupID === '') {
-              prevIndex = divstyle.findIndex(val => val.groupName === prevCtrlProp.GroupID)
+              prevIndex = divstyle.findIndex(
+                (val) => val.groupName === prevCtrlProp.GroupID
+              )
               propValue = parseInt(divstyle[prevIndex].left!) - ctrlProp.Width!
               this.updateControlProperty(type, propValue, leftArray[index])
             }
-          } if (ctrlProp.GroupID !== '') {
-            controlPropIndex = divstyle.findIndex(val => val.groupName === ctrlProp.GroupID)
+          }
+          if (ctrlProp.GroupID !== '') {
+            controlPropIndex = divstyle.findIndex(
+              (val) => val.groupName === ctrlProp.GroupID
+            )
             if (prevCtrlProp.GroupID === '') {
-              propValue = prevCtrlProp.Left! - parseInt(divstyle[controlPropIndex].width!)
+              propValue =
+                prevCtrlProp.Left! -
+                parseInt(divstyle[controlPropIndex].width!)
             } else {
-              prevIndex = divstyle.findIndex(val => val.groupName === prevCtrlProp.GroupID)
-              propValue = parseInt(divstyle[prevIndex].left!) - parseInt(divstyle[controlPropIndex].width!)
+              prevIndex = divstyle.findIndex(
+                (val) => val.groupName === prevCtrlProp.GroupID
+              )
+              propValue =
+                parseInt(divstyle[prevIndex].left!) -
+                parseInt(divstyle[controlPropIndex].width!)
             }
-            EventBus.$emit('updasteGroupSize', type, propValue, controlPropIndex)
+            EventBus.$emit(
+              'updasteGroupSize',
+              type,
+              propValue,
+              controlPropIndex
+            )
           }
         }
       } else if (type === 'Top') {
@@ -868,19 +1032,35 @@ export default class Header extends FDCommonMethod {
         } else {
           if (prevCtrlProp.GroupID !== '') {
             if (ctrlProp.GroupID === '') {
-              prevIndex = divstyle.findIndex(val => val.groupName === prevCtrlProp.GroupID)
+              prevIndex = divstyle.findIndex(
+                (val) => val.groupName === prevCtrlProp.GroupID
+              )
               propValue = parseInt(divstyle[prevIndex].top!) - ctrlProp.Height!
               this.updateControlProperty(type, propValue, leftArray[index])
             }
-          } if (ctrlProp.GroupID !== '') {
-            controlPropIndex = divstyle.findIndex(val => val.groupName === ctrlProp.GroupID)
+          }
+          if (ctrlProp.GroupID !== '') {
+            controlPropIndex = divstyle.findIndex(
+              (val) => val.groupName === ctrlProp.GroupID
+            )
             if (prevCtrlProp.GroupID === '') {
-              propValue = prevCtrlProp.Top! - parseInt(divstyle[controlPropIndex].height!)
+              propValue =
+                prevCtrlProp.Top! -
+                parseInt(divstyle[controlPropIndex].height!)
             } else {
-              prevIndex = divstyle.findIndex(val => val.groupName === prevCtrlProp.GroupID)
-              propValue = parseInt(divstyle[prevIndex].top!) - parseInt(divstyle[controlPropIndex].height!)
+              prevIndex = divstyle.findIndex(
+                (val) => val.groupName === prevCtrlProp.GroupID
+              )
+              propValue =
+                parseInt(divstyle[prevIndex].top!) -
+                parseInt(divstyle[controlPropIndex].height!)
             }
-            EventBus.$emit('updasteGroupSize', type, propValue, controlPropIndex)
+            EventBus.$emit(
+              'updasteGroupSize',
+              type,
+              propValue,
+              controlPropIndex
+            )
           }
         }
       }
@@ -896,13 +1076,19 @@ export default class Header extends FDCommonMethod {
           this.updateControlProperty(type, propValue, rightArray[index])
         } else {
           if (prevCtrlProp.GroupID !== '') {
-            prevIndex = divstyle.findIndex(val => val.groupName === prevCtrlProp.GroupID)
-            propValue = parseInt(divstyle[prevIndex].left!) + parseInt(divstyle[prevIndex].width!)
+            prevIndex = divstyle.findIndex(
+              (val) => val.groupName === prevCtrlProp.GroupID
+            )
+            propValue =
+              parseInt(divstyle[prevIndex].left!) +
+              parseInt(divstyle[prevIndex].width!)
           } else {
             propValue = prevCtrlProp.Left! + prevCtrlProp.Width!
           }
           if (ctrlProp.GroupID !== '') {
-            const getIndex = divstyle.findIndex(val => val.groupName === ctrlProp.GroupID)
+            const getIndex = divstyle.findIndex(
+              (val) => val.groupName === ctrlProp.GroupID
+            )
             EventBus.$emit('updasteGroupSize', type, propValue, getIndex)
           } else {
             this.updateControlProperty(type, propValue, rightArray[index])
@@ -914,13 +1100,19 @@ export default class Header extends FDCommonMethod {
           this.updateControlProperty(type, propValue, rightArray[index])
         } else {
           if (prevCtrlProp.GroupID !== '') {
-            prevIndex = divstyle.findIndex(val => val.groupName === prevCtrlProp.GroupID)
-            propValue = parseInt(divstyle[prevIndex].top!) + parseInt(divstyle[prevIndex].height!)
+            prevIndex = divstyle.findIndex(
+              (val) => val.groupName === prevCtrlProp.GroupID
+            )
+            propValue =
+              parseInt(divstyle[prevIndex].top!) +
+              parseInt(divstyle[prevIndex].height!)
           } else {
             propValue = prevCtrlProp.Top! + prevCtrlProp.Height!
           }
           if (ctrlProp.GroupID !== '') {
-            const getIndex = divstyle.findIndex(val => val.groupName === ctrlProp.GroupID)
+            const getIndex = divstyle.findIndex(
+              (val) => val.groupName === ctrlProp.GroupID
+            )
             EventBus.$emit('updasteGroupSize', type, propValue, getIndex)
           } else {
             this.updateControlProperty(type, propValue, rightArray[index])
@@ -947,13 +1139,12 @@ export default class Header extends FDCommonMethod {
         }
       } else {
         let divstyle: Array<IGroupStyle> = []
-        EventBus.$emit(
-          'getGroupSize',
-          (divstayleArray: Array<IGroupStyle>) => {
-            divstyle = divstayleArray
-          }
+        EventBus.$emit('getGroupSize', (divstayleArray: Array<IGroupStyle>) => {
+          divstyle = divstayleArray
+        })
+        const groupIndex = divstyle.findIndex(
+          (val) => val.groupName === ctrlSel[index]
         )
-        const groupIndex = divstyle.findIndex(val => val.groupName === ctrlSel[index])
         const curProp = divstyle[groupIndex]
         const left = parseInt(curProp.left!)
         const top = parseInt(curProp.top!)
@@ -961,7 +1152,7 @@ export default class Header extends FDCommonMethod {
         const height = parseInt(curProp.height!)
         let value = -1
         if (propName === 'selCenter') {
-          value = propValue - (width! / 2)
+          value = propValue - width! / 2
           EventBus.$emit('updasteGroupSize', 'Left', value, groupIndex)
         }
         if (propName === 'selMiddle') {
@@ -988,7 +1179,10 @@ export default class Header extends FDCommonMethod {
     const usrFrmData = this.userformData[this.userFormId]
     const ctrlSel = this.selectedControls[this.userFormId].selected
     let ctrlContainer = this.selectedControls[this.userFormId].container[0]
-    ctrlContainer = usrFrmData[ctrlContainer].type === 'Page' ? this.selectedControls[this.userFormId].container[1] : ctrlContainer
+    ctrlContainer =
+      usrFrmData[ctrlContainer].type === 'Page'
+        ? this.selectedControls[this.userFormId].container[1]
+        : ctrlContainer
     const buttonArray = []
     for (let index = 0; index < ctrlSel.length; index++) {
       if (!ctrlSel[index].startsWith('group')) {
@@ -1010,38 +1204,46 @@ export default class Header extends FDCommonMethod {
     console.log(buttonArray)
     const containerProp = usrFrmData[ctrlContainer].properties
     let value: number = 0
+    const containerHeight = (usrFrmData[ctrlContainer].type === 'Userform')
+      ? 47 : usrFrmData[ctrlContainer].type === 'Frame' ? 27
+        : usrFrmData[ctrlContainer].type === 'MultiPage' ? 40 : 0
+    const containerWidth = 20
     if (type === 'bottom') {
-      value = (containerProp.Height!) - usrFrmData[buttonArray[0]].properties.Height!
+      value = (containerProp.Height! - containerHeight) - usrFrmData[buttonArray[0]].properties.Height!
       this.updateControlProperty('Top', value, buttonArray[0])
-      this.updateControlProperty('Left', 0, buttonArray[0])
+      this.updateControlProperty('Left', 30, buttonArray[0])
     } else if (type === 'right') {
-      value = (containerProp.Width!) - usrFrmData[buttonArray[0]].properties.Width!
+      value = (containerProp.Width! - containerWidth) - usrFrmData[buttonArray[0]].properties.Width!
       this.updateControlProperty('Left', value, buttonArray[0])
-      this.updateControlProperty('Top', 0, buttonArray[0])
+      this.updateControlProperty('Top', 20, buttonArray[0])
     }
 
     for (let index = 1; index < buttonArray.length; index++) {
       const prevCtrlProp = usrFrmData[buttonArray[index - 1]].properties
       const ctrlProp = usrFrmData[buttonArray[index]].properties
       if (type === 'bottom') {
-        let propValue = prevCtrlProp.Left! + prevCtrlProp.Width!
-        value = (containerProp.Height!) - usrFrmData[buttonArray[index]].properties.Height!
-        if ((propValue + ctrlProp.Width!) <= (containerProp.Width!)) {
+        let propValue = prevCtrlProp.Left! + prevCtrlProp.Width! + 10
+        value =
+          (containerProp.Height! - containerHeight) -
+          usrFrmData[buttonArray[index]].properties.Height!
+        if (propValue + ctrlProp.Width! <= containerProp.Width! - containerWidth) {
           this.updateControlProperty('Left', propValue, buttonArray[index])
           this.updateControlProperty('Top', value, buttonArray[index])
         } else {
-          propValue = containerProp.Width! - ctrlProp.Width!
+          propValue = containerProp.Width! - containerWidth - ctrlProp.Width!
           this.updateControlProperty('Left', propValue, buttonArray[index])
           this.updateControlProperty('Top', value, buttonArray[index])
         }
       } else if (type === 'right') {
-        let propValue = prevCtrlProp.Top! + prevCtrlProp.Height!
-        value = (containerProp.Width!) - usrFrmData[buttonArray[index]].properties.Width!
-        if ((propValue + ctrlProp.Height!) <= (containerProp.Height!)) {
+        let propValue = prevCtrlProp.Top! + prevCtrlProp.Height! + 10
+        value =
+          (containerProp.Width! - containerWidth) -
+          usrFrmData[buttonArray[index]].properties.Width!
+        if (propValue + ctrlProp.Height! <= containerProp.Height! - (containerHeight)) {
           this.updateControlProperty('Top', propValue, buttonArray[index])
           this.updateControlProperty('Left', value, buttonArray[index])
         } else {
-          propValue = containerProp.Height! - ctrlProp.Height!
+          propValue = containerProp.Height! - containerHeight - ctrlProp.Height!
           this.updateControlProperty('Top', propValue, buttonArray[index])
           this.updateControlProperty('Left', value, buttonArray[index])
         }
@@ -1059,6 +1261,46 @@ export default class Header extends FDCommonMethod {
       propertyName: propertyName,
       value: propertyValue
     })
+  }
+  getdisableStyle (id: string) {
+    let disabled: boolean = true
+    const selected = this.selectedControls[this.userFormId].selected
+    const selContainer = this.selectedControls[this.userFormId].container
+    const userData = this.userformData[this.userFormId]
+    if (id === 'unGroup') {
+      let groupId: boolean = false
+      const selectedGroupArray = selected.filter(
+        (val: string) => val.startsWith('group') && val
+      )
+      if (selectedGroupArray.length === 1 && selected.length === 1) {
+        disabled = false
+      }
+    }
+    if (id === 'group') {
+      disabled = selected.length <= 1
+    }
+    if (id === 'sizeToFit' || id === 'sizeToGrid' || id === 'centreInForm' || id === 'order') {
+      disabled = !(selected.length >= 1 && selected[0] !== selContainer[0])
+    }
+    if (id === 'makeEqual') {
+      disabled = !(selected.length >= 3)
+    }
+    if (id === 'incDecspacing' || id === 'removeSpace') {
+      disabled = !(selected.length >= 2)
+    }
+    if (id === 'arrangeButton') {
+      const buttonArray = []
+      for (let index = 0; index < selected.length; index++) {
+        if (!selected[index].startsWith('group')) {
+          const controlprop = userData[selected[index]]
+          if (controlprop.type === 'CommandButton') {
+            buttonArray.push(selected[index])
+          }
+        }
+      }
+      disabled = !(buttonArray.length >= 1)
+    }
+    return disabled
   }
 }
 </script>

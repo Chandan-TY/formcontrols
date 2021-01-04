@@ -54,6 +54,7 @@ import { EventBus } from '@/FormDesigner/event-bus'
 export default class ResizeUserForm extends FdSelectVue {
   @Prop({ required: true, type: String }) public containerId!: string;
   @Ref('userFormRef') readonly userFormRef!: Userform;
+  $el: HTMLDivElement
 
   containerEditMode: boolean = false
   /**
@@ -93,10 +94,14 @@ export default class ResizeUserForm extends FdSelectVue {
     )
   }
   created () {
+    EventBus.$on('focusUserForm', () => {
+      this.$el.focus()
+    })
     EventBus.$on('isEditMode', (isEditMode: boolean) => { this.containerEditMode = isEditMode })
   }
   destroyed () {
     EventBus.$off('isEditMode')
+    EventBus.$off('focusUserForm')
   }
   tabAction (event: KeyboardEvent) {
     event.preventDefault()

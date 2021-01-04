@@ -73,8 +73,8 @@ export default class Resizehandler extends FDCommonMethod {
     return groupId
   }
 
-  @Emit('updateEditMode')
-  updateEditMode (val: boolean) {
+  @Emit('updateIsMove')
+  updateIsMove (val: boolean) {
     return val
   }
 
@@ -124,7 +124,7 @@ export default class Resizehandler extends FDCommonMethod {
         } else {
           EventBus.$emit('handleName', 'drag')
           this.isMove = true
-          this.updateEditMode(true)
+          this.updateIsMove(true)
         }
       }
     }
@@ -145,7 +145,7 @@ export default class Resizehandler extends FDCommonMethod {
    */
   handleMouseDown (event: CustomMouseEvent, handler: string, controlType: string, controlID: string) {
     this.isSelctedControl = controlID
-    this.updateEditMode(false)
+    this.updateIsMove(false)
     EventBus.$emit('handleName', 'notDrag')
     const controlGroup = this.userformData[this.userFormId][this.controlId].properties.GroupID
     this.isGroupActivated = this.selectedControls[this.userFormId].selected.findIndex((val: string) => val.startsWith('group'))

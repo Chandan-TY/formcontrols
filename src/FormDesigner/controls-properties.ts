@@ -260,11 +260,17 @@ export const controlProperties = {
   scrollBarTextBoxProp: (controlData: controlData): ScrollBarData => {
     const propData:ScrollBarProp = {
       'hide': { overflowX: 'hidden', overflowY: 'hidden' },
-      'show': { overflowX: 'auto', overflowY: 'auto' }
+      'show': { overflowX: controlData.properties.MultiLine ? 'hidden' : 'auto', overflowY: controlData.properties.MultiLine ? 'auto' : 'hidden' },
+      'horizontal': { overflowX: controlData.properties.MultiLine ? 'hidden' : 'auto', overflowY: 'hidden' },
+      'vertical': { overflowX: 'hidden', overflowY: controlData.properties.MultiLine ? 'auto' : 'hidden' }
     }
     const scrollBar:number = controlData.properties.ScrollBars!
     if (scrollBar === 0) {
       return propData['hide']
+    } else if (scrollBar === 1) {
+      return propData['horizontal']
+    } else if (scrollBar === 2) {
+      return propData['vertical']
     } else {
       return propData['show']
     }

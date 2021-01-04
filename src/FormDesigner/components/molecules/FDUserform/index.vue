@@ -1,10 +1,8 @@
 <template>
   <div class="inner-userform-window" :style="innerWindowStyle">
     <div class="inner-userform-header">
-      <div>
-        <span :style="innerWindowHeaderStyle">
+      <div class="innerWindowHeaderStyle">
           {{ properties.Caption }}
-        </span>
       </div>
       <div>
         <button class="ui-btn close closeButton">
@@ -17,7 +15,7 @@
       :style="innerWindowBodyStyle"
       @click="addControlObj($event, data)"
       @mousedown="deActiveControl(this)"
-      @contextmenu.stop="showContextMenu($event, userFormId, controlId)"
+      @contextmenu.stop="showContextMenu($event, userFormId, controlId, 'container')"
       @mouseup="dragSelectorControl($event)"
       ref="innerUserForm"
       @scroll="updateScrollingLeftTop"
@@ -35,7 +33,7 @@
         ref="containerRef"
         @closeMenu="closeMenu"
         :mouseCursorData="getMouseCursorData"
-        @openMenu="(e, parentID, controlID) => showContextMenu(e, parentID, controlID)"
+        @openMenu="(e, parentID, controlID, type) => showContextMenu(e, parentID, controlID, type)"
       >
       </Container>
     </div>
@@ -173,7 +171,7 @@ export default class UserForm extends FdContainerVue {
         this.properties.Picture === ''
           ? this.getSampleDotPattern.backgroundSize
           : this.getSizeMode,
-      backgroundColor: this.properties.Picture !== '' ? '' : this.properties.BackColor,
+      backgroundColor: this.properties.BackColor,
       backgroundRepeat: this.getRepeatData,
       backgroundPosition:
         this.properties.Picture !== ''
@@ -184,9 +182,6 @@ export default class UserForm extends FdContainerVue {
       overflowX: this.getScrollBarX,
       overflowY: this.getScrollBarY
     }
-  }
-  protected get innerWindowHeaderStyle (): Partial<CSSStyleDeclaration> {
-    return { float: this.properties.RightToLeft === true ? 'right' : 'left' }
   }
 
   updateScrollingLeftTop (e: MouseEvent) {
@@ -212,8 +207,8 @@ export default class UserForm extends FdContainerVue {
     this.calSelectedAreaStyle(event, this.data)
   }
 
-  showContextMenu (e: MouseEvent, parentID: string, controlID: string) {
-    this.openMenu(e, parentID, controlID)
+  showContextMenu (e: MouseEvent, parentID: string, controlID: string, type: string) {
+    this.openMenu(e, parentID, controlID, type)
     Vue.nextTick(() => this.containerRef.contextmenu.focus())
   }
   created () {
@@ -335,5 +330,10 @@ export default class UserForm extends FdContainerVue {
 .container{
   width:100%;
   height: 100%;
+}
+.innerWindowHeaderStyle{
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: pre;
 }
 </style>

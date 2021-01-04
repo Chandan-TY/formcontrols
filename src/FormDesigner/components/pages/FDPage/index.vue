@@ -170,6 +170,9 @@ export default class FDPage extends Vue {
       }
     })
   }
+  mounted () {
+    this.setUserForm(this.userFormId)
+  }
 }
 </script>
 

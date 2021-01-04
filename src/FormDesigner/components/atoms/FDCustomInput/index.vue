@@ -1,15 +1,25 @@
 <template>
   <div class="custom-input-outer">
     <label class="custom-label-ele">{{propertyName}}</label>
-    <input
-      v-if="propertyType === 'file'"
+    <div v-if="propertyType === 'file'" class="box">
+      <input type="text" class="file-input"
+      :value="displayValue" disabled="true"
+      />
+        <button
+          class="file-inpu-button-style"
+          @click="fileInputRef.click()"
+        >
+          ...
+          <input
+          ref="fileInputRef"
       :name="propertyName"
-      class="custom-input-ele"
-      :value="(inputType)?null:propertyValue"
       :type="propertyType"
       @change="updateAppearance"
-      accept="image/gif, image/jpeg, image/x-icon, image/jpg, image/bmp"
-    />
+      :accept="propertyName==='Picture'?'image/gif, image/jpeg, image/x-icon, image/jpg, image/bmp' :
+      'image/gif, image/x-icon, image/bmp'"
+      />
+        </button>
+    </div>
     <input
       v-else
       :name="propertyName"
@@ -23,17 +33,16 @@
 
 <script lang="ts">
 
-import { Component, Vue, Prop, Emit } from 'vue-property-decorator'
+import { Component, Vue, Prop, Emit, Ref } from 'vue-property-decorator'
 @Component({
   name: 'FDCustomInput',
   components: {}
 })
 export default class FDCustomInput extends Vue {
   @Prop() propertyData! : tableData
+  @Ref('fileInputRef') fileInputRef!: HTMLInputElement;
 
   @Prop({ default: 'default' }) propertyName!: string
-
-  fileBasedProperties:Array<string>=['MouseIcon', 'Picture']
 
   get propertyType () {
     return this.propertyData.type
@@ -46,17 +55,18 @@ export default class FDCustomInput extends Vue {
   get propertyValues () {
     return this.propertyData.values
   }
-
-  get inputType () {
-    let isFile = false
-    this.fileBasedProperties.forEach((word:string) => {
-      if (word.includes(this.propertyName)) {
-        isFile = true
+  get displayValue () {
+    if (this.propertyValue && typeof (this.propertyValue) === 'string') {
+      const type = this.propertyValue.split(';')[0].split('/')[1]
+      if (type.includes('x-icon')) {
+        return '(Icon)'
+      } else {
+        return '(Bitmap)'
       }
-    })
-    return isFile
+    } else {
+      return '(None)'
+    }
   }
-
   @Emit('updateAppearance')
   updateAppearance (e: Event) {
     return e
@@ -81,5 +91,33 @@ export default class FDCustomInput extends Vue {
   border: 0.1px solid lightgray;
   outline: none;
   font-size: 12px;
+}
+input[type="file"] {
+    display: none;
+}
+.file-input {
+  border: none;
+  outline: none;
+  height: 14px;
+  width: calc(100% - 20px);
+}
+.box {
+  overflow: hidden;
+  float: right;
+  width: 100%;
+}
+.file-inpu-button-style {
+  height: 20px;
+  width: 17px;
+  padding: 0px;
+  padding-left: 1px;
+  padding-right: 2px;
+  border: 1px solid white;
+  border-right-color: gray;
+  border-bottom-color: gray;
+  border-left-color: lightgray;
+  border-top-color: lightgray;
+  outline: none;
+  margin-left: -3px;
 }
 </style>

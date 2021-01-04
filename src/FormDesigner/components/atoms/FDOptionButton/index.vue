@@ -7,7 +7,7 @@
     :tabindex="properties.TabIndex"
     @keydown.enter.prevent="setContentEditable($event, true)"
   >
-    <label class="control"
+    <label class="control" :style="controlStyleObj"
       ><input
         @change="handleChange($event, optionBtnRef)"
         @click="SetValue()"
@@ -26,6 +26,7 @@
     <div :style="pictureDiv">
       <div ref="divAutoSize" :style="divcssStyleProperty">
         <span
+        :style="spanStyleObj"
           v-if="!syncIsEditMode || isRunMode"
           @click="isRunMode && makeChecked($event)"
         >
@@ -51,7 +52,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Ref, Mixins, Watch } from 'vue-property-decorator'
+import { Component, Ref, Mixins, Watch, Vue } from 'vue-property-decorator'
 import FdControlVue from '@/api/abstract/FormDesigner/FdControlVue'
 import FDEditableText from '@/FormDesigner/components/atoms/FDEditableText/index.vue'
 
@@ -67,6 +68,27 @@ export default class FDOptionButton extends Mixins(FdControlVue) {
   @Ref('spanRef') spanRef!: HTMLSpanElement;
   @Ref('optionBtnSpanRef') optionBtnSpanRef!: FDEditableText
   $el: HTMLDivElement
+  alignItem: boolean = false
+
+  get controlStyleObj () {
+    const controlProp = this.properties
+    return {
+      position: 'sticky',
+      top: `${controlProp.Height! / 2 - 10}px`
+    }
+  }
+
+  get spanStyleObj () {
+    const controlProp = this.properties
+    if (isNaN(this.properties.TextAlign!)) {
+      this.updateDataModel({ propertyName: 'TextAlign', value: 0 })
+    }
+    return {
+      position: 'absolute',
+      left: controlProp.TextAlign === 0 ? '0px' : '',
+      right: controlProp.Alignment === 0 && controlProp.TextAlign === 2 ? '0px' : ''
+    }
+  }
 
   /**
    * @description  updates Value property and the sets the backGround in runMode
@@ -86,13 +108,13 @@ export default class FDOptionButton extends Mixins(FdControlVue) {
   @Watch('properties.Value', {
     deep: true
   })
-  verifyValue (newVal: string, oldVal: string) {
+  verifyValue () {
     if (this.isRunMode) {
       if (this.properties.Enabled && !this.properties.Locked) {
-        this.handleValue(newVal)
+        this.handleValue(this.properties.Value! as string)
       }
     } else {
-      this.handleValue(newVal)
+      this.handleValue(this.properties.Value! as string)
     }
   }
 
@@ -292,7 +314,7 @@ export default class FDOptionButton extends Mixins(FdControlVue) {
     const controlProp = this.properties
     return {
       overflow: 'hidden',
-      height: '100%',
+      height: !this.isEditMode ? '100%' : '',
       display: 'flex',
       justifyContent:
         controlProp.TextAlign === 0
@@ -306,7 +328,8 @@ export default class FDOptionButton extends Mixins(FdControlVue) {
           ? 'start'
           : controlProp.TextAlign === 1
             ? 'center'
-            : 'end'
+            : 'end',
+      position: !this.isEditMode ? 'relative' : 'absolute'
     }
   }
 
@@ -320,12 +343,35 @@ export default class FDOptionButton extends Mixins(FdControlVue) {
     const controlProp = this.properties
     return {
       height: '100%',
-      display: 'table-cell',
+      display: !this.isEditMode ? 'table-cell' : 'flex',
+      alignItems: this.alignItem ? 'baseline' : 'center',
+      justifyContent: this.isEditMode ? controlProp.Alignment === 0 ? 'flex-end' : '' : '',
       backgroundImage: `url(${controlProp.Picture})`,
       backgroundRepeat: this.getRepeat,
       backgroundPosition: this.getPosition,
       backgroundPositionX: this.getPositionX,
-      backgroundPositionY: this.getPositionY
+      backgroundPositionY: this.getPositionY,
+      position: 'relative'
+    }
+  }
+
+  get setAlignment () {
+    return {
+      editMode: this.isEditMode,
+      caption: this.properties.Caption
+    }
+  }
+
+  @Watch('setAlignment', { deep: true })
+  editableTextVerify () {
+    if (this.isEditMode) {
+      Vue.nextTick(() => {
+        if (this.isEditMode && this.optionBtnSpanRef.$el.clientHeight > this.properties.Height!) {
+          this.alignItem = true
+        } else {
+          this.alignItem = false
+        }
+      })
     }
   }
 
@@ -368,6 +414,7 @@ export default class FDOptionButton extends Mixins(FdControlVue) {
    * @function controlSource
    */
   mounted () {
+    this.verifyValue()
     this.$el.focus()
     this.controlSource()
   }
@@ -442,6 +489,8 @@ export default class FDOptionButton extends Mixins(FdControlVue) {
 
 .control {
   display: inline-flex;
+  position: sticky;
+  top: 47%;
 }
 
 .control-indicator {

@@ -1,21 +1,21 @@
 <template>
 <div>
     <input
-        :name="data.type === 'TabStrip' ? 'tab-group-1' : 'page-group-1'"
+        :name="pageData.Name"
         type="radio"
         :checked="indexValue === data.properties.Value ? setValueEmit(indexValue) : false"
     />
     <label
-        @click="!getDisableValue(pageData.Enabled) && isChecked(indexValue,pageValue)"
+        @mousedown="!getDisableValue(pageData.Enabled) && isChecked(indexValue,pageValue)"
             :class="[
                 data.properties.Style === 1
                   ? data.properties.TabOrientation === 2
-                    ? 'forLeft forButton'
-                    : 'forButton'
+                    ? indexValue === data.properties.Value ? 'active-item-button' : 'forLeft forButton'
+                    : indexValue === data.properties.Value ? 'active-item-button' : 'forButton'
                   : data.properties.Style === 0
                   ? data.properties.TabOrientation === 2
-                    ? 'forLeft'
-                    : 'forTab'
+                    ? indexValue === data.properties.Value ? 'active-item-tab-left' : 'forLeft'
+                    : indexValue === data.properties.Value ? 'active-item-tab' : 'forTab'
                   : '',
             ]"
             :for="pageData.ID"
@@ -201,7 +201,8 @@ export default class FDControlTabs extends Vue {
         controlProp.MousePointer !== 0 || controlProp.MouseIcon !== ''
           ? this.getMouseCursorData
           : 'default',
-      zIndex: controlProp.MultiRow ? '30000' : ''
+      zIndex: controlProp.MultiRow ? '30000' : '',
+      backgroundColor: this.indexValue === this.data.properties.Value! ? controlProp.Style === 1 ? 'gray' : '' : ''
     }
   }
 }
@@ -212,9 +213,17 @@ export default class FDControlTabs extends Vue {
   margin: 3px;
   border-radius: 3px;
   z-index: 2;
-  border: 2px outset;
 }
 .page [type="radio"]:checked ~ label.forButton {
+  margin: 3px;
+  border-right: 2px solid gray;
+  border-bottom: none;
+  border-radius: 3px;
+  z-index: 2;
+  background: gray;
+  border: 2px inset;
+}
+.active-item-button {
   margin: 3px;
   border-right: 2px solid gray;
   border-bottom: none;
@@ -246,14 +255,24 @@ export default class FDControlTabs extends Vue {
   z-index: 2;
 }
 .page label {
-  border: 0.1px solid white;
-  background-color: rgb(238, 238, 238);
+  background-color: rgb(238,238,238) ;
   display: inline-block;
   padding: 5px 5px 5px 5px;
   margin: 0;
-  cursor: pointer;
+  cursor: default;
   position: relative;
   top: 0px;
+}
+.active-item-tab {
+  border-right: 2px solid gray;
+  border-bottom: none;
+  border-radius: 3px;
+  z-index: 2;
+}
+.active-item-tab-left {
+  border-bottom: 2px solid gray;
+  border-radius: 3px;
+  z-index: 2;
 }
 .page [type="radio"]:checked ~ label ~ .content {
   z-index: 1;

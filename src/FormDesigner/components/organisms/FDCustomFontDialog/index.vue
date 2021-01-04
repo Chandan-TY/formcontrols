@@ -21,6 +21,7 @@
 <script lang="ts">
 import { Component, Prop, Vue, Emit } from 'vue-property-decorator'
 import FontDialog from '@/FormDesigner/components/organisms/FDFontDialog/index.vue'
+import { EventBus } from '@/FormDesigner/event-bus'
 @Component({
   name: 'FDCustomFontDialog',
   components: {
@@ -40,6 +41,9 @@ export default class FDCustomFontDialog extends Vue {
   }
 
   setFontDialogVisiblilty (value: boolean) {
+    if (value === false) {
+      EventBus.$emit('focusUserForm')
+    }
     this.isOpen = value
   }
 }

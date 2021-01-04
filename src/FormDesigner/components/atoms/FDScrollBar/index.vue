@@ -1,5 +1,6 @@
 <template>
   <div
+  v-on="eventStoppers()"
   @click.stop="selectedItem"
   :style="outerScrollBarDivObj"
   :title="properties.ControlTipText"
@@ -190,6 +191,12 @@ export default class FDScrollBar extends Mixins(FdControlVue) {
   checkOtherOrientations (): boolean {
     return controlProperties.controlsOrientationProp(this.data)
   }
+  eventStoppers () {
+    const eventStop = (event: Event) => event.stopPropagation()
+    return this.isEditMode === false ? null : {
+      keydown: eventStop
+    }
+  }
 }
 </script>
 
@@ -207,6 +214,7 @@ export default class FDScrollBar extends Mixins(FdControlVue) {
   background-color: rgba(var(--rgb), var(--alpha));
   outline: none;
   overflow: hidden;
+  pointer-events: none;
 }
 
 .slider:hover {
@@ -223,11 +231,11 @@ export default class FDScrollBar extends Mixins(FdControlVue) {
   width: 25px;
   --alpha: 1;
   cursor: inherit;
+  pointer-events:auto;
 }
 
 .slider::-moz-range-thumb {
   background: rgb(139, 138, 138);
   cursor: pointer;
 }
-
 </style>

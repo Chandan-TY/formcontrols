@@ -225,8 +225,15 @@ export default class FDTable extends Vue {
     }
   }
   updateName (id: string, value: string) {
-    const userData = Object.keys(this.userformData[this.userFormId])
-    const isUnique = userData.findIndex(val => this.userformData[this.userFormId][val].properties.Name === value && val !== id)
+    let userData
+    let isUnique
+    if (this.userformData[this.userFormId][id].type === 'Userform') {
+      userData = Object.keys(this.userformData)
+      isUnique = userData.findIndex(val => this.userformData[val][val].properties.Name === value && val !== id)
+    } else {
+      userData = Object.keys(this.userformData[this.userFormId])
+      isUnique = userData.findIndex(val => this.userformData[this.userFormId][val].properties.Name === value && val !== id)
+    }
     if (isUnique === -1 && value !== '') {
       this.updatePropValue(id, 'Name', value)
       return true
@@ -234,20 +241,27 @@ export default class FDTable extends Vue {
       return false
     }
   }
-  validateValuePropertyChboxOpbtnTglbtn (propertyName : keyof controlProperties, propertyValue : string) {
+  validateValuePropertyChboxOpbtnTglbtn (propertyName : keyof controlProperties, propertyValue : string) : string {
+    let resultValue = ''
     if (!isNaN(parseInt(propertyValue))) {
       if (parseInt(propertyValue) === 0) {
         this.emitUpdateProperty(propertyName, 'False')
+        resultValue = 'False'
       } else {
         this.emitUpdateProperty(propertyName, 'True')
+        resultValue = 'True'
       }
     } else if (propertyValue.toLowerCase() === 'true') {
       this.emitUpdateProperty(propertyName, 'True')
+      resultValue = 'True'
     } else if (propertyValue.toLowerCase() === 'false') {
       this.emitUpdateProperty(propertyName, 'False')
+      resultValue = 'False'
     } else {
       this.emitUpdateProperty(propertyName, '')
+      resultValue = ''
     }
+    return resultValue
   }
   validateControlSourceProperty (propertyValue : string) {
     // should validate the propertyValue
@@ -286,7 +300,8 @@ export default class FDTable extends Vue {
       } else if (propertyName === 'Value') {
         const controlType = this.userformData[this.userFormId][this.getSelectedControlsDatas[0]].type
         if (controlType === 'CheckBox' || controlType === 'OptionButton' || controlType === 'ToggleButton') {
-          this.validateValuePropertyChboxOpbtnTglbtn(propertyName, propertyValue)
+          const resultValue = this.validateValuePropertyChboxOpbtnTglbtn(propertyName, propertyValue);
+          (e.target as HTMLInputElement).value = resultValue
         } else {
           this.emitUpdateProperty(propertyName, propertyValue)
         }
@@ -426,9 +441,9 @@ export default class FDTable extends Vue {
         }
       } else if (propertyName === 'Index') {
         if (this.isDecimalNumber(propertyValue)) {
-          (e.target as HTMLInputElement).value = this.tableData!.Index!.value! as string
+          (e.target as HTMLInputElement).value = this.tableData![propertyName]!.value! as string
         } else if (value < 0) {
-          (e.target as HTMLInputElement).value = this.tableData!.Index!.value! as string
+          (e.target as HTMLInputElement).value = this.tableData![propertyName]!.value! as string
           EventBus.$emit('showErrorPopup', true, 'invalid', `Could not set the ${propertyName} property. Invalid property value. Enter a value between 0 and 32767`)
         } else {
           const isSuccess = this.updateProperty({ propertyName: propertyName, value: propertyValue })
@@ -436,6 +451,20 @@ export default class FDTable extends Vue {
             (e.target as HTMLInputElement).value = this.tableData!.Index!.value! as string
             EventBus.$emit('showErrorPopup', true, 'invalid', `Could not set the ${propertyName} property. Invalid property value.`)
           }
+        }
+      } else if (propertyName === 'Delay') {
+        let isDelayValueInvalid = false
+        if (this.isDecimalNumber(propertyValue)) {
+          (e.target as HTMLInputElement).value = this.tableData![propertyName]!.value! as string
+          EventBus.$emit('showErrorPopup', true, 'invalid', `Invalid property value.`)
+        } else if (checkPropertyValue(propertyName, propertyValue)) {
+          this.emitUpdateProperty(propertyName, value)
+        } else if (value < 0) {
+          (e.target as HTMLInputElement).value = this.tableData![propertyName]!.value! as string
+          EventBus.$emit('showErrorPopup', true, 'invalid', `Could not set the ${propertyName} property. Invalid property value. Enter a value greater than or equal to zero.`)
+        } else {
+          (e.target as HTMLInputElement).value = this.tableData![propertyName]!.value! as string
+          EventBus.$emit('showErrorPopup', true, 'invalid', `Invalid property value.`)
         }
       } else {
         this.emitUpdateProperty(propertyName, value)
@@ -450,10 +479,12 @@ export default class FDTable extends Vue {
         )
       }
     } else if (inputType === 'array') {
-      this.emitUpdateProperty(
-        propertyName,
-        parseInt((e.target as HTMLInputElement).value)
-      )
+      if ((e.target as HTMLInputElement).value !== '') {
+        this.emitUpdateProperty(
+          propertyName,
+          parseInt((e.target as HTMLInputElement).value)
+        )
+      }
     }
   }
 
@@ -469,8 +500,13 @@ export default class FDTable extends Vue {
     const reader = new FileReader()
     const fileInput = (e.target as HTMLInputElement)
     const filePath = fileInput.value
+    let allowedExtensions
     // Allowed file type
-    const allowedExtensions = /(\.jpg|\.jpeg|\.bmp|\.ico|\.gif)$/i
+    if (fileInput.name === 'Picture') {
+      allowedExtensions = /(\.jpg|\.jpeg|\.bmp|\.ico|\.gif)$/i
+    } else {
+      allowedExtensions = /(\.bmp|\.ico|\.gif)$/i
+    }
     if (!allowedExtensions.exec(filePath)) {
       fileInput.value = ''
       EventBus.$emit('showErrorPopup', true, 'invalid', 'Invalid Picture')

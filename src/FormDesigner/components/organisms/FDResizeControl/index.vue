@@ -15,7 +15,7 @@
           ? handleDrag($event)
           : !isRunMode && dragGroupControl($event)
       "
-      @contextmenu.stop="openContextMenu($event, containerId, controlId)"
+      @contextmenu.stop="displayContextMenu"
     >
       <ResizeHandler
         v-if="!isRunMode"
@@ -26,7 +26,7 @@
         controlType="control"
         @createGroup="createGroup"
         @muldragControl="muldragControl"
-        @updateEditMode="updateEditMode"
+        @updateIsMove="updateIsMove"
         :size="{
           width: propControlData.properties.Width,
           height: propControlData.properties.Height,
@@ -51,6 +51,7 @@
         @updateModel="updateModelHandle"
         @updateModelExtraData="updateModelExtraDataHandle"
         @controlEditMode="controlEditMode"
+        @updateEditMode="updateEditMode"
       >
         {{ propControlData.properties.Caption }}
       </component>
@@ -116,7 +117,9 @@ export default class ResizeControl extends FdSelectVue {
 
   handleDrag (event: MouseEvent) {
     if (this.selectedControls[this.userFormId].selected.length > 1 && this.selMultipleCtrl === false) {
-      this.selectedItem(event)
+      if (event.which !== 3 && this.isMoveWhenMouseDown) {
+        this.selectedItem(event)
+      }
     }
     this.isMoveWhenMouseDown = false
     this.resize.handleMouseDown(event, 'drag', 'control', this.controlId)
@@ -136,7 +139,9 @@ export default class ResizeControl extends FdSelectVue {
 
   dragGroupControl (event: MouseEvent) {
     if (this.selectedControls[this.userFormId].selected.length > 1 && this.selMultipleCtrl === false) {
-      this.selectedItem(event)
+      if (event.which !== 3 && this.isMoveWhenMouseDown) {
+        this.selectedItem(event)
+      }
     }
     this.propControlData.properties.GroupID && this.dragControl(event)
   }
@@ -156,8 +161,8 @@ export default class ResizeControl extends FdSelectVue {
   get propControlData (): controlData {
     return this.userformData[this.userFormId][this.controlId]
   }
-  openContextMenu (e: MouseEvent, parentID: string, controlID: string) {
-    this.$emit('openMenu', e, parentID, controlID)
+  openContextMenu (e: MouseEvent, parentID: string, controlID: string, type: string) {
+    this.$emit('openMenu', e, parentID, controlID, type)
   }
   get resizeControlStyle () {
     const currentProperties = this.propControlData.properties
@@ -220,16 +225,21 @@ export default class ResizeControl extends FdSelectVue {
           ))
     )
   }
-  deleteItem (event: KeyboardEventInit) {
+  deleteItem (event: KeyboardEvent) {
+    const userData = this.userformData[this.userFormId]
+    const type = userData[this.controlId].type
+    const controlId = type === 'Page' ? this.containerId : this.controlId
+    const containerId = type === 'Page' ? this.getContainerList(controlId)[0] : this.containerId
     if (event.key !== 'Backspace') {
-      this.deleteZIndex(this.controlId)
-      this.deleteTabIndex(this.controlId)
+      this.deleteZIndex(controlId)
+      this.deleteTabIndex(controlId)
       this.deleteControl({
         userFormId: this.userFormId,
-        parentId: this.containerId!,
-        targetId: this.controlId
+        parentId: containerId,
+        targetId: controlId
       })
     }
+    EventBus.$emit('focusUserForm')
   }
   selectedItem (e: MouseEvent) {
     if (this.selMultipleCtrl === false) {
@@ -242,19 +252,19 @@ export default class ResizeControl extends FdSelectVue {
         if (
           this.isMoveWhenMouseDown !== true &&
         this.propControlData.type !== 'FDImage' &&
-        this.propControlData.type !== 'Frame'
+        this.propControlData.type !== 'Frame' &&
+        this.propControlData.type !== 'MultiPage'
         ) {
           this.isEditMode = true
           this.isMoveWhenMouseDown = false
         }
       } else {
-        if (currentSelect.length > 1) {
+        if (currentSelect.length > 1 && (currentSelect.includes(this.controlId) || currentSelect.includes(this.userformData[this.userFormId][this.controlId].properties.GroupID!))) {
           if (currentSelect.includes(this.controlId)) {
             this.exchangeSelect()
           } else {
             if (
-              this.userformData[this.userFormId][this.controlId].properties
-                .GroupID !== ''
+              this.userformData[this.userFormId][this.controlId].properties.GroupID !== ''
             ) {
               const selGrpName = this.userformData[this.userFormId][this.controlId].properties.GroupID!
               this.groupExchange(selGrpName)
@@ -441,9 +451,9 @@ export default class ResizeControl extends FdSelectVue {
       this.selMultipleCtrl = val
     })
   }
-  // destroyed () {
-  //   EventBus.$off('actMultipleCtrl')
-  // }
+  displayContextMenu (event: MouseEvent) {
+    this.openContextMenu(event, this.containerId, this.controlId, 'control')
+  }
 }
 </script>
 

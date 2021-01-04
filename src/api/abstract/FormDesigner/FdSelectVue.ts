@@ -58,8 +58,11 @@ export default class FdSelectVue extends FDCommonMethod {
     }
   }
 
-  updateEditMode (value: boolean) {
+  updateIsMove (value: boolean) {
     this.isMoving = value
+  }
+  updateEditMode (value: boolean) {
+    this.isEditMode = value
   }
   @Emit('updateUserFormResize')
   private updateUserFormResize (value: IResizeValue) {

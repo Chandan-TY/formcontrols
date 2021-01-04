@@ -1,5 +1,6 @@
 <template>
   <div class="resp-textbox"
+  v-on="eventStoppers()"
   @click="selectedItem"
   @mousedown="controlEditMode"
   :tabindex="properties.TabIndex"
@@ -156,7 +157,10 @@ export default class FDTextBox extends Mixins(FdControlVue) {
             : 'right',
       border: this.getBorderStyle,
       backgroundColor: controlProp.BackStyle ? controlProp.BackColor : 'transparent',
-      boxShadow: controlProp.SpecialEffect ? this.getSpecialEffectData : 'none',
+      borderLeft: controlProp.SpecialEffect === 2 ? '2px solid gray' : controlProp.SpecialEffect === 3 ? '1.5px solid gray' : controlProp.SpecialEffect === 4 ? '0.5px solid gray' : '',
+      borderRight: controlProp.SpecialEffect === 1 ? '2px solid gray' : controlProp.SpecialEffect === 4 ? '1.5px solid gray' : controlProp.SpecialEffect === 3 ? '0.5px solid gray' : '',
+      borderTop: controlProp.SpecialEffect === 2 ? '2px solid gray' : controlProp.SpecialEffect === 3 ? '1.5px solid gray' : controlProp.SpecialEffect === 4 ? '0.5px solid gray' : '',
+      borderBottom: controlProp.SpecialEffect === 1 ? '2px solid gray' : controlProp.SpecialEffect === 4 ? '1.5px solid gray' : controlProp.SpecialEffect === 3 ? '0.5px solid gray' : '',
       whiteSpace:
         controlProp.WordWrap && controlProp.MultiLine ? 'normal' : 'nowrap',
       wordBreak:
@@ -256,6 +260,23 @@ export default class FDTextBox extends Mixins(FdControlVue) {
     }
   }
   /**
+   * @description When user enters ctrl + enter cursor moves to next line
+   * @function handleCtrlEnter
+   * @param el its of type HTMLTextAreaElement
+   * @param text new line character
+   * @event keydown.enter.ctrl
+   */
+  handleCtrlEnter (el : HTMLTextAreaElement, text: string) {
+    el.focus()
+    if (typeof el.selectionStart === 'number' &&
+            typeof el.selectionEnd === 'number') {
+      const val = el.value
+      const selStart = el.selectionStart
+      el.value = val.slice(0, selStart) + text + val.slice(el.selectionEnd)
+      el.selectionEnd = el.selectionStart = selStart + text.length
+    }
+  }
+  /**
    * @description EnterKeyBehavior - if true when enter is pressed while editing the cursor moves to next line
    *  if false the cursor remains in same place
    * @function enterKeyBehavior
@@ -263,12 +284,18 @@ export default class FDTextBox extends Mixins(FdControlVue) {
    * @event keydown.enter
    */
   enterKeyBehavior (event: KeyboardEvent): boolean {
-    if (this.properties.EnterKeyBehavior) {
-      return true
-    } else {
-      event.preventDefault()
-      return false
+    if (this.properties.MultiLine) {
+      if (event.ctrlKey) {
+        this.handleCtrlEnter(this.textareaRef, '\n')
+        return true
+      } else if (this.properties.EnterKeyBehavior && this.properties.MultiLine) {
+        return true
+      } else if (event.shiftKey) {
+        return true
+      }
     }
+    event.preventDefault()
+    return false
   }
 
   /**
@@ -546,6 +573,12 @@ export default class FDTextBox extends Mixins(FdControlVue) {
   releaseEditMode (event: KeyboardEvent) {
     this.$el.focus()
     this.setContentEditable(event, false)
+  }
+  eventStoppers () {
+    const eventStop = (event: Event) => event.stopPropagation()
+    return this.isEditMode === false ? null : {
+      keydown: eventStop
+    }
   }
 }
 </script>

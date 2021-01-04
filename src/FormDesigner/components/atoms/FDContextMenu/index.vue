@@ -12,9 +12,7 @@
             'padding-top': value.text === 'none' ? '0px' : '',
             outline: value.text === 'none' ? 'none' : '',
           }"
-          @mousedown.stop="
-            value.disabled === false ? controlAction(value.id) : ''
-          "
+          @mousedown.stop="value.disabled === false ? controlAction(value.id) : controlDisable($event)"
         >
           <div>
             <FDSVGImage v-if="value.icon" :name="value.icon" />
@@ -34,7 +32,7 @@
           <div></div>
           <ul class="set-context top-level-menu">
             <li>
-              <a href="#" v-html="value.text">{{ value.text }}</a>
+              <a href="#" v-html="value.text"  @mousedown.prevent.stop>{{ value.text }}</a>
               <ul class="third-level-menu">
                 <li
                   class="wrapper1-context"
@@ -47,11 +45,7 @@
                     'padding-top': subVal.text === 'none' ? '0px' : '',
                     outline: subVal.text === 'none' ? 'none' : '',
                   }"
-                  @mousedown.stop="
-                    value.disabled === false
-                      ? controlAction(value.id, subVal.id)
-                      : ''
-                  "
+                  @mousedown.stop="subVal.disabled === false ? controlAction(value.id, subVal.id): controlDisable($event)"
                 >
                   <div>
                     <FDSVGImage v-if="subVal.icon" :name="subVal.icon" />
@@ -303,6 +297,7 @@ export default class ContextMenu extends FDCommonMethod {
           selected: [item.properties.ID]
         }
       })
+      EventBus.$emit('updateMultiPageValue')
     }
   }
   bringForward () {
@@ -373,6 +368,7 @@ export default class ContextMenu extends FDCommonMethod {
           targetId: this.selectedControls[this.userFormId].selected[0]
         })
         this.updateIndex(index! - 1)
+        EventBus.$emit('updateMultiPageValue')
       }
     }
   }
@@ -778,7 +774,7 @@ export default class ContextMenu extends FDCommonMethod {
           groupIdIndex = presentGroupId.findIndex(
             (val) => controlObj.properties.GroupID === val
           )
-          if (selSelected.length === 1 && userFormData[selSelected[0]].properties.GroupID! !== '') {
+          if (selSelected.length === 1 && this.copiedControl[this.userFormId][selSelected[0]].properties.GroupID !== '') {
             groupIdIndex = -1
           }
           const item: controlData = {
@@ -921,7 +917,6 @@ export default class ContextMenu extends FDCommonMethod {
    * @function clickDelete
    */
   clickDelete () {
-    debugger
     const selControl = []
     const userData = this.userformData[this.userFormId]
     const selected = this.selectedControls[this.userFormId].selected
@@ -968,10 +963,11 @@ export default class ContextMenu extends FDCommonMethod {
     this.selectControl({
       userFormId: this.userFormId,
       select: {
-        container: [this.selectedControls[this.userFormId].container[0]],
+        container: this.selectedControls[this.userFormId].container,
         selected: [this.selectedControls[this.userFormId].container[0]]
       }
     })
+    EventBus.$emit('focusUserForm')
   }
   updateAction (event: KeyboardEvent) {
     let controlActionName = ''
@@ -1085,6 +1081,11 @@ export default class ContextMenu extends FDCommonMethod {
       this.updatePropVal('Height', newObject.Height!)
       this.updatePropVal('Width', newObject.Width!)
     }
+  }
+
+  controlDisable (event: MouseEvent) {
+    event.preventDefault()
+    event.stopPropagation()
   }
 }
 </script>

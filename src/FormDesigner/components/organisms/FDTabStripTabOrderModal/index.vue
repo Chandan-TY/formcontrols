@@ -85,6 +85,7 @@ export default class TabStripTabOrderModal extends FdDialogDragVue {
     this.closeDialog()
   }
   closeDialog () {
+    EventBus.$emit('focusUserForm')
     this.isTabOrderOpen = false
   }
   created () {

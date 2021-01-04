@@ -387,17 +387,18 @@ export default abstract class FdContainerVue extends FdControlVue {
    * @param  parentID -> controlId
    * @event contextmenu
    */
-  openMenu (e: MouseEvent, parentID: string, controlID: string) {
+  openMenu (e: MouseEvent, parentID: string, controlID: string, type: string) {
     e.preventDefault()
-    if (!this.selectedControls[this.userFormId].selected.includes(controlID)) {
-      let groupId = controlID
-      if (
-        this.userformData[this.userFormId][controlID].properties.GroupID !== ''
-      ) {
-        groupId = this.userformData[this.userFormId][controlID].properties
-          .GroupID!
+    const id = (e.target! as HTMLDivElement).id ? (e.target! as HTMLDivElement).id : ''
+    const selected = this.selectedControls[this.userFormId].selected
+    const userData = this.userformData[this.userFormId]
+    let groupId = ''
+    if (!selected.includes(controlID)) {
+      groupId = userData[controlID].type === 'MultiPage' ? selected[0] : controlID
+      if ('GroupID' in userData[controlID].properties && userData[controlID].properties.GroupID !== '') {
+        groupId = this.userformData[this.userFormId][controlID].properties.GroupID!
       }
-      if (!this.selectedControls[this.userFormId].selected.includes(groupId)) {
+      if (groupId && !selected.includes(groupId)) {
         this.selectControl({
           userFormId: this.userFormId,
           select: { container: this.getContainerList(groupId), selected: [groupId] }
@@ -406,23 +407,34 @@ export default abstract class FdContainerVue extends FdControlVue {
     }
     const controlType = this.userformData[this.userFormId][controlID].type
     const containerType = this.userformData[this.userFormId][this.containerId].type
-    if (
-      controlType === 'Userform' ||
-        controlType === 'Frame' ||
-        controlType === 'MultiPage'
-    ) {
+    if (type === 'container' && !groupId.startsWith('group') && selected.length <= 1) {
       this.contextMenuType = true
     } else {
       this.contextMenuType = false
     }
-    const controlLeft: number | undefined = this.userformData[this.userFormId][controlID].properties.Left
-    const controlTop: number | undefined = this.userformData[this.userFormId][controlID].properties.Top
-    this.top = controlType === 'Frame' || controlType === 'MultiPage' ? `${e.offsetY}px` : (containerType === 'Frame' || containerType === 'MultiPage') ? `${e.offsetY + controlTop!}px` : `${e.offsetY + controlTop! + 30}px`
-    this.left = controlType === 'Frame' || controlType === 'MultiPage' ? `${e.offsetX}px` : `${e.offsetX + controlLeft!}px`
+    const targetElement = (e.target! as HTMLDivElement).style
+    const controlLeft: number | undefined = this.userformData[this.userFormId][controlID].properties.Left!
+    const controlTop: number | undefined = this.userformData[this.userFormId][controlID].properties.Top!
+    this.top = controlType === 'Frame' || controlType === 'MultiPage'
+      ? (type === 'container'
+        ? (id.startsWith('group') ? `${parseInt(targetElement.top) + e.offsetY}px` : `${e.offsetY}px`)
+        : `${e.offsetY + controlTop! + 30}px`)
+      : (containerType === 'Frame' || containerType === 'MultiPage')
+        ? `${e.offsetY + controlTop!}px`
+        : id.startsWith('group')
+          ? `${parseInt(targetElement.top) + e.offsetY}px`
+          : `${e.offsetY + controlTop! + 30}px`
+    this.left =
+    controlType === 'Frame' || controlType === 'MultiPage'
+      ? (type === 'container'
+        ? (id.startsWith('group') ? `${parseInt(targetElement.left) + e.offsetX}px` : `${e.offsetX}px`)
+        : `${e.offsetX + controlLeft!}px`)
+      : id.startsWith('group')
+        ? `${parseInt(targetElement.left) + e.offsetX}px`
+        : `${e.offsetX + controlLeft!}px`
     this.viewMenu = true
-    const controlLength = this.userformData[this.userFormId][parentID].controls
-      .length
-    const contextMenuData = this.contextMenuType
+    const controlLength = selected[0].startsWith('group') ? this.userformData[this.userFormId][this.controlId].controls.length : this.userformData[this.userFormId][selected[0]].controls.length
+    const contextMenuData = (type === 'container' && !groupId.startsWith('group') && selected.length <= 1)
       ? this.userformContextMenu
       : this.controlContextMenu
     for (const val of contextMenuData) {
@@ -459,9 +471,16 @@ export default abstract class FdContainerVue extends FdControlVue {
               this.selectedControls[this.userFormId].selected.length <= 1
         }
       }
+      if (val.id === 'ID_CONTROLFORWARD' || val.id === 'ID_CONTROLBACKWARD') {
+        val.disabled = this.selectedControls[this.userFormId].selected.length <= 1
+      }
       if (val.id === 'ID_ALIGN' || val.id === 'ID_MAKESAMESIZE') {
         for (let index = 0; index < val.values.length; index++) {
-          val.values[index].disabled = this.selectedControls[this.userFormId].selected.length <= 1
+          if (val.values[index].id === 'ID_GRID') {
+            val.values[index].disabled = !(this.selectedControls[this.userFormId].selected.length > 0)
+          } else {
+            val.values[index].disabled = this.selectedControls[this.userFormId].selected.length <= 1
+          }
         }
       }
     }

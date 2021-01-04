@@ -8,8 +8,9 @@
       @click.stop="!isEditMode ? selectedItem : addControlObj($event, selectedPageID)"
       @mouseup="dragSelectorControl($event)"
       @contextmenu.stop="handleContextMenu"
-      @keydown.delete.stop.exact="deleteMultiPage"
+      @keydown.delete.exact.stop="deleteMultiPage"
       @keyup.stop="selectMultipleCtrl($event, false)"
+      :tabindex="properties.TabIndex"
     >
       <div
         class="pages"
@@ -63,7 +64,7 @@
             @keydown.ctrl.stop="handleKeyDown"
             @keydown.enter.exact="setContentEditable($event, true)"
             @keydown.shift.exact.stop="selectMultipleCtrl($event,true)"
-            @contextmenu.stop="showContextMenu($event, userFormId, controlId)"
+            @contextmenu.stop="showContextMenu($event, userFormId, controlId, 'container')"
           >
             <Container
               :contextMenuType="contextMenuType"
@@ -79,7 +80,7 @@
               :height="properties.Height"
               ref="containerRef"
               @closeMenu="closeMenu"
-              @openMenu="(e, parentID, controlID) =>showContextMenu(e, parentID, controlID)"
+              @openMenu="(e, parentID, controlID, type) =>showContextMenu(e, parentID, controlID, type)"
             />
           </div>
         </div>
@@ -152,10 +153,11 @@ export default class FDMultiPage extends FdContainerVue {
   updatedValue: number = 0;
   selectedPageID: string = '';
   multiPageContextMenu: boolean = false;
-  selectedPageIndex: number = -1;
   tempWidth: number = 0;
   tempHeight: number = 0;
   multiRowCount: number = 1;
+  isScrollVisible = false;
+
   closeMenu () {
     this.viewMenu = false
   }
@@ -242,7 +244,10 @@ export default class FDMultiPage extends FdContainerVue {
   protected get styleTabsObj (): Partial<CSSStyleDeclaration> {
     const controlProp = this.properties
     return {
-      overflow: 'hidden'
+      overflow: 'hidden',
+      display: 'flex',
+      justifyContent: controlProp.TabOrientation === 3 ? 'flex-end' : '',
+      height: `${controlProp.Height!}px`
     }
   }
 
@@ -254,33 +259,20 @@ export default class FDMultiPage extends FdContainerVue {
    */
   protected get styleMoveObj (): Partial<CSSStyleDeclaration> {
     const controlProp = this.properties
-    const a = ['bottom', 'top']
-    let bottomTopStyle = {}
-    if (controlProp.TabOrientation === 1) {
-      bottomTopStyle = { [a[0]]: '0px' }
-    } else if (controlProp.TabOrientation === 0) {
-      bottomTopStyle = { [a[1]]: '0px' }
-    }
     return {
-      // position:
-      //   controlProp.TabOrientation === 1
-      //     ? 'absolute'
-      //     : 'inherit',
-      position: 'absolute',
-      ...bottomTopStyle,
+      alignSelf: controlProp.TabOrientation === 1 ? 'flex-end' : '',
       float: controlProp.TabOrientation === 3 ? 'right' : '',
       whiteSpace: controlProp.MultiRow === true ? 'break-spaces' : 'nowrap',
       zIndex: controlProp.MultiRow === true ? '100' : '',
       display: controlProp.Style === 2 ? 'none' : 'inline-block',
       height:
         controlProp.TabOrientation === 2 || controlProp.TabOrientation === 3
-          ? '100%'
+          ? this.isScrollVisible ? `${controlProp.Height! - 54}px` : `${controlProp.Height}px`
           : '',
       width:
         controlProp.TabOrientation === 2 || controlProp.TabOrientation === 3
           ? ''
-          : `${controlProp.Width!}px`,
-      right: controlProp.TabOrientation === 3 ? '0px' : '',
+          : !this.isScrollVisible ? `${controlProp.Width}px` : `${controlProp.Width! - 60}px`,
       overflow: 'hidden'
     }
   }
@@ -301,7 +293,6 @@ export default class FDMultiPage extends FdContainerVue {
         width: '100%',
         position: 'relative',
         backgroundImage: `url(${this.selectedPageData.properties.Picture})`,
-        // backgroundImage: 'radial-gradient(circle, rgb(0, 0, 0) 0.5px, rgba(0, 0, 0, 0) 0.2px)',
         backgroundSize:
           this.selectedPageData.properties.Picture === ''
             ? ''
@@ -346,20 +337,7 @@ export default class FDMultiPage extends FdContainerVue {
         controlProp.TabOrientation === 2
           ? 'rotate(90deg)'
           : this.transformScrollButtonStyle,
-      display:
-        controlProp.TabOrientation === 0 || controlProp.TabOrientation === 1
-          ? this.properties.Width! > 44
-            ? tabsLength > this.properties.Width!
-              ? 'block'
-              : 'none'
-            : 'none'
-          : controlProp.TabOrientation === 2 || controlProp.TabOrientation === 3
-            ? this.properties.Height! > 44
-              ? tabsHeight > this.properties.Height!
-                ? 'block'
-                : 'none'
-              : 'none'
-            : 'none',
+      display: this.scrollButtonVerify(),
       right:
         controlProp.TabOrientation === 3
           ? '-14px'
@@ -370,22 +348,76 @@ export default class FDMultiPage extends FdContainerVue {
     }
   }
 
+  scrollButtonVerify () {
+    const tabsLength =
+      this.properties.TabFixedWidth! > 0
+        ? this.controls.length * this.properties.TabFixedWidth! +
+          10 * this.controls!.length
+        : this.properties.Font!.FontSize! < 36 ? this.properties.Font!.FontSize! * 3.5 * this.controls!.length : this.properties.Font!.FontSize! * 2.3 * this.controls!.length
+    const tabsHeight =
+      this.properties.TabFixedHeight! > 0
+        ? this.controls.length * this.properties.TabFixedHeight! +
+          this.properties.Font!.FontSize! * this.controls!.length
+        : this.properties.Font!.FontSize! * 2.3 * this.controls!.length
+    if (this.properties.Style === 2) {
+      this.isScrollVisible = false
+      return 'none'
+    }
+    if (!this.properties.MultiRow) {
+      if (this.properties.TabOrientation === 0 || this.properties.TabOrientation === 1) {
+        if (this.properties.Width! > 44) {
+          if (tabsLength > this.properties.Width!) {
+            this.isScrollVisible = true
+            return 'block'
+          } else {
+            this.isScrollVisible = false
+            return 'none'
+          }
+        } else {
+          this.isScrollVisible = false
+          return 'none'
+        }
+      } else if (this.properties.TabOrientation === 2 || this.properties.TabOrientation === 3) {
+        if (this.properties.Height! > 44) {
+          if (tabsHeight > this.properties.Height!) {
+            this.isScrollVisible = true
+            return 'block'
+          } else {
+            this.isScrollVisible = false
+            return 'none'
+          }
+        } else {
+          this.isScrollVisible = false
+          return 'none'
+        }
+      } else {
+        this.isScrollVisible = false
+        return 'none'
+      }
+    } else {
+      this.isScrollVisible = false
+      return 'none'
+    }
+  }
+
   /**
    * @description takes the index Value and pageValue and set the Value property
    * @function isChecked
    *
    */
   isChecked (value: selectedTab) {
-    this.updatedValue = value.indexValue
-    this.selectedPageID = value.pageValue
-    this.updateDataModel({ propertyName: 'Value', value: value.indexValue })
-    this.selectControl({
-      userFormId: this.userFormId,
-      select: {
-        container: this.getContainerList(this.selectedPageID),
-        selected: [this.selectedPageID]
-      }
-    })
+    if (this.isEditMode) {
+      this.updatedValue = value.indexValue
+      this.selectedPageID = value.pageValue
+      this.updateDataModel({ propertyName: 'Value', value: value.indexValue })
+      this.selectControl({
+        userFormId: this.userFormId,
+        select: {
+          container: this.getContainerList(this.selectedPageID),
+          selected: [this.selectedPageID]
+        }
+      })
+    }
   }
 
   /**
@@ -489,35 +521,35 @@ export default class FDMultiPage extends FdContainerVue {
               ? 'none'
               : 'block',
       top:
-        controlProp.TabOrientation === 0
-          ? controlProp.MultiRow ? (this.tempHeight + 12) * this.multiRowCount + 'px' : controlProp.TabFixedHeight! > 0
-            ? controlProp.TabFixedHeight! + 12 + 'px'
-            : controlProp.TabFixedHeight! === 0 ? (this.tempHeight + 9) + 'px'
-              : '33px'
-          : '0px',
+      controlProp.Style !== 2 ? controlProp.TabOrientation === 0
+        ? controlProp.MultiRow ? (this.tempHeight + 12) * this.multiRowCount + 'px' : controlProp.TabFixedHeight! > 0
+          ? controlProp.TabFixedHeight! + 12 + 'px'
+          : controlProp.TabFixedHeight! === 0 ? (this.tempHeight + 9) + 'px'
+            : '33px'
+        : '0px' : '0px',
       height:
-        controlProp.TabOrientation === 0 || controlProp.TabOrientation === 1
-          ? controlProp.MultiRow ? controlProp.Height! - ((this.tempHeight + 12) * this.multiRowCount) + 'px' : controlProp.TabFixedHeight! > 0
-            ? controlProp.Height! - controlProp.TabFixedHeight! - 5 + 'px'
-            : controlProp.TabFixedHeight! === 0 ? controlProp.Font!.FontSize! === 72 ? (controlProp.Height! - controlProp.Font!.FontSize! - 17) + 'px' : (controlProp.Height! - controlProp.Font!.FontSize! - 13) + 'px'
-              : controlProp.TabOrientation === 1
-                ? `${controlProp.Height! - 21}px`
-                : `${controlProp.Height! - 35}px`
-          : `${controlProp.Height!}px`,
+      controlProp.Style !== 2 ? controlProp.TabOrientation === 0 || controlProp.TabOrientation === 1
+        ? controlProp.MultiRow ? controlProp.Height! - ((this.tempHeight + 12) * this.multiRowCount) + 'px' : controlProp.TabFixedHeight! > 0
+          ? controlProp.Height! - controlProp.TabFixedHeight! - 5 + 'px'
+          : controlProp.TabFixedHeight! === 0 ? controlProp.Font!.FontSize! === 72 ? (controlProp.Height! - controlProp.Font!.FontSize! - 17) + 'px' : (controlProp.Height! - controlProp.Font!.FontSize! - 11) + 'px'
+            : controlProp.TabOrientation === 1
+              ? `${controlProp.Height! - 21}px`
+              : `${controlProp.Height! - 35}px`
+        : `${controlProp.Height!}px` : `${controlProp.Height!}px`,
       width:
-        controlProp.TabOrientation === 0 || controlProp.TabOrientation === 1
+        controlProp.Style !== 2 ? controlProp.TabOrientation === 0 || controlProp.TabOrientation === 1
           ? `${controlProp.Width!}px`
           : controlProp.TabFixedWidth! > 0
             ? controlProp.Width! - controlProp.TabFixedWidth! - 10 + 'px'
             : controlProp.TabFixedWidth! === 0 ? controlProp.TabOrientation === 2 || controlProp.TabOrientation === 3 ? `${controlProp.Width! - this.tempWidth - 12}px` : (controlProp.Width! - controlProp.Font!.FontSize! - 20) + 'px'
-              : 'calc(100% - 44px)',
+              : 'calc(100% - 44px)' : `${controlProp.Width!}px`,
       left:
-        controlProp.TabOrientation === 2
+        controlProp.Style !== 2 ? controlProp.TabOrientation === 2
           ? controlProp.TabFixedWidth! > 0
             ? controlProp.TabFixedWidth! + 12 + 'px'
             : controlProp.TabFixedWidth! === 0 ? controlProp.TabOrientation === 2 || controlProp.TabOrientation === 3 ? `${this.tempWidth + 12}px` : (controlProp.Font!.FontSize! + 20) + 'px'
               : '40px'
-          : '0px',
+          : '0px' : '0px',
       padding: '0px',
       overflow: 'hidden',
       overflowX: this.getScrollBarPage ? this.getScrollBarPage.overflowX! : '',
@@ -679,12 +711,11 @@ export default class FDMultiPage extends FdContainerVue {
 
   multiPageMouseDown (e: MouseEvent) {
     EventBus.$emit('isEditMode', this.isEditMode)
-    if (this.isEditMode === false) {
-      this.selectedItem(e)
-    }
+    this.selectedItem(e)
     if (this.selMultipleCtrl === false && this.activateCtrl === false) {
       const selContainer = this.selectedControls[this.userFormId].container[0]
-      if (this.controls.length > 0) {
+      const selected = this.selectedControls[this.userFormId].selected
+      if (this.controls.length > 0 && selected.length === 1) {
         this.selectControl({
           userFormId: this.userFormId,
           select: { container: this.getContainerList(this.selectedPageID), selected: [this.selectedPageID] }
@@ -700,14 +731,23 @@ export default class FDMultiPage extends FdContainerVue {
       }
     }
   }
-  showContextMenu (e: MouseEvent, parentID: string, controlID: string) {
+  showContextMenu (e: MouseEvent, parentID: string, controlID: string, type: string) {
     e.preventDefault()
+    const selected = this.selectedControls[this.userFormId].selected
+    if (selected[0] === this.controlId && this.controls.length > 0) {
+      this.changeSelect(this.controls[0])
+    }
     this.multiPageContextMenu = false
-    this.openMenu(e, parentID, controlID)
+    this.openMenu(e, parentID, controlID, type)
     Vue.nextTick(() => this.containerRef.contextmenu.focus())
   }
   handleKeyDown (event: KeyboardEvent) {
-    this.containerRef.refContextMenu.updateAction(event)
+    const userData = this.userformData[this.userFormId]
+    const selected = this.selectedControls[this.userFormId].selected
+    const type = selected[0].startsWith('group') ? '' : userData[selected[0]].type
+    if (!(selected.length === 1 && (type === 'Page'))) {
+      this.containerRef.refContextMenu.updateAction(event)
+    }
   }
   changeSelect (control: string) {
     this.selectControl({
@@ -725,21 +765,23 @@ export default class FDMultiPage extends FdContainerVue {
     this.top = `${e.offsetY}px`
     this.left = `${e.offsetX}px`
     if (this.isEditMode) {
+      for (const val of this.contextMenuValue) {
+        if (val.id === 'ID_DELETEPAGE' || val.id === 'ID_RENAME') {
+          val.disabled = this.controls.length === 0
+        } else if (val.id === 'ID_MOVE') {
+          val.disabled = this.controls.length <= 1
+        }
+      }
       this.multiPageContextMenu = true
       Vue.nextTick(() => this.multipage.focus())
-      if (this.controls.length > 0) {
-        selectedPage = this.controls.findIndex((val) => this.properties.Value === userData[val].properties.Index)
-      }
-      if (this.data.controls.length > 0 && selectedPage !== -1) {
-        this.changeSelect(this.controls[selectedPage])
-      } else {
-        this.changeSelect(this.controlId)
-      }
       this.viewMenu = false
     }
   }
   deleteMultiPage (event: KeyboardEvent) {
-    if (this.controlId === this.selectedControls[this.userFormId].selected[0]) {
+    const userData = this.userformData[this.userFormId]
+    const selected = this.selectedControls[this.userFormId].selected
+    const type = selected[0].startsWith('group') ? '' : userData[selected[0]].type
+    if (selected.length === 1 && (type === 'Page' || type === 'MultiPage')) {
       this.deleteItem(event)
     } else {
       this.handleKeyDown(event)
@@ -769,6 +811,28 @@ export default class FDMultiPage extends FdContainerVue {
       EventBus.$emit('actMultipleCtrl', val)
     }
   }
+
+  created () {
+    EventBus.$on('updateMultiPageValue', this.updsteValue)
+  }
+  destroyed () {
+    EventBus.$off('updateMultiPageValue')
+  }
+  updsteValue () {
+    {
+      const userData = this.userformData[this.userFormId]
+      let selectedPage = -1
+      if (this.controls.length > 0) {
+        selectedPage = this.controls.findIndex((val) => this.properties.Value === userData[val].properties.Index)
+      }
+      if (this.data.controls.length > 0 && selectedPage !== -1) {
+        this.selectedPageID = this.controls[selectedPage]
+        this.changeSelect(this.controls[selectedPage])
+      } else {
+        this.changeSelect(this.controlId)
+      }
+    }
+  }
 }
 </script>
 
@@ -782,6 +846,7 @@ export default class FDMultiPage extends FdContainerVue {
   height: 0px;
   left: 0px;
   top: 0px;
+  cursor: default;
 }
 .pages {
   /* display: grid; */
@@ -966,7 +1031,7 @@ export default class FDMultiPage extends FdContainerVue {
   text-decoration: underline;
   text-underline-position: under;
 }
-:focus{
+:focus {
   outline: none;
 }
 </style>

@@ -11,7 +11,7 @@
     @keydown.delete.stop.exact="deleteFrame"
     @keydown.enter.exact="setContentEditable($event, true)"
     @click.stop="!isEditMode ? selectedItem : addControlObj($event)"
-    @contextmenu.stop="showContextMenu($event, userFormId, controlId)"
+    @contextmenu.stop="showContextMenu($event, userFormId, controlId, 'container')"
     @mousedown.stop="frameMouseDown"
     @mouseup="dragSelectorControl($event)"
     @keyup.stop="selectMultipleCtrl($event, false)"
@@ -29,7 +29,7 @@
       :top="top"
       ref="containerRef"
       @closeMenu="closeMenu"
-      @openMenu="(e, parentID, controlID) => showContextMenu(e, parentID, controlID)"
+      @openMenu="(e, parentID, controlID, type) => showContextMenu(e, parentID, controlID, type)"
     />
   </div>
   </fieldset>
@@ -37,7 +37,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Ref, Watch } from 'vue-property-decorator'
+import { Component, Emit, Prop, Ref, Watch } from 'vue-property-decorator'
 import FdControlVue from '@/api/abstract/FormDesigner/FdControlVue'
 import { Action } from 'vuex-class'
 import Vue from 'vue'
@@ -91,6 +91,16 @@ export default class FDFrame extends FdContainerVue {
   @Watch('properties.ScrollTop')
   updateScrollTop () {
     this.scrollLeftTop(this.data)
+  }
+
+  @Watch('properties.Visible')
+  updateViisible () {
+    this.updateEditMode(false)
+  }
+
+  @Emit('updateEditMode')
+  updateEditMode (val: boolean) {
+    return val
   }
 
   /**
@@ -238,8 +248,8 @@ export default class FDFrame extends FdContainerVue {
     }
   }
 
-  showContextMenu (e: MouseEvent, parentID: string, controlID: string) {
-    this.openMenu(e, parentID, controlID)
+  showContextMenu (e: MouseEvent, parentID: string, controlID: string, type: string) {
+    this.openMenu(e, parentID, controlID, type)
     Vue.nextTick(() => this.containerRef.contextmenu.focus())
   }
   closeMenu () {
@@ -254,9 +264,7 @@ export default class FDFrame extends FdContainerVue {
 
   frameMouseDown (e: MouseEvent) {
     EventBus.$emit('isEditMode', this.isEditMode)
-    if (this.isEditMode === false) {
-      this.selectedItem(e)
-    }
+    this.selectedItem(e)
     const selContainer = this.selectedControls[this.userFormId].container[0]
     if (selContainer === this.controlId) {
       this.deActiveControl()
