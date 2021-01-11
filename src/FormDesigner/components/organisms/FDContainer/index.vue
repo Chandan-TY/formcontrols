@@ -22,7 +22,6 @@
       :class="[!isEditMode ? 'dragSelector' : '']"
       ref="dragSelector"
       :style="dragSelectorStyle"
-      @mousedown.stop.self="handleMouseDown"
     >
       <GroupControl
         :containerId="containerId"

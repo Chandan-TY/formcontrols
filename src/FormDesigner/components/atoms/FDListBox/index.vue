@@ -3,51 +3,59 @@
     class="listStyle"
     :style="listStyleObj"
     :title="properties.ControlTipText"
-    @click.stop="selectedItem"
+    @click.stop="listBoxClick"
     @mousedown="controlEditMode"
-    @click.self="selectListBox"
     :tabindex="properties.TabIndex"
     @keydown="forMatchEntry"
     v-on="eventStoppers()"
     @keydown.esc="setContentEditable($event, false)"
   >
-    <table class="table-style" :style="tableStyleObj" ref="listBoxTableRef">
-      <thead v-if="properties.ColumnHeads === true" class="theadClass">
-        <tr>
-          <td
+    <div class="table-style" :style="tableStyleObj" ref="listBoxTableRef">
+      <div v-if="properties.ColumnHeads === true" class="theadClass">
+        <div class="thead">
+          <div
             :style="tdStyleObj"
             v-if="properties.ListStyle === 1"
             class="tdClass"
-          ></td>
+          ></div>
           <template v-for="(a, columnIndex) in extraDatas.ColumnHeadsValues">
-            <td
-              v-if="columnIndex < properties.ColumnCount"
+            <div
+              v-if="
+                columnIndex < properties.ColumnCount ||
+                properties.ColumnCount === -1
+              "
               :key="columnIndex"
               :style="updateColHeads(columnIndex)"
             >
               {{ a }}
-            </td>
+            </div>
           </template>
-        </tr>
-      </thead>
-      <thead v-else></thead>
-      <tbody class="table-body">
-        <tr
+        </div>
+      </div>
+      <!-- <div v-else></div> -->
+      <div class="table-body">
+        <div
           :tabindex="index"
           class="tr"
           ref="listStyleRef"
           v-for="(item, index) of extraDatas.RowSourceData"
           :key="index"
+          :style="trStyle"
           @mouseenter.stop="handleDrag"
-          @keydown.stop="handleExtendArrowKeySelect"
           @keydown.esc="releaseEditMode"
           @blur.stop="clearMatchEntry"
-          @mousedown="isRunMode || isEditMode ? handleMultiSelect($event) : setInitial($event)"
+          @keydown.stop="handleExtendArrowKeySelect"
+          @mousedown.stop="
+            isRunMode || isEditMode ? handleMousedown($event) : ''
+          "
         >
-          <td
+          <div
             :style="tdStyleObj"
             class="tdClassIn"
-            v-if="properties.ListStyle === 1 && properties.ColumnCount > 0"
+            v-if="
+              (properties.ListStyle === 1 && properties.ColumnCount > 0) ||
+              (properties.ListStyle === 1 && properties.ColumnCount === -1)
+            "
           >
             <input
               :name="properties.MultiSelect === 2 ? 'checkbox' : 'radio'"
@@ -56,20 +64,26 @@
                   ? 'checkbox'
                   : 'radio'
               "
+              @click.prevent.stop
               class="inputClass"
             />
-          </td>
-          <td
+          </div>
+          <div
             class="column-item"
             v-for="(i, index) in item"
             :key="index"
             :style="updateColumnWidths(index)"
           >
-            <template v-if="index < properties.ColumnCount">{{ i }}</template>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+            <template
+              v-if="
+                index < properties.ColumnCount || properties.ColumnCount === -1
+              "
+              >{{ i }}</template
+            >
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -84,23 +98,133 @@ import {
   Ref
 } from 'vue-property-decorator'
 import FdControlVue from '@/api/abstract/FormDesigner/FdControlVue'
+import { EventBus } from '@/FormDesigner/event-bus'
 
 @Component({
   name: 'FDListBox'
 })
 export default class FDListBox extends Mixins(FdControlVue) {
-  @Ref('listStyleRef') listStyleRef : HTMLTableRowElement[]
-  @Ref('listBoxTableRef') listBoxTableRef!: HTMLTableElement
+  @Ref('listStyleRef') listStyleRef: HTMLDivElement[];
+  @Ref('listBoxTableRef') listBoxTableRef!: HTMLDivElement;
+  @Prop() isActivated: boolean;
+  checkedvalue: boolean;
+  $el: HTMLDivElement;
+  handleMousedown (e: MouseEvent) {
+    if (
+      e.target instanceof HTMLDivElement ||
+      e.target instanceof HTMLTableRowElement ||
+      e.target instanceof HTMLInputElement
+    ) {
+      this.tempListBoxComboBoxEvent = e
+      const targetElement = e.target
+      const tempData = targetElement!.parentElement!
+        .children[0] as HTMLDivElement
+      const tempDataOption = targetElement.parentElement!
+        .children[1] as HTMLDivElement
+      const tempPath = e.composedPath()
+      targetElement.focus()
+      let data = targetElement.innerText
+      let splitData = data.replace(/\t/g, ' ').split(' ')
 
-  $el: HTMLDivElement
+      targetElement.focus()
+      if (this.properties.Enabled && this.properties.Locked === false) {
+        if (this.properties.MultiSelect === 0) {
+          this.clearOptionBGColorAndChecked(e)
+          this.setOptionBGColorAndChecked(e)
+        } else if (this.properties.MultiSelect === 1) {
+          this.setOptionBGColorAndChecked(e)
+        } else if (this.properties.MultiSelect === 2) {
+          if (e.ctrlKey === true) {
+            if (targetElement.tagName === 'INPUT') {
+              this.setOptionBGColorAndChecked(e)
+            } else {
+              this.setOptionBGColorAndChecked(e)
+            }
+          } else if (e.shiftKey === true && this.properties.Value !== '') {
+            let startPoint = 0
+            let endPoint = 0
+            for (let i = 0; i < tempPath.length; i++) {
+              const ele = tempPath[i] as HTMLDivElement
+              if (ele.className === 'table-body') {
+                // extend points start and end
+                for (let j = 0; j < ele.childNodes.length; j++) {
+                  const cd = ele.childNodes[j] as HTMLDivElement
+                  if (cd.innerText === this.properties.Value) {
+                    startPoint = j + 1
+                  }
+                  if (cd.innerText === targetElement.innerText) {
+                    endPoint = j
+                  }
+                }
+                // upward selection start and end swap
+                if (startPoint > endPoint) {
+                  let temp = startPoint
+                  startPoint = endPoint
+                  endPoint = temp
+                }
+                // setting selection
+                for (let k = startPoint; k <= endPoint; k++) {
+                  const node = ele.childNodes[k] as HTMLDivElement
+                  const tempNode = node.childNodes[0]
+                    .childNodes[0] as HTMLInputElement
+                  node.style.backgroundColor = 'rgb(59, 122, 231)'
+                  if (this.properties.ListStyle === 1 && !tempNode.checked) {
+                    // tempNode.checked = !tempNode.checked
+                    tempNode.checked = true
+                  }
+                }
+                break
+              }
+            }
+          }
 
-  selectListBox () {
-    this.listBoxTableRef.children[1].children[0].dispatchEvent(new MouseEvent('mousedown'))
+          if (this.properties.ControlSource !== '') {
+            this.updateDataModel({
+              propertyName: 'Text',
+              value: this.selectionData[0]
+            })
+            this.updateDataModel({
+              propertyName: 'Value',
+              value: this.selectionData[0]
+            })
+          }
+          this.clearOptionBGColorAndChecked(e)
+          this.setOptionBGColorAndChecked(e)
+        }
+      }
+      if (this.properties.MultiSelect === 0) {
+        for (let i = 0; i < this.extraDatas.RowSourceData!.length; i++) {
+          if (this.listStyleRef[i].style.backgroundColor !== '') {
+            const text = this.extraDatas.RowSourceData![i][0]
+            this.updateDataModel({ propertyName: 'Text', value: text })
+            const x = this.extraDatas.RowSourceData![i][this.properties.BoundColumn! - 1]
+            this.updateDataModel({ propertyName: 'Value', value: x })
+          }
+        }
+      } else {
+        this.updateDataModel({ propertyName: 'Text', value: '' })
+        this.updateDataModel({ propertyName: 'Value', value: '' })
+      }
+    }
   }
   clearMatchEntry () {
     this.updateDataModelExtraData({ propertyName: 'MatchData', value: '' })
   }
 
+  get trStyle () {
+    const controlProp = this.properties
+    const a = controlProp.ColumnWidths!.split(';')
+    let temp = []
+    let sum = 0
+    for (let i = 0; i < a.length; i++) {
+      temp.push(parseInt(a[i]))
+      sum += temp[i]
+    }
+    return {
+      width:
+        sum < controlProp.Width! ? `${controlProp.Width! - 3}px` : sum + 'px'
+    }
+  }
   /**
    * @description style object is passed to :style attribute in div tag
    * dynamically changing the styles of the component based on properties
@@ -116,18 +240,51 @@ export default class FDListBox extends Mixins(FdControlVue) {
     }
     return {
       backgroundColor: controlProp.BackColor,
-      borderColor: controlProp.BorderColor,
-      border: this.properties.BorderStyle
-        ? `1px solid ${this.properties.BorderColor}`
-        : 'none',
+      borderColor: controlProp.BorderStyle === 1 ? controlProp.BorderColor : '',
       cursor:
         controlProp.MousePointer !== 0 || controlProp.MouseIcon !== ''
           ? this.getMouseCursorData
           : 'default',
-      borderLeft: controlProp.SpecialEffect === 2 ? '2px solid gray' : controlProp.SpecialEffect === 3 ? '1.5px solid gray' : controlProp.SpecialEffect === 4 ? '0.5px solid gray' : '',
-      borderRight: controlProp.SpecialEffect === 1 ? '2px solid gray' : controlProp.SpecialEffect === 4 ? '1.5px solid gray' : controlProp.SpecialEffect === 3 ? '0.5px solid gray' : '',
-      borderTop: controlProp.SpecialEffect === 2 ? '2px solid gray' : controlProp.SpecialEffect === 3 ? '1.5px solid gray' : controlProp.SpecialEffect === 4 ? '0.5px solid gray' : '',
-      borderBottom: controlProp.SpecialEffect === 1 ? '2px solid gray' : controlProp.SpecialEffect === 4 ? '1.5px solid gray' : controlProp.SpecialEffect === 3 ? '0.5px solid gray' : '',
+      borderLeft:
+        controlProp.BorderStyle === 1
+          ? '1px solid ' + controlProp.BorderColor
+          : controlProp.SpecialEffect === 2
+            ? '2px solid gray'
+            : controlProp.SpecialEffect === 3
+              ? '1.5px solid gray'
+              : controlProp.SpecialEffect === 4
+                ? '0.5px solid gray'
+                : '',
+      borderRight:
+        controlProp.BorderStyle === 1
+          ? '1px solid ' + controlProp.BorderColor
+          : controlProp.SpecialEffect === 1
+            ? '2px solid gray'
+            : controlProp.SpecialEffect === 4
+              ? '1.5px solid gray'
+              : controlProp.SpecialEffect === 3
+                ? '0.5px solid gray'
+                : '',
+      borderTop:
+        controlProp.BorderStyle === 1
+          ? '1px solid ' + controlProp.BorderColor
+          : controlProp.SpecialEffect === 2
+            ? '2px solid gray'
+            : controlProp.SpecialEffect === 3
+              ? '1.5px solid gray'
+              : controlProp.SpecialEffect === 4
+                ? '0.5px solid gray'
+                : '',
+      borderBottom:
+        controlProp.BorderStyle === 1
+          ? '1px solid ' + controlProp.BorderColor
+          : controlProp.SpecialEffect === 1
+            ? '2px solid gray'
+            : controlProp.SpecialEffect === 4
+              ? '1.5px solid gray'
+              : controlProp.SpecialEffect === 3
+                ? '0.5px solid gray'
+                : '',
       left: `${controlProp.Left}px`,
       width: `${controlProp.Width}px`,
       height: `${controlProp.Height}px`,
@@ -157,7 +314,7 @@ export default class FDListBox extends Mixins(FdControlVue) {
       borderCollapse: 'collapse',
       tableLayout: 'fixed',
       color: controlProp.ForeColor,
-      fontFamily: (font.FontStyle! !== '') ? this.setFontStyle : font.FontName!,
+      fontFamily: font.FontStyle! !== '' ? this.setFontStyle : font.FontName!,
       fontSize: `${font.FontSize}px`,
       fontStyle: font.FontItalic || this.isItalic ? 'italic' : '',
       textDecoration:
@@ -169,14 +326,19 @@ export default class FDListBox extends Mixins(FdControlVue) {
               ? 'line-through'
               : '',
       textUnderlinePosition: 'under',
-      fontWeight: font.FontBold ? 'bold' : (font.FontStyle !== '') ? this.tempWeight : '',
-      fontStretch: (font.FontStyle !== '') ? this.tempStretch : '',
+      fontWeight: font.FontBold
+        ? 'bold'
+        : font.FontStyle !== ''
+          ? this.tempWeight
+          : '',
+      fontStretch: font.FontStyle !== '' ? this.tempStretch : '',
       width:
         controlProp.ColumnWidths === ''
-          ? `${controlProp.Width}px`
+          ? '100%'
           : `${controlProp.Width}px` +
             parseInt(controlProp.ColumnWidths!) +
-            'px'
+            'px',
+      display: this.properties.ColumnCount === 0 ? 'none' : ''
     }
   }
 
@@ -205,32 +367,30 @@ export default class FDListBox extends Mixins(FdControlVue) {
    */
   @Watch('properties.Value', { deep: true })
   ValueData (newVal: string, oldVal: string) {
-    if (
-      this.properties.BoundColumn! > 0 &&
-      this.properties.BoundColumn! < this.extraDatas.RowSourceData!.length
-    ) {
-      let tempData = [...this.extraDatas.RowSourceData!]
-      let tempBoundColumn = this.properties.BoundColumn! - 1
-      for (let i = 0; i < this.extraDatas.RowSourceData!.length; i++) {
-        if (newVal !== '' && tempData[i][tempBoundColumn] !== newVal && this.listStyleRef[i].style.backgroundColor === 'rgb(59, 122, 231)') {
-          this.listStyleRef[i].style.backgroundColor = ''
+    if (newVal !== '' && this.properties.MultiSelect === 0) {
+      if (
+        this.properties.BoundColumn! > 0 &&
+        this.properties.BoundColumn! < this.extraDatas.RowSourceData!.length
+      ) {
+        let tempData = [...this.extraDatas.RowSourceData!]
+        let tempBoundColumn = this.properties.BoundColumn! - 1
+        for (let i = 0; i < this.extraDatas.RowSourceData!.length; i++) {
+          if (tempData[i][tempBoundColumn] === newVal) {
+            this.clearOptionBGColorAndChecked(this.tempListBoxComboBoxEvent)
+            this.listStyleRef[i].style.backgroundColor = 'rgb(59, 122, 231)'
+            this.setOptionBGColorAndChecked(
+              this.tempListBoxComboBoxEvent as MouseEvent
+            )
+          }
         }
-        if (tempData[i][tempBoundColumn] === newVal) {
-          this.clearOptionBGColorAndChecked(this.tempListBoxComboBoxEvent)
-          this.listStyleRef[i].style.backgroundColor = 'rgb(59, 122, 231)'
-          this.updateDataModel({ propertyName: 'Text', value: newVal })
+        if (tempData![0][this.properties.BoundColumn! - 1] === newVal) {
+          this.updateDataModel({ propertyName: 'Value', value: newVal })
         }
-        if (newVal !== '' && tempData[i][tempBoundColumn] !== newVal && this.listStyleRef[i].style.backgroundColor === 'rgb(59, 122, 231)') {
-          this.listStyleRef[i].style.backgroundColor = ''
-        }
-      }
-      if (tempData![0][this.properties.BoundColumn! - 1] === newVal) {
-        this.updateDataModel({ propertyName: 'Value', value: newVal })
       } else {
-        this.updateDataModel({ propertyName: 'Value', value: '' })
+        return undefined
       }
     } else {
-      return undefined
+      this.updateDataModel({ propertyName: 'Value', value: '' })
     }
   }
 
@@ -240,7 +400,6 @@ export default class FDListBox extends Mixins(FdControlVue) {
   mounted () {
     this.$el.focus()
     var event = new MouseEvent('mousedown.stop')
-    this.setInitial(event)
     const initialRowSourceData = this.extraDatas.RowSourceData!
     this.updateDataModel({ propertyName: 'ControlSource', value: '' })
     if (initialRowSourceData && initialRowSourceData.length === 0) {
@@ -258,6 +417,10 @@ export default class FDListBox extends Mixins(FdControlVue) {
    */
   @Watch('properties.MultiSelect', { deep: true })
   multiSelectCheck (newVal: number, oldVal: number) {
+    if (newVal === 1 || newVal === 2) {
+      this.updateDataModel({ propertyName: 'Value', value: '' })
+      this.updateDataModel({ propertyName: 'Text', value: '' })
+    }
     if (this.tempListBoxComboBoxEvent) {
       this.clearOptionBGColorAndChecked(this.tempListBoxComboBoxEvent)
     }
@@ -287,7 +450,6 @@ export default class FDListBox extends Mixins(FdControlVue) {
     }
     if (this.isEditMode) {
       this.listStyleRef[0].click()
-      this.handleExtendArrowKeySelect(event)
     }
     if (event.key === 'Escape' && event.keyCode === 27) {
       this.releaseEditMode(event)
@@ -302,7 +464,9 @@ export default class FDListBox extends Mixins(FdControlVue) {
     if (this.properties.ControlSource !== '') {
       for (let i = 0; i < this.extraDatas.RowSourceData!.length; i++) {
         this.listStyleRef[i].style.backgroundColor = ''
-        if (this.extraDatas.RowSourceData![i][this.properties.BoundColumn! - 1] === this.extraDatas.ControlSourceValue!) {
+        if (
+          this.extraDatas.RowSourceData![i][this.properties.BoundColumn! - 1] === this.extraDatas.ControlSourceValue!
+        ) {
           const listRow = this.listStyleRef[i]
           listRow.style.backgroundColor = 'rgb(59, 122, 231)'
         }
@@ -315,8 +479,16 @@ export default class FDListBox extends Mixins(FdControlVue) {
   }
   eventStoppers () {
     const eventStop = (event: Event) => event.stopPropagation()
-    return this.isEditMode === false ? null : {
-      keydown: eventStop
+    return this.isEditMode === false
+      ? null
+      : {
+        keydown: eventStop
+      }
+  }
+  listBoxClick (e: MouseEvent) {
+    this.selectedItem(e)
+    if (!this.isActivated) {
+      EventBus.$emit('focusUserForm')
     }
   }
 }
@@ -341,6 +513,7 @@ export default class FDListBox extends Mixins(FdControlVue) {
 }
 .tr {
   outline: none;
+  display: -webkit-box;
 }
 .ul {
   display: grid;
@@ -411,9 +584,12 @@ export default class FDListBox extends Mixins(FdControlVue) {
   border-right: 1px solid;
 }
 .tdClassIn {
-  width: 20px;
+  width: 40px;
 }
 .inputClass {
   margin: 0;
+}
+.thead {
+  display: -webkit-box;
 }
 </style>

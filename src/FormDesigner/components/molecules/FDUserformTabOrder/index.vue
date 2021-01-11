@@ -133,10 +133,10 @@ export default class FDUserformTabOrder extends FdDialogDragVue {
               }
             }
           }
+          this.currentIndex = 0
         }
         this.isTabOrderOpen = true
         this.userFormId = userFormId
-        this.currentIndex = 0
         this.containerId = controlId
       }
     )
@@ -279,7 +279,7 @@ h1 {
   text-align: left;
   outline: none;
   width: 100%;
-  height: auto;
+  height: 14px;
   font-family: "SESimplex";
   font-weight: 500;
   font-size: 11px;
@@ -315,15 +315,17 @@ h1 {
   width: 90px;
   height: 23px;
   font-family: "Candara";
-  font-weight: lighter;
+  font-weight: bold;
   font-size: 13px;
   box-shadow: 1px 1px;
   border-top-color: rgb(238, 238, 238);
   border-bottom-color: rgb(238, 238, 238);
   border-left-color: rgb(238, 238, 238);
   border-right-color: rgb(238, 238, 238);
-  outline: none;
   white-space: pre;
+}
+.taborder-buttons:focus{
+  outline:1px solid black;
 }
 .ui-btn {
   /* margin: 2px; */

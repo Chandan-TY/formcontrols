@@ -326,7 +326,25 @@ export default class FDTable extends Vue {
       const value = propertyValue.includes('.') ? parseFloat(propertyValue) : parseInt(propertyValue)
       if (propertyName === 'Height' || propertyName === 'Width') {
         if (checkPropertyValue(propertyName, value)) {
-          this.emitUpdateProperty(propertyName, value)
+          if ((this.userformData[this.userFormId][this.getSelectedControlsDatas[0]].type === 'Userform')) {
+            if (propertyName === 'Width') {
+              if (value >= 0 && value < 103) {
+                this.emitUpdateProperty(propertyName, 103);
+                (e.target as HTMLInputElement).value = '103'
+              } else {
+                this.emitUpdateProperty(propertyName, value)
+              }
+            } else if (propertyName === 'Height') {
+              if (value >= 0 && value < 30) {
+                this.emitUpdateProperty(propertyName, 30);
+                (e.target as HTMLInputElement).value = '30'
+              } else {
+                this.emitUpdateProperty(propertyName, value)
+              }
+            }
+          } else {
+            this.emitUpdateProperty(propertyName, value)
+          }
         } else {
           (e.target as HTMLInputElement).value = this.tableData![propertyName]!.value! as string
           if (value > 32767) {
@@ -453,10 +471,8 @@ export default class FDTable extends Vue {
           }
         }
       } else if (propertyName === 'Delay') {
-        let isDelayValueInvalid = false
         if (this.isDecimalNumber(propertyValue)) {
           (e.target as HTMLInputElement).value = this.tableData![propertyName]!.value! as string
-          EventBus.$emit('showErrorPopup', true, 'invalid', `Invalid property value.`)
         } else if (checkPropertyValue(propertyName, propertyValue)) {
           this.emitUpdateProperty(propertyName, value)
         } else if (value < 0) {
@@ -465,6 +481,33 @@ export default class FDTable extends Vue {
         } else {
           (e.target as HTMLInputElement).value = this.tableData![propertyName]!.value! as string
           EventBus.$emit('showErrorPopup', true, 'invalid', `Invalid property value.`)
+        }
+      } else if (propertyName === 'Zoom') {
+        if (this.isDecimalNumber(propertyValue)) {
+          (e.target as HTMLInputElement).value = this.tableData![propertyName]!.value! as string
+        } else if (checkPropertyValue(propertyName, propertyValue)) {
+          this.emitUpdateProperty(propertyName, value)
+        } else {
+          (e.target as HTMLInputElement).value = this.tableData![propertyName]!.value! as string
+          EventBus.$emit('showErrorPopup', true, 'invalid', `Could not set the ${propertyName} property. Invalid property value. Enter a value between 10 and 400.`)
+        }
+      } else if (propertyName === 'DrawBuffer') {
+        if (this.isDecimalNumber(propertyValue)) {
+          (e.target as HTMLInputElement).value = this.tableData![propertyName]!.value! as string
+        } else if (checkPropertyValue(propertyName, propertyValue)) {
+          this.emitUpdateProperty(propertyName, value)
+        } else {
+          (e.target as HTMLInputElement).value = this.tableData![propertyName]!.value! as string
+          EventBus.$emit('showErrorPopup', true, 'invalid', `Could not set the ${propertyName} property. Invalid property value. Enter a value between 16000 and 1048576.`)
+        }
+      } else if (propertyName === 'TransitionPeriod') {
+        if (this.isDecimalNumber(propertyValue)) {
+          (e.target as HTMLInputElement).value = this.tableData![propertyName]!.value! as string
+        } else if (checkPropertyValue(propertyName, propertyValue)) {
+          this.emitUpdateProperty(propertyName, value)
+        } else {
+          (e.target as HTMLInputElement).value = this.tableData![propertyName]!.value! as string
+          EventBus.$emit('showErrorPopup', true, 'invalid', `Could not set the ${propertyName} property. Invalid property value. Enter a value between 0 and 10000.`)
         }
       } else {
         this.emitUpdateProperty(propertyName, value)
@@ -480,10 +523,30 @@ export default class FDTable extends Vue {
       }
     } else if (inputType === 'array') {
       if ((e.target as HTMLInputElement).value !== '') {
-        this.emitUpdateProperty(
-          propertyName,
-          parseInt((e.target as HTMLInputElement).value)
-        )
+        if (propertyName === 'BorderStyle' && propertyValue === '1') {
+          this.emitUpdateProperty(
+            propertyName,
+            parseInt((e.target as HTMLInputElement).value)
+          )
+          this.emitUpdateProperty(
+            'SpecialEffect',
+            0
+          )
+        } else if (propertyName === 'SpecialEffect' && parseInt(propertyValue) > 0) {
+          this.emitUpdateProperty(
+            propertyName,
+            parseInt((e.target as HTMLInputElement).value)
+          )
+          this.emitUpdateProperty(
+            'BorderStyle',
+            0
+          )
+        } else {
+          this.emitUpdateProperty(
+            propertyName,
+            parseInt((e.target as HTMLInputElement).value)
+          )
+        }
       }
     }
   }

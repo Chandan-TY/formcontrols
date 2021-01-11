@@ -96,13 +96,13 @@ export default class TabStripTabOrderModal extends FdDialogDragVue {
           .extraDatas!.Tabs!
         if (tabOrderControlData.length > 0) {
           this.tabOrderList = JSON.parse(JSON.stringify(tabOrderControlData))
+          this.currentIndex = 0
         } else {
           console.error('Empty Tab data')
         }
         this.isTabOrderOpen = true
         this.userFormId = userFormId
         this.controlId = controlId
-        this.currentIndex = 0
       }
     )
   }
@@ -246,7 +246,7 @@ h1 {
   text-align: left;
   outline: none;
   width: 100%;
-  height: auto;
+  height: 14px;
   font-family: "SESimplex";
   font-weight: 500;
   font-size: 11px;
@@ -282,12 +282,17 @@ h1 {
   width: 90px;
   height: 23px;
   font-family: "Candara";
-  font-weight: lighter;
+  font-weight: bold;
   font-size: 13px;
   box-shadow: 1px 1px;
-  border: 0.5px solid gray;
-  outline: none;
+  border-top-color: rgb(238, 238, 238);
+  border-bottom-color: rgb(238, 238, 238);
+  border-left-color: rgb(238, 238, 238);
+  border-right-color: rgb(238, 238, 238);
   white-space: pre;
+}
+.taborder-buttons:focus{
+  outline:1px solid black;
 }
 .ui-btn {
   /* margin: 2px; */

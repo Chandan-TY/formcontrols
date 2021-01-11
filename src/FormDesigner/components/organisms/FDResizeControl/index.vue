@@ -239,7 +239,13 @@ export default class ResizeControl extends FdSelectVue {
         targetId: controlId
       })
     }
-    EventBus.$emit('focusUserForm')
+    this.selectControl({
+      userFormId: this.userFormId,
+      select: {
+        container: this.getContainerList(containerId),
+        selected: [containerId]
+      }
+    })
   }
   selectedItem (e: MouseEvent) {
     if (this.selMultipleCtrl === false) {

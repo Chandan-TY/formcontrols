@@ -29,7 +29,7 @@ export default abstract class FdContainerVue extends FdControlVue {
   @Action('fd/updateControlExtraData') updateControlExtraData!: (payload: IupdateControlExtraData) => void;
 
   contextMenuType: boolean = false;
-  viewMenu?: boolean = false
+  viewMenu: boolean = false
   top: string = '0px'
   left: string = '0px'
 
@@ -227,10 +227,10 @@ export default abstract class FdContainerVue extends FdControlVue {
       const sw = parseInt(this.selectedAreaStyle!.width!)
       const sh = parseInt(this.selectedAreaStyle!.height)
 
-      item.properties.Left = sw! === 0 ? e.offsetX : parseInt(this.selectedAreaStyle!.left)
-      item.properties.Top = sw! === 0 ? e.offsetY : parseInt(this.selectedAreaStyle!.top)
-      item.properties.Width = sw! === 0 ? item.properties.Width : sw
-      item.properties.Height = sw! === 0 ? item.properties.Height : sh
+      item.properties.Left = (isNaN(sw!) || sw! === 0) ? e.offsetX : parseInt(this.selectedAreaStyle!.left)
+      item.properties.Top = (isNaN(sh!) || sh! === 0) ? e.offsetY : parseInt(this.selectedAreaStyle!.top)
+      item.properties.Width = (isNaN(sw!) || sw! === 0) ? item.properties.Width : sw
+      item.properties.Height = (isNaN(sh!) || sh! === 0) ? item.properties.Height : sh
       const controls = item.controls
       item.controls = item.type === 'MultiPage' ? [] : item.controls
       const newControlId = type === 'MultiPage' ? pageId : this.controlId
@@ -316,12 +316,12 @@ export default abstract class FdContainerVue extends FdControlVue {
         } else {
           left = parseInt(this.selectedAreaStyle!.left)
           right =
-        parseInt(this.selectedAreaStyle!.left) +
-        parseInt(this.selectedAreaStyle!.width)
+          parseInt(this.selectedAreaStyle!.left) +
+          parseInt(this.selectedAreaStyle!.width)
           top = parseInt(this.selectedAreaStyle!.top)
           bottom =
-        parseInt(this.selectedAreaStyle!.top) +
-        parseInt(this.selectedAreaStyle!.height)
+          parseInt(this.selectedAreaStyle!.top) +
+          parseInt(this.selectedAreaStyle!.height)
         }
         const leftArray: Array<number> = []
         if (left !== right || top !== bottom) {
@@ -331,9 +331,9 @@ export default abstract class FdContainerVue extends FdControlVue {
             const controlProp: controlProperties = this.userformData[this.userFormId][key].properties
             if (
               left <= controlProp!.Left! + controlProp!.Width! &&
-            right >= controlProp!.Left! &&
-            top <= controlProp!.Top! + controlProp!.Height! &&
-            bottom >= controlProp!.Top!
+              right >= controlProp!.Left! &&
+              top <= controlProp!.Top! + controlProp!.Height! &&
+              bottom >= controlProp!.Top!
             ) {
               if (!this.selectedControlArray.includes(key)) { this.selectedControlArray.push(key) }
             }
@@ -344,7 +344,7 @@ export default abstract class FdContainerVue extends FdControlVue {
               .properties.GroupID!
             if (controlGroupId && controlGroupId !== '') {
               !selectedGroup.includes(controlGroupId)! &&
-              selectedGroup.push(controlGroupId)
+                selectedGroup.push(controlGroupId)
             } else {
               selectedGroup.push(val)
             }
@@ -442,12 +442,14 @@ export default abstract class FdContainerVue extends FdControlVue {
         val.disabled = controlLength === 0
       }
       if (val.id === 'ID_DELETE' && this.contextMenuType) {
-        val.disabled = !(this.selectedControls[this.userFormId].selected.length === 1 &&
-            this.userformData[this.userFormId][controlID].type === 'Frame' &&
-            controlID === this.selectedControls[this.userFormId].selected[0])
+        val.disabled = !(selected.length === 1 && !selected[0].startsWith('group') &&
+          (userData[controlID].type === 'Frame' || userData[selected[0]].type === 'Page'))
       }
       if (val.id === 'ID_PASTE') {
         val.disabled = Object.keys(this.copiedControl[this.userFormId]).length === 1
+      }
+      if (val.id === 'ID_CUT' || val.id === 'ID_COPY' || val.id === 'ID_OBJECTPROP' || val.id === 'ID_VIEWCODE') {
+        val.disabled = false
       }
       if (val.id === 'ID_GROUP' || val.id === 'ID_UNGROUP') {
         const selected = this.selectedControls[this.userFormId].selected
@@ -472,7 +474,8 @@ export default abstract class FdContainerVue extends FdControlVue {
         }
       }
       if (val.id === 'ID_CONTROLFORWARD' || val.id === 'ID_CONTROLBACKWARD') {
-        val.disabled = this.selectedControls[this.userFormId].selected.length <= 1
+        const selectedConatiner = this.selectedControls[this.userFormId].container[0]
+        val.disabled = userData[selectedConatiner].controls.length <= 1
       }
       if (val.id === 'ID_ALIGN' || val.id === 'ID_MAKESAMESIZE') {
         for (let index = 0; index < val.values.length; index++) {

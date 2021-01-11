@@ -6,13 +6,13 @@ export class ControlPropertyData {
   };
   constructor () {
     this.data = {
-      UseForm: {
+      UserForm: {
         properties: {
           BackColor: '#ffffff',
           BorderColor: '#ffffff',
           BorderStyle: 1,
           Caption: 'UserForm1',
-          Cycle: 1,
+          Cycle: 0,
           DrawBuffer: 32000,
           Enabled: true,
           Font: {
@@ -22,7 +22,7 @@ export class ControlPropertyData {
             FontItalic: false,
             FontUnderline: false,
             FontStrikethrough: false,
-            FontStyle: 'Arial Narrow Italic'
+            FontStyle: 'Arial Narrow'
           },
           ForeColor: '#ffffff',
           Height: 350,
@@ -44,7 +44,7 @@ export class ControlPropertyData {
           ScrollTop: 0,
           ScrollWidth: 0,
           ShowModal: true,
-          SpecilalEffect: 3,
+          SpecilalEffect: 0,
           StartUpPosition: 1,
           Tag: '',
           Top: 0,
@@ -53,10 +53,9 @@ export class ControlPropertyData {
           WhatsThisHelp: false,
           Zoom: 100
         },
-        controls: ['ID_Label1', 'ID_Label2'],
+        controls: [],
         extraDatas: {
-          display: 'block',
-          Active: true
+          display: 'block'
         },
         type: 'Userform'
       },
@@ -64,10 +63,10 @@ export class ControlPropertyData {
         properties: {
           Accelerator: '',
           AutoSize: false,
-          BackColor: '#ffffff',
+          BackColor: '#eeeeee',
           BackStyle: 1,
-          BorderColor: '#ffffff',
-          BorderStyle: 1,
+          BorderColor: '#eeeeee',
+          BorderStyle: 0,
           Caption: 'Label1',
           ControlTipText: 'helptext',
           Enabled: true,
@@ -78,7 +77,7 @@ export class ControlPropertyData {
             FontItalic: false,
             FontUnderline: false,
             FontStrikethrough: false,
-            FontStyle: 'Arial Narrow Italic'
+            FontStyle: 'Arial Narrow'
           },
           ForeColor: '#000000',
           Height: 18,
@@ -134,7 +133,7 @@ export class ControlPropertyData {
             FontItalic: false,
             FontUnderline: false,
             FontStrikethrough: false,
-            FontStyle: 'Arial Narrow Italic'
+            FontStyle: 'Arial Narrow'
           },
           ForeColor: '#000000',
           Height: 22,
@@ -168,7 +167,7 @@ export class ControlPropertyData {
           Accelerator: '',
           Alignment: 1,
           AutoSize: false,
-          BackColor: '#D6D5D5',
+          BackColor: '#eeeeee',
           BackStyle: 1,
           Caption: 'CheckBox1',
           ControlTipText: 'helptext',
@@ -181,7 +180,7 @@ export class ControlPropertyData {
             FontItalic: false,
             FontUnderline: false,
             FontStrikethrough: false,
-            FontStyle: 'Arial Narrow Italic'
+            FontStyle: 'Arial Narrow'
           },
           ForeColor: '#000000',
           GroupName: '',
@@ -195,7 +194,7 @@ export class ControlPropertyData {
           ID: 'ID_CheckBox1',
           Picture: '',
           PicturePosition: 7,
-          SpecialEffect: 0,
+          SpecialEffect: 1,
           TabIndex: 8,
           TabStop: true,
           Tag: '',
@@ -222,14 +221,14 @@ export class ControlPropertyData {
           AutoWordSelect: true,
           BackColor: '#ffffff',
           BackStyle: 1,
-          BorderColor: '#eeeeee',
-          BorderStyle: 1,
-          BoundColumn: 3,
+          BorderColor: '#818080',
+          BorderStyle: 0,
+          BoundColumn: 1,
           ColumnCount: 1,
           ColumnHeads: false,
-          ColumnWidths: '90pt',
-          ControlSource: 'd8',
-          ControlTipText: 'ComboBox',
+          ColumnWidths: '',
+          ControlSource: '',
+          ControlTipText: '',
           DragBehavior: 0,
           DropButtonStyle: 1,
           Enabled: true,
@@ -241,7 +240,7 @@ export class ControlPropertyData {
             FontItalic: false,
             FontUnderline: false,
             FontStrikethrough: false,
-            FontStyle: 'Arial Narrow Italic'
+            FontStyle: 'Arial Narrow'
           },
           ForeColor: '#000000',
           Height: 18,
@@ -249,7 +248,7 @@ export class ControlPropertyData {
           HideSelection: true,
           IMEMode: 0,
           Left: 20,
-          ListRows: 4,
+          ListRows: 8,
           ListStyle: 0,
           ListWidth: '0 pt',
           Locked: false,
@@ -268,7 +267,7 @@ export class ControlPropertyData {
           TabIndex: 6,
           TabStop: true,
           Tag: '',
-          Text: 's',
+          Text: '',
           TextAlign: 0,
           TextColumn: 2,
           Top: 20,
@@ -302,7 +301,7 @@ export class ControlPropertyData {
         properties: {
           BackColor: '#ffffff',
           BorderColor: '#ffffff',
-          BorderStyle: 1,
+          BorderStyle: 0,
           Caption: 'Frame1',
           ControlTipText: 'helptext',
           Cycle: 0,
@@ -314,12 +313,12 @@ export class ControlPropertyData {
             FontItalic: false,
             FontUnderline: false,
             FontStrikethrough: false,
-            FontStyle: 'Arial Narrow Italic'
+            FontStyle: 'Arial Narrow'
           },
           ForeColor: '#000000',
           Height: 144,
           HelpContextID: 0,
-          KeepScrollBarsVisible: 0,
+          KeepScrollBarsVisible: 3,
           Left: 0,
           MouseIcon: '',
           MousePointer: 0,
@@ -388,13 +387,12 @@ export class ControlPropertyData {
           BackColor: '#ffffff',
           BorderColor: '#ffffff',
           BorderStyle: 0,
-          BoundColumn: 3,
-          ColumnCount: 5,
+          BoundColumn: 1,
+          ColumnCount: 1,
           ColumnHeads: false,
-          // ColumnWidths: '30pt;50pt;100pt',
-          ColumnWidths: '70pt',
-          ControlSource: 'd7',
-          ControlTipText: 'ListBox',
+          ColumnWidths: '',
+          ControlSource: '',
+          ControlTipText: '',
           Enabled: true,
           Font: {
             FontName: 'Arial',
@@ -403,7 +401,7 @@ export class ControlPropertyData {
             FontItalic: false,
             FontUnderline: false,
             FontStrikethrough: false,
-            FontStyle: 'Arial Narrow Italic'
+            FontStyle: 'Arial Narrow'
           },
           ForeColor: '#000000',
           Height: 150,
@@ -424,12 +422,12 @@ export class ControlPropertyData {
           TabIndex: 7,
           TabStop: true,
           Tag: '',
-          Text: 'b',
+          Text: '',
           TextAlign: 0,
           TextColumn: 1,
           Top: 20,
           TopIndex: -1,
-          Value: 'd4',
+          Value: '',
           Visible: true,
           Width: 200,
           GroupID: ''
@@ -439,7 +437,7 @@ export class ControlPropertyData {
           // it can be different from value
           ControlSourceValue: 'd4',
           zIndex: -1,
-          ColumnHeadsValues: ['a', 'f', 'a1'],
+          ColumnHeadsValues: ['Column A', 'Column B', 'Column C'],
           // ListBox.List
           RowSourceData: [
             ['b', 'g', 'b2'],
@@ -465,7 +463,7 @@ export class ControlPropertyData {
             FontItalic: false,
             FontUnderline: false,
             FontStrikethrough: false,
-            FontStyle: 'Arial Narrow Italic'
+            FontStyle: 'Arial Narrow'
           },
           ForeColor: '#111111',
           Height: 200,
@@ -497,7 +495,7 @@ export class ControlPropertyData {
           Accelerator: '',
           Alignment: 1,
           AutoSize: false,
-          BackColor: '#D6D5D5',
+          BackColor: '#eeeeee',
           BackStyle: 1,
           Caption: 'OptionButton1',
           ControlTipText: 'helptext',
@@ -510,7 +508,7 @@ export class ControlPropertyData {
             FontItalic: false,
             FontUnderline: false,
             FontStrikethrough: false,
-            FontStyle: 'Arial Narrow Italic'
+            FontStyle: 'Arial Narrow'
           },
           ForeColor: '#000000',
           GroupName: '',
@@ -524,7 +522,7 @@ export class ControlPropertyData {
           ID: 'ID_OptionButton1',
           Picture: '',
           PicturePosition: 12,
-          SpecialEffect: 0,
+          SpecialEffect: 1,
           TabIndex: 9,
           TabStop: true,
           Tag: '',
@@ -628,7 +626,7 @@ export class ControlPropertyData {
             FontItalic: false,
             FontUnderline: false,
             FontStrikethrough: false,
-            FontStyle: 'Arial Narrow Italic'
+            FontStyle: 'Arial Narrow'
           },
           ForeColor: '#111111',
           Height: 300,
@@ -667,24 +665,6 @@ export class ControlPropertyData {
               Caption: 'Tab2',
               ToolTip: 'Select Tab2',
               Accelerator: ''
-            },
-            {
-              Name: 'Tab3',
-              Caption: 'Tab3',
-              ToolTip: 'Select Tab3',
-              Accelerator: ''
-            },
-            {
-              Name: 'Tab4',
-              Caption: 'Tab4',
-              ToolTip: 'Select Tab4',
-              Accelerator: ''
-            },
-            {
-              Name: 'Tab5',
-              Caption: 'Tab5',
-              ToolTip: 'Select Tab5',
-              Accelerator: ''
             }
           ],
           zIndex: -1
@@ -708,7 +688,7 @@ export class ControlPropertyData {
             FontItalic: false,
             FontUnderline: false,
             FontStrikethrough: false,
-            FontStyle: 'Arial Narrow Italic'
+            FontStyle: 'Arial Narrow'
           },
           ForeColor: '#000000',
           Height: 60,
@@ -780,7 +760,7 @@ export class ControlPropertyData {
           BackColor: '#ffffff',
           BackStyle: 1,
           BorderColor: '#ffffff',
-          BorderStyle: 1,
+          BorderStyle: 0,
           ControlSource: '',
           ControlTipText: 'helptext',
           CursorStartPosition: 0,
@@ -796,7 +776,7 @@ export class ControlPropertyData {
             FontItalic: false,
             FontUnderline: false,
             FontStrikethrough: false,
-            FontStyle: 'Arial Narrow Italic'
+            FontStyle: 'Arial Narrow'
           },
           ForeColor: '#000000',
           Height: 18,
@@ -815,7 +795,7 @@ export class ControlPropertyData {
           PasswordChar: '',
           ScrollBars: 0,
           SelectionMargin: true,
-          SpecialEffect: 2,
+          SpecialEffect: 0,
           TabIndex: 4,
           TabKeyBehavior: false,
           TabStop: true,

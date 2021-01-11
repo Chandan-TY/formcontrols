@@ -12,7 +12,7 @@
     @keydown.enter.exact="setContentEditable($event, true)"
     @click.stop="!isEditMode ? selectedItem : addControlObj($event)"
     @contextmenu.stop="showContextMenu($event, userFormId, controlId, 'container')"
-    @mousedown.stop="frameMouseDown"
+    @mousedown="frameMouseDown"
     @mouseup="dragSelectorControl($event)"
     @keyup.stop="selectMultipleCtrl($event, false)"
   >
@@ -129,7 +129,7 @@ export default class FDFrame extends FdContainerVue {
     const controlProp = this.data.properties
     return {
       backgroundColor: controlProp.BackColor,
-      width: `${controlProp.Width!}px`,
+      width: `${controlProp.Width}px`,
       height: `${controlProp.Height}px`,
       boxShadow: controlProp.SpecialEffect ? this.getSpecialEffectData : 'none',
       borderLeft: controlProp.BorderStyle
@@ -140,7 +140,8 @@ export default class FDFrame extends FdContainerVue {
         : '0.3px solid gray',
       borderBottom: controlProp.BorderStyle
         ? `0.3px solid ${controlProp.BorderColor}`
-        : '0.3px solid gray'
+        : '0.3px solid gray',
+      overflow: 'hidden'
     }
   }
 
@@ -171,7 +172,7 @@ export default class FDFrame extends FdContainerVue {
     }
     return {
       position: 'relative',
-      width: `${controlProp.Width!}px`,
+      width: `${controlProp.Width! - 3}px`,
       height: `${controlProp.Height}px`,
       marginLeft: '2px',
       padding: '0px',
@@ -241,7 +242,7 @@ export default class FDFrame extends FdContainerVue {
   get scrollSize (): Partial<CSSStyleDeclaration> {
     const controlProp = this.data.properties!
     return {
-      width: `${controlProp.Width!}px`,
+      width: `${controlProp.Width! - 3}px`,
       height: `${controlProp.Height! - 10}px`,
       overflowX: this.getScrollBarX,
       overflowY: this.getScrollBarY
@@ -318,10 +319,6 @@ export default class FDFrame extends FdContainerVue {
 </script>
 
 <style scoped>
-.outerDivClass {
-  /* overflow: hidden; */
-}
-
 .fieldset {
   box-sizing: border-box;
   margin: 0px;

@@ -17,7 +17,7 @@ export function checkPropertyValue (propertyName: keyof controlProperties, value
       break
     case 'TabFixedHeight':
     case 'TabFixedWidth':
-      result = value >= 0 && value < 7200
+      result = value >= 0 && value <= 7200
       break
     case 'Zoom':
       result = value >= 10 && value < 401
@@ -29,7 +29,7 @@ export function checkPropertyValue (propertyName: keyof controlProperties, value
       result = value >= -1 && value < 2147483647
       break
     case 'TextColumn':
-      result = value >= -1 && value <= 32767
+      result = value >= -1 && value <= 32768
       break
     case 'Max':
     case 'Min':
@@ -39,6 +39,12 @@ export function checkPropertyValue (propertyName: keyof controlProperties, value
     case 'Name':
       const nameRegex = /^[a-zA-Z][a-zA-Z0-9_]+$/
       result = nameRegex.test(value)
+      break
+    case 'DrawBuffer':
+      result = value >= 16000 && value <= 1048576
+      break
+    case 'TransitionPeriod':
+      result = value >= 0 && value <= 10000
       break
   }
   return result

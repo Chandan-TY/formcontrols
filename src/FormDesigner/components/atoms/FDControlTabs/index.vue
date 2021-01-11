@@ -1,49 +1,89 @@
 <template>
-<div>
+  <div>
     <input
-        :name="pageData.Name"
-        type="radio"
-        :checked="indexValue === data.properties.Value ? setValueEmit(indexValue) : false"
+      :name="pageData.Name"
+      type="radio"
+      :checked="
+        indexValue === data.properties.Value ? setValueEmit(indexValue) : false
+      "
     />
     <label
-        @mousedown="!getDisableValue(pageData.Enabled) && isChecked(indexValue,pageValue)"
-            :class="[
-                data.properties.Style === 1
-                  ? data.properties.TabOrientation === 2
-                    ? indexValue === data.properties.Value ? 'active-item-button' : 'forLeft forButton'
-                    : indexValue === data.properties.Value ? 'active-item-button' : 'forButton'
-                  : data.properties.Style === 0
-                  ? data.properties.TabOrientation === 2
-                    ? indexValue === data.properties.Value ? 'active-item-tab-left' : 'forLeft'
-                    : indexValue === data.properties.Value ? 'active-item-tab' : 'forTab'
-                  : '',
-            ]"
-            :for="pageData.ID"
-            :title="data.type === 'TabStrip' ? pageData.ToolTip : pageData.ControlTipText"
-            :style="[styleLabelObj,{ color : data.type !== 'TabStrip' ? setForeColor(pageData.Enabled) : setForeColor(data.properties.Enabled), display: data.type !== 'TabStrip' ? setVisible(pageData.Visible) : ''}]">
-          <span v-if="pageData.Accelerator === ''">{{ pageData.Caption }}</span>
-              <span v-else
-                ><span>{{
-                  pageData.Caption | afterbeginCaption(pageData.Accelerator)
-                }}</span>
-                <span class="spanClass">{{
-                  pageData.Caption | acceleratorCaption(pageData.Accelerator)
-                }}</span>
-                <span>{{
-                  pageData.Caption | beforeendCaption(pageData.Accelerator)
-                }}</span></span
+      @mousedown="
+        !getDisableValue(pageData.Enabled) && isChecked(indexValue, pageValue)
+      "
+      @keydown.delete.exact.stop="deleteMultiPageControl"
+      :tabindex="0"
+      :class="[
+        data.properties.Style === 1
+          ? data.properties.TabOrientation === 2
+            ? indexValue === data.properties.Value
+              ? 'active-item-button'
+              : 'forLeft forButton'
+            : indexValue === data.properties.Value
+            ? 'active-item-button'
+            : 'forButton'
+          : data.properties.Style === 0
+          ? data.properties.TabOrientation === 2
+            ? indexValue === data.properties.Value
+              ? 'active-item-tab-left'
+              : 'forLeft'
+            : indexValue === data.properties.Value
+            ? 'active-item-tab'
+            : 'forTab'
+          : '',
+      ]"
+      :for="pageData.ID"
+      :title="
+        data.type === 'TabStrip' ? pageData.ToolTip : pageData.ControlTipText
+      "
+      :style="[
+        styleLabelObj,
+        {
+          color:
+            data.type !== 'TabStrip'
+              ? setForeColor(pageData.Enabled)
+              : setForeColor(data.properties.Enabled),
+          display: data.type !== 'TabStrip' ? setVisible(pageData.Visible) : '',
+        },
+      ]"
     >
+      <span v-if="pageData.Caption === ''" :style="emptyTabWidth"
+        ><p></p
+      ></span>
+      <span class="caption-span" v-else-if="pageData.Accelerator === ''"
+        >{{ pageData.Caption }}
+      </span>
+      <span class="caption-span" v-else
+        ><span>{{
+          pageData.Caption | afterbeginCaption(pageData.Accelerator)
+        }}</span>
+        <span class="spanClass">{{
+          pageData.Caption | acceleratorCaption(pageData.Accelerator)
+        }}</span>
+        <span>{{
+          pageData.Caption | beforeendCaption(pageData.Accelerator)
+        }}</span></span
+      >
     </label>
-</div>
+  </div>
 </template>
 
 <script lang="ts">
 import FdControlVue from '@/api/abstract/FormDesigner/FdControlVue'
 import { controlProperties } from '@/FormDesigner/controls-properties'
-import { Component, Prop, Model, Vue, Emit, Ref, Watch } from 'vue-property-decorator'
+import {
+  Component,
+  Prop,
+  Model,
+  Vue,
+  Emit,
+  Ref,
+  Watch
+} from 'vue-property-decorator'
 import { State } from 'vuex-class'
 
-@Component({ name: 'FDControlTabs',
+@Component({
+  name: 'FDControlTabs',
   filters: {
     afterbeginCaption (value: string, acc: string = '') {
       if (acc !== '') {
@@ -72,7 +112,8 @@ import { State } from 'vuex-class'
       const data = controlProperties.acceleratorProp(value, acc)
       return data.beforeendCaption
     }
-  } })
+  }
+})
 export default class FDControlTabs extends Vue {
   @Prop() data: controlData;
   @Prop() pageValue: string;
@@ -81,7 +122,7 @@ export default class FDControlTabs extends Vue {
   @Prop() isRunMode: boolean;
   @Prop() isEditMode: boolean;
   @Prop() isItalic: boolean;
-  @Prop() tempStretch:string;
+  @Prop() tempStretch: string;
   @Prop() tempWeight: string;
   @Prop() getMouseCursorData: string;
   @Prop() setFontStyle: string;
@@ -113,7 +154,8 @@ export default class FDControlTabs extends Vue {
   isChecked (indexValue: number, pageValue: string) {
     return {
       indexValue,
-      pageValue }
+      pageValue
+    }
   }
 
   @Emit('emitRef')
@@ -128,15 +170,21 @@ export default class FDControlTabs extends Vue {
   setVisible (visibleValue: boolean) {
     if (this.isRunMode) {
       if (visibleValue) {
-        return 'inline-block'
+        return 'flex'
       } else {
         return 'none'
       }
     } else {
-      return 'inline-block'
+      return 'flex'
     }
   }
 
+  get emptyTabWidth () {
+    const controlProp = this.data.properties
+    return {
+      width: controlProp.TabOrientation === 2 || controlProp.TabOrientation === 3 ? this.tempWidth + 'px' : ''
+    }
+  }
   /**
    * @description setVisible checks for the RunMode of the control and then returns after checking for the Enabled property
    * @function setForeColor
@@ -180,10 +228,18 @@ export default class FDControlTabs extends Vue {
         FontStrikethrough: true
       }
     return {
-      height: controlProp.TabFixedHeight! > 0 ? controlProp.TabFixedHeight + 'px' : '',
-      width: controlProp.TabFixedWidth! > 0 ? controlProp.TabFixedWidth + 'px' : controlProp.TabOrientation === 2 || controlProp.TabOrientation === 3 ? this.tempWidth + 'px' : '',
+      height:
+        controlProp.TabFixedHeight! > 0
+          ? controlProp.TabFixedHeight + 'px'
+          : '',
+      width:
+        controlProp.TabFixedWidth! > 0
+          ? controlProp.TabFixedWidth + 'px'
+          : controlProp.TabOrientation === 2 || controlProp.TabOrientation === 3
+            ? this.tempWidth + 'px'
+            : '',
       top: controlProp.TabOrientation === 1 ? '5px' : '0px',
-      fontFamily: (font.FontStyle! !== '') ? this.setFontStyle : font.FontName!,
+      fontFamily: font.FontStyle! !== '' ? this.setFontStyle : font.FontName!,
       fontSize: `${font.FontSize}px`,
       fontStyle: font.FontItalic || this.isItalic ? 'italic' : '',
       textDecoration:
@@ -195,15 +251,66 @@ export default class FDControlTabs extends Vue {
               ? 'line-through'
               : '',
       textUnderlinePosition: 'under',
-      fontWeight: font.FontBold ? 'bold' : (font.FontStyle !== '') ? this.tempWeight : '',
-      fontStretch: (font.FontStyle !== '') ? this.tempStretch : '',
+      fontWeight: font.FontBold
+        ? 'bold'
+        : font.FontStyle !== ''
+          ? this.tempWeight
+          : '',
+      fontStretch: font.FontStyle !== '' ? this.tempStretch : '',
       cursor:
         controlProp.MousePointer !== 0 || controlProp.MouseIcon !== ''
           ? this.getMouseCursorData
           : 'default',
       zIndex: controlProp.MultiRow ? '30000' : '',
-      backgroundColor: this.indexValue === this.data.properties.Value! ? controlProp.Style === 1 ? 'gray' : '' : ''
+      backgroundColor:
+        this.indexValue === this.data.properties.Value!
+          ? controlProp.Style === 1
+            ? 'gray'
+            : ''
+          : '',
+      paddingTop:
+        this.indexValue === this.data.properties.Value ? '5px' : '1px',
+      // paddingBottom: this.indexValue === this.data.properties.Value ? '5px' : '3px',
+      paddingBottom: '9px',
+      marginTop:
+        this.data.properties.TabOrientation === 1
+          ? this.indexValue === this.data.properties.Value
+            ? ''
+            : '0px'
+          : this.data.properties.TabOrientation === 0
+            ? this.indexValue === this.data.properties.Value
+              ? ''
+              : '5px'
+            : '',
+      borderTop: '2px solid white',
+      borderRight:
+        this.data.properties.TabOrientation === 2 ? '0px' : '2px solid gray',
+      borderBottom:
+        this.data.properties.TabOrientation === 2 ||
+        this.data.properties.TabOrientation === 3
+          ? '2px solid gray'
+          : this.data.properties.TabOrientation === 1
+            ? this.data.type === 'TabStrip'
+              ? '6px solid gray'
+              : '2px solid gray'
+            : 'none',
+      marginBottom:
+        this.data.type === 'MultiPage'
+          ? this.data.properties.TabOrientation === 1
+            ? this.indexValue === this.data.properties.Value
+              ? '4px'
+              : '6px'
+            : ''
+          : '',
+      borderRadius: '3px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center'
     }
+  }
+  @Emit('deleteMultiPageControl')
+  deleteMultiPageControl (event: KeyboardEvent) {
+    return event
   }
 }
 </script>
@@ -237,6 +344,8 @@ export default class FDControlTabs extends Vue {
   border-radius: 3px;
   width: fit-content;
   overflow: hidden;
+  padding-top: 8px;
+  padding-bottom: 0px;
 }
 .page [type="radio"]:checked ~ label.forLeft {
   border-bottom: 2px solid gray;
@@ -255,8 +364,8 @@ export default class FDControlTabs extends Vue {
   z-index: 2;
 }
 .page label {
-  background-color: rgb(238,238,238) ;
-  display: inline-block;
+  background-color: rgb(238, 238, 238);
+  display: flex;
   padding: 5px 5px 5px 5px;
   margin: 0;
   cursor: default;
@@ -282,5 +391,11 @@ export default class FDControlTabs extends Vue {
 }
 .spanClass {
   text-decoration: underline;
+}
+:focus {
+  outline: none;
+}
+.caption-span {
+  white-space: pre;
 }
 </style>
