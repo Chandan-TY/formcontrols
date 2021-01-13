@@ -16,7 +16,10 @@
       tabindex="1"
       @click="toFocus"
     >
-      <div :class="properties.SelectionMargin ? 'selectionDiv' : ''">
+      <div
+        :class="properties.SelectionMargin ? 'selectionDiv' : ''"
+        :style="selectionStyle"
+      >
         <span
           v-if="properties.SelectionMargin"
           class="selectionSpan"
@@ -35,9 +38,9 @@
           @click="handleClick($event, textareaRef, hideSelectionDiv)"
           @input="handleTextInput($event)"
           class="text-box-design"
-          :value="selectionData[0]"
+          :value="properties.Value"
           @dragstart="dragBehavior"
-          @focus="makeTextAreaFocus"
+          @keydown.enter.prevent
         />
         <div
           ref="hideSelectionDiv"
@@ -46,7 +49,7 @@
           :title="properties.ControlTipText"
           class="text-box-design"
         >
-          {{ selectionData[0] }}
+          {{ properties.Value }}
         </div>
         <label
           ref="autoSizeTextarea"
@@ -69,7 +72,13 @@
             preserveAspectRatio="xMidYMid meet"
           >
             <g
-              :fill="properties.Enabled ? '#000000' : open ? '#000000' : 'rgb(190,190,190)'"
+              :fill="
+                properties.Enabled
+                  ? '#000000'
+                  : open
+                  ? '#000000'
+                  : 'rgb(190,190,190)'
+              "
               transform="translate(0.000000,460.000000) scale(0.100000,-0.100000)"
               stroke="none"
             >
@@ -92,7 +101,13 @@
           >
             <g
               transform="translate(0.000000,1024.000000) scale(0.100000,-0.100000)"
-              :fill="properties.Enabled ? '#000000' : open ? '#000000' : 'rgb(180,180,180)'"
+              :fill="
+                properties.Enabled
+                  ? '#000000'
+                  : open
+                  ? '#000000'
+                  : 'rgb(180,180,180)'
+              "
               stroke="none"
             >
               <path
@@ -127,7 +142,13 @@
           >
             <g
               transform="translate(0.000000,1200.000000) scale(0.100000,-0.100000)"
-              :fill="properties.Enabled ? '#000000' : open ? '#000000' : 'rgb(180,180,180)'"
+              :fill="
+                properties.Enabled
+                  ? '#000000'
+                  : open
+                  ? '#000000'
+                  : 'rgb(180,180,180)'
+              "
               stroke="none"
             >
               <path
@@ -162,7 +183,11 @@
                   v-for="(a, columnIndex) in extraDatas.ColumnHeadsValues"
                 >
                   <div
-                    v-if="columnIndex < properties.ColumnCount || properties.ColumnCount === -1"
+                    v-if="
+                      (properties.RowSource !== '' &&
+                        columnIndex < properties.ColumnCount) ||
+                      properties.ColumnCount === -1
+                    "
                     :key="columnIndex"
                     :style="updateColHeads(columnIndex)"
                     class="colHeadsClass"
@@ -170,13 +195,18 @@
                     {{ a }}
                   </div>
                 </template>
-                <hr class="hrStyle" />
+                <div
+                  v-if="properties.RowSource === ''"
+                  :style="emptyColHeads"
+                ></div>
+                <hr v-if="properties.ColumnHeads" class="hrStyle" />
               </div>
             </div>
             <div v-else></div>
             <div
               class="tBodyStyle"
               @click="properties.Enabled ? (open = false) : (open = true)"
+              v-if="properties.RowSource !== ''"
             >
               <div
                 :tabindex="index"
@@ -199,7 +229,10 @@
                   :style="tdStyleObj"
                   class="tdClassIn"
                   v-if="
-                    properties.ListStyle === 1 && properties.ColumnCount > 0 || properties.ListStyle === 1 && properties.ColumnCount === -1
+                    (properties.ListStyle === 1 &&
+                      properties.ColumnCount > 0) ||
+                    (properties.ListStyle === 1 &&
+                      properties.ColumnCount === -1)
                   "
                 >
                   <input name="radio" type="radio" class="inputClass" />
@@ -208,11 +241,15 @@
                   class="column-item"
                   v-for="(i, index) in item"
                   :key="index"
-                  :style="updateColumnWidths(index)"
+                  :style="updateColumnValue(index)"
                 >
-                  <template v-if="index < properties.ColumnCount || properties.ColumnCount === -1">{{
-                    i
-                  }}</template>
+                  <template
+                    v-if="
+                      index < properties.ColumnCount ||
+                      properties.ColumnCount === -1
+                    "
+                    >{{ i }}</template
+                  >
                 </div>
               </div>
             </div>
@@ -255,6 +292,8 @@ export default class FDComboBox extends Mixins(FdControlVue) {
   tempInputValue: string = '';
   tempWidth: string = '0px';
   isScrolling: boolean = false;
+  tempHeight: number;
+  inBlur: boolean = false;
   makeOpen () {
     this.open = true
   }
@@ -266,8 +305,45 @@ export default class FDComboBox extends Mixins(FdControlVue) {
     }
   }
 
+  get emptyColHeads () {
+    return {
+      height: '15px'
+    }
+  }
   updateColumnValue (index: number) {
-    return this.updateColumnWidths(index)
+    return this.updateColumnWidths(index, this.tempHeight)
+  }
+
+  get selectionStyle () {
+    const controlProp = this.properties
+    return {
+      borderLeft:
+        controlProp.BorderStyle === 1
+          ? '1px solid ' + controlProp.BorderColor
+          : controlProp.SpecialEffect === 2
+            ? '2px solid gray'
+            : controlProp.SpecialEffect === 3
+              ? '1.5px solid gray'
+              : controlProp.SpecialEffect === 4
+                ? '0.5px solid gray'
+                : '',
+      borderTop:
+        controlProp.BorderStyle === 1
+          ? '1px solid ' + controlProp.BorderColor
+          : controlProp.SpecialEffect === 2
+            ? '2px solid gray'
+            : controlProp.SpecialEffect === 3
+              ? '1.5px solid gray'
+              : controlProp.SpecialEffect === 4
+                ? '0.5px solid gray'
+                : ''
+    }
+  }
+  @Watch('open')
+  updateTd () {
+    if (!this.open && this.comboRef) {
+      this.tempHeight = this.comboRef.children[1].children[0].clientHeight
+    }
   }
 
   toFocus () {
@@ -288,45 +364,57 @@ export default class FDComboBox extends Mixins(FdControlVue) {
     }
   }
 
+  @Watch('properties.RowSource')
+  rowSourceValidate () {
+    if (this.properties.RowSource !== '') {
+      const initialRowSourceData = this.extraDatas.RowSourceData!
+      if (initialRowSourceData) {
+        this.tempArray = initialRowSourceData
+      }
+      this.updateDataModel({ propertyName: 'ControlSource', value: '' })
+      if (initialRowSourceData && initialRowSourceData.length === 0) {
+        this.updateDataModel({ propertyName: 'TopIndex', value: -1 })
+      } else {
+        this.updateDataModel({ propertyName: 'TopIndex', value: 0 })
+      }
+    }
+  }
+
   handleTextInput (e: Event) {
     if (this.properties.AutoSize) {
       this.updateAutoSize()
     }
     if (e.target instanceof HTMLTextAreaElement) {
-      this.open = true
       const tempEvent = e.target
       this.eTargetValue = e.target.value
       this.updateDataModel({ propertyName: 'Value', value: this.eTargetValue })
-      if (this.properties.MatchEntry !== 0) {
-        this.textareaRef.focus()
-      }
-      if (this.properties.MatchEntry === 0) {
-        for (let i = 0; i < this.tempArray.length; i++) {
-          if (this.tempArray[i][0][0] === this.textareaRef.value[0]) {
-            this.textareaRef.value = this.tempArray[i][0]
-            this.updateDataModel({
-              propertyName: 'Text',
-              value: this.tempArray[i][0]
-            })
-            break
-          }
+      this.updateDataModel({ propertyName: 'Text', value: this.eTargetValue })
+      if (this.properties.RowSource !== '') {
+        if (this.properties.MatchEntry !== 0) {
+          this.textareaRef.focus()
         }
-        this.textareaRef.setSelectionRange(
-          0,
-          this.textareaRef.value.length,
-          'forward'
-        )
+        if (this.properties.MatchEntry === 0) {
+          for (let i = 0; i < this.tempArray.length; i++) {
+            if (this.tempArray[i][0][0] === this.textareaRef.value[0]) {
+              this.textareaRef.value = this.tempArray[i][0]
+              this.updateDataModel({
+                propertyName: 'Text',
+                value: this.tempArray[i][0]
+              })
+              break
+            }
+          }
+          this.textareaRef.setSelectionRange(
+            0,
+            this.textareaRef.value.length,
+            'forward'
+          )
+        }
+      } else {
+        this.tempArray = []
       }
     } else {
       throw new Error('target is not instance of div element')
-    }
-  }
-
-  makeTextAreaFocus () {
-    if (!this.getDisableValue) {
-      if (this.properties.ShowDropButtonWhen !== 0) {
-        this.open = true
-      }
     }
   }
 
@@ -371,10 +459,12 @@ export default class FDComboBox extends Mixins(FdControlVue) {
     textareaRef: HTMLTextAreaElement,
     hideSelectionDiv: HTMLDivElement
   ) {
+    this.inBlur = false
     if (this.isScrolling) {
       this.open = true
       this.textareaRef.focus()
-    } else {
+    } else if (this.open) {
+      this.inBlur = true
       this.open = false
     }
     this.isScrolling = false
@@ -534,19 +624,30 @@ export default class FDComboBox extends Mixins(FdControlVue) {
     }
   }
 
-  protected get listStyleObj (): Partial<CSSStyleDeclaration> {
+  protected get listStyleObj () {
     const controlProp = this.properties
-    return {
-      height: !controlProp.ColumnHeads
-        ? controlProp.ListRows! > 0 &&
-          controlProp.ListRows! < this.extraDatas.RowSourceData!.length
-          ? controlProp.ListRows! * (controlProp.Font!.FontSize! + 3) + 'px'
-          : ''
-        : controlProp.ListRows! > 0 &&
-          controlProp.ListRows! < this.extraDatas.RowSourceData!.length
-          ? (controlProp.ListRows! + 1) * (controlProp.Font!.FontSize! + 3) + 'px'
-          : '',
-      backgroundColor: controlProp.BackColor
+    if (this.properties.RowSource !== '') {
+      return {
+        height: !controlProp.ColumnHeads
+          ? controlProp.ListRows! > 0 &&
+            controlProp.ListRows! < this.extraDatas.RowSourceData!.length
+            ? controlProp.ListRows! * (controlProp.Font!.FontSize! + 9) + 'px'
+            : ''
+          : controlProp.ListRows! > 0 &&
+            controlProp.ListRows! < this.extraDatas.RowSourceData!.length
+            ? (controlProp.ListRows! + 1) * (controlProp.Font!.FontSize! + 9) +
+            'px'
+            : '',
+        backgroundColor: controlProp.BackColor
+      }
+    } else {
+      return {
+        backgroundColor: controlProp.BackColor,
+        border: '1px solid black',
+        width: 'calc(100% - 2px)',
+        height: 'calc(100% - 2px)',
+        minWidth: '100px'
+      }
     }
   }
 
@@ -589,10 +690,8 @@ export default class FDComboBox extends Mixins(FdControlVue) {
       fontStretch: font.FontStyle !== '' ? this.tempStretch : '',
       width:
         controlProp.ColumnWidths === ''
-          ? `${controlProp.Width}px`
-          : `${controlProp.Width}px` +
-            parseInt(controlProp.ColumnWidths!) +
-            'px',
+          ? 'calc(100% - 2px)'
+          : 'calc(100% - 2px)' + parseInt(controlProp.ColumnWidths!) + 'px',
       outline: 'none'
     }
   }
@@ -651,7 +750,9 @@ export default class FDComboBox extends Mixins(FdControlVue) {
             : 'right',
       cursor:
         controlProp.MousePointer !== 0 || controlProp.MouseIcon !== ''
-          ? this.getMouseCursorData
+          ? this.isEditMode || !this.isActivated
+            ? this.getMouseCursorData
+            : 'default'
           : 'default'
     }
   }
@@ -682,8 +783,8 @@ export default class FDComboBox extends Mixins(FdControlVue) {
       display = 'inline-block'
     }
     return {
-      display: display,
-      overflow: 'hidden'
+      display: display
+      // overflow: 'hidden'
     }
   }
   protected get tdStyleObj (): Partial<CSSStyleDeclaration> {
@@ -705,22 +806,28 @@ export default class FDComboBox extends Mixins(FdControlVue) {
   }
   @Watch('properties.Value', { deep: true })
   textAndValueUpdateProp (newVal: string, oldVal: string) {
-    if (
-      this.properties.BoundColumn! > 0 &&
-      this.properties.BoundColumn! < this.extraDatas.RowSourceData!.length
-    ) {
-      let tempData = [...this.extraDatas.RowSourceData!]
-      if (tempData![0][this.properties.BoundColumn! - 1] === newVal) {
-        this.updateDataModel({ propertyName: 'Value', value: newVal })
-      } else {
-        if (newVal !== '' && this.properties.Value) {
-          this.updateDataModel({ propertyName: 'Text', value: newVal })
+    if (this.properties.RowSource !== '') {
+      if (
+        this.properties.BoundColumn! > 0 &&
+        this.properties.BoundColumn! < this.extraDatas.RowSourceData!.length
+      ) {
+        let tempData = [...this.extraDatas.RowSourceData!]
+        if (tempData![0][this.properties.BoundColumn! - 1] === newVal) {
+          this.updateDataModel({ propertyName: 'Value', value: newVal })
+        } else {
+          if (newVal !== '' && this.properties.Value) {
+            this.updateDataModel({ propertyName: 'Text', value: newVal })
+          }
         }
       }
-    }
-    if (newVal !== '' && this.properties.Value) {
-      this.selectionData[0] = newVal
-      this.updateDataModel({ propertyName: 'Text', value: newVal })
+      if (newVal !== '' && this.properties.Value) {
+        this.selectionData[0] = newVal
+        this.updateDataModel({ propertyName: 'Text', value: newVal })
+      }
+    } else {
+      if (newVal !== '') {
+        this.updateDataModel({ propertyName: 'Text', value: newVal })
+      }
     }
   }
 
@@ -735,15 +842,17 @@ export default class FDComboBox extends Mixins(FdControlVue) {
 
   mounted () {
     this.$el.focus()
-    const initialRowSourceData = this.extraDatas.RowSourceData!
-    if (initialRowSourceData) {
-      this.tempArray = initialRowSourceData
-    }
-    this.updateDataModel({ propertyName: 'ControlSource', value: '' })
-    if (initialRowSourceData && initialRowSourceData.length === 0) {
-      this.updateDataModel({ propertyName: 'TopIndex', value: -1 })
-    } else {
-      this.updateDataModel({ propertyName: 'TopIndex', value: 0 })
+    if (this.properties.RowSource !== '') {
+      const initialRowSourceData = this.extraDatas.RowSourceData!
+      if (initialRowSourceData) {
+        this.tempArray = initialRowSourceData
+      }
+      this.updateDataModel({ propertyName: 'ControlSource', value: '' })
+      if (initialRowSourceData && initialRowSourceData.length === 0) {
+        this.updateDataModel({ propertyName: 'TopIndex', value: -1 })
+      } else {
+        this.updateDataModel({ propertyName: 'TopIndex', value: 0 })
+      }
     }
   }
 
@@ -814,10 +923,28 @@ export default class FDComboBox extends Mixins(FdControlVue) {
     const controlProp = this.properties
     return {
       borderColor: controlProp.BorderStyle === 1 ? controlProp.BorderColor : '',
-      borderLeft: controlProp.BorderStyle === 1 ? '1px solid ' + controlProp.BorderColor : controlProp.SpecialEffect === 2 ? '2px solid gray' : controlProp.SpecialEffect === 3 ? '1.5px solid gray' : controlProp.SpecialEffect === 4 ? '0.5px solid gray' : '',
-      borderRight: controlProp.BorderStyle === 1 ? '1px solid ' + controlProp.BorderColor : controlProp.SpecialEffect === 1 ? '2px solid gray' : controlProp.SpecialEffect === 4 ? '1.5px solid gray' : controlProp.SpecialEffect === 3 ? '0.5px solid gray' : '',
-      borderTop: controlProp.BorderStyle === 1 ? '1px solid ' + controlProp.BorderColor : controlProp.SpecialEffect === 2 ? '2px solid gray' : controlProp.SpecialEffect === 3 ? '1.5px solid gray' : controlProp.SpecialEffect === 4 ? '0.5px solid gray' : '',
-      borderBottom: controlProp.BorderStyle === 1 ? '1px solid ' + controlProp.BorderColor : controlProp.SpecialEffect === 1 ? '2px solid gray' : controlProp.SpecialEffect === 4 ? '1.5px solid gray' : controlProp.SpecialEffect === 3 ? '0.5px solid gray' : '',
+      // borderLeft: controlProp.BorderStyle === 1 ? '1px solid ' + controlProp.BorderColor : controlProp.SpecialEffect === 2 ? '2px solid gray' : controlProp.SpecialEffect === 3 ? '1.5px solid gray' : controlProp.SpecialEffect === 4 ? '0.5px solid gray' : '',
+      borderRight:
+        controlProp.BorderStyle === 1
+          ? '1px solid ' + controlProp.BorderColor
+          : controlProp.SpecialEffect === 1
+            ? '2px solid gray'
+            : controlProp.SpecialEffect === 4
+              ? '1.5px solid gray'
+              : controlProp.SpecialEffect === 3
+                ? '0.5px solid gray'
+                : '',
+      // borderTop: controlProp.BorderStyle === 1 ? '1px solid ' + controlProp.BorderColor : controlProp.SpecialEffect === 2 ? '2px solid gray' : controlProp.SpecialEffect === 3 ? '1.5px solid gray' : controlProp.SpecialEffect === 4 ? '0.5px solid gray' : '',
+      borderBottom:
+        controlProp.BorderStyle === 1
+          ? '1px solid ' + controlProp.BorderColor
+          : controlProp.SpecialEffect === 1
+            ? '2px solid gray'
+            : controlProp.SpecialEffect === 4
+              ? '1.5px solid gray'
+              : controlProp.SpecialEffect === 3
+                ? '0.5px solid gray'
+                : '',
       display: 'grid',
       gridTemplateColumns: `${controlProp.Width! - 20}px` + ' 21px',
       gridTemplateRows: `${controlProp.Height!}px`,
@@ -831,7 +958,20 @@ export default class FDComboBox extends Mixins(FdControlVue) {
       width:
         parseInt(controlProp.ListWidth!) > 0
           ? parseInt(controlProp.ListWidth!) + 'px'
-          : this.setdropDownWidth
+          : this.setdropDownWidth,
+      height:
+        controlProp.RowSource !== ''
+          ? ''
+          : controlProp.ColumnHeads
+            ? '30px'
+            : '15px',
+      border: controlProp.RowSource !== '' ? '1px solid black' : 'none',
+      cursor:
+        controlProp.MousePointer !== 0 || controlProp.MouseIcon !== ''
+          ? this.isEditMode || !this.isActivated
+            ? this.getMouseCursorData
+            : 'default'
+          : 'default'
     }
   }
 
@@ -860,7 +1000,9 @@ export default class FDComboBox extends Mixins(FdControlVue) {
               : '',
       cursor:
         controlProp.MousePointer !== 0 || controlProp.MouseIcon !== ''
-          ? this.getMouseCursorData
+          ? this.isEditMode || !this.isActivated
+            ? this.getMouseCursorData
+            : 'default'
           : 'default',
       display: 'flex',
       justifyContent: 'center',
@@ -868,14 +1010,18 @@ export default class FDComboBox extends Mixins(FdControlVue) {
     }
   }
   enabledCheck (e: MouseEvent) {
-    if (this.isRunMode || this.isEditMode) {
+    if (this.isRunMode || this.isActivated || this.isEditMode) {
       if (this.open) {
         this.textareaRef.focus()
         this.open = false
+      } else if (this.inBlur) {
+        this.open = false
       } else {
         this.open = true
+        this.textareaRef.focus()
       }
     }
+    this.inBlur = false
   }
 
   eventStoppers () {
@@ -904,7 +1050,7 @@ export default class FDComboBox extends Mixins(FdControlVue) {
   grid-template-columns: 5px auto;
 }
 .selected {
-  background-color: rgb(238,238,238);
+  background-color: rgb(238, 238, 238);
   border: 1px solid #858586;
   border-left: 0px;
   color: black;
@@ -923,6 +1069,7 @@ export default class FDComboBox extends Mixins(FdControlVue) {
   left: 0;
   right: 0;
   width: calc(100% + 20px);
+  cursor: context-menu;
 }
 .item {
   color: black;
@@ -965,7 +1112,7 @@ export default class FDComboBox extends Mixins(FdControlVue) {
 }
 .tr {
   outline: none;
-  display: -webkit-box;
+  display: flex;
 }
 .tr:hover:not([disabled]) {
   background-color: rgb(59, 122, 231);
@@ -1041,7 +1188,7 @@ export default class FDComboBox extends Mixins(FdControlVue) {
   background: lightblue;
 }
 .table-style {
-  width: 100%;
+  width: calc(100% - 2px);
 }
 .thClass {
   position: sticky;

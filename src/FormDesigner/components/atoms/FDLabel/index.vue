@@ -169,7 +169,7 @@ export default class FDLabel extends Mixins(FdControlVue) {
       this.$nextTick(() => {
         this.updateDataModel({
           propertyName: 'Height',
-          value: (this.$el.childNodes[0] as HTMLSpanElement).offsetHeight
+          value: (this.$el.childNodes[0] as HTMLSpanElement).offsetHeight + 10
         })
         this.updateDataModel({
           propertyName: 'Width',
