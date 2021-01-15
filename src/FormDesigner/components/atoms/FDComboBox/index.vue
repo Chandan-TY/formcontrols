@@ -281,7 +281,6 @@ export default class FDComboBox extends Mixins(FdControlVue) {
   @Ref('hideSelectionDiv') readonly hideSelectionDiv!: HTMLDivElement;
   @Ref('comboRef') comboRef!: HTMLDivElement;
 
-  private options = ['hello'];
   private tabindex = 0;
   eTargetValue: string = '';
   tempArray: Array<Array<string>> = [];
@@ -613,7 +612,7 @@ export default class FDComboBox extends Mixins(FdControlVue) {
         })
         this.updateDataModel({
           propertyName: 'Height',
-          value: tempLabel.offsetHeight + 5
+          value: tempLabel.offsetHeight + 15
         })
         tempLabel.innerText = ''
         tempLabel.style.display = 'none'

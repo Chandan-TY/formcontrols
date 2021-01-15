@@ -10,7 +10,7 @@ export class ControlPropertyData {
         properties: {
           BackColor: '#ffffff',
           BorderColor: '#ffffff',
-          BorderStyle: 1,
+          BorderStyle: 0,
           Caption: 'UserForm1',
           Cycle: 0,
           DrawBuffer: 32000,
@@ -299,11 +299,11 @@ export class ControlPropertyData {
       },
       Frame: {
         properties: {
-          BackColor: '#ffffff',
-          BorderColor: '#ffffff',
+          BackColor: '#eeeeee',
+          BorderColor: '#000000',
           BorderStyle: 0,
           Caption: 'Frame1',
-          ControlTipText: 'helptext',
+          ControlTipText: '',
           Cycle: 0,
           Enabled: true,
           Font: {
