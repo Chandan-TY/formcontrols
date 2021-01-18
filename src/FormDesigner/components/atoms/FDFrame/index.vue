@@ -20,32 +20,20 @@
     <div :style="scrollSize" ref="frame" @scroll="updateScrollingLeftTop">
       <div v-if="properties.Picture!==''" class="pictureDiv" :style="pictureDivObj">
     <Container
-      :contextMenuType="contextMenuType"
-      :viewMenu="viewMenu"
       :userFormId="userFormId"
       :controlId="controlId"
       :containerId="controlId"
       :isEditMode="isEditMode"
-      :left="left"
-      :top="top"
       ref="containerRef"
-      @closeMenu="closeMenu"
-      @openMenu="(e, parentID, controlID, type, mode) => showContextMenu(e, parentID, controlID, type, mode)"
     />
     </div>
     <Container
       v-else
-      :contextMenuType="contextMenuType"
-      :viewMenu="viewMenu"
       :userFormId="userFormId"
       :controlId="controlId"
       :containerId="controlId"
       :isEditMode="isEditMode"
-      :left="left"
-      :top="top"
       ref="containerRef"
-      @closeMenu="closeMenu"
-      @openMenu="(e, parentID, controlID, type, mode) => showContextMenu(e, parentID, controlID, type, mode)"
     />
   </div>
   </fieldset>
@@ -244,7 +232,8 @@ export default class FDFrame extends FdContainerVue {
   get pictureDivObj () {
     const controlProp = this.properties
     return {
-      height: '100%',
+      height: controlProp.ScrollHeight === 0 || controlProp.ScrollHeight! < controlProp.Height! ? controlProp.Height! + 'px' : controlProp.ScrollHeight! + 'px',
+      width: controlProp.ScrollWidth === 0 || controlProp.ScrollWidth! < controlProp.Width! ? controlProp.Width! + 'px' : controlProp.ScrollWidth! + 'px',
       backgroundImage: controlProp.Picture === ''
         ? ''
         : this.createBackgroundString,
@@ -293,11 +282,7 @@ export default class FDFrame extends FdContainerVue {
   }
 
   showContextMenu (e: MouseEvent, parentID: string, controlID: string, type: string, mode: boolean) {
-    this.openMenu(e, parentID, controlID, type, mode)
-    Vue.nextTick(() => this.containerRef.contextmenu.focus())
-  }
-  closeMenu () {
-    this.viewMenu = false
+    EventBus.$emit('contextMenuDisplay', event, parentID, controlID, type, mode)
   }
 
   dragSelectorControl (event: MouseEvent) {
@@ -324,7 +309,7 @@ export default class FDFrame extends FdContainerVue {
    * @event keydown
    */
   handleKeyDown (event: KeyboardEvent) {
-    this.containerRef.refContextMenu.updateAction(event)
+    EventBus.$emit('handleKeyDown', event, this.controlId)
   }
 
   deleteFrame (event: KeyboardEvent) {

@@ -3,12 +3,17 @@
     :title="properties.ControlTipText"
     class="outer-check"
     :style="cssStyleProperty"
-    @click.stop="optionBtnClick"
+    @click="optionBtnClick"
     :tabindex="properties.TabIndex"
     @keydown.enter.prevent="setContentEditable($event, true)"
+    @contextmenu="isEditMode ? openTextContextMenu($event): parentConextMenu($event)"
   >
-  <label class="control" :style="controlStyleObj" v-if="properties.Alignment === 1">
-    <input
+    <label
+      class="control"
+      :style="controlStyleObj"
+      v-if="properties.Alignment === 1"
+    >
+      <input
         @change="handleChange($event, optionBtnRef)"
         @click="SetValue()"
         ref="optBtnInput"
@@ -71,8 +76,12 @@
         </FDEditableText>
       </div>
     </div>
-    <label class="control" :style="controlStyleObj" v-if="properties.Alignment === 0">
-    <input
+    <label
+      class="control"
+      :style="controlStyleObj"
+      v-if="properties.Alignment === 0"
+    >
+      <input
         @change="handleChange($event, optionBtnRef)"
         @click="SetValue()"
         ref="optBtnInput"
@@ -105,9 +114,9 @@ export default class FDOptionButton extends Mixins(FdControlVue) {
   @Ref('divAutoSize') autoSizeOptionButton!: HTMLDivElement;
   @Ref('optBtnInput') optBtnInput!: HTMLInputElement;
   @Ref('spanRef') spanRef!: HTMLSpanElement;
-  @Ref('optionBtnSpanRef') optionBtnSpanRef!: FDEditableText
-  $el: HTMLDivElement
-  alignItem: boolean = false
+  @Ref('optionBtnSpanRef') optionBtnSpanRef!: FDEditableText;
+  $el: HTMLDivElement;
+  alignItem: boolean = false;
 
   get controlStyleObj () {
     const controlProp = this.properties
@@ -294,7 +303,8 @@ export default class FDOptionButton extends Mixins(FdControlVue) {
       fontStretch: font.FontStyle !== '' ? this.tempStretch : '',
       display: display,
       overflow: 'hidden',
-      gridTemplateColumns: controlProp.Alignment === 1 ? '12px auto' : 'auto 12px',
+      gridTemplateColumns:
+        controlProp.Alignment === 1 ? '12px auto' : 'auto 12px',
       gridTemplateRows: '100%',
       gap: '2px',
       alignItems: font.FontSize! > 17 ? 'center' : '',
@@ -341,6 +351,7 @@ export default class FDOptionButton extends Mixins(FdControlVue) {
     return {
       overflow: 'hidden',
       height: !this.isEditMode ? '100%' : '',
+      width: `${controlProp.Width! - 20}px`,
       display: 'flex',
       justifyContent:
         controlProp.TextAlign === 0
@@ -391,7 +402,10 @@ export default class FDOptionButton extends Mixins(FdControlVue) {
   editableTextVerify () {
     if (this.isEditMode) {
       Vue.nextTick(() => {
-        if (this.isEditMode && this.optionBtnSpanRef.$el.clientHeight > this.properties.Height!) {
+        if (
+          this.isEditMode &&
+          this.optionBtnSpanRef.$el.clientHeight > this.properties.Height!
+        ) {
           this.alignItem = true
         } else {
           this.alignItem = false
@@ -448,9 +462,12 @@ export default class FDOptionButton extends Mixins(FdControlVue) {
     this.setContentEditable(event, false)
   }
   optionBtnClick (event: MouseEvent) {
-    this.selectedItem(event)
-    if (this.isEditMode) {
-      (this.optionBtnSpanRef.$el as HTMLSpanElement).focus()
+    if (this.toolBoxSelectControl === 'Select') {
+      event.stopPropagation()
+      this.selectedItem(event)
+      if (this.isEditMode) {
+        (this.optionBtnSpanRef.$el as HTMLSpanElement).focus()
+      }
     }
   }
 }

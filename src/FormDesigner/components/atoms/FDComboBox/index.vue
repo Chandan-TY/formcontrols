@@ -4,10 +4,11 @@
     :tabindex="tabindex"
     :style="customSelectObj"
     :title="properties.ControlTipText"
-    @click="selectedItem"
+    @click="comBoxClick"
     @keydown.enter="setContentEditable($event, true)"
     @keydown.esc="releaseEditMode"
     v-on="eventStoppers()"
+    @contextmenu="isEditMode ? openTextContextMenu($event): parentConextMenu($event)"
   >
     <div
       class="combobox"
@@ -158,7 +159,7 @@
           </svg>
         </div>
       </div>
-      <div class="items" :class="{ selectHide: !open }" :style="itemsStyleObj">
+      <div class="items" :class="{ selectHide: !open }" :style="itemsStyleObj" ref="itemsRef">
         <div
           class="listStyle"
           :title="properties.ControlTipText"
@@ -241,7 +242,7 @@
                   class="column-item"
                   v-for="(i, index) in item"
                   :key="index"
-                  :style="updateColumnValue(index)"
+                  :style="columnItemObj(index)"
                 >
                   <template
                     v-if="
@@ -280,6 +281,7 @@ export default class FDComboBox extends Mixins(FdControlVue) {
   @Ref('autoSizeTextarea') readonly autoSizeTextarea!: HTMLLabelElement;
   @Ref('hideSelectionDiv') readonly hideSelectionDiv!: HTMLDivElement;
   @Ref('comboRef') comboRef!: HTMLDivElement;
+  @Ref('itemsRef') itemsRef!: HTMLDivElement;
 
   private tabindex = 0;
   eTargetValue: string = '';
@@ -295,6 +297,40 @@ export default class FDComboBox extends Mixins(FdControlVue) {
   inBlur: boolean = false;
   makeOpen () {
     this.open = true
+  }
+
+  columnItemObj (index: number) {
+    debugger
+    const controlProp = this.properties
+    let updateColWidth = controlProp.ColumnWidths!.split(';')
+    let colChangeCheck = controlProp.ColumnCount! - 1 < index
+    let a = 0
+    if (controlProp.ColumnWidths === '' && this.itemsRef && this.comboRef.children[1].children[0]) {
+      a = parseInt(this.itemsRef.style.width) / controlProp.ColumnCount!
+      for (let i = 0; i < this.comboRef.children[1].children.length; i++) {
+        if (this.comboRef.children[1].children[i].children.length > controlProp.ColumnCount!) {
+          for (let j = 0; j < this.comboRef.children[1].children[i].children.length; j++) {
+            if (j + 1 > controlProp.ColumnCount!) {
+              Vue.nextTick(() => {
+                const width = this.comboRef.children[1].children[i].children[j] as HTMLDivElement
+                width.style.width = '0px'
+              })
+            }
+          }
+        }
+      }
+    } else {
+      updateColWidth = controlProp.ColumnWidths!.split(';')
+      colChangeCheck = controlProp.ColumnCount! - 1 < index
+    }
+    return {
+      position: 'relative',
+      display: 'inline-block',
+      width: controlProp.ColumnWidths === '' ? a + 'px' : controlProp.ColumnCount! === -1 ? (updateColWidth[index] ? parseInt(updateColWidth[index]) + 'px' : '100px') : colChangeCheck ? '0px' : ((updateColWidth[index]) ? parseInt(updateColWidth[index]) + 'px' : controlProp.ColumnCount! > index ? '100px' : '0px'),
+      textAlign: controlProp.TextAlign === 2 ? 'right' : controlProp.TextAlign === 1 ? 'center' : 'left',
+      overflow: 'hidden',
+      paddingBottom: this.data.properties.Font!.FontSize! > 48 ? '10px' : '5px'
+    }
   }
   get getDisableValue () {
     if (this.isRunMode || this.isEditMode) {
@@ -1030,6 +1066,12 @@ export default class FDComboBox extends Mixins(FdControlVue) {
       : {
         keydown: eventStop
       }
+  }
+  comBoxClick (event: MouseEvent) {
+    if (this.toolBoxSelectControl === 'Select') {
+      event.stopPropagation()
+      this.selectedItem(event)
+    }
   }
 }
 </script>
