@@ -34,6 +34,9 @@ export default abstract class FdContainerVue extends FdControlVue {
   selectedAreaStyle: ISelectedArea | undefined
   selMultipleCtrl: boolean = false
   activateCtrl: boolean = false
+  backColorProp = ['Frame', 'CheckBox', 'OptionButton', 'Label', 'MultiPage']
+  foreColorProp = ['Frame', 'CheckBox', 'OptionButton', 'Label', 'MultiPage', 'TabStrip']
+  fontProp = ['Frame', 'CheckBox', 'OptionButton', 'Label', 'MultiPage', 'TabStrip', 'ToggleButton', 'CommandButton']
 
   get selConatiner () {
     return this.selectedControls[this.userFormId].container
@@ -208,6 +211,9 @@ export default abstract class FdContainerVue extends FdControlVue {
    */
   addControlObj (e: MouseEvent, pageId: string) {
     if (this.toolBoxSelect !== 'Select' && this.toolBoxSelect !== '') {
+      debugger
+      const container = this.userformData[this.userFormId][this.controlId]
+      const containerProp = container.properties
       const type = this.userformData[this.userFormId][this.controlId].type
       const item = this.generateControlId(this.toolBoxSelect)
       const sw = parseInt(this.selectedAreaStyle!.width!)
@@ -217,6 +223,11 @@ export default abstract class FdContainerVue extends FdControlVue {
       item.properties.Top = parseInt(this.selectedAreaStyle!.top)
       item.properties.Width = (isNaN(sw!) || sw! === 0) ? item.properties.Width : sw
       item.properties.Height = (isNaN(sh!) || sh! === 0) ? item.properties.Height : sh
+      if (container.type === 'Userform' || container.type === 'Frame') {
+        item.properties.BackColor = this.backColorProp.includes(item.type) ? containerProp.BackColor : item.properties.BackColor
+        item.properties.ForeColor = this.foreColorProp.includes(item.type) ? containerProp.ForeColor : item.properties.ForeColor
+        item.properties.Font = this.fontProp.includes(item.type) ? { ...containerProp.Font } : { ...item.properties.Font }
+      }
       const controls = item.controls
       item.controls = item.type === 'MultiPage' ? [] : item.controls
       const newControlId = type === 'MultiPage' ? pageId : this.controlId
@@ -229,8 +240,9 @@ export default abstract class FdContainerVue extends FdControlVue {
           const parentId = item.properties.ID.split('MultiPage').pop()
           const controlName = `Page${parentId}_`
           const pageObj = this.generateControlId(controlName)
-          pageObj.properties.Caption = `Page${i + 1}`
-          pageObj.properties.Name = `Page${i + 1}`
+          const count = this.getPageCount(item.properties.ID)
+          pageObj.properties.Caption = `Page${count + i}`
+          pageObj.properties.Name = `Page${count + i}`
           pageObj.properties.Index = i
           this.updateNewControl(item.properties.ID, pageObj.properties.ID, pageObj)
         }
@@ -243,7 +255,6 @@ export default abstract class FdContainerVue extends FdControlVue {
         }
       })
     }
-    debugger
     this.changeToolBoxSelect('Select')
     if (this.activateCtrl) {
       const type = this.userformData[this.userFormId][this.controlId].type
@@ -348,6 +359,33 @@ export default abstract class FdContainerVue extends FdControlVue {
         }
       }
     }
+  }
+  createPageName (pageList: string[]) {
+    let lastControlId = 0
+    for (let i of pageList) {
+      if (i.indexOf('Page') !== -1) {
+        const IdNum = i.split('Page').pop() || '-1'
+        const pasreId = parseInt(IdNum, 10)
+        if (!isNaN(pasreId) && lastControlId < pasreId) {
+          lastControlId = pasreId
+        }
+      }
+    }
+    return lastControlId + 1
+  }
+  getPageCount (container: string) {
+    const containerList = this.getContainerList(container)
+    const pageList: string[] = []
+    for (const id of containerList) {
+      const type = this.userformData[this.userFormId][id].type
+      if (type === 'MultiPage') {
+        for (const pageId of this.userformData[this.userFormId][id].controls) {
+          pageList.push(this.userformData[this.userFormId][pageId].properties.Name!)
+        }
+      }
+    }
+    const name = this.createPageName(pageList)
+    return name
   }
 
   /**

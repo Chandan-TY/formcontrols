@@ -26,10 +26,13 @@
         controlType="control"
         @createGroup="createGroup"
         @muldragControl="muldragControl"
+        @updateModel="updateModelHandle"
         @updateIsMove="updateIsMove"
         :size="{
           width: propControlData.properties.Width,
           height: propControlData.properties.Height,
+          left: propControlData.properties.Left,
+          top: propControlData.properties.Top
         }"
       />
       <component
@@ -118,8 +121,6 @@ export default class ResizeControl extends FdSelectVue {
   keyType: string = ''
 
   handleDrag (event: MouseEvent) {
-    debugger
-    console.log(this.toolBoxSelect)
     if (this.toolBoxSelect === 'Select') {
       event.stopPropagation()
       if (this.selectedControls[this.userFormId].selected.length > 1 && this.selMultipleCtrl === false) {
@@ -145,8 +146,8 @@ export default class ResizeControl extends FdSelectVue {
   }
 
   dragGroupControl (event: MouseEvent) {
-    debugger
     if (this.toolBoxSelect === 'Select') {
+      event.stopPropagation()
       if (this.selectedControls[this.userFormId].selected.length > 1 && this.selMultipleCtrl === false) {
         if (event.which !== 3 && this.isMoveWhenMouseDown) {
           this.selectedItem(event)
@@ -203,7 +204,7 @@ export default class ResizeControl extends FdSelectVue {
           ? 'none'
           : 'block',
       cursor: !this.isRunMode ? 'move' : 'default',
-      zIndex: (highestZIndex !== -1 && type !== 'Page' && this.isEditMode) ? highestZIndex + 1 : extraData.zIndex!
+      zIndex: (highestZIndex !== -1 && type !== 'Page' && this.isEditMode) ? highestZIndex + 1 : extraData.zIndex! <= 0 ? '' : extraData.zIndex!
     }
   }
   get mainSelected () {
@@ -297,11 +298,13 @@ export default class ResizeControl extends FdSelectVue {
           this.syncCurrentSelectedGroup = currentGroup
         }
       }
-      if ((this.propControlData.type === 'Frame' || this.propControlData.type === 'MultiPage' || this.propControlData.type === 'ListBox') && currentSelect.length === 1) {
-        if (this.propControlData.type !== 'ListBox') {
+      if ((this.propControlData.type === 'Frame' || this.propControlData.type === 'MultiPage')) {
+        const selected = this.selectedControls[this.userFormId].selected
+        const container = this.selectedControls[this.userFormId].container[0]
+        if ((selected.length === 1 && !selected[0].startsWith('group')) || (selected.length > 1 && container === this.propControlData.properties.ID)) {
+          e.stopPropagation()
           this.isMoving = true
           this.isEditMode = true
-          e.stopPropagation()
         }
       }
     } else if (this.keyType === 'shiftKey') {

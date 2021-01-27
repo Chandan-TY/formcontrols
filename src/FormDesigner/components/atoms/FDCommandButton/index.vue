@@ -16,27 +16,34 @@
     @click="commandButtonClick"
     @contextmenu="isEditMode ? openTextContextMenu($event): parentConextMenu($event)"
   >
-    <span v-if="!syncIsEditMode || isRunMode">
-      <span>{{ computedCaption.afterbeginCaption }}</span>
-      <span class="spanClass">{{ computedCaption.acceleratorCaption }}</span>
-      <span>{{ computedCaption.beforeendCaption }}</span>
-    </span>
+  <div id="logo" :style="reverseStyle">
+    <img v-if="properties.Picture" id="img" :src="properties.Picture" :style="imageProperty" ref="imageRef">
+    <div v-if="!syncIsEditMode || isRunMode" :style="labelStyle">
+      <span :style="spanStyleObj">{{ computedCaption.afterbeginCaption }}</span>
+          <span class="spanStyle" :style="spanStyleObj">{{
+            computedCaption.acceleratorCaption
+          }}</span>
+          <span :style="spanStyleObj">{{ computedCaption.beforeendCaption }}</span>
+    </div>
     <FDEditableText
       v-else
       :editable="isRunMode === false && syncIsEditMode"
-      :style="editCssObj"
+      :style="labelStyle"
+      ref="commandButtonSpanRef"
       :caption="properties.Caption"
       @updateCaption="updateCaption"
       @releaseEditMode="releaseEditMode"
     >
     </FDEditableText>
+    </div>
   </button>
 </template>
 
 <script lang="ts">
-import { Component, Emit, Mixins, Prop, Watch } from 'vue-property-decorator'
+import { Component, Emit, Mixins, Prop, Watch, Ref } from 'vue-property-decorator'
 import FdControlVue from '@/api/abstract/FormDesigner/FdControlVue'
 import FDEditableText from '@/FormDesigner/components/atoms/FDEditableText/index.vue'
+import Vue from 'vue'
 
 @Component({
   name: 'FDCommandButton',
@@ -48,6 +55,8 @@ export default class FDCommandButton extends Mixins(FdControlVue) {
   $el!: HTMLButtonElement;
   isClicked: boolean = false;
   isContentEditable: boolean = false;
+  @Ref('commandButtonSpanRef') commandButtonSpanRef!: FDEditableText
+  @Ref('imageRef') imageRef: HTMLImageElement
 
   /**
    * @description getDisableValue checks for the RunMode of the control and then returns after checking for the Enabled
@@ -84,7 +93,7 @@ export default class FDCommandButton extends Mixins(FdControlVue) {
         }
       }
       if (this.isEditMode) {
-        (this.$el.children[0] as HTMLSpanElement).focus()
+        (this.commandButtonSpanRef.$el as HTMLSpanElement).focus()
       }
     }
   }
@@ -97,6 +106,14 @@ export default class FDCommandButton extends Mixins(FdControlVue) {
    */
   updateAutoSize () {
     if (this.properties.AutoSize === true) {
+      const imgStyle = {
+        width: 'fit-content',
+        height: 'fit-content'
+      }
+      this.imageProperty = imgStyle
+      if (this.properties.Picture) {
+        this.positionLogo(this.properties.PicturePosition)
+      }
       this.$nextTick(() => {
         this.updateDataModel({
           propertyName: 'Height',
@@ -117,6 +134,7 @@ export default class FDCommandButton extends Mixins(FdControlVue) {
    */
   protected get styleObj (): Partial<CSSStyleDeclaration> {
     const controlProp = this.properties
+    this.pictureSize()
     const font: font = controlProp.Font
       ? controlProp.Font
       : {
@@ -132,6 +150,16 @@ export default class FDCommandButton extends Mixins(FdControlVue) {
       display = controlProp.Visible ? 'inline-block' : 'none'
     } else {
       display = 'inline-block'
+    }
+    this.reverseStyle.justifyContent = 'center'
+    let alignItems = 'normal'
+    if (controlProp.Picture) {
+      display = 'flex'
+      this.positionLogo(controlProp.PicturePosition)
+      let labelStyle = document.getElementById('logo')
+      if (this.properties.Height! > labelStyle!.clientHeight) {
+        alignItems = 'center'
+      }
     }
     return {
       ...(!controlProp.AutoSize && this.renderSize),
@@ -177,23 +205,7 @@ export default class FDCommandButton extends Mixins(FdControlVue) {
       wordBreak: controlProp.WordWrap ? 'break-all' : 'normal',
       paddingLeft: controlProp.AutoSize ? '0px' : '0px',
       paddingRight: controlProp.WordWrap ? '0px' : '6px',
-      backgroundImage: `url(${controlProp.Picture})`,
-      backgroundRepeat: this.getRepeat,
-      backgroundPosition: controlProp.Picture ? this.getPosition : '',
-      backgroundPositionX: controlProp.Picture ? this.getPositionX : '',
-      backgroundPositionY: controlProp.Picture ? this.getPositionY : ''
-    }
-  }
-  /**
-   * @description style object is passed to :style attribute in tag
-   * dynamically changing the styles of the component based on properties
-   * @function editCssObj
-   *
-   */
-  protected get editCssObj (): Partial<CSSStyleDeclaration> {
-    const controlProp = this.properties
-    return {
-      backgroundImage: 'none'
+      alignItems: alignItems
     }
   }
 
@@ -229,7 +241,12 @@ export default class FDCommandButton extends Mixins(FdControlVue) {
       this.updateAutoSize()
     }
   }
-
+  @Watch('properties.Picture')
+  setPictureSize () {
+    if (this.properties.Picture) {
+      this.onPictureLoad()
+    }
+  }
   /**
    * @description mounted initializes the values which are required for the component
    */
@@ -253,8 +270,14 @@ export default class FDCommandButton extends Mixins(FdControlVue) {
   height: 0px;
   left: 0px;
   top: 0px;
+  align-items: center;
+  justify-content: center;
 }
 .commandbutton[runmode]:active {
   border-style: outset !important;
+}
+#logo{
+ display: inline-flex;
+ justify-content: center;
 }
 </style>

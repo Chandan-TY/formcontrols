@@ -77,12 +77,10 @@ export default class ToolBox extends Vue {
   zIndexChange: number = 0;
   mounted () {
     // this.selectedControl(toolBox[0].name)
-    debugger
     this.changeToolBoxSelect(toolBox[0].name)
   }
 
   clickIcon (value: string) {
-    debugger
     this.changeToolBoxSelect(value)
   }
 

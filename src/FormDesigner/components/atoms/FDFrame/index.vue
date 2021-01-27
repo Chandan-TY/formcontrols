@@ -11,7 +11,7 @@
     @keydown.delete.stop.exact="deleteFrame"
     @keydown.enter.exact="setContentEditable($event, true)"
     @click.stop="!isEditMode ? selectedItem : addControlObj($event)"
-    @contextmenu.stop="showContextMenu($event, userFormId, controlId, 'container', isEditMode)"
+    @contextmenu.stop="showContextMenu($event, controlId, controlId, 'container', isEditMode)"
     @mousedown="frameMouseDown"
     @mouseup="dragSelectorControl($event)"
     @keyup.stop="selectMultipleCtrl($event, false)"
@@ -25,16 +25,19 @@
       :containerId="controlId"
       :isEditMode="isEditMode"
       ref="containerRef"
+      :getSampleDotPattern="getSampleDotPattern"
     />
-    </div>
-    <Container
-      v-else
+      </div>
+      <div  v-else :style="scrollStyle">
+      <Container
       :userFormId="userFormId"
       :controlId="controlId"
       :containerId="controlId"
       :isEditMode="isEditMode"
+      :getSampleDotPattern="getSampleDotPattern"
       ref="containerRef"
-    />
+      />
+      </div>
   </div>
   </fieldset>
 </div>
@@ -76,10 +79,10 @@ export default class FDFrame extends FdContainerVue {
    * @function getSampleDotPattern
    */
   protected get getSampleDotPattern () {
-    const dotSize = 1
-    const dotSpace = 10
+    const dotSize = 10
+    const dotSpace = 9
     return {
-      backgroundPosition: `7px 7px`,
+      backgroundPosition: `${dotSize}px ${dotSize}px`,
       backgroundImage: `radial-gradient(${this.properties.ForeColor} 11%, transparent 10%)`,
       backgroundSize: `${dotSpace}px ${dotSpace}px`
     }
@@ -216,10 +219,7 @@ export default class FDFrame extends FdContainerVue {
       borderRight: controlProp.BorderStyle === 1 ? '1px solid ' + controlProp.BorderColor : controlProp.SpecialEffect === 1 ? '2px solid gray' : controlProp.SpecialEffect === 4 ? '1.5px solid gray' : controlProp.SpecialEffect === 3 ? '0.5px solid gray' : 'none',
       borderTop: controlProp.BorderStyle === 1 ? '1px solid ' + controlProp.BorderColor : controlProp.SpecialEffect === 2 ? '2px solid gray' : controlProp.SpecialEffect === 3 ? '1.5px solid gray' : controlProp.SpecialEffect === 4 ? '0.5px solid gray' : 'none',
       borderBottom: controlProp.BorderStyle === 1 ? '1px solid ' + controlProp.BorderColor : controlProp.SpecialEffect === 1 ? '2px solid gray' : controlProp.SpecialEffect === 4 ? '1.5px solid gray' : controlProp.SpecialEffect === 3 ? '0.5px solid gray' : 'none',
-      backgroundImage: this.getSampleDotPattern.backgroundImage,
-      backgroundSize: this.getSampleDotPattern.backgroundSize,
       backgroundColor: controlProp.BackColor,
-      backgroundRepeat: this.getRepeatData,
       backgroundPosition: this.getPosition,
       display: display,
       zoom: `${controlProp.Zoom}%`,
@@ -273,11 +273,18 @@ export default class FDFrame extends FdContainerVue {
     const controlProp = this.data.properties!
     return {
       width: `${controlProp.Width! - 3}px`,
-      height: this.fieldsetRef ? (controlProp.Height! - (this.captionHeight / 2) - 2) + 'px' : '',
+      height: this.fieldsetRef ? (controlProp.Height! - (this.captionHeight / 2) - 2) + 'px' : '100%',
       overflowX: this.getScrollBarX,
       overflowY: this.getScrollBarY,
       position: 'relative',
       top: this.fieldsetRef && this.properties.Caption !== '' ? '-' + ((this.captionHeight / 2) - 1) + 'px' : ''
+    }
+  }
+  get scrollStyle () {
+    const controlProp = this.data.properties!
+    return {
+      height: controlProp.ScrollHeight + 'px',
+      width: controlProp.ScrollWidth + 'px'
     }
   }
 

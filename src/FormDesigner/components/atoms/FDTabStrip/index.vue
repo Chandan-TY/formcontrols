@@ -56,7 +56,7 @@
           </div>
         </div>
         <div></div>
-        <div :style="getScrollButtonStyleObj">
+        <div :style="getScrollButtonStyleObj" ref="buttonStyleRef">
           <button
             class="left-button"
             :style="scrollButtonStyle"
@@ -98,6 +98,7 @@ export default class FDTabStrip extends FdControlVue {
   @Ref('tabstripContextMenu') tabstripContextMenu: HTMLDivElement;
   @Ref('scrolling') scrolling: HTMLDivElement;
   @Ref('controlTabsRef') controlTabsRef: HTMLDivElement[];
+  @Ref('buttonStyleRef') buttonStyleRef: HTMLDivElement;
   $el: HTMLDivElement;
 
   // isScroll = true;
@@ -111,6 +112,7 @@ export default class FDTabStrip extends FdControlVue {
   tempHeight: number = 0;
   multiRowCount: number = 1;
   isScrollVisible: boolean = false;
+  topValue: number = 0;
   rightClickSelect (value: number) {
     this.updateDataModel({ propertyName: 'Value', value: value })
   }
@@ -142,8 +144,36 @@ export default class FDTabStrip extends FdControlVue {
       this.properties.TabOrientation === 1
     ) {
       scrollRef.scrollLeft! -= 50
+      if (this.scrolling) {
+        const rightButton = this.buttonStyleRef.children[1] as HTMLButtonElement
+        const leftButton = this.buttonStyleRef.children[0] as HTMLButtonElement
+        if (this.scrolling.scrollLeft >= (this.scrolling.scrollWidth - this.scrolling.clientWidth)) {
+          rightButton.style.opacity = '0.4'
+          leftButton.style.opacity = '1'
+        } else if (this.scrolling.scrollLeft === 0) {
+          leftButton.style.opacity = '0.4'
+          rightButton.style.opacity = '1'
+        } else {
+          leftButton.style.opacity = '1'
+          rightButton.style.opacity = '1'
+        }
+      }
     } else {
       scrollRef.scrollTop! -= 50
+      if (this.scrolling) {
+        const rightButton = this.buttonStyleRef.children[1] as HTMLButtonElement
+        const leftButton = this.buttonStyleRef.children[0] as HTMLButtonElement
+        if (this.scrolling.scrollTop >= (this.scrolling.scrollHeight - this.scrolling.clientHeight)) {
+          rightButton.style.opacity = '0.4'
+          leftButton.style.opacity = '1'
+        } else if (this.scrolling.scrollTop === 0) {
+          leftButton.style.opacity = '0.4'
+          rightButton.style.opacity = '1'
+        } else {
+          leftButton.style.opacity = '1'
+          rightButton.style.opacity = '1'
+        }
+      }
     }
   }
 
@@ -160,9 +190,37 @@ export default class FDTabStrip extends FdControlVue {
       this.properties.TabOrientation === 1
     ) {
       scrollRef.scrollLeft! += 50
+      if (this.scrolling) {
+        const rightButton = this.buttonStyleRef.children[1] as HTMLButtonElement
+        const leftButton = this.buttonStyleRef.children[0] as HTMLButtonElement
+        if (this.scrolling.scrollLeft >= (this.scrolling.scrollWidth - this.scrolling.clientWidth - 1)) {
+          rightButton.style.opacity = '0.4'
+          leftButton.style.opacity = '1'
+        } else if (this.scrolling.scrollLeft === 0) {
+          leftButton.style.opacity = '0.4'
+          rightButton.style.opacity = '1'
+        } else {
+          leftButton.style.opacity = '1'
+          rightButton.style.opacity = '1'
+        }
+      }
     } else {
       tempScrollTop += 50
       scrollRef.scrollTop = tempScrollTop
+      if (this.scrolling) {
+        const rightButton = this.buttonStyleRef.children[1] as HTMLButtonElement
+        const leftButton = this.buttonStyleRef.children[0] as HTMLButtonElement
+        if (this.scrolling.scrollTop >= (this.scrolling.scrollHeight - this.scrolling.clientHeight - 1)) {
+          rightButton.style.opacity = '0.4'
+          leftButton.style.opacity = '1'
+        } else if (this.scrolling.scrollTop === 0) {
+          leftButton.style.opacity = '0.4'
+          rightButton.style.opacity = '1'
+        } else {
+          leftButton.style.opacity = '1'
+          rightButton.style.opacity = '1'
+        }
+      }
     }
   }
 
@@ -301,14 +359,15 @@ export default class FDTabStrip extends FdControlVue {
       cursor:
         controlProp.MousePointer !== 0 || controlProp.MouseIcon !== ''
           ? this.getMouseCursorData
-          : 'default'
+          : 'default',
+      opacity: this.scrolling ? ((this.scrolling.scrollLeft === (this.scrolling.scrollWidth - this.scrolling.clientWidth)) ? '0.4' : '1') : '1'
     }
   }
 
   scrollButtonVerify () {
-    this.isScrollVisible = false
     let sum = 0
     Vue.nextTick(() => {
+      this.isScrollVisible = false
       if (
         this.properties.TabOrientation === 0 ||
         this.properties.TabOrientation === 1
@@ -339,22 +398,27 @@ export default class FDTabStrip extends FdControlVue {
           }
         }
       }
+      this.setScrollLeft()
+      this.scrollDisabledValidate()
     })
   }
 
   @Watch('properties.Height')
   heightValidate () {
     this.scrollButtonVerify()
+    this.scrollDisabledValidate()
   }
 
   @Watch('properties.TabFixedWidth')
   tabFixedWidthValidate () {
     this.scrollButtonVerify()
+    this.scrollDisabledValidate()
   }
 
-  @Watch('properties.TabFixedWidth')
+  @Watch('properties.TabFixedHeight')
   tabFixedHeightValidate () {
     this.scrollButtonVerify()
+    this.scrollDisabledValidate()
   }
 
   /**
@@ -398,7 +462,6 @@ export default class FDTabStrip extends FdControlVue {
           : 'default'
     }
   }
-
   /**
    * @description style object is passed to :style attribute in div tag
    * dynamically changing the styles of the component based on propControlData
@@ -419,7 +482,7 @@ export default class FDTabStrip extends FdControlVue {
       top:
         controlProp.TabOrientation === 0
           ? controlProp.MultiRow
-            ? (this.tempHeight + 12) * this.multiRowCount + 'px'
+            ? this.topValue + 'px'
             : controlProp.TabFixedHeight! > 0
               ? controlProp.TabFixedHeight! + 10 + 'px'
               : controlProp.TabFixedHeight! === 0
@@ -427,10 +490,10 @@ export default class FDTabStrip extends FdControlVue {
                 : '33px'
           : controlProp.TabOrientation === 1
             ? controlProp.MultiRow
-              ? '-' + (this.tempHeight + 12) * (this.multiRowCount - 1) + 'px'
+              ? '-' + (this.topValue - 30) + 'px'
               : controlProp.TabFixedHeight! > 0
-                ? '0px'
-                : '0px'
+                ? '-' + (this.topValue - 30) + 'px'
+                : '-' + (this.topValue - 30) + 'px'
             : '0px',
       height:
         controlProp.TabOrientation === 0 || controlProp.TabOrientation === 1
@@ -476,6 +539,39 @@ export default class FDTabStrip extends FdControlVue {
     }
   }
 
+  scrollDisabledValidate () {
+    if (this.properties.TabOrientation === 0 || this.properties.TabOrientation === 1) {
+      if (this.scrolling) {
+        const rightButton = this.buttonStyleRef.children[1] as HTMLButtonElement
+        const leftButton = this.buttonStyleRef.children[0] as HTMLButtonElement
+        if (this.scrolling.scrollLeft >= (this.scrolling.scrollWidth - this.scrolling.clientWidth - 30)) {
+          rightButton.style.opacity = '0.4'
+          leftButton.style.opacity = '1'
+        } else if (this.scrolling.scrollLeft === 0) {
+          leftButton.style.opacity = '0.4'
+          rightButton.style.opacity = '1'
+        } else {
+          leftButton.style.opacity = '1'
+          rightButton.style.opacity = '1'
+        }
+      }
+    } else {
+      if (this.scrolling) {
+        const rightButton = this.buttonStyleRef.children[1] as HTMLButtonElement
+        const leftButton = this.buttonStyleRef.children[0] as HTMLButtonElement
+        if (this.scrolling.scrollTop >= (this.scrolling.scrollHeight - this.scrolling.clientHeight)) {
+          rightButton.style.opacity = '0.4'
+          leftButton.style.opacity = '1'
+        } else if (this.scrolling.scrollTop === 0) {
+          leftButton.style.opacity = '0.4'
+          rightButton.style.opacity = '1'
+        } else {
+          leftButton.style.opacity = '1'
+          rightButton.style.opacity = '1'
+        }
+      }
+    }
+  }
   /**
    * @description watches changes in propControlData to set autoset when true
    * @function isScrollUsed
@@ -484,8 +580,14 @@ export default class FDTabStrip extends FdControlVue {
    */
   @Watch('properties.Width')
   isScrollUsed (newVal: controlData, oldVal: controlData) {
+    this.scrollDisabledValidate()
     this.tempScrollWidth = this.scrolling.offsetWidth!
     if (this.properties.MultiRow) {
+      if (this.scrolling) {
+        Vue.nextTick(() => {
+          this.topValue = this.scrolling.offsetHeight!
+        })
+      }
       const initialLength = this.extraDatas.Tabs!.length!
       const len = (this.tempWidth + 12) * initialLength
       if (len - this.properties.Width! >= 0) {
@@ -509,6 +611,17 @@ export default class FDTabStrip extends FdControlVue {
   @Watch('properties.TabOrientation')
   orientValidate () {
     this.scrollButtonVerify()
+    this.scrollDisabledValidate()
+    if (this.scrolling) {
+      this.topValue = this.scrolling.offsetHeight
+    }
+  }
+
+  @Watch('properties.MultiRow')
+  multiRowValidate () {
+    if (this.scrolling) {
+      this.topValue = this.scrolling.offsetHeight
+    }
   }
   mounted () {
     this.$el.focus()
@@ -526,16 +639,21 @@ export default class FDTabStrip extends FdControlVue {
   checkFontValue (newVal: number, oldVal: number) {
     this.calculateWidthHeight()
     this.scrollButtonVerify()
+    this.scrollDisabledValidate()
   }
 
   /**
-   * @description watches changes in selectedPageData to set the caption
+   * @description watches changes in selectedTabData to set the caption
    * @function captionValue
-   * @param oldVal previous selectedPageData data
-   * @param newVal  new/changed selectedPageData data
+   * @param oldVal previous selectedTabData data
+   * @param newVal  new/changed selectedTabData data
    */
   @Watch('selectedTabData.Caption')
   captionValue (newVal: string, oldVal: string) {
+    this.setScrollLeft()
+    if (newVal === '') {
+      this.tempWidth = 30
+    }
     this.calculateWidthHeight()
     this.scrollButtonVerify()
   }
@@ -544,18 +662,35 @@ export default class FDTabStrip extends FdControlVue {
     return this.extraDatas!.Tabs![this.updatedValue]
   }
 
+  setScrollLeft () {
+    if (this.scrolling) {
+      let totalSiblingWidth = 0
+      for (let i = 0; i < this.properties.Value!; i++) {
+        const a = this.scrolling.children[i] as HTMLDivElement
+        totalSiblingWidth += a.clientWidth
+      }
+      this.scrolling.scrollLeft = totalSiblingWidth
+    }
+  }
+
   calculateWidthHeight () {
     const that = this
     if (this.controlTabsRef) {
       const divElement = this.controlTabsRef
       let tempWidth = 0
       let tempHeight = 0
+      let maxWidth = 0
       Vue.nextTick(function () {
         for (let i = 0; i < divElement.length; i++) {
           const ele = divElement[i].children[0].children[1]
             .children[0] as HTMLInputElement
-          if (ele.offsetWidth > tempWidth) {
+          if (ele.offsetWidth > maxWidth) {
+            maxWidth = ele.offsetWidth
+          }
+          if (maxWidth > 30) {
             tempWidth = ele.offsetWidth
+          } else {
+            tempWidth = 30
           }
           if (ele.offsetHeight > tempHeight) {
             tempHeight = ele.offsetHeight
@@ -635,6 +770,81 @@ export default class FDTabStrip extends FdControlVue {
       event.stopPropagation()
       this.selectedItem(event)
     }
+  }
+
+  @Watch('tempWidth')
+  tempWidthValidate () {
+    if (this.tempWidth < 30) {
+      this.tempWidth = 30
+    }
+  }
+
+  @Watch('properties.Value')
+  valueValidate () {
+    this.focusPage()
+    let sum = 0
+    Vue.nextTick(() => {
+      if (this.properties.TabOrientation === 0 || this.properties.TabOrientation === 1) {
+        for (let i = 0; i < this.properties.Value!; i++) {
+          sum += this.controlTabsRef[i].clientWidth
+        }
+        if (this.properties.Width! - this.scrolling.offsetWidth > sum) {
+          this.scrolling.scrollLeft = sum
+        } else {
+          const valueAsNumber = this.properties.Value! as number
+          if (sum > this.controlTabsRef[valueAsNumber].clientWidth) {
+            const sL = sum - this.controlTabsRef[valueAsNumber].clientWidth
+            this.scrolling.scrollLeft = sL
+          } else {
+            this.scrolling.scrollLeft = sum
+          }
+        }
+        if (this.scrolling) {
+          const rightButton = this.buttonStyleRef.children[1] as HTMLButtonElement
+          const leftButton = this.buttonStyleRef.children[0] as HTMLButtonElement
+          if (this.scrolling.scrollLeft >= (this.scrolling.scrollWidth - this.scrolling.clientWidth - 30)) {
+            rightButton.style.opacity = '0.4'
+            leftButton.style.opacity = '1'
+          } else if (this.scrolling.scrollLeft === 0) {
+            leftButton.style.opacity = '0.4'
+            rightButton.style.opacity = '1'
+          } else {
+            leftButton.style.opacity = '1'
+            rightButton.style.opacity = '1'
+          }
+        }
+      } else {
+        for (let i = 0; i < this.properties.Value!; i++) {
+          sum += this.controlTabsRef[i].clientHeight
+        }
+        if (this.properties.Height! - this.scrolling.offsetHeight > sum) {
+          this.scrolling.scrollTop = sum
+        } else {
+          const valueAsNumber = this.properties.Value! as number
+          if (sum > this.controlTabsRef[valueAsNumber].clientHeight) {
+            const sL = sum - this.controlTabsRef[valueAsNumber].clientHeight
+            this.scrolling.scrollTop = sL
+          } else {
+            this.scrolling.scrollTop = sum
+          }
+        }
+        if (this.scrolling) {
+          const rightButton = this.buttonStyleRef.children[1] as HTMLButtonElement
+          const leftButton = this.buttonStyleRef.children[0] as HTMLButtonElement
+          if (this.scrolling.scrollTop >= (this.scrolling.scrollHeight - this.scrolling.clientHeight)) {
+            rightButton.style.opacity = '0.4'
+            leftButton.style.opacity = '1'
+          } else if (this.scrolling.scrollTop === 0) {
+            leftButton.style.opacity = '0.4'
+            rightButton.style.opacity = '1'
+          } else {
+            leftButton.style.opacity = '1'
+            rightButton.style.opacity = '1'
+          }
+        }
+      }
+      this.focusPage()
+    })
   }
 }
 </script>
