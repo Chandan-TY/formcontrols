@@ -1,6 +1,7 @@
 <template>
   <div
     :title="properties.ControlTipText"
+    ref="componentRef"
     class="outer-check"
     :style="cssStyleProperty"
     @click="checkBoxClick"
@@ -24,9 +25,9 @@
         ref="spanRef"
       ></span
     ></label>
-      <div id="logo" :style="logoStyleObj">
-      <img id="img" v-if="properties.Picture" :src="properties.Picture" :style="imageProperty" ref="imageRef">
-        <div ref="divAutoSize"
+      <div id="logo" ref="logoRef" :style="reverseStyle">
+      <img id="img" v-if="properties.Picture" :src="properties.Picture" :style="[imageProperty,imagePos]" ref="imageRef">
+        <div ref="textSpanRef"
           v-if="!syncIsEditMode || isRunMode"
           @click="isRunMode && makeChecked($event)"
           :style="labelStyle"
@@ -39,10 +40,10 @@
         </div>
         <FDEditableText
           v-else
-          ref="checkBoxSpanRef"
+          ref="editableTextRef"
           :editable="isRunMode === false && syncIsEditMode"
           :caption="properties.Caption"
-          :style="{labelStyle, color: !properties.Enabled ? 'gray' : ''}"
+          :style="[labelStyle, {color: !properties.Enabled ? 'gray' : ''}]"
           @updateCaption="updateCaption"
           @releaseEditMode="releaseEditMode"
         >
@@ -63,11 +64,13 @@ import FDEditableText from '@/FormDesigner/components/atoms/FDEditableText/index
   }
 })
 export default class FDCheckBox extends Mixins(FdControlVue) {
+  @Ref('componentRef') componentRef: HTMLSpanElement
   @Ref('checkboxInput') checkboxInput!: HTMLInputElement;
-  @Ref('divAutoSize') autoSizecheckbox!: HTMLDivElement;
   @Ref('spanRef') spanRef!: HTMLSpanElement;
-  @Ref('checkBoxSpanRef') checkBoxSpanRef!: FDEditableText;
+  @Ref('textSpanRef') textSpanRef!: HTMLSpanElement;
   @Ref('imageRef') imageRef: HTMLImageElement
+  @Ref('logoRef') logoRef : HTMLSpanElement
+  @Ref('editableTextRef') editableTextRef!: FDEditableText
   $el: HTMLDivElement
   alignItem: boolean = false
 
@@ -101,10 +104,7 @@ export default class FDCheckBox extends Mixins(FdControlVue) {
     return {
       order: controlProp.Alignment === 1 ? '0' : '1',
       position: 'sticky',
-      top: controlProp.Picture ? '0px' : '0px',
-      display: 'flex',
-      height: '100%',
-      alignItems: 'center'
+      top: `${controlProp.Height! / 2 - 10}px`
     }
   }
   /**
@@ -136,12 +136,6 @@ export default class FDCheckBox extends Mixins(FdControlVue) {
       }
     } else {
       this.handleValue(this.properties.Value! as string)
-    }
-  }
-  @Watch('properties.Picture')
-  setPictureSize () {
-    if (this.properties.Picture) {
-      this.onPictureLoad()
     }
   }
 
@@ -230,13 +224,10 @@ export default class FDCheckBox extends Mixins(FdControlVue) {
    */
   get cssStyleProperty () {
     const controlProp = this.properties
-    this.pictureSize()
     this.reverseStyle.justifyContent = 'center'
     if (!controlProp.Picture) {
       this.reverseStyle.justifyContent =
     controlProp.TextAlign === 0 ? 'flex-start' : controlProp.TextAlign === 1 ? 'center' : 'flex-end'
-    } else {
-      this.positionLogo(controlProp.PicturePosition)
     }
     const font: font = controlProp.Font
       ? controlProp.Font
@@ -254,12 +245,11 @@ export default class FDCheckBox extends Mixins(FdControlVue) {
     } else {
       display = 'grid'
     }
-    let alignItems = 'center'
+    const alignItems = controlProp.Picture ? 'inherit' : 'center'
     if (controlProp.Picture) {
-      let labelStyle = document.getElementById('logo')
-      if (this.properties.Height! < labelStyle!.clientHeight) {
-        alignItems = 'normal'
-      }
+      Vue.nextTick(() => {
+        this.labelAlignment()
+      })
     }
 
     return {
@@ -328,7 +318,7 @@ export default class FDCheckBox extends Mixins(FdControlVue) {
   editableTextVerify () {
     if (this.isEditMode) {
       Vue.nextTick(() => {
-        if (this.isEditMode && this.checkBoxSpanRef.$el.clientHeight > this.properties.Height!) {
+        if (this.isEditMode && this.editableTextRef.$el.clientHeight > this.properties.Height!) {
           this.alignItem = true
         } else {
           this.alignItem = false
@@ -340,38 +330,9 @@ export default class FDCheckBox extends Mixins(FdControlVue) {
   /**
    * @override
    */
-  @Watch('properties.AutoSize', {
-    deep: true
-  })
-  updateAutoSize () {
-    if (this.properties.AutoSize) {
-      const imgStyle = {
-        width: 'fit-content',
-        height: 'fit-content'
-      }
-      this.imageProperty = imgStyle
-      if (this.properties.Picture) {
-        this.positionLogo(this.properties.PicturePosition)
-      }
-      this.$nextTick(() => {
-        let divRef: HTMLDivElement = this.autoSizecheckbox
-        const offsetWidth = (divRef.childNodes[0] as HTMLSpanElement)
-          .offsetWidth
-        const offsetHeight = (divRef.childNodes[0] as HTMLSpanElement)
-          .offsetHeight
-        // Value 10 for checkbox, 4 for Gap style value, and offsetHeight and offsetWidth + 1
-        this.updateDataModel({
-          propertyName: 'Width',
-          value: 10 + 4 + offsetWidth + 1
-        })
-        this.updateDataModel({
-          propertyName: 'Height',
-          value: 10 + 4 + offsetHeight + 1
-        })
-      })
-    } else {
-      return undefined
-    }
+  @Watch('properties.AutoSize', { deep: true })
+  autoSize () {
+    this.updateAutoSize()
   }
 
   @Watch('properties.Font.FontSize', { deep: true })
@@ -395,6 +356,86 @@ export default class FDCheckBox extends Mixins(FdControlVue) {
     }
   }
 
+    @Watch('properties.Picture')
+  setPictureSize () {
+    if (this.properties.Picture) {
+      this.$nextTick(() => {
+        this.onPictureLoad()
+        this.positionLogo(this.properties.PicturePosition)
+        if (this.properties.AutoSize) {
+          this.updateAutoSize()
+        }
+      })
+    }
+  }
+
+  @Watch('properties.Height')
+    updateImageSizeHeight () {
+      if (this.properties.Picture) {
+        this.positionLogo(this.properties.PicturePosition)
+        this.pictureSize()
+      }
+    }
+  @Watch('properties.Width')
+  updateImageSizeWidth () {
+    if (this.properties.Picture) {
+      this.positionLogo(this.properties.PicturePosition)
+      this.pictureSize()
+    }
+  }
+  @Watch('properties.PicturePosition')
+  updatePicturePosition () {
+    if (this.properties.Picture) {
+      this.positionLogo(this.properties.PicturePosition)
+      if (this.properties.AutoSize) {
+        this.updateAutoSize()
+      }
+    }
+  }
+  @Watch('properties.TextAlign')
+  autoSizeOnTextAlignment () {
+    if (this.properties.AutoSize) {
+      this.updateAutoSize()
+    }
+  }
+  @Watch('properties.BorderStyle')
+  autoSizeOnBorderStyleChange () {
+    if (this.properties.AutoSize) {
+      this.updateAutoSize()
+    }
+  }
+
+  /**
+   * @description updateAutoSize calls Vuex Actions to update object
+   * @function updateAutoSize
+   * @override
+   */
+  updateAutoSize () {
+    if (this.properties.AutoSize === true) {
+      const imgStyle = {
+        width: 'fit-content',
+        height: 'fit-content'
+      }
+      this.imageProperty = imgStyle
+      if (this.properties.Picture) {
+        this.positionLogo(this.properties.PicturePosition)
+      }
+      this.$nextTick(() => {
+        const { width, height } = this.getWidthHeight()
+        this.updateDataModel({
+          propertyName: 'Height',
+          value: height + 5
+        })
+        this.updateDataModel({
+          propertyName: 'Width',
+          value: width
+        })
+      })
+    } else {
+      return undefined
+    }
+  }
+
   /**
    * @description  sets controlSource if present and updates Value property
    * @function controlSource
@@ -413,7 +454,7 @@ export default class FDCheckBox extends Mixins(FdControlVue) {
       event.stopPropagation()
       this.selectedItem(event)
       if (this.isEditMode) {
-        (this.checkBoxSpanRef.$el as HTMLSpanElement).focus()
+        (this.editableTextRef.$el as HTMLSpanElement).focus()
       }
     }
   }
@@ -454,7 +495,7 @@ export default class FDCheckBox extends Mixins(FdControlVue) {
   display: inline-flex;
   position: sticky;
   top: 47%;
-  align-items: center;
+  align-self: center;
 }
 
 .control-indicator {
