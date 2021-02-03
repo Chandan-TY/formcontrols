@@ -13,7 +13,7 @@
       :style="cssStyleProperty"
       :tabindex="properties.TabIndex"
       :maxlength="properties.MaxLength !==0 ? properties.MaxLength : ''"
-      :disabled="getDisableValue"
+      :disabled="isTextBoxDisabled"
       :title="properties.ControlTipText"
       :readonly="properties.Locked"
       @keydown.escape.exact="releaseEditMode"
@@ -118,13 +118,38 @@ export default class FDTextBox extends Mixins(FdControlVue) {
   $el: HTMLDivElement
   originalText: string = ''
   trimmedText: string = ''
-  get getDisableValue () {
-    if (this.isRunMode || this.isEditMode) {
-      return (
-        this.properties.Enabled === false || this.properties.Locked === true
-      )
+  isTextBoxDisabled: boolean = true
+  @Watch('isRunMode')
+  updateIsTextBoxDisabledProp () {
+    if (this.isRunMode) {
+      this.isTextBoxDisabled = this.properties.Enabled === false || this.properties.Locked === true
     } else {
-      return true
+      this.isTextBoxDisabled = true
+    }
+  }
+  @Watch('isEditMode')
+  updateIsTextBoxDisabledPropWhenEditMode () {
+    if (this.isEditMode) {
+      this.isTextBoxDisabled = false
+      this.textareaRef.disabled = this.isTextBoxDisabled
+      this.textareaRef.focus()
+    } else {
+      setTimeout(() => {
+        this.isTextBoxDisabled = true
+      }, 10)
+    }
+  }
+  @Watch('properties.HideSelection')
+  updateIsTextBoxDisabledPropWhenHideSelection () {
+    if (this.properties.HideSelection) {
+      debugger
+      this.textareaRef.style.display = 'block'
+      this.hideSelectionDiv.style.display = 'none'
+      // hideSelectionDiv.style.height = this.properties.Height! + 'px'
+      // hideSelectionDiv.style.width = this.properties.Width! + 'px'
+    } else {
+      this.textareaRef.style.display = 'none'
+      this.hideSelectionDiv.style.display = 'block'
     }
   }
   /**
@@ -184,6 +209,7 @@ export default class FDTextBox extends Mixins(FdControlVue) {
             : font.FontStrikethrough
               ? 'line-through'
               : '',
+      textDecorationSkipInk: 'none',
       fontWeight: font.FontBold ? 'bold' : (font.FontStyle !== '') ? this.tempWeight : '',
       fontStretch: (font.FontStyle !== '') ? this.tempStretch : '',
       display: controlProp.Visible ? 'block' : 'none',
@@ -407,6 +433,9 @@ export default class FDTextBox extends Mixins(FdControlVue) {
 
   @Watch('properties.MultiLine')
   multiLineValidate () {
+    if (this.properties.AutoSize) {
+      this.updateAutoSize()
+    }
     if (this.textareaRef) {
       this.originalText = this.textareaRef.value
       this.trimmedText = this.originalText.replace(/(\r\n|\n|\r)/gm, '¶')
@@ -425,12 +454,13 @@ export default class FDTextBox extends Mixins(FdControlVue) {
   @Watch('properties.AutoSize', { deep: true })
   updateAutoSize () {
     if (this.properties.AutoSize === true) {
-      debugger
       this.$nextTick(() => {
         const textareaRef: HTMLTextAreaElement = this.textareaRef
         // replication of stype attribute to Label tag for autoSize property to work
         let tempLabel: HTMLLabelElement = this.autoSizeTextarea
         tempLabel.style.display = 'inline'
+        tempLabel.style.fontFamily = textareaRef.style.fontFamily
+        tempLabel.style.fontStretch = textareaRef.style.fontStretch
         tempLabel.style.fontStyle = textareaRef.style.fontStyle
         tempLabel.style.fontSize =
             parseInt(textareaRef.style.fontSize) + 'px'
@@ -440,13 +470,20 @@ export default class FDTextBox extends Mixins(FdControlVue) {
         tempLabel.style.width = textareaRef.style.width
         tempLabel.style.height = textareaRef.style.height
         tempLabel.innerText = textareaRef.value
-        this.updateDataModel({
-          propertyName: 'Width',
-          value: tempLabel.offsetWidth + 5
-        })
+        if (this.properties.MultiLine) {
+          this.updateDataModel({
+            propertyName: 'Width',
+            value: tempLabel.offsetWidth
+          })
+        } else {
+          this.updateDataModel({
+            propertyName: 'Width',
+            value: tempLabel.offsetWidth + 7
+          })
+        }
         this.updateDataModel({
           propertyName: 'Height',
-          value: tempLabel.offsetHeight + 5
+          value: tempLabel.offsetHeight + 15
         })
         tempLabel.innerText = ''
         tempLabel.style.display = 'none'
@@ -531,27 +568,73 @@ export default class FDTextBox extends Mixins(FdControlVue) {
     hideSelectionDiv: HTMLDivElement
   ) {
     if (!this.properties.HideSelection) {
-      if (event.target instanceof HTMLTextAreaElement) {
-        const eventTarget = event.target
+      // if (event.target instanceof HTMLTextAreaElement) {
+      this.hideShowDivElement(event, textareaRef, hideSelectionDiv, true)
+      // const eventTarget = event.target
+      // hideSelectionDiv.style.display = 'block'
+      // hideSelectionDiv.style.height = this.properties.Height! + 'px'
+      // hideSelectionDiv.style.width = this.properties.Width! + 'px'
+      // textareaRef.style.display = 'none'
+      // let textarea = eventTarget.value
+      // let firstPart =
+      // textarea.slice(0, eventTarget.selectionEnd) +
+      // '</span>' +
+      // textarea.slice(eventTarget.selectionEnd + Math.abs(0))
+      // let text =
+      // firstPart.slice(0, eventTarget.selectionStart) +
+      // "<span style='background-color:lightblue'>" +
+      // firstPart.slice(eventTarget.selectionStart + Math.abs(0))
+      // hideSelectionDiv.innerHTML = text
+      // }
+      //  else {
+      //   throw new Error('Expected HTMLTextAreaElement but found different element')
+      // }
+    } else {
+      // if (event.target instanceof HTMLTextAreaElement) {
+      //   const eventTarget = event.target
+      this.hideShowDivElement(event, textareaRef, hideSelectionDiv, false)
+      // hideSelectionDiv.style.display = 'block'
+      //   hideSelectionDiv.style.height = this.properties.Height! + 'px'
+      //   hideSelectionDiv.style.width = this.properties.Width! + 'px'
+      //   // textareaRef.style.display = 'none'
+      //   let textarea = eventTarget.value
+      //   let firstPart =
+      //   textarea.slice(0, eventTarget.selectionEnd) +
+      //   '</span>' +
+      //   textarea.slice(eventTarget.selectionEnd + Math.abs(0))
+      //   let text =
+      //   firstPart.slice(0, eventTarget.selectionStart) +
+      //   "<span style='background-color:lightblue'>" +
+      //   firstPart.slice(eventTarget.selectionStart + Math.abs(0))
+      //   hideSelectionDiv.innerHTML = text
+      //   eventTarget.setSelectionRange(0, 0)
+      // }
+    }
+  }
+  hideShowDivElement (event: TextEvent, textareaRef: HTMLTextAreaElement,
+    hideSelectionDiv: HTMLDivElement, show: boolean) {
+    if (event.target instanceof HTMLTextAreaElement) {
+      debugger
+      const eventTarget = event.target
+      if (show) {
         hideSelectionDiv.style.display = 'block'
-        hideSelectionDiv.style.height = this.properties.Height! + 2 + 'px'
-        hideSelectionDiv.style.width = this.properties.Width! + 2 + 'px'
         textareaRef.style.display = 'none'
-        let textarea = eventTarget.value
-        let firstPart =
+      }
+      hideSelectionDiv.style.height = this.properties.Height! + 'px'
+      hideSelectionDiv.style.width = this.properties.Width! + 'px'
+      let textarea = eventTarget.value
+      let firstPart =
         textarea.slice(0, eventTarget.selectionEnd) +
         '</span>' +
         textarea.slice(eventTarget.selectionEnd + Math.abs(0))
-        let text =
+      let text =
         firstPart.slice(0, eventTarget.selectionStart) +
         "<span style='background-color:lightblue'>" +
         firstPart.slice(eventTarget.selectionStart + Math.abs(0))
-        hideSelectionDiv.innerHTML = text
-      } else {
-        throw new Error('Expected HTMLTextAreaElement but found different element')
+      hideSelectionDiv.innerHTML = text
+      if (!show) {
+        eventTarget.setSelectionRange(0, 0)
       }
-    } else {
-      return undefined
     }
   }
   /**
@@ -603,6 +686,30 @@ export default class FDTextBox extends Mixins(FdControlVue) {
     const eventStop = (event: Event) => event.stopPropagation()
     return this.isEditMode === false ? null : {
       keydown: eventStop
+    }
+  }
+  @Watch('properties.TextAlign')
+  textAlignValidate () {
+    if (this.properties.AutoSize) {
+      this.updateAutoSize()
+    }
+  }
+  @Watch('properties.ScrollBars')
+  scrollBarValidate () {
+    if (this.properties.AutoSize) {
+      this.updateAutoSize()
+    }
+  }
+  @Watch('properties.Enabled')
+  enabledValidate () {
+    if (this.properties.AutoSize) {
+      this.updateAutoSize()
+    }
+  }
+  @Watch('properties.SelectionMargin')
+  selectionMarginValidate () {
+    if (this.properties.AutoSize) {
+      this.updateAutoSize()
     }
   }
   textBoxClick (event: MouseEvent) {

@@ -1,5 +1,5 @@
 <template>
-<div ref="componentRef">
+<div ref="componentRef" :tabindex="properties.TabIndex">
   <button
     class="commandbutton"
     :style="styleObj"
@@ -21,7 +21,7 @@
     <img v-if="properties.Picture" id="img" :src="properties.Picture" :style="[imageProperty,imagePos]" ref="imageRef">
     <div v-if="!syncIsEditMode || isRunMode" :style="labelStyle"  ref="textSpanRef">
       <span :style="spanStyleObj">{{ computedCaption.afterbeginCaption }}</span>
-          <span class="spanStyle" :style="spanStyleObj">{{
+          <span class="spanClass" :style="spanStyleObj">{{
             computedCaption.acceleratorCaption
           }}</span>
           <span :style="spanStyleObj">{{ computedCaption.beforeendCaption }}</span>
@@ -54,13 +54,13 @@ import Vue from 'vue'
   }
 })
 export default class FDCommandButton extends Mixins(FdControlVue) {
-  $el!: HTMLButtonElement;
+  $el!: HTMLDivElement;
   isClicked: boolean = false;
   isContentEditable: boolean = false;
-  @Ref('textSpanRef') textSpanRef!: HTMLSpanElement
+  @Ref('textSpanRef') textSpanRef!: HTMLDivElement
   @Ref('imageRef') imageRef: HTMLImageElement
-  @Ref('logoRef') logoRef : HTMLSpanElement
-  @Ref('componentRef') componentRef: HTMLSpanElement
+  @Ref('logoRef') logoRef : HTMLDivElement
+  @Ref('componentRef') componentRef: HTMLDivElement
   @Ref('editableTextRef') editableTextRef!: FDEditableText
   /**
    * @description getDisableValue checks for the RunMode of the control and then returns after checking for the Enabled
@@ -107,7 +107,7 @@ export default class FDCommandButton extends Mixins(FdControlVue) {
    * dynamically changing the styles of the component based on properties
    * @function styleObj
    */
-  protected get styleObj (): Partial<CSSStyleDeclaration> {
+  protected get styleObj () {
     const controlProp = this.properties
     const font: font = controlProp.Font
       ? controlProp.Font
@@ -140,9 +140,9 @@ export default class FDCommandButton extends Mixins(FdControlVue) {
       width: `${controlProp.Width}px`,
       height: `${controlProp.Height}px`,
       top: `${controlProp.Top}px`,
-      borderTopColor: controlProp.Default ? 'black' : controlProp.BackColor,
+      borderTopColor: controlProp.Default ? 'black' : 'white',
       borderBottomColor: controlProp.Default ? 'black' : controlProp.BackColor,
-      borderLeftColor: controlProp.Default ? 'black' : controlProp.BackColor,
+      borderLeftColor: controlProp.Default ? 'black' : 'white',
       borderRightColor: controlProp.Default ? 'black' : controlProp.BackColor,
       outline: controlProp.Enabled
         ? controlProp.TakeFocusOnClick && this.isClicked
@@ -170,7 +170,7 @@ export default class FDCommandButton extends Mixins(FdControlVue) {
             : font.FontStrikethrough
               ? 'line-through'
               : '',
-      textUnderlinePosition: 'under',
+      textDecorationSkipInk: 'none',
       fontWeight: font.FontBold ? 'bold' : (font.FontStyle !== '') ? this.tempWeight : '',
       fontStretch: (font.FontStyle !== '') ? this.tempStretch : '',
       whiteSpace: controlProp.WordWrap ? 'pre-wrap' : 'pre',
@@ -209,6 +209,11 @@ export default class FDCommandButton extends Mixins(FdControlVue) {
 
   @Watch('properties.Caption', { deep: true })
   autoSizeValidateOnCaptionChange () {
+    if (this.properties.Picture) {
+      Vue.nextTick(() => {
+        this.labelAlignment()
+      })
+    }
     if (this.properties.AutoSize) {
       this.updateAutoSize()
     }
@@ -262,6 +267,16 @@ export default class FDCommandButton extends Mixins(FdControlVue) {
     }
   }
 
+  @Watch('properties.Enabled', {
+    deep: true
+  })
+  checkEnabled (newVal: boolean, oldVal: boolean) {
+    if (!this.properties.Enabled) {
+      this.imageProperty.filter = 'sepia(0) grayscale(1) blur(3px) opacity(0.2)'
+    } else {
+      this.imageProperty.filter = ''
+    }
+  }
   /**
    * @description updateAutoSize calls Vuex Actions to update object
    * @function updateAutoSize
@@ -271,7 +286,8 @@ export default class FDCommandButton extends Mixins(FdControlVue) {
     if (this.properties.AutoSize === true) {
       const imgStyle = {
         width: 'fit-content',
-        height: 'fit-content'
+        height: 'fit-content',
+        filter: ''
       }
       this.imageProperty = imgStyle
       if (this.properties.Picture) {
@@ -320,6 +336,10 @@ export default class FDCommandButton extends Mixins(FdControlVue) {
 }
 .commandbutton[runmode]:active {
   border-style: outset !important;
+}
+.spanClass {
+  text-decoration: underline;
+  text-decoration-skip-ink: none;
 }
 #logo{
  display: inline-flex;

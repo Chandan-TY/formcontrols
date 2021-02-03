@@ -42,7 +42,9 @@ export default class FdControlVue extends Vue {
     width: ''
   }
   imageProperty={
-    height: 'fit-content'
+    height: 'fit-content',
+    width: '',
+    filter: ''
   }
   imagePos={
     alignSelf: ''
@@ -260,10 +262,8 @@ export default class FdControlVue extends Vue {
    */
   protected get getScrollBarY (): string {
     if (this.data.type === 'TextBox') {
-      if (this.isEditMode) {
-        const scrollYData = controlProperties.scrollBarTextBoxProp(this.data)
-        return scrollYData.overflowY
-      }
+      const scrollYData = controlProperties.scrollBarTextBoxProp(this.data)
+      return scrollYData.overflowY
     }
     const scrollY: ScrollBarData = controlProperties.scrollBarProp(
       this.data
@@ -1384,6 +1384,30 @@ parentConextMenu (event: MouseEvent) {
 openTextContextMenu (event: MouseEvent) {
   EventBus.$emit('openTextContextMenu', event, this.controlId)
 }
+get spanStyleObj () {
+  const controlProp = this.properties
+  const font: font = controlProp.Font
+    ? controlProp.Font
+    : {
+      FontName: 'Arial',
+      FontSize: 20,
+      FontItalic: true,
+      FontBold: true,
+      FontUnderline: true,
+      FontStrikethrough: true
+    }
+  return {
+    textDecoration:
+      font.FontStrikethrough === true && font.FontUnderline === true
+        ? 'underline line-through'
+        : font.FontUnderline
+          ? 'underline'
+          : font.FontStrikethrough
+            ? 'line-through'
+            : '',
+    color: !this.properties.Enabled ? 'gray' : ''
+  }
+}
 positionLogo (value:any) {
   let style = {
     order: Number(),
@@ -1394,7 +1418,8 @@ positionLogo (value:any) {
     position: '',
     display: 'inline-flex',
     width: '',
-    justifyContent: ''
+    justifyContent: '',
+    overflow: ''
   }
   this.reverseStyle = {
     display: '',
@@ -1436,14 +1461,17 @@ positionLogo (value:any) {
       break
     case 9: this.reverseStyle.display = 'grid'
       style.order = -1
+      style.overflow = 'hidden'
       break
     case 10: this.reverseStyle.display = 'grid'
       this.reverseStyle.justifyItems = 'center'
       style.order = -1
+      style.overflow = 'hidden'
       break
     case 11: this.reverseStyle.display = 'grid'
       this.reverseStyle.justifyItems = 'end'
       style.order = -1
+      style.overflow = 'hidden'
       break
     case 12: this.reverseStyle.position = 'relative'
       this.reverseStyle.width = '100%'
@@ -1467,7 +1495,6 @@ pictureSize () {
   }
   if (this.properties.Picture) {
     Vue.nextTick(() => {
-      // const imgProp = document.getElementById('img')
       imgStyle.width = this.properties.Width! <= this.imageRef!.naturalWidth ? `${this.properties.Width}px` : 'fit-content'
       imgStyle.height = this.properties.Height! <= this.imageRef!.naturalHeight ? `${this.properties.Height}px` : 'fit-content'
       if (this.properties.PicturePosition === 9 || this.properties.PicturePosition === 10 || this.properties.PicturePosition === 11) {
@@ -1481,70 +1508,42 @@ pictureSize () {
 onPictureLoad () {
   const imgStyle = {
     width: 'auto',
-    height: 'auto'
+    height: 'auto',
+    filter: ''
   }
   this.imageProperty = imgStyle
   this.pictureSize()
 }
-get spanStyleObj () {
-  const controlProp = this.properties
-  const font: font = controlProp.Font
-    ? controlProp.Font
-    : {
-      FontName: 'Arial',
-      FontSize: 20,
-      FontItalic: true,
-      FontBold: true,
-      FontUnderline: true,
-      FontStrikethrough: true
-    }
-  return {
-    textDecoration:
-      font.FontStrikethrough === true && font.FontUnderline === true
-        ? 'underline line-through'
-        : font.FontUnderline
-          ? 'underline'
-          : font.FontStrikethrough
-            ? 'line-through'
-            : '',
-    color: !this.properties.Enabled ? 'gray' : ''
-  }
-}
 labelAlignment () {
+  let { picPosLeftRight, picPosTopBottom, imgHeight, labelHeight } = this.setHeightWidthVariable()
+  let totalHeight = {
+    height: 0
+  }
+
+  if (picPosLeftRight.includes(this.properties.PicturePosition!)) {
+    totalHeight.height = labelHeight
+  } else if (picPosTopBottom.includes(this.properties.PicturePosition!)) {
+    totalHeight.height = imgHeight + labelHeight
+  } else if (this.properties.PicturePosition! === 12) {
+    totalHeight.height = imgHeight >= labelHeight ? imgHeight : labelHeight
+  }
+
   this.reverseStyle.alignSelf = 'inherit'
   if (this.imageRef && this.imageRef.naturalHeight > this.properties.Height!) {
     this.reverseStyle.alignSelf = 'inherit'
   } else {
     let logoProp = this.logoRef
-    if (this.properties.Width! >= logoProp!.clientWidth && this.properties.Height! >= logoProp!.clientHeight) {
+    if (this.properties.Width! > logoProp!.clientWidth && this.properties.Height! > totalHeight.height && ((this.imageRef && this.imageRef.naturalHeight) < this.properties.Height! || (this.imageRef && this.imageRef.naturalWidth) < this.properties.Width!)) {
       this.reverseStyle.alignSelf = 'center'
     }
   }
 }
 getWidthHeight () {
-  const picPosLeftRight = [0, 1, 2, 3, 4, 5]
-  const picPosTopBottom = [6, 7, 8, 9, 10, 11]
-  const imgHeight = this.imageRef && this.imageRef.naturalHeight
-  const imgWidth = this.imageRef && this.imageRef.naturalWidth
-  let labelHeight = 0
-  let labelWidth = 0
   let widthHeightData = {
     width: 0,
     height: 0
   }
-  // calcluate text height
-  if (this.textSpanRef && this.textSpanRef.offsetHeight) {
-    labelHeight = this.textSpanRef.offsetHeight
-  } else if ((this.editableTextRef.$el as HTMLSpanElement) && (this.editableTextRef.$el as HTMLSpanElement).offsetHeight) {
-    labelHeight = (this.editableTextRef.$el as HTMLSpanElement).offsetHeight
-  }
-  // calcuate text width
-  if (this.textSpanRef && this.textSpanRef.offsetWidth) {
-    labelWidth = this.textSpanRef.offsetWidth
-  } else if ((this.editableTextRef.$el as HTMLSpanElement) && (this.editableTextRef.$el as HTMLSpanElement).offsetWidth) {
-    labelWidth = (this.editableTextRef.$el as HTMLSpanElement).offsetWidth
-  }
-
+  let { picPosLeftRight, picPosTopBottom, controlWidthIncrease, imgHeight, imgWidth, labelHeight, labelWidth } = this.setHeightWidthVariable()
   let componentRef = this.componentRef
   if (this.properties.Picture) {
     if (picPosLeftRight.includes(this.properties.PicturePosition!)) {
@@ -1566,12 +1565,50 @@ getWidthHeight () {
       widthHeightData.height = imgHeight >= labelHeight ? imgHeight : labelHeight
     }
   } else {
-    widthHeightData.width = labelWidth + 15
+    widthHeightData.width = labelWidth + 5
     widthHeightData.height = labelHeight
   }
-  if (this.properties.WordWrap) {
+  if (this.checkForWidthIncrease(controlWidthIncrease)) {
+    if (this.properties.Picture) {
+      widthHeightData.width = widthHeightData.width + 20
+    } else {
+      widthHeightData.width = widthHeightData.width + 15
+    }
+  } else if (this.properties.WordWrap) {
     widthHeightData.width = (((widthHeightData.width + 20) < componentRef!.clientWidth) || (imgWidth > componentRef!.clientWidth)) ? widthHeightData.width : componentRef!.clientWidth
   }
   return widthHeightData
+}
+checkForWidthIncrease (controlArr:Array<string>) {
+  for (let val of controlArr) {
+    if (this.properties.Name!.toLowerCase().includes(val)) {
+      return true
+    }
+  }
+  return false
+}
+
+setHeightWidthVariable () {
+  const picPosLeftRight = [0, 1, 2, 3, 4, 5]
+  const picPosTopBottom = [6, 7, 8, 9, 10, 11]
+  const controlWidthIncrease = ['optionbutton', 'checkbox']
+  const imgHeight = this.imageRef && this.imageRef.naturalHeight
+  const imgWidth = this.imageRef && this.imageRef.naturalWidth
+  let labelHeight = 0
+  let labelWidth = 0
+  // calcluate text height
+  if (this.textSpanRef && this.textSpanRef.offsetHeight) {
+    labelHeight = this.textSpanRef.offsetHeight
+  } else if ((this.editableTextRef.$el as HTMLSpanElement) && (this.editableTextRef.$el as HTMLSpanElement).offsetHeight) {
+    labelHeight = (this.editableTextRef.$el as HTMLSpanElement).offsetHeight
+  }
+  // calcuate text width
+  if (this.textSpanRef && this.textSpanRef.offsetWidth) {
+    labelWidth = this.textSpanRef.offsetWidth
+  } else if ((this.editableTextRef.$el as HTMLSpanElement) && (this.editableTextRef.$el as HTMLSpanElement).offsetWidth) {
+    labelWidth = (this.editableTextRef.$el as HTMLSpanElement).offsetWidth
+  }
+
+  return { picPosLeftRight, picPosTopBottom, controlWidthIncrease, imgHeight, imgWidth, labelHeight, labelWidth }
 }
 }

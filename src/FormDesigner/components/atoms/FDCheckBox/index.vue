@@ -33,7 +33,7 @@
           :style="labelStyle"
         >
           <span :style="spanStyleObj">{{ computedCaption.afterbeginCaption }}</span>
-          <span class="spanStyle" :style="spanStyleObj">{{
+          <span class="spanClass" :style="spanStyleObj">{{
             computedCaption.acceleratorCaption
           }}</span>
           <span :style="spanStyleObj">{{ computedCaption.beforeendCaption }}</span>
@@ -64,12 +64,12 @@ import FDEditableText from '@/FormDesigner/components/atoms/FDEditableText/index
   }
 })
 export default class FDCheckBox extends Mixins(FdControlVue) {
-  @Ref('componentRef') componentRef: HTMLSpanElement
+  @Ref('componentRef') componentRef: HTMLDivElement
   @Ref('checkboxInput') checkboxInput!: HTMLInputElement;
   @Ref('spanRef') spanRef!: HTMLSpanElement;
-  @Ref('textSpanRef') textSpanRef!: HTMLSpanElement;
+  @Ref('textSpanRef') textSpanRef!: HTMLDivElement;
   @Ref('imageRef') imageRef: HTMLImageElement
-  @Ref('logoRef') logoRef : HTMLSpanElement
+  @Ref('logoRef') logoRef : HTMLDivElement
   @Ref('editableTextRef') editableTextRef!: FDEditableText
   $el: HTMLDivElement
   alignItem: boolean = false
@@ -117,8 +117,10 @@ export default class FDCheckBox extends Mixins(FdControlVue) {
   checkEnabled (newVal: boolean, oldVal: boolean) {
     if (!this.properties.Enabled) {
       this.spanRef.style.backgroundColor = 'rgba(220, 220, 220, 1)'
+      this.imageProperty.filter = 'sepia(0) grayscale(1) blur(3px) opacity(0.2)'
     } else {
       this.spanRef.style.backgroundColor = 'white'
+      this.imageProperty.filter = ''
     }
   }
 
@@ -287,7 +289,7 @@ export default class FDCheckBox extends Mixins(FdControlVue) {
             : font.FontStrikethrough
               ? 'line-through'
               : '',
-      textUnderlinePosition: 'under',
+      textDecorationSkipInk: 'none',
       fontWeight: font.FontBold
         ? 'bold'
         : font.FontStyle !== ''
@@ -351,6 +353,11 @@ export default class FDCheckBox extends Mixins(FdControlVue) {
 
   @Watch('properties.Caption', { deep: true })
   autoSizeValidateOnCaptionChange () {
+    if (this.properties.Picture) {
+      Vue.nextTick(() => {
+        this.labelAlignment()
+      })
+    }
     if (this.properties.AutoSize) {
       this.updateAutoSize()
     }
@@ -414,7 +421,8 @@ export default class FDCheckBox extends Mixins(FdControlVue) {
     if (this.properties.AutoSize === true) {
       const imgStyle = {
         width: 'fit-content',
-        height: 'fit-content'
+        height: 'fit-content',
+        filter: ''
       }
       this.imageProperty = imgStyle
       if (this.properties.Picture) {
@@ -541,5 +549,9 @@ export default class FDCheckBox extends Mixins(FdControlVue) {
 #logo-main{
   display: flex;
   justify-content: center;
+}
+.spanClass {
+  text-decoration: underline;
+  text-decoration-skip-ink: none;
 }
 </style>

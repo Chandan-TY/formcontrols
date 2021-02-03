@@ -13,7 +13,7 @@
   <label class="control" :style="controlStyleObj">
     <input
         @change="handleChange($event, optionBtnRef)"
-        @click="SetValue()"
+        @click="setValue()"
         ref="optBtnInput"
         :name="properties.Name"
         :tabindex="properties.TabIndex"
@@ -34,7 +34,7 @@
           :style="labelStyle"
         >
           <span :style="spanStyleObj">{{ computedCaption.afterbeginCaption }}</span>
-          <span class="spanStyle" :style="spanStyleObj">{{
+          <span class="spanClass" :style="spanStyleObj">{{
             computedCaption.acceleratorCaption
           }}</span>
           <span :style="spanStyleObj">{{ computedCaption.beforeendCaption }}</span>
@@ -65,12 +65,12 @@ import FDEditableText from '@/FormDesigner/components/atoms/FDEditableText/index
   }
 })
 export default class FDOptionButton extends Mixins(FdControlVue) {
-  @Ref('componentRef') componentRef: HTMLSpanElement
+  @Ref('componentRef') componentRef: HTMLDivElement
   @Ref('optBtnInput') optBtnInput!: HTMLInputElement;
   @Ref('spanRef') spanRef!: HTMLSpanElement;
-  @Ref('textSpanRef') textSpanRef!: HTMLSpanElement;
+  @Ref('textSpanRef') textSpanRef!: HTMLDivElement;
   @Ref('imageRef') imageRef: HTMLImageElement
-  @Ref('logoRef') logoRef : HTMLSpanElement
+  @Ref('logoRef') logoRef : HTMLDivElement
   @Ref('editableTextRef') editableTextRef!: FDEditableText
   $el: HTMLDivElement
   alignItem: boolean = false
@@ -112,7 +112,7 @@ export default class FDOptionButton extends Mixins(FdControlVue) {
    * @description  updates Value property and the sets the backGround in runMode
    * @function setValue
    */
-  SetValue () {
+  setValue () {
     if (this.isRunMode) {
       this.updateDataModel({ propertyName: 'Value', value: 'true' })
       this.spanRef.style.backgroundColor = 'white'
@@ -175,6 +175,11 @@ export default class FDOptionButton extends Mixins(FdControlVue) {
 
   @Watch('properties.Caption', { deep: true })
   autoSizeValidateOnCaptionChange () {
+    if (this.properties.Picture) {
+      Vue.nextTick(() => {
+        this.labelAlignment()
+      })
+    }
     if (this.properties.AutoSize) {
       this.updateAutoSize()
     }
@@ -242,7 +247,8 @@ export default class FDOptionButton extends Mixins(FdControlVue) {
     if (this.properties.AutoSize === true) {
       const imgStyle = {
         width: 'fit-content',
-        height: 'fit-content'
+        height: 'fit-content',
+        filter: ''
       }
       this.imageProperty = imgStyle
       if (this.properties.Picture) {
@@ -274,8 +280,10 @@ export default class FDOptionButton extends Mixins(FdControlVue) {
   checkEnabled (newVal: boolean, oldVal: boolean) {
     if (!this.properties.Enabled) {
       this.spanRef.style.backgroundColor = 'rgba(220, 220, 220, 1)'
+      this.imageProperty.filter = 'sepia(0) grayscale(1) blur(3px) opacity(0.2)'
     } else {
       this.spanRef.style.backgroundColor = 'white'
+      this.imageProperty.filter = ''
     }
   }
 
@@ -381,7 +389,7 @@ export default class FDOptionButton extends Mixins(FdControlVue) {
         : font.FontStyle !== ''
           ? this.tempWeight
           : '',
-      textUnderlinePosition: 'under',
+      textDecorationSkipInk: 'none',
       fontStretch: font.FontStyle !== '' ? this.tempStretch : '',
       display: display,
       overflow: 'hidden',
@@ -552,7 +560,7 @@ export default class FDOptionButton extends Mixins(FdControlVue) {
 
 .spanClass {
   text-decoration: underline;
-  text-underline-position: under;
+  text-decoration-skip-ink: none;
 }
 #logo{
  display: inline-flex;
