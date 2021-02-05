@@ -16,7 +16,7 @@
         :title="properties.ControlTipText"
         v-if="controls.length > 0"
       >
-        <div class="move" ref="scrolling" :style="styleMoveObj">
+        <div class="move" ref="scrolling" :style="styleMoveObj" @mouseup="mouseUpOnPage">
           <div
             ref="controlTabsRef"
             class="page"
@@ -201,16 +201,15 @@ export default class FDMultiPage extends Mixins(FdContainerVue) {
     const controlProp = this.properties
     let display = ''
     if (this.isRunMode) {
-      display = controlProp.Visible ? 'inline-block' : 'none'
+      display = controlProp.Visible ? controlProp.Width === 0 || controlProp.Height === 0 ? 'none' : 'inline-block' : 'none'
     } else {
-      display = 'inline-block'
+      display = controlProp.Width === 0 || controlProp.Height === 0 ? 'none' : 'inline-block'
     }
     return {
       left: `${controlProp.Left}px`,
       width: `${controlProp.Width}px`,
       height: `${controlProp.Height}px`,
       top: `${controlProp.Top}px`,
-      backgroundColor: controlProp.BackColor,
       display: display,
       borderLeft: '2px solid whitesmoke',
       borderBottom: controlProp.TabOrientation === 0 ? '1px solid gray' : ''
@@ -228,6 +227,7 @@ export default class FDMultiPage extends Mixins(FdContainerVue) {
     return {
       overflow: 'hidden',
       display: 'flex',
+      backgroundColor: controlProp.BackColor,
       justifyContent: controlProp.TabOrientation === 3 ? 'flex-end' : '',
       height: `${controlProp.Height!}px`
     }
@@ -282,7 +282,6 @@ export default class FDMultiPage extends Mixins(FdContainerVue) {
         width: '100%',
         height: '100%',
         position: 'relative'
-        // zoom: zoomVal + ''
       }
     }
   }
@@ -319,7 +318,7 @@ export default class FDMultiPage extends Mixins(FdContainerVue) {
         controlProp.TabOrientation === 2
           ? 'rotate(90deg)'
           : this.transformScrollButtonStyle,
-      display: !this.properties.MultiRow
+      display: controlProp.Style === 2 ? 'none' : !this.properties.MultiRow
         ? this.isScrollVisible
           ? 'block'
           : 'none'
@@ -330,7 +329,8 @@ export default class FDMultiPage extends Mixins(FdContainerVue) {
           : controlProp.TabOrientation === 2
             ? `${controlProp.Width! - 40}px`
             : '0px',
-      top: '0px'
+      top: '0px',
+      backgroundColor: 'rgb(238, 238, 238)'
     }
   }
 
@@ -587,6 +587,7 @@ export default class FDMultiPage extends Mixins(FdContainerVue) {
     }
     return {
       position: 'absolute',
+      backgroundColor: 'rgb(238, 238, 238)',
       display:
       controlProp.MultiRow ? 'block' : controlProp.Height! < controlProp.TabFixedHeight!
         ? 'none'
@@ -626,7 +627,7 @@ export default class FDMultiPage extends Mixins(FdContainerVue) {
               : controlProp.TabFixedHeight! > 0
                 ? controlProp.TabOrientation === 0
                   ? controlProp.Height! - controlProp.TabFixedHeight! - 19 + 'px'
-                  : controlProp.Height! - controlProp.TabFixedHeight! - 14 + 'px'
+                  : controlProp.Height! - this.topValue + 5 + 'px'
                 : controlProp.TabFixedHeight! === 0
                   ? controlProp.Font!.FontSize! === 72
                     ? controlProp.Height! - controlProp.Font!.FontSize! - 27 + 'px'
@@ -642,7 +643,7 @@ export default class FDMultiPage extends Mixins(FdContainerVue) {
                 : controlProp.TabFixedHeight! > 0
                   ? controlProp.TabOrientation === 0
                     ? controlProp.Height! - controlProp.TabFixedHeight! - 10 + 'px'
-                    : controlProp.Height! - controlProp.TabFixedHeight! - 5 + 'px'
+                    : controlProp.Height! - this.topValue + 5 + 'px'
                   : controlProp.TabFixedHeight! === 0
                     ? controlProp.Font!.FontSize! === 72
                       ? controlProp.Height! - controlProp.Font!.FontSize! - 18 + 'px'
@@ -654,7 +655,7 @@ export default class FDMultiPage extends Mixins(FdContainerVue) {
           : `${controlProp.Height! - 1}px`,
       width:
         controlProp.Style !== 2
-          ? controlProp.Style === 1 ? controlProp.TabOrientation === 0 || controlProp.TabOrientation === 1 ? `${controlProp.Width! - 9}px` : controlProp.TabFixedWidth! > 0 ? controlProp.Width! - controlProp.TabFixedWidth! - 16 + 'px' : controlProp.TabFixedWidth! === 0 ? controlProp.TabOrientation === 2 || controlProp.TabOrientation === 3 ? `${controlProp.Width! - this.tempWidth - 19}px` : controlProp.Width! - controlProp.Font!.FontSize! - 26 + 'px' : 'calc(100% - 50px)'
+          ? controlProp.Style === 1 ? controlProp.TabOrientation === 0 || controlProp.TabOrientation === 1 ? `${controlProp.Width! - 9}px` : controlProp.TabFixedWidth! > 0 ? controlProp.Width! - controlProp.TabFixedWidth! - 16 + 'px' : controlProp.TabFixedWidth! === 0 ? controlProp.TabOrientation === 2 || controlProp.TabOrientation === 3 ? controlProp.MultiRow ? (controlProp.Width! - this.widthValue) + 'px' : `${controlProp.Width! - this.tempWidth - 19}px` : controlProp.Width! - controlProp.Font!.FontSize! - 26 + 'px' : 'calc(100% - 50px)'
             : controlProp.TabOrientation === 0 || controlProp.TabOrientation === 1
               ? `${controlProp.Width! - 3}px`
               : controlProp.TabFixedWidth! > 0
@@ -703,7 +704,7 @@ export default class FDMultiPage extends Mixins(FdContainerVue) {
     const dotSpace = 9
     return {
       backgroundPosition: `${dotSize}px ${dotSize}px`,
-      backgroundImage: `radial-gradient(${this.properties.ForeColor} 11%, transparent 10%)`,
+      backgroundImage: `radial-gradient(black 11%, transparent 10%)`,
       backgroundSize: `${dotSpace}px ${dotSpace}px`
     }
   }
@@ -913,6 +914,9 @@ export default class FDMultiPage extends Mixins(FdContainerVue) {
 
   @Watch('properties.MultiRow')
   multiRowValidate () {
+    if (this.properties.MultiRow) {
+      this.isScrollVisible = false
+    }
     this.updateMultiRowforLeftAndRight()
     if (this.scrolling) {
       Vue.nextTick(() => {
@@ -1036,6 +1040,7 @@ export default class FDMultiPage extends Mixins(FdContainerVue) {
   }
 
   multiPageMouseDown (e: MouseEvent) {
+    EventBus.$emit('isEditMode', this.isEditMode)
     this.selectedItem(e)
     if (this.selMultipleCtrl === false && this.activateCtrl === false) {
       const selContainer = this.selectedControls[this.userFormId].container[0]
@@ -1248,6 +1253,9 @@ export default class FDMultiPage extends Mixins(FdContainerVue) {
       return `url(${this.selectedPageData.properties!.Picture!})`
     }
   }
+  mouseUpOnPage () {
+    EventBus.$emit('mouseUpOnPageTab', true)
+  }
 }
 </script>
 
@@ -1265,24 +1273,22 @@ export default class FDMultiPage extends Mixins(FdContainerVue) {
   position: sticky;
 }
 .pages {
-  /* display: grid; */
   margin: 0;
-  /* width: calc(100%);
-  height: calc(100%); */
   white-space: nowrap;
   overflow-x: hidden;
   overflow-y: hidden;
 }
 .left-button {
-  position: relative;
   outline: none;
   background-image: url("../../../../assets/left-arrow-img.png");
   background-size: 30%;
   background-position: center;
   background-repeat: no-repeat;
-  border: 2px solid white;
-  border-right-color: gray;
-  border-bottom-color: gray;
+  border-width: 2px;
+  border-right-color: lightgray;
+  border-bottom-color: lightgray;
+  border-top-color: white;
+  border-left-color: white;
   top: 3px;
   right: 15px;
   width: 22px;
@@ -1293,15 +1299,16 @@ export default class FDMultiPage extends Mixins(FdContainerVue) {
   z-index: 5;
 }
 .right-button {
-  position: relative;
   outline: none;
   background-image: url("../../../../assets/right-arrow-img.png");
   background-size: 30%;
   background-position: center;
   background-repeat: no-repeat;
-  border: 2px solid white;
-  border-right-color: gray;
-  border-bottom-color: gray;
+  border-width: 2px;
+  border-right-color: lightgray;
+  border-bottom-color: lightgray;
+  border-top-color: white;
+  border-left-color: white;
   top: 3px;
   right: 15px;
   width: 22px;
@@ -1325,7 +1332,6 @@ export default class FDMultiPage extends Mixins(FdContainerVue) {
 .page label {
   border: 0.1px solid white;
   background-color: rgb(238, 238, 238);
-  /* display: inline-block; */
   padding: 5px 5px 5px 5px;
   margin: 0;
   cursor: pointer;
@@ -1362,7 +1368,6 @@ export default class FDMultiPage extends Mixins(FdContainerVue) {
   background-size: 10px;
   background-position: center;
   background-repeat: no-repeat;
-  /* border-color: lightgrey; */
 }
 
 /* Down */
@@ -1371,7 +1376,6 @@ export default class FDMultiPage extends Mixins(FdContainerVue) {
   background-size: 10px;
   background-position: center;
   background-repeat: no-repeat;
-  /* border-color: lightgrey; */
 }
 
 ::-webkit-scrollbar-track-piece {
@@ -1389,7 +1393,6 @@ export default class FDMultiPage extends Mixins(FdContainerVue) {
   white-space: normal;
   top: 23px;
   left: 0px;
-  /* background: rgb(238, 238, 238); */
   background-color: white;
   background-size: 9px 10px;
   background-image: radial-gradient(

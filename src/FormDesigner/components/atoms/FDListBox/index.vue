@@ -47,7 +47,7 @@
           @blur.stop="clearMatchEntry"
           @keydown.stop="handleExtendArrowKeySelect"
           @mousedown="
-            isRunMode || isEditMode ? handleMousedown($event) : stopMousedown($event)
+            isRunMode || isEditMode ? handleMousedown($event) : ''
           "
         >
           <div
@@ -757,9 +757,9 @@ export default class FDListBox extends Mixins(FdControlVue) {
     const controlProp = this.properties
     let display = ''
     if (this.isRunMode) {
-      display = controlProp.Visible ? 'inline-block' : 'none'
+      display = controlProp.Visible ? controlProp.Width === 0 || controlProp.Height === 0 ? 'none' : 'inline-block' : 'none'
     } else {
-      display = 'inline-block'
+      display = controlProp.Width === 0 || controlProp.Height === 0 ? 'none' : 'inline-block'
     }
     return {
       backgroundColor: controlProp.BackColor,
@@ -813,7 +813,7 @@ export default class FDListBox extends Mixins(FdControlVue) {
       height: `${controlProp.Height}px`,
       top: `${controlProp.Top}px`,
       display: display,
-      overflow: controlProp.RowSource === '' ? 'hidden' : this.$el && this.$el.scrollWidth > this.properties.Width! + 3 ? 'auto' : 'hidden'
+      overflow: controlProp.RowSource === '' ? 'hidden' : this.$el && this.$el.scrollWidth > this.properties.Width! + 3 ? 'auto' : 'auto'
     }
   }
 
@@ -1085,11 +1085,6 @@ export default class FDListBox extends Mixins(FdControlVue) {
       if (!this.isActivated) {
         EventBus.$emit('focusUserForm')
       }
-    }
-  }
-  stopMousedown (event: MouseEvent) {
-    if (this.toolBoxSelectControl === 'Select') {
-      event.stopPropagation()
     }
   }
 }

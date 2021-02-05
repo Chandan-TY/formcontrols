@@ -214,7 +214,8 @@ export default class FDCheckBox extends Mixins(FdControlVue) {
     const controlProp = this.properties
     return {
       boxShadow:
-      controlProp.SpecialEffect === 0 ? '0px 0px gray' : '-1px -1px gray'
+      controlProp.SpecialEffect === 0 ? '' : '-1px -1px gray',
+      border: controlProp.SpecialEffect === 0 ? '2px solid gray' : ''
     }
   }
 
@@ -243,9 +244,9 @@ export default class FDCheckBox extends Mixins(FdControlVue) {
       }
     let display = ''
     if (this.isRunMode) {
-      display = controlProp.Visible ? 'grid' : 'none'
+      display = controlProp.Visible ? controlProp.Width === 0 || controlProp.Height === 0 ? 'none' : 'grid' : 'none'
     } else {
-      display = 'grid'
+      display = controlProp.Width === 0 || controlProp.Height === 0 ? 'none' : 'grid'
     }
     const alignItems = controlProp.Picture ? 'inherit' : 'center'
     if (controlProp.Picture) {
@@ -479,8 +480,6 @@ export default class FDCheckBox extends Mixins(FdControlVue) {
   width: 0px;
   left: 0px;
   top: 0px;
-  min-width: 12px;
-  min-height: 13px;
   background-color: rgb(238, 238, 238);
   box-shadow: -1px -1px gray;
   overflow: hidden;

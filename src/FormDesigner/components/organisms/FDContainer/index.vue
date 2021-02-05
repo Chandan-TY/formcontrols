@@ -127,6 +127,7 @@ export default class Container extends FDCommonMethod {
   updatedDragHeight: number = 0;
   updatedDragWidth: number = 0;
   isControlMove: boolean = false
+  mouseUpOnPageTab: boolean = false
 
   updateChildHeightWidth () {
     if (this.parentDivRef) {
@@ -361,7 +362,8 @@ export default class Container extends FDCommonMethod {
             }
           )
         }
-        if (mainSelect && !this.getSelectedControlsDatas!.includes(this.containerId)) {
+        const isPageSelected = !(userData[this.containerId].type === 'Page' && this.getSelectedControlsDatas!.includes(this.getContainerList(this.containerId)[0]))
+        if (mainSelect && !this.getSelectedControlsDatas!.includes(this.containerId) && isPageSelected && !this.mouseUpOnPageTab) {
           count = count + 1
           let frameCondition: boolean = false
           if (this.handler === 'frameDrag') {
@@ -446,6 +448,7 @@ export default class Container extends FDCommonMethod {
         document.onmouseup(event)
       }
     }
+    EventBus.$emit('mouseUpOnPageTab', false)
   }
 
   /**
@@ -487,10 +490,10 @@ export default class Container extends FDCommonMethod {
       height: ph + this.updatedDragHeight + 'px',
       width: pw + this.updatedDragWidth + 'px',
       cursor: type && type === 'Page' ? 'default !important'
-        : this.propControlData.properties.MousePointer !== 0 ||
+        : this.toolBoxSelect !== 'Select' ? 'crosshair !important' : this.propControlData.properties.MousePointer !== 0 ||
         this.propControlData.properties.MouseIcon !== ''
           ? `${this.mouseCursorData} !important`
-          : this.toolBoxSelect !== 'Select' ? 'crosshair !important' : 'default !important'
+          : 'default !important'
     }
   }
   get pictureChildDiv () {
@@ -572,11 +575,15 @@ export default class Container extends FDCommonMethod {
         this.isControlPasted = true
       }
     })
+    EventBus.$on('mouseUpOnPageTab', (val: boolean) => {
+      this.mouseUpOnPageTab = val
+    })
   }
   destroyed () {
     // EventBus.$off('handleName')
     // EventBus.$off('groupDrag')
     EventBus.$off('afterPaste')
+    // EventBus.$off('mouseUpOnPageTab')
   }
   @Watch('selectedControls', { deep: true })
   updateGroupStyle () {

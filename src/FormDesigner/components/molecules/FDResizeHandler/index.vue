@@ -154,6 +154,7 @@ export default class Resizehandler extends FDCommonMethod {
       if (this.getIsMoveTarget) {
         this.moveBorder(event)
         if (event.movementX !== 0 && event.movementY !== 0) {
+          this.updateIsMove(true)
           const containerType = this.userformData[this.userFormId][this.controlId].type
           if (containerType === 'Frame' || containerType === 'MultiPage') {
             EventBus.$emit('handleName', 'frameDrag')
@@ -163,7 +164,6 @@ export default class Resizehandler extends FDCommonMethod {
           } else {
             EventBus.$emit('handleName', 'drag')
             this.isMove = true
-            this.updateIsMove(true)
           }
         }
       }
@@ -181,6 +181,7 @@ export default class Resizehandler extends FDCommonMethod {
         this.isMove = false
       }
     }
+    this.updateIsMove(false)
   }
   /**
    * @description Implementation  of Logic for resize and drag the control and userform, it preserve initial position of control/userform position
@@ -353,6 +354,8 @@ export default class Resizehandler extends FDCommonMethod {
    */
   elementDrag (event: MouseEvent, controltype: string): void {
     event.preventDefault()
+    const userData = this.userformData[this.userFormId]
+    const controlType = userData[this.controlId].type
     this.positions.movementX = this.positions.clientX - event.clientX
     this.positions.movementY = this.positions.clientY - event.clientY
     const scale: number = (this.propControlData.properties.Zoom! * 1) / 100
@@ -381,6 +384,14 @@ export default class Resizehandler extends FDCommonMethod {
       let incHeight = (this.size.height! + y) > 0 ? (this.size.height! + y) : -(this.size.height! + y)
       let decWidth = (this.size.width! - x) > 0 ? (this.size.width! - x) : -(this.size.width! - x)
       let decHeight = (this.size.height! - y) > 0 ? (this.size.height! - y) : -(this.size.height! - y)
+      decHeight = controlType === 'CheckBox' && decHeight < 13 ? 13 : decHeight
+      decWidth = controlType === 'CheckBox' && decWidth < 12 ? 12 : decWidth
+      incHeight = controlType === 'CheckBox' && incHeight < 13 ? 13 : incHeight
+      incWidth = controlType === 'CheckBox' && incWidth < 12 ? 12 : incWidth
+      decHeight = controlType === 'OptionButton' && decHeight < 15 ? 15 : decHeight
+      decWidth = controlType === 'OptionButton' && decWidth < 14 ? 14 : decWidth
+      incHeight = controlType === 'OptionButton' && incHeight < 15 ? 15 : incHeight
+      incWidth = controlType === 'OptionButton' && incWidth < 14 ? 14 : incWidth
       if (this.resizeDiv.includes('t')) {
         this.handlerPosition.top = top
         this.handlerPosition.height = incHeight

@@ -96,8 +96,10 @@ export default class FDScrollBar extends Mixins(FdControlVue) {
     return 'ScaleX(-1)'
   }
   get getDisableValue () {
-    if (this.isRunMode || this.isEditMode) {
+    if (this.isRunMode) {
       return this.properties.Enabled === false
+    } else if (this.isEditMode) {
+      return false
     } else {
       return true
     }
@@ -128,9 +130,9 @@ export default class FDScrollBar extends Mixins(FdControlVue) {
     const controlProp = this.properties
     let display = ''
     if (this.isRunMode) {
-      display = controlProp.Visible ? 'inline-block' : 'none'
+      display = controlProp.Visible ? controlProp.Width === 0 || controlProp.Height === 0 ? 'none' : 'inline-block' : 'none'
     } else {
-      display = 'inline-block'
+      display = controlProp.Width === 0 || controlProp.Height === 0 ? 'none' : 'inline-block'
     }
     return {
       width: `${controlProp.Width}px`,
@@ -158,6 +160,7 @@ export default class FDScrollBar extends Mixins(FdControlVue) {
     }
 
     return {
+      '--display': this.properties.Min === this.properties.Max ? 'none' : 'block',
       width: this.checkOtherOrientations() ? `${controlProp.Height! - 40}px` : `${controlProp.Width! - 40}px`,
       height: this.checkOtherOrientations() ? `${controlProp.Width!}px` : `${controlProp.Height!}px`,
       cursor:
@@ -189,7 +192,7 @@ export default class FDScrollBar extends Mixins(FdControlVue) {
         controlProp.MousePointer !== 0 || controlProp.MouseIcon !== ''
           ? this.getMouseCursorData
           : 'default',
-      border: !controlProp.Enabled ? '1px solid gray' : ''
+      border: !controlProp.Enabled && this.isRunMode ? '1px solid gray' : ''
     }
   }
   mounted () {
@@ -243,6 +246,7 @@ export default class FDScrollBar extends Mixins(FdControlVue) {
 }
 
 .slider::-webkit-slider-thumb {
+  display: var(--display);
   background-color: var(--bg-color);
   border: 2px solid gray;
   border-right: 2px solid black;

@@ -78,9 +78,9 @@ export default class FDLabel extends Mixins(FdControlVue) {
       }
     let display = ''
     if (this.isRunMode) {
-      display = controlProp.Visible ? 'inline-block' : 'none'
+      display = controlProp.Visible ? controlProp.Width === 0 || controlProp.Height === 0 ? 'none' : 'inline-block' : 'none'
     } else {
-      display = 'inline-block'
+      display = controlProp.Width === 0 || controlProp.Height === 0 ? 'none' : 'inline-block'
     }
     const labelAlignItems = 'inherit'
     if (controlProp.Picture) {
@@ -110,7 +110,6 @@ export default class FDLabel extends Mixins(FdControlVue) {
         borderBottom: controlProp.BorderStyle === 1 ? '1px solid ' + controlProp.BorderColor : ''
       }
     }
-    console.log('SPE', controlProp.SpecialEffect)
     return {
       ...(!controlProp.AutoSize && this.renderSize),
       ...this.baseStyle,
@@ -251,13 +250,6 @@ export default class FDLabel extends Mixins(FdControlVue) {
       this.imageProperty.filter = ''
     }
   }
-  @Watch('isEditMode')
-  setCaretPositionInEditMode () {
-    if (this.isEditMode) {
-      debugger
-      this.setCaretPosition()
-    }
-  }
   /**
    * @description updateAutoSize calls Vuex Actions to update object
    * @function updateAutoSize
@@ -300,26 +292,12 @@ export default class FDLabel extends Mixins(FdControlVue) {
   }
   labelClick (event: MouseEvent) {
     if (this.toolBoxSelectControl === 'Select') {
-      debugger
       event.stopPropagation()
       this.selectedItem(event)
       if (this.isEditMode) {
         (this.editableTextRef.$el as HTMLSpanElement).focus()
-        this.setCaretPosition()
       }
     }
-  }
-  setCaretPosition () {
-    Vue.nextTick(() => {
-      (this.editableTextRef.$el as HTMLSpanElement).focus()
-      const el = this.editableTextRef.$el
-      const range = document.createRange()
-      const sel = window.getSelection()!
-      range.setStart(el.childNodes[0], this.properties.Caption!.length)
-      range.collapse(true)
-      sel.removeAllRanges()
-      sel.addRange(range)
-    })
   }
 }
 </script>

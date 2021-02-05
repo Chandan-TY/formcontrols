@@ -247,9 +247,9 @@ export default class FDTabStrip extends FdControlVue {
     const controlProp = this.properties
     let display = ''
     if (this.isRunMode) {
-      display = controlProp.Visible ? 'inline-block' : 'none'
+      display = controlProp.Visible ? controlProp.Width === 0 || controlProp.Height === 0 ? 'none' : 'inline-block' : 'none'
     } else {
-      display = 'inline-block'
+      display = controlProp.Width === 0 || controlProp.Height === 0 ? 'none' : 'inline-block'
     }
     return {
       left: `${controlProp.Left}px`,
@@ -344,7 +344,7 @@ export default class FDTabStrip extends FdControlVue {
         controlProp.TabOrientation === 2
           ? 'rotate(90deg)'
           : this.transformScrollButtonStyle,
-      display: !this.properties.MultiRow
+      display: controlProp.Style === 2 ? 'none' : !this.properties.MultiRow
         ? this.isScrollVisible
           ? 'block'
           : 'none'
@@ -355,7 +355,8 @@ export default class FDTabStrip extends FdControlVue {
           : controlProp.TabOrientation === 2
             ? `${controlProp.Width! - 40}px`
             : '0px',
-      top: '0px'
+      top: controlProp.TabOrientation === 2 || controlProp.TabOrientation === 3 ? '-13px' : '0px',
+      backgroundColor: 'rgb(238, 238, 238)'
     }
   }
 
@@ -494,7 +495,7 @@ export default class FDTabStrip extends FdControlVue {
   protected get styleTabsObj (): Partial<CSSStyleDeclaration> {
     const controlProp = this.properties
     return {
-      backgroundColor: controlProp.BackColor,
+      backgroundColor: controlProp.Style === 2 ? 'rgb(238, 238, 238)' : controlProp.BackColor,
       cursor:
         controlProp.MousePointer !== 0 || controlProp.MouseIcon !== ''
           ? this.getMouseCursorData
@@ -562,7 +563,7 @@ export default class FDTabStrip extends FdControlVue {
             ? controlProp.MultiRow
               ? '-' + (this.topValue - 30) + 'px'
               : controlProp.TabFixedHeight! > 0
-                ? '-' + (this.topValue - 30) + 'px'
+                ? '0px'
                 : '-' + (this.topValue - 30) + 'px'
             : '0px',
       height:
@@ -572,7 +573,7 @@ export default class FDTabStrip extends FdControlVue {
             : controlProp.TabFixedHeight! === 0
               ? controlProp.Height! - controlProp.Font!.FontSize! - 13 + 'px'
               : controlProp.TabOrientation === 1
-                ? `${controlProp.Height! - 21}px`
+                ? `${controlProp.Height! - this.topValue}px`
                 : `${controlProp.Height! - 35}px`
           : `${controlProp.Height! - 3}px`,
       width:
@@ -697,6 +698,9 @@ export default class FDTabStrip extends FdControlVue {
 
   @Watch('properties.MultiRow')
   multiRowValidate () {
+    if (this.properties.MultiRow) {
+      this.isScrollVisible = false
+    }
     this.updateMultiRowforLeftAndRight()
     if (this.scrolling) {
       Vue.nextTick(() => {
@@ -973,15 +977,16 @@ export default class FDTabStrip extends FdControlVue {
   overflow-y: hidden;
 }
 .left-button {
-  position: relative;
   outline: none;
   background-image: url("../../../../assets/left-arrow-img.png");
   background-size: 30%;
   background-position: center;
   background-repeat: no-repeat;
-  border: 2px solid white;
-  border-right-color: gray;
-  border-bottom-color: gray;
+  border-width: 2px;
+  border-right-color: lightgray;
+  border-bottom-color: lightgray;
+  border-top-color: white;
+  border-left-color: white;
   top: 3px;
   right: 15px;
   width: 22px;
@@ -992,15 +997,16 @@ export default class FDTabStrip extends FdControlVue {
   z-index: 5;
 }
 .right-button {
-  position: relative;
   outline: none;
   background-image: url("../../../../assets/right-arrow-img.png");
   background-size: 30%;
   background-position: center;
   background-repeat: no-repeat;
-  border: 2px solid white;
-  border-right-color: gray;
-  border-bottom-color: gray;
+  border-width: 2px;
+  border-right-color: lightgray;
+  border-bottom-color: lightgray;
+  border-top-color: white;
+  border-left-color: white;
   top: 3px;
   right: 15px;
   width: 22px;

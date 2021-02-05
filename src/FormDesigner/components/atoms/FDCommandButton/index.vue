@@ -121,9 +121,9 @@ export default class FDCommandButton extends Mixins(FdControlVue) {
       }
     let display = ''
     if (this.isRunMode) {
-      display = controlProp.Visible ? 'inline-block' : 'none'
+      display = controlProp.Visible ? controlProp.Width === 0 || controlProp.Height === 0 ? 'none' : 'inline-block' : 'none'
     } else {
-      display = 'inline-block'
+      display = controlProp.Width === 0 || controlProp.Height === 0 ? 'none' : 'inline-block'
     }
     this.reverseStyle.justifyContent = 'center'
     const aignItems = 'inherit'
@@ -141,9 +141,9 @@ export default class FDCommandButton extends Mixins(FdControlVue) {
       height: `${controlProp.Height}px`,
       top: `${controlProp.Top}px`,
       borderTopColor: controlProp.Default ? 'black' : 'white',
-      borderBottomColor: controlProp.Default ? 'black' : controlProp.BackColor,
+      borderBottomColor: controlProp.Default ? 'black' : 'lightgray',
       borderLeftColor: controlProp.Default ? 'black' : 'white',
-      borderRightColor: controlProp.Default ? 'black' : controlProp.BackColor,
+      borderRightColor: controlProp.Default ? 'black' : 'lightgray',
       outline: controlProp.Enabled
         ? controlProp.TakeFocusOnClick && this.isClicked
           ? '1px dotted black'
