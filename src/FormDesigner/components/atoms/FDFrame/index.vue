@@ -290,7 +290,7 @@ export default class FDFrame extends Mixins(FdContainerVue) {
     this.frameMouseDown(event)
   }
   addContainerControl (event: MouseEvent) {
-    if (!this.isEditMode) {
+    if (!this.isEditMode && this.selMultipleCtrl === false && this.activateCtrl === false) {
       this.selectedItem(event)
     } else {
       this.addControlObj(event, this.controlId)

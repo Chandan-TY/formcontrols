@@ -732,7 +732,11 @@ export default class FDComboBox extends Mixins(FdControlVue) {
     if (this.isRunMode) {
       return this.properties.Enabled === false || this.properties.Locked
     } else if (this.isEditMode) {
-      return false
+      if (this.properties.Locked) {
+        return true
+      } else {
+        return false
+      }
     } else {
       return true
     }
@@ -1262,19 +1266,13 @@ export default class FDComboBox extends Mixins(FdControlVue) {
         if (tempData![0][this.properties.BoundColumn! - 1] === newVal) {
           this.updateDataModel({ propertyName: 'Value', value: newVal })
         } else {
-          if (newVal !== '' && this.properties.Value) {
-            this.updateDataModel({ propertyName: 'Text', value: newVal })
-          }
+          this.updateDataModel({ propertyName: 'Text', value: newVal })
         }
       }
-      if (newVal !== '' && this.properties.Value) {
-        this.selectionData[0] = newVal
-        this.updateDataModel({ propertyName: 'Text', value: newVal })
-      }
+      this.selectionData[0] = newVal
+      this.updateDataModel({ propertyName: 'Text', value: newVal })
     } else {
-      if (newVal !== '') {
-        this.updateDataModel({ propertyName: 'Text', value: newVal })
-      }
+      this.updateDataModel({ propertyName: 'Text', value: newVal })
     }
   }
 
