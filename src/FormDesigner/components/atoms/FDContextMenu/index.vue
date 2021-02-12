@@ -251,18 +251,16 @@ export default class ContextMenu extends FDCommonMethod {
   }
   created () {
     EventBus.$on('groupControl', (value: string) => {
-      if (this.selectedControls[this.userFormId].container[0] === this.containerId) {
-        if (value === 'group') {
-          this.groupControl()
-        } else if (value === 'ungroup') {
-          this.unGroupControl()
-        }
+      if (value === 'group') {
+        this.groupControl()
+      } else if (value === 'ungroup') {
+        this.unGroupControl()
       }
     })
   }
-  destroyed () {
-    EventBus.$off('groupControl')
-  }
+  // destroyed () {
+  //   EventBus.$off('groupControl')
+  // }
   @Emit('closeMenu')
   closeMenu () {
     return 0
@@ -1291,8 +1289,8 @@ export default class ContextMenu extends FDCommonMethod {
     this.selectControl({
       userFormId: this.userFormId,
       select: {
-        container: userData[selContainer[0]].type === 'MultiPage' ? this.getContainerList(selContainer[0]) : selContainer,
-        selected: userData[selContainer[0]].type === 'MultiPage' ? [this.getContainerList(selContainer[0])[0]] : [selContainer[0]]
+        container: userData[selContainer[0]].type === 'Page' ? this.getContainerList(selContainer[0]) : selContainer,
+        selected: userData[selContainer[0]].type === 'Page' ? [this.getContainerList(selContainer[0])[0]] : [selContainer[0]]
       }
     })
     EventBus.$emit('focusUserForm')

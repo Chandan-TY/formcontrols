@@ -15,6 +15,7 @@
       :maxlength="properties.MaxLength !==0 ? properties.MaxLength : ''"
       :disabled="getDisableValue"
       :title="properties.ControlTipText"
+      @dblclick="dblclick($event)"
       :readonly="properties.Locked"
       @keydown.escape.exact="releaseEditMode"
       v-cursorDirective="{
@@ -118,6 +119,17 @@ export default class FDTextBox extends Mixins(FdControlVue) {
   $el: HTMLDivElement
   originalText: string = ''
   trimmedText: string = ''
+  dblclick (e: Event) {
+    let newSelectionStart = 0
+    const eTarget = e.target as HTMLTextAreaElement
+    for (let i = eTarget.selectionStart; i > 0; i--) {
+      if (eTarget.value[i - 1] === ' ' || eTarget.value[i - 1] === undefined) {
+        newSelectionStart = i
+        break
+      }
+    }
+    this.textareaRef.setSelectionRange(newSelectionStart, eTarget.selectionEnd)
+  }
   get getDisableValue () {
     if (this.isRunMode) {
       return this.properties.Enabled === false || this.properties.Locked
@@ -310,6 +322,8 @@ export default class FDTextBox extends Mixins(FdControlVue) {
     if (this.properties.MultiLine) {
       if (event.ctrlKey) {
         this.handleCtrlEnter(this.textareaRef, '\n')
+        const eTarget = event.target as HTMLTextAreaElement
+        this.updateDataModel({ propertyName: 'Value', value: eTarget.value })
         return true
       } else if (this.properties.EnterKeyBehavior && this.properties.MultiLine) {
         return true
@@ -449,6 +463,7 @@ export default class FDTextBox extends Mixins(FdControlVue) {
   @Watch('properties.AutoSize', { deep: true })
   updateAutoSize () {
     if (this.properties.AutoSize === true) {
+      let spaceCount = 0
       this.$nextTick(() => {
         const textareaRef: HTMLTextAreaElement = this.textareaRef
         // replication of stype attribute to Label tag for autoSize property to work
@@ -462,9 +477,17 @@ export default class FDTextBox extends Mixins(FdControlVue) {
         tempLabel.style.whiteSpace = textareaRef.style.whiteSpace
         tempLabel.style.wordBreak = textareaRef.style.wordBreak
         tempLabel.style.fontWeight = textareaRef.style.fontWeight
-        tempLabel.style.width = textareaRef.style.width
+        tempLabel.style.width = (this.textareaRef.value.length + 1) *
+          parseInt(textareaRef.style.fontSize) +
+        'px'
         tempLabel.style.height = textareaRef.style.height
         tempLabel.innerText = textareaRef.value
+        for (let i = 0; i < this.textareaRef.value.length; i++) {
+          if (this.textareaRef.value[i] === ' ') {
+            spaceCount = spaceCount + 1
+          }
+        }
+        let addValue = spaceCount * (parseInt(textareaRef.style.fontSize) / 4.5)
         if (this.properties.MultiLine) {
           this.updateDataModel({
             propertyName: 'Width',
@@ -473,13 +496,20 @@ export default class FDTextBox extends Mixins(FdControlVue) {
         } else {
           this.updateDataModel({
             propertyName: 'Width',
-            value: tempLabel.offsetWidth + 7
+            value: tempLabel.offsetWidth + 7 + addValue
           })
         }
-        this.updateDataModel({
-          propertyName: 'Height',
-          value: tempLabel.offsetHeight + 15
-        })
+        if (this.textareaRef.value === ' ' || this.textareaRef.value === '') {
+          this.updateDataModel({
+            propertyName: 'Height',
+            value: parseInt(textareaRef.style.fontSize) + 15
+          })
+        } else {
+          this.updateDataModel({
+            propertyName: 'Height',
+            value: tempLabel.offsetHeight + 15
+          })
+        }
         tempLabel.innerText = ''
         tempLabel.style.display = 'none'
       })

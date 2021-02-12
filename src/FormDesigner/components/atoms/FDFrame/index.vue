@@ -250,13 +250,15 @@ export default class FDFrame extends Mixins(FdContainerVue) {
   }
 
   frameMouseDown (e: MouseEvent) {
-    EventBus.$emit('isEditMode', this.isEditMode)
-    this.selectedItem(e)
-    const selContainer = this.selectedControls[this.userFormId].container[0]
-    if (selContainer === this.controlId) {
-      this.deActiveControl()
-    } else {
-      return null
+    if (e.which !== 3) {
+      EventBus.$emit('isEditMode', this.isEditMode)
+      this.selectedItem(e)
+      const selContainer = this.selectedControls[this.userFormId].container[0]
+      if (selContainer === this.controlId) {
+        this.deActiveControl()
+      } else {
+        return null
+      }
     }
   }
 

@@ -12,7 +12,7 @@
     @contextmenu="isEditMode ? openTextContextMenu($event): parentConextMenu($event)"
   >
     <div id="logo" ref="logoRef" :style="reverseStyle">
-    <img v-if="properties.Picture" id="img" :src="properties.Picture" :style="[imageProperty,imagePos]" ref="imageRef">
+    <img v-if="properties.Picture" id="img" :src="properties.Picture" draggable="false" :style="[imageProperty,imagePos]" ref="imageRef">
     <div v-if="!syncIsEditMode" id="label" ref="textSpanRef" :style="labelStyle" >
        <span :style="spanStyleObj">{{ computedCaption.afterbeginCaption }}</span>
           <span class="spanClass" :style="spanStyleObj">{{
@@ -269,14 +269,25 @@ export default class FDLabel extends Mixins(FdControlVue) {
         }
         this.$nextTick(() => {
           const { width, height } = this.getWidthHeight()
-          this.updateDataModel({
-            propertyName: 'Height',
-            value: height + 5
-          })
-          this.updateDataModel({
-            propertyName: 'Width',
-            value: width
-          })
+          if (this.properties.Caption === '') {
+            this.updateDataModel({
+              propertyName: 'Height',
+              value: 20
+            })
+            this.updateDataModel({
+              propertyName: 'Width',
+              value: 20
+            })
+          } else {
+            this.updateDataModel({
+              propertyName: 'Height',
+              value: height + 5
+            })
+            this.updateDataModel({
+              propertyName: 'Width',
+              value: width
+            })
+          }
         })
       }
     } else {

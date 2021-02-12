@@ -627,7 +627,7 @@ export default class FDMultiPage extends Mixins(FdContainerVue) {
               : controlProp.TabFixedHeight! > 0
                 ? controlProp.TabOrientation === 0
                   ? controlProp.Height! - controlProp.TabFixedHeight! - 19 + 'px'
-                  : controlProp.Height! - this.topValue + 5 + 'px'
+                  : controlProp.Height! - controlProp.TabFixedHeight! - 5 + 'px'
                 : controlProp.TabFixedHeight! === 0
                   ? controlProp.Font!.FontSize! === 72
                     ? controlProp.Height! - controlProp.Font!.FontSize! - 27 + 'px'
@@ -643,7 +643,7 @@ export default class FDMultiPage extends Mixins(FdContainerVue) {
                 : controlProp.TabFixedHeight! > 0
                   ? controlProp.TabOrientation === 0
                     ? controlProp.Height! - controlProp.TabFixedHeight! - 10 + 'px'
-                    : controlProp.Height! - this.topValue + 5 + 'px'
+                    : controlProp.Height! - controlProp.TabFixedHeight! - 5 + 'px'
                   : controlProp.TabFixedHeight! === 0
                     ? controlProp.Font!.FontSize! === 72
                       ? controlProp.Height! - controlProp.Font!.FontSize! - 18 + 'px'
@@ -916,6 +916,8 @@ export default class FDMultiPage extends Mixins(FdContainerVue) {
   multiRowValidate () {
     if (this.properties.MultiRow) {
       this.isScrollVisible = false
+    } else {
+      this.scrollButtonVerify()
     }
     this.updateMultiRowforLeftAndRight()
     if (this.scrolling) {
@@ -1039,22 +1041,13 @@ export default class FDMultiPage extends Mixins(FdContainerVue) {
   }
 
   multiPageMouseDown (e: MouseEvent) {
-    EventBus.$emit('isEditMode', this.isEditMode)
-    this.selectedItem(e)
-    if (this.selMultipleCtrl === false && this.activateCtrl === false) {
-      const selContainer = this.selectedControls[this.userFormId].container[0]
-      const selected = this.selectedControls[this.userFormId].selected
-      if (this.controls.length > 0 && selected.length === 1) {
-        this.selectControl({
-          userFormId: this.userFormId,
-          select: {
-            container: this.getContainerList(this.selectedPageID),
-            selected: [this.selectedPageID]
-          }
-        })
-      }
-      if (selContainer === this.controlId) {
-        if (this.selMultipleCtrl === false && this.activateCtrl === false) {
+    if (e.which !== 3) {
+      EventBus.$emit('isEditMode', this.isEditMode)
+      this.selectedItem(e)
+      if (this.selMultipleCtrl === false && this.activateCtrl === false) {
+        const selContainer = this.selectedControls[this.userFormId].container[0]
+        const selected = this.selectedControls[this.userFormId].selected
+        if (this.controls.length > 0 && selected.length === 1) {
           this.selectControl({
             userFormId: this.userFormId,
             select: {
@@ -1062,6 +1055,17 @@ export default class FDMultiPage extends Mixins(FdContainerVue) {
               selected: [this.selectedPageID]
             }
           })
+        }
+        if (selContainer === this.controlId) {
+          if (this.selMultipleCtrl === false && this.activateCtrl === false) {
+            this.selectControl({
+              userFormId: this.userFormId,
+              select: {
+                container: this.getContainerList(this.selectedPageID),
+                selected: [this.selectedPageID]
+              }
+            })
+          }
         }
       }
     }
@@ -1078,7 +1082,11 @@ export default class FDMultiPage extends Mixins(FdContainerVue) {
     if (selected.length === 1 && selected[0] === this.controlId && this.controls.length > 0) {
       this.changeSelect(this.controls[0])
     }
-    EventBus.$emit('contextMenuDisplay', event, parentID, controlID, type, mode)
+    if (selected.length > 1) {
+      EventBus.$emit('contextMenuDisplay', event, this.controlId, this.controlId, type, mode)
+    } else {
+      EventBus.$emit('contextMenuDisplay', event, parentID, controlID, type, mode)
+    }
   }
   handleKeyDown (event: KeyboardEvent) {
     EventBus.$emit('handleKeyDown', event, this.selectedPageID)
@@ -1093,7 +1101,15 @@ export default class FDMultiPage extends Mixins(FdContainerVue) {
     })
   }
   handleContextMenu (e: MouseEvent) {
-    EventBus.$emit('editModeContextMenu', e, this.controlId, this.data, this.isEditMode, this.updatedValue)
+    e.preventDefault()
+    this.selectedItem(e)
+    const selected = this.selectedControls[this.userFormId].selected
+    if (selected.length === 1 && selected[0] === this.controlId && this.controls.length > 0) {
+      this.changeSelect(this.selectedPageID)
+      EventBus.$emit('editModeContextMenu', e, this.controlId, this.data, true, this.updatedValue)
+    } else {
+      this.showContextMenu(e, this.selectedPageID, this.selectedPageID, 'container', this.isEditMode)
+    }
   }
   deleteMultiPage (event: KeyboardEvent) {
     if (this.controlId === this.selectedControls[this.userFormId].selected[0]) {
@@ -1139,18 +1155,21 @@ export default class FDMultiPage extends Mixins(FdContainerVue) {
   }
   updateValue () {
     {
-      const userData = this.userformData[this.userFormId]
-      let selectedPage = -1
-      if (this.controls.length > 0) {
-        selectedPage = this.controls.findIndex(
-          (val) => this.properties.Value === userData[val].properties.Index
-        )
-      }
-      if (this.data.controls.length > 0 && selectedPage !== -1) {
-        this.selectedPageID = this.controls[selectedPage]
-        this.changeSelect(this.controls[selectedPage])
-      } else {
-        this.changeSelect(this.controlId)
+      const container = this.selectedControls[this.userFormId].container
+      if (container[0] === this.controlId) {
+        const userData = this.userformData[this.userFormId]
+        let selectedPage = -1
+        if (this.controls.length > 0) {
+          selectedPage = this.controls.findIndex(
+            (val) => this.properties.Value === userData[val].properties.Index
+          )
+        }
+        if (this.data.controls.length > 0 && selectedPage !== -1) {
+          this.selectedPageID = this.controls[selectedPage]
+          this.changeSelect(this.controls[selectedPage])
+        } else {
+          this.changeSelect(this.controlId)
+        }
       }
     }
   }

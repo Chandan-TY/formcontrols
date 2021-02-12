@@ -245,14 +245,11 @@ export default class Container extends FDCommonMethod {
         this.addChildControls({
           userFormId: this.userFormId,
           containerId: this.containerId,
-          targetControls: selectedSelect
+          targetControls: [control]
         })
+        this.updateTabIndexValue(control)
+        this.updateZIndexValue(control)
       }
-    }
-
-    for (const id of selectedSelect) {
-      this.updateTabIndexValue(id)
-      this.updateZIndexValue(id)
     }
   }
 

@@ -27,7 +27,7 @@
       ></span
     ></label>
       <div id="logo" ref="logoRef" :style="reverseStyle">
-      <img v-if="properties.Picture" id="img" :src="properties.Picture" :style="[imageProperty,imagePos]" ref="imageRef">
+      <img v-if="properties.Picture" id="img" :src="properties.Picture" draggable="false" :style="[imageProperty,imagePos]" ref="imageRef">
         <div ref="textSpanRef"
           v-if="!syncIsEditMode || isRunMode"
           @click="isRunMode && makeChecked($event)"
@@ -101,10 +101,18 @@ export default class FDOptionButton extends Mixins(FdControlVue) {
 
   get controlStyleObj () {
     const controlProp = this.properties
+    const a = ['left', 'right']
+    let leftRightStyle = {}
+    if (controlProp.Alignment === 1) {
+      leftRightStyle = { [a[0]]: '1px' }
+    } else if (controlProp.Alignment === 0) {
+      leftRightStyle = { [a[1]]: '1px' }
+    }
     return {
       order: controlProp.Alignment === 1 ? '0' : '1',
       position: 'sticky',
-      top: `${controlProp.Height! / 2 - 10}px`
+      top: `${controlProp.Height! / 2 - 10}px`,
+      ...leftRightStyle
     }
   }
 
@@ -256,10 +264,17 @@ export default class FDOptionButton extends Mixins(FdControlVue) {
       }
       this.$nextTick(() => {
         const { width, height } = this.getWidthHeight()
-        this.updateDataModel({
-          propertyName: 'Height',
-          value: height + 5
-        })
+        if (this.properties.Caption === '') {
+          this.updateDataModel({
+            propertyName: 'Height',
+            value: this.properties.Font!.FontSize! + 5
+          })
+        } else {
+          this.updateDataModel({
+            propertyName: 'Height',
+            value: height + 5
+          })
+        }
         this.updateDataModel({
           propertyName: 'Width',
           value: width
@@ -393,10 +408,9 @@ export default class FDOptionButton extends Mixins(FdControlVue) {
       fontStretch: font.FontStyle !== '' ? this.tempStretch : '',
       display: display,
       overflow: 'hidden',
-      gridTemplateColumns: controlProp.Alignment === 1 ? '12px auto' : 'auto 12px',
+      gridTemplateColumns: controlProp.Alignment === 1 ? '12px ' + `${controlProp.Width! - 12}px` : `${controlProp.Width! - 12}px` + ' 12px',
       gridTemplateRows: '100%',
       gap: '2px',
-      // alignItems: font.FontSize! > 17 ? 'center' : '',
       alignContent: 'center',
       boxShadow: 'none',
       alignItems: alignItems
@@ -563,8 +577,10 @@ export default class FDOptionButton extends Mixins(FdControlVue) {
   text-decoration-skip-ink: none;
 }
 #logo{
+  position: relative;
  display: inline-flex;
  justify-content: center;
+ overflow: hidden;
 }
 
 </style>

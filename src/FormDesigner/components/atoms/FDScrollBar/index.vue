@@ -10,7 +10,9 @@
   @mousedown="controlEditMode"
   >
     <div class="slidecontainer" :style="cssVars">
-      <button :style="scrollBarButtonStyleObj" @click="!getDisableValue?properties.Min > properties.Max ? increaseTheValue() : decreaseTheValue():''">
+      <button :style="scrollBarButtonStyleObj"
+      @mousedown="!getDisableValue?properties.Min > properties.Max ? increaseTheValue() : decreaseTheValue():''"
+      @mouseup="setIsSpinButtonScrollBarMouseDown">
         <FdSvgImage
           key="leftArrow"
           name="left-arrow.svg"
@@ -29,7 +31,9 @@
         @input="updateValueProperty"
         orient="vertical"
       />
-      <button :style="scrollBarButtonStyleObj" @click="!getDisableValue?properties.Min > properties.Max ? decreaseTheValue() : increaseTheValue():''">
+      <button :style="scrollBarButtonStyleObj"
+      @mousedown="!getDisableValue?properties.Min > properties.Max ? decreaseTheValue() : increaseTheValue():''"
+      @mouseup="setIsSpinButtonScrollBarMouseDown">
         <FdSvgImage
           key="rightArrow"
           name="right-arrow.svg"
@@ -57,6 +61,8 @@ export default class FDScrollBar extends Mixins(FdControlVue) {
   $el: HTMLDivElement
   isInvert: boolean = false
   intervalVariable: number = 0
+  thumbHeight: string = ''
+  minHeight: string = ''
   updateValueProperty (e: Event) {
     if (e.target instanceof HTMLInputElement) {
       const targetValue = parseInt(e.target!.value)
@@ -75,10 +81,29 @@ export default class FDScrollBar extends Mixins(FdControlVue) {
       '--height': this.checkOtherOrientations() ? `${this.properties.Width!}px` : `${this.properties.Height!}px`,
       transform: (this.properties.Min! > this.properties.Max!) ? this.scrollReAlign() : this.checkOtherOrientations() ? 'rotate(90deg)' : '',
       transformOrigin: (this.properties.Min! > this.properties.Max!) ? this.checkOtherOrientations() ? '0% 0%' : '' : '',
-      '--invertValue': this.isEditMode ? this.isInvert ? '1' : '0' : '0'
+      '--invertValue': this.isEditMode ? this.isInvert ? '1' : '0' : '0',
+      '--thumbHeight': this.thumbHeight,
+      '--minHeight': this.minHeight
     }
   }
 
+  @Watch('properties.ProportionalThumb')
+  thumbValidate () {
+    if (this.properties.ProportionalThumb) {
+      if (this.properties.Max! > this.properties.LargeChange! && this.properties.LargeChange! > 0) {
+        const z = this.checkOtherOrientations() ? this.properties.Height! - 40 : this.properties.Width! - 40
+        this.thumbHeight = ((z / 2) - ((this.properties.Max! - this.properties.LargeChange!) / this.properties.Max!) * (z / 2)) + 'px'
+        this.minHeight = '15px'
+      } else if (this.properties.LargeChange! === 0) {
+        this.thumbHeight = '25px'
+      } else {
+        this.thumbHeight = '0px'
+        this.minHeight = '0px'
+      }
+    } else {
+      this.thumbHeight = '25px'
+    }
+  }
   @Watch('isEditMode')
   editModeValidate () {
     if (this.isEditMode) {
@@ -98,7 +123,7 @@ export default class FDScrollBar extends Mixins(FdControlVue) {
   get getDisableValue () {
     if (this.isRunMode) {
       return this.properties.Enabled === false
-    } else if (this.isEditMode) {
+    } else if (this.isActivated || this.isEditMode) {
       return false
     } else {
       return true
@@ -160,7 +185,7 @@ export default class FDScrollBar extends Mixins(FdControlVue) {
     }
 
     return {
-      '--display': this.properties.Min === this.properties.Max ? 'none' : 'block',
+      '--display': this.properties.Min === this.properties.Max ? 'none' : this.minHeight === '0px' ? 'none' : 'block',
       width: this.checkOtherOrientations() ? `${controlProp.Height! - 40}px` : `${controlProp.Width! - 40}px`,
       height: this.checkOtherOrientations() ? `${controlProp.Width!}px` : `${controlProp.Height!}px`,
       cursor:
@@ -195,8 +220,30 @@ export default class FDScrollBar extends Mixins(FdControlVue) {
       border: !controlProp.Enabled && this.isRunMode ? '1px solid gray' : ''
     }
   }
+    @Watch('properties.Max')
+  maxValidate () {
+    this.thumbValidate()
+  }
+  @Watch('properties.Min')
+    minValidate () {
+      this.thumbValidate()
+    }
+  @Watch('properties.LargeChange')
+  largeChangeValidate () {
+    this.thumbValidate()
+  }
+  @Watch('properties.Width')
+  widthValidate () {
+    this.thumbValidate()
+  }
+  @Watch('properties.Height')
+  heightValidate () {
+    this.thumbValidate()
+  }
+
   mounted () {
     this.$el.focus()
+    this.thumbValidate()
   }
 
   /**
@@ -254,7 +301,8 @@ export default class FDScrollBar extends Mixins(FdControlVue) {
   opacity: var(--opacityValue);
   -webkit-appearance: none;
   appearance: none;
-  width: 25px;
+  width: var(--thumbHeight);
+  min-width: var(--minHeight);
   --alpha: 1;
   cursor: inherit;
   pointer-events:auto;

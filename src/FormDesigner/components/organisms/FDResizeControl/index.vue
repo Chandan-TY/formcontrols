@@ -245,6 +245,7 @@ export default class ResizeControl extends FdSelectVue {
         selected: [containerId]
       }
     })
+    EventBus.$emit('focusUserForm')
   }
   selectedItem (e: MouseEvent) {
     if (this.selMultipleCtrl === false) {
@@ -520,6 +521,13 @@ export default class ResizeControl extends FdSelectVue {
     }
   }
   displayContextMenu (event: MouseEvent) {
+    if (this.isEditMode && (this.propControlData.type === 'MultiPage' || this.propControlData.type === 'Frame')) {
+      this.selectControl({
+        userFormId: this.userFormId,
+        select: { container: this.getContainerList(this.controlId), selected: [this.controlId] }
+      })
+      this.isEditMode = false
+    }
     EventBus.$emit('contextMenuDisplay', event, this.containerId, this.controlId, 'control', this.isEditMode)
   }
   containerBorderClick () {

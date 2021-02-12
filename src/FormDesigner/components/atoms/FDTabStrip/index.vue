@@ -562,7 +562,7 @@ export default class FDTabStrip extends FdControlVue {
               ? '-' + (this.topValue - 30) + 'px'
               : controlProp.TabFixedHeight! > 0
                 ? '0px'
-                : '-' + (this.topValue - 30) + 'px'
+                : '-6px'
             : '0px',
       height:
         controlProp.TabOrientation === 0 || controlProp.TabOrientation === 1
@@ -698,6 +698,8 @@ export default class FDTabStrip extends FdControlVue {
   multiRowValidate () {
     if (this.properties.MultiRow) {
       this.isScrollVisible = false
+    } else {
+      this.scrollButtonVerify()
     }
     this.updateMultiRowforLeftAndRight()
     if (this.scrolling) {

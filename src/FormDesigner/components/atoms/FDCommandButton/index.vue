@@ -18,7 +18,7 @@
     @contextmenu="isEditMode ? openTextContextMenu($event): parentConextMenu($event)"
   >
   <div id="logo" ref="logoRef" :style="reverseStyle">
-    <img v-if="properties.Picture" id="img" :src="properties.Picture" :style="[imageProperty,imagePos]" ref="imageRef">
+    <img v-if="properties.Picture" id="img" :src="properties.Picture" draggable="false" :style="[imageProperty,imagePos]" ref="imageRef">
     <div v-if="!syncIsEditMode || isRunMode" :style="labelStyle"  ref="textSpanRef">
       <span :style="spanStyleObj">{{ computedCaption.afterbeginCaption }}</span>
           <span class="spanClass" :style="spanStyleObj">{{
@@ -176,7 +176,7 @@ export default class FDCommandButton extends Mixins(FdControlVue) {
       whiteSpace: controlProp.WordWrap ? 'pre-wrap' : 'pre',
       wordBreak: controlProp.WordWrap ? 'break-all' : 'normal',
       paddingLeft: controlProp.AutoSize ? '0px' : '0px',
-      paddingRight: controlProp.WordWrap ? '0px' : '6px',
+      paddingRight: controlProp.WordWrap ? '0px' : '0px',
       alignItems: aignItems
     }
   }
@@ -295,10 +295,17 @@ export default class FDCommandButton extends Mixins(FdControlVue) {
       }
       this.$nextTick(() => {
         const { width, height } = this.getWidthHeight()
-        this.updateDataModel({
-          propertyName: 'Height',
-          value: height + 5
-        })
+        if (!this.properties.Picture && this.properties.Caption === '') {
+          this.updateDataModel({
+            propertyName: 'Height',
+            value: height + 20
+          })
+        } else {
+          this.updateDataModel({
+            propertyName: 'Height',
+            value: height + 5
+          })
+        }
         this.updateDataModel({
           propertyName: 'Width',
           value: width
