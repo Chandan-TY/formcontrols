@@ -434,7 +434,6 @@ export default class FdControlVue extends Vue {
    * @function increaseTheValue
    */
   protected increaseTheValue () {
-    debugger
     this.isSpinButtonScrollBarMouseDown = true
     if (this.getSpinButtonScrollBarClickCount === 0) {
       this.increaseTheValueAfterDelay()
@@ -1664,5 +1663,19 @@ setHeightWidthVariable () {
     labelWidth = (this.editableTextRef.$el as HTMLSpanElement).offsetWidth
   }
   return { picPosLeftRight, picPosTopBottom, controlWidthIncrease, imgHeight, imgWidth, labelHeight, labelWidth }
+}
+setCaretPosition () {
+  Vue.nextTick(() => {
+    (this.editableTextRef.$el as HTMLSpanElement).focus()
+    const el = this.editableTextRef.$el
+    const range = document.createRange()
+    const sel = window.getSelection()!
+    if (el.childNodes[0]) {
+      range.setStart(el.childNodes[0], this.properties.Caption!.length)
+      range.collapse(true)
+      sel.removeAllRanges()
+      sel.addRange(range)
+    }
+  })
 }
 }

@@ -277,6 +277,12 @@ export default class FDCommandButton extends Mixins(FdControlVue) {
       this.imageProperty.filter = ''
     }
   }
+  @Watch('isEditMode')
+  setCaretPositionInEditMode () {
+    if (this.isEditMode) {
+      this.setCaretPosition()
+    }
+  }
   /**
    * @description updateAutoSize calls Vuex Actions to update object
    * @function updateAutoSize

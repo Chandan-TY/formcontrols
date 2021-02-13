@@ -148,7 +148,12 @@ export default class FDCheckBox extends Mixins(FdControlVue) {
       this.handleValue(this.properties.Value! as string)
     }
   }
-
+  @Watch('isEditMode')
+  setCaretPositionInEditMode () {
+    if (this.isEditMode) {
+      this.setCaretPosition()
+    }
+  }
   handleValue (newVal: string) {
     let tempValue = newVal.toLowerCase()
     const checkDiv = this.checkboxInput

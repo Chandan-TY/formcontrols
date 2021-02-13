@@ -310,6 +310,12 @@ export default class FDLabel extends Mixins(FdControlVue) {
       }
     }
   }
+  @Watch('isEditMode')
+  setCaretPositionInEditMode () {
+    if (this.isEditMode) {
+      this.setCaretPosition()
+    }
+  }
 }
 </script>
 

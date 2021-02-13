@@ -165,6 +165,7 @@ export default class FDTable extends Vue {
   }
   updateProperty (arg: IPropControl) {
     const selected = this.getSelectedControlsDatas!
+    const userData = this.userformData[this.userFormId]
     for (let i = 0; i < selected.length; i++) {
       const currentControlData = this.userformData[this.userFormId][selected[i]]
       if (arg.propertyName === 'TabIndex') {
@@ -195,6 +196,12 @@ export default class FDTable extends Vue {
         }
       } else {
         this.updatePropValue(selected[i], arg.propertyName, arg.value)
+      }
+    }
+    for (let i = 0; i < selected.length; i++) {
+      const controlProp = userData[selected[i]].properties
+      if (controlProp.GroupID !== '') {
+        EventBus.$emit('updateGroupStyle', controlProp.GroupID)
       }
     }
   }

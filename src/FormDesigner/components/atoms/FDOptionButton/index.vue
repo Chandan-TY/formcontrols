@@ -143,7 +143,12 @@ export default class FDOptionButton extends Mixins(FdControlVue) {
       this.handleValue(this.properties.Value! as string)
     }
   }
-
+  @Watch('isEditMode')
+  setCaretPositionInEditMode () {
+    if (this.isEditMode) {
+      this.setCaretPosition()
+    }
+  }
   handleValue (newVal: string) {
     let tempValue = newVal.toLowerCase()
     const checkDiv = this.optBtnInput
