@@ -539,7 +539,7 @@ export default class GroupControl extends FDCommonMethod {
           dragResizeControl.left = `${left}px`
         } else {
           if (this.resizeDiv.includes('t')) {
-            if (incHeight > 0) {
+            if (incHeight > -1) {
               dragResizeControl.top = `${top}px`
             }
             dragResizeControl.height = `${incHeight}px`
@@ -548,7 +548,7 @@ export default class GroupControl extends FDCommonMethod {
           }
 
           if (this.resizeDiv.includes('l')) {
-            if (incWidth > 0) {
+            if (incWidth > -1) {
               dragResizeControl.left = `${left}px`
             }
             dragResizeControl.width = `${incWidth}px`
@@ -556,6 +556,7 @@ export default class GroupControl extends FDCommonMethod {
             dragResizeControl.width = `${decWidth}px`
           }
         }
+        console.log('dragResizeControl', dragResizeControl)
         for (const j in this.userformData[this.userFormId][this.containerId]
           .controls) {
           const index = this.userformData[this.userFormId][this.containerId]
@@ -563,29 +564,29 @@ export default class GroupControl extends FDCommonMethod {
           const controlProp = this.userformData[this.userFormId][index]
             .properties
 
-          let top: number =
-            (parseInt(dragResizeControl.height!) * this.topArray[j]) /
+          let top: number = controlProp.Height! < 1 ? parseInt(dragResizeControl.top!)
+            : (parseInt(dragResizeControl.height!) * this.topArray[j]) /
               parseInt(this.initialArray[i].height!) +
             parseInt(this.initialArray[i].top!)
 
-          let height: number =
-            parseInt(dragResizeControl.height!) * this.percheightArray[j]
+          let height: number = controlProp.Height! < 1 ? parseInt(dragResizeControl.height!)
+            : parseInt(dragResizeControl.height!) * this.percheightArray[j]
 
-          let left: number =
-            (parseInt(dragResizeControl.width!) * this.leftArray[j]) /
+          let left: number = controlProp.Width! < 1 ? parseInt(dragResizeControl.left!)
+            : (parseInt(dragResizeControl.width!) * this.leftArray[j]) /
               parseInt(this.initialArray[i].width!) +
             parseInt(this.initialArray[i].left!)
 
-          let width: number =
-            parseInt(dragResizeControl.width!) * this.percwidthArray[j]
+          let width: number = controlProp.Width! < 1 ? parseInt(dragResizeControl.width!)
+            : parseInt(dragResizeControl.width!) * this.percwidthArray[j]
 
-          let right: number =
-            (parseInt(dragResizeControl.width!) * this.leftArray[j]) /
+          let right: number = controlProp.Width! < 1 ? parseInt(dragResizeControl.left!)
+            : (parseInt(dragResizeControl.width!) * this.leftArray[j]) /
               parseInt(this.initialArray[i].width!) +
             parseInt(dragResizeControl.left!)
 
-          let bottom: number =
-            (parseInt(dragResizeControl.height!) * this.topArray[j]) /
+          let bottom: number = controlProp.Height! < 1 ? parseInt(dragResizeControl.top!)
+            : (parseInt(dragResizeControl.height!) * this.topArray[j]) /
               parseInt(this.initialArray[i].height!) +
             parseInt(dragResizeControl.top!)
           if (

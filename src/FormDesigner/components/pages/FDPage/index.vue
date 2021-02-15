@@ -320,7 +320,6 @@ export default class FDPage extends Vue {
   }
   openMenu (e: MouseEvent, parentID: string, controlID: string, type: string, mode: boolean) {
     e.preventDefault()
-    const id = (e.target! as HTMLDivElement).id ? (e.target! as HTMLDivElement).id : ''
     const selected = this.selectedControls[this.userFormId].selected
     const userData = this.userformData[this.userFormId]
     let groupId = ''
@@ -337,7 +336,7 @@ export default class FDPage extends Vue {
       }
     }
     const controlType = this.userformData[this.userFormId][controlID].type
-    if (type === 'container' && !groupId.startsWith('group') && selected.length <= 1) {
+    if (type === 'container' && !groupId.startsWith('group')) {
       this.contextMenuType = true
     } else {
       this.contextMenuType = false
@@ -347,7 +346,7 @@ export default class FDPage extends Vue {
     this.contextMenuValue = this.contextMenuType ? userformContextMenu : controlContextMenu
     this.contextMenuHeight = this.contextMenuType ? 145 : 276
     this.viewMenu = true
-    const controlLength = selected[0].startsWith('group') ? this.userformData[this.userFormId][this.controlId].controls.length : this.userformData[this.userFormId][selected[0]].controls.length
+    const controlLength = this.userformData[this.userFormId][this.containerId].controls.length
     const contextMenuData = (type === 'container' && !groupId.startsWith('group') && selected.length <= 1)
       ? this.userformContextMenu
       : this.controlContextMenu
