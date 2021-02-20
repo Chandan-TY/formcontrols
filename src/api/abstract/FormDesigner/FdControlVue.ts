@@ -53,6 +53,8 @@ export default class FdControlVue extends Vue {
   spinButtonScrollBarDelayInterval: number = 0
   spinButtonScrollBarTimeout: number = 0
   spinButtonScrollBarClickCount: number = 0
+  getSelectionStart: number = 0
+  getSelectionEnd: number = 0
    // global variable to keep track of TripleState when enabled
    protected tripleState:number = 0
 
@@ -607,8 +609,17 @@ export default class FdControlVue extends Vue {
   * @param contentEditable
   */
   setContentEditable (event : KeyboardEvent, contentEditable : boolean) {
-    event.preventDefault()
-    this.setEditMode(contentEditable)
+    if (this.data.type === 'TextBox' || this.data.type === 'ComboBox') {
+      event.preventDefault()
+      this.setEditMode(contentEditable)
+      Vue.nextTick(() => {
+        this.textareaRef.focus()
+        this.textareaRef.setSelectionRange(this.getSelectionStart, this.getSelectionEnd)
+      })
+    } else {
+      event.preventDefault()
+      this.setEditMode(contentEditable)
+    }
   }
 
   /**
@@ -824,38 +835,21 @@ export default class FdControlVue extends Vue {
  }
 
 /**
- * @description watches changes in properties for BoundColumn
- * @function boundColumnValue
- * @param oldVal previous properties data
- * @param newVal  new/changed properties data
- */
-@Watch('properties.BoundColumn', { deep: true })
- boundColumnValue (newVal:number, oldVal:number) {
-   if (this.properties.BoundColumn! > 0 && this.properties.BoundColumn! < this.extraDatas.RowSourceData!.length) {
-     let tempData = [...this.extraDatas.RowSourceData!]
-    tempData![0][0] = tempData![0][newVal - 1]
-    let tempValue = tempData![0][newVal - 1]
-    this.updateDataModelExtraData({ propertyName: 'RowSourceData', value: tempData })
-    this.updateDataModel({ propertyName: 'Value', value: tempValue })
-   }
- }
-
-/**
  * @description watches changes in properties for TextColumn
  * @function textColumnChange
  * @param oldVal previous properties data
  * @param newVal  new/changed properties data
  */
 @Watch('properties.TextColumn', { deep: true })
-textColumnChange (newVal:number, oldVal:number) {
-  if (newVal > 0 && newVal < this.extraDatas.RowSourceData!.length) {
-    let tempData = [...this.extraDatas.RowSourceData!]
-    let tempValue = tempData![0][newVal - 1]
-    this.updateDataModel({ propertyName: 'Text', value: tempValue })
-  } else {
-    this.updateDataModel({ propertyName: 'Text', value: '' })
-  }
-}
+ textColumnChange (newVal:number, oldVal:number) {
+   if (newVal > 0 && newVal < this.extraDatas.RowSourceData!.length) {
+     let tempData = [...this.extraDatas.RowSourceData!]
+     let tempValue = tempData![0][newVal - 1]
+     this.updateDataModel({ propertyName: 'Text', value: tempValue })
+   } else {
+     this.updateDataModel({ propertyName: 'Text', value: '' })
+   }
+ }
 
 /**
  * @description watches changes in properties for TopIndex

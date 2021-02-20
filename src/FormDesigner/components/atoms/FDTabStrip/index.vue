@@ -79,7 +79,6 @@ import FdControlVue from '@/api/abstract/FormDesigner/FdControlVue'
 import { State, Action } from 'vuex-class'
 import ContextMenu from '../FDContextMenu/index.vue'
 import { tabsContextMenu } from '../../../models/tabsContextMenu'
-import { controlProperties } from '@/FormDesigner/controls-properties'
 import FDControlTabs from '@/FormDesigner/components/atoms/FDControlTabs/index.vue'
 import Vue from 'vue'
 import { EventBus } from '@/FormDesigner/event-bus'
@@ -115,6 +114,8 @@ export default class FDTabStrip extends FdControlVue {
   topValue: number = 0;
   widthValue: number = 40;
   rowsCount: string = '';
+  setPosition: string = 'initial';
+  isMoveGetterCalled: boolean = false;
   rightClickSelect (value: number) {
     this.updateDataModel({ propertyName: 'Value', value: value })
   }
@@ -261,17 +262,33 @@ export default class FDTabStrip extends FdControlVue {
           ? this.getMouseCursorData
           : 'default',
       display: display,
-      borderLeft: '1px solid white'
+      borderLeft: controlProp.Style === 0 ? '2px solid whitesmoke' : ''
     }
   }
 
+  @Watch('isMoveGetterCalled')
+  setPositionInMove () {
+    Vue.nextTick(() => {
+      if (this.setPosition === 'absolute') {
+        this.setPosition = 'initial'
+        this.isMoveGetterCalled = false
+        if (this.properties.MultiRow) {
+          this.updateDataModel({ propertyName: 'MultiRow', value: false })
+          this.updateDataModel({ propertyName: 'MultiRow', value: true })
+        }
+      }
+    })
+  }
   /**
    * @description style object is passed to :style attribute in div tag
    * dynamically changing the styles of the component based on propControlData
    * @function styleMoveObj
    *
    */
-  protected get styleMoveObj (): Partial<CSSStyleDeclaration> {
+  protected get styleMoveObj () {
+    if (this.isMoveGetterCalled === false && this.properties.MultiRow && this.setPosition === 'absolute') {
+      this.isMoveGetterCalled = true
+    }
     const controlProp = this.properties
     const a = ['bottom', 'top']
     let bottomTopStyle = {}
@@ -282,6 +299,7 @@ export default class FDTabStrip extends FdControlVue {
     }
     return {
       ...bottomTopStyle,
+      position: this.setPosition,
       direction: (controlProp.MultiRow && controlProp.TabOrientation === 3) ? 'rtl' : 'ltr',
       display: controlProp.Style === 2 ? 'none' : (controlProp.MultiRow && controlProp.TabOrientation === 2) || (controlProp.MultiRow && controlProp.TabOrientation === 3) ? 'grid' : 'inline-block',
       gridAutoFlow: (controlProp.MultiRow && controlProp.TabOrientation === 2) || (controlProp.MultiRow && controlProp.TabOrientation === 3) ? 'column' : '',
@@ -421,6 +439,11 @@ export default class FDTabStrip extends FdControlVue {
         this.topValue = this.scrolling.offsetHeight!
         this.widthValue = this.scrolling.clientWidth
       })
+      if (this.properties.MultiRow) {
+        this.setPosition = 'absolute'
+        this.updateDataModel({ propertyName: 'MultiRow', value: false })
+        this.updateDataModel({ propertyName: 'MultiRow', value: true })
+      }
     }
   }
 
@@ -521,7 +544,7 @@ export default class FDTabStrip extends FdControlVue {
       position: 'absolute',
       width: `${controlProp.Width!}px`,
       height: `${controlProp.Height!}px`,
-      boxShadow: controlProp.TabOrientation === 0 ? '0px 1px gray' : ''
+      boxShadow: controlProp.Style === 0 ? (controlProp.TabOrientation === 0 ? '0px 1px gray' : '') : ''
     }
   }
 
@@ -552,6 +575,44 @@ export default class FDTabStrip extends FdControlVue {
    */
   protected get styleContentObj (): Partial<CSSStyleDeclaration> {
     const controlProp = this.properties
+    let a = ''
+    if (controlProp.TabOrientation === 0 || controlProp.TabOrientation === 1) {
+      a = `${controlProp.Width! - 3}px`
+    } else {
+      if (controlProp.TabFixedWidth! > 0) {
+        if (controlProp.MultiRow) {
+          if ((controlProp.Width! > this.widthValue)) {
+            a = (controlProp.Width! - this.widthValue) + 'px'
+          } else {
+            a = '0px'
+          }
+        } else {
+          if (controlProp.TabOrientation === 3) {
+            a = (controlProp.Width! - this.widthValue) + 'px'
+          } else {
+            a = controlProp.Width! - controlProp.TabFixedWidth! - 15 + 'px'
+          }
+        }
+      } else {
+        if (controlProp.TabFixedWidth! === 0) {
+          if (controlProp.TabOrientation === 2 || controlProp.TabOrientation === 3) {
+            if (controlProp.MultiRow) {
+              if ((controlProp.Width! > this.widthValue)) {
+                a = (controlProp.Width! - this.widthValue) + 'px'
+              } else {
+                a = '0px'
+              }
+            } else {
+              a = (controlProp.Width! - this.widthValue) + 'px'
+            }
+          } else {
+            a = controlProp.Width! - controlProp.Font!.FontSize! - 20 + 'px'
+          }
+        } else {
+          a = `${controlProp.Width! - 34}px`
+        }
+      }
+    }
     if (this.scrolling) {
       Vue.nextTick(() => {
         this.topValue = this.scrolling.offsetHeight!
@@ -591,17 +652,7 @@ export default class FDTabStrip extends FdControlVue {
                 ? `${controlProp.Height! - this.topValue}px`
                 : `${controlProp.Height! - 35}px`
           : `${controlProp.Height! - 3}px`,
-      width:
-        controlProp.TabOrientation === 0 || controlProp.TabOrientation === 1
-          ? `${controlProp.Width! - 3}px`
-          : controlProp.TabFixedWidth! > 0
-            ? controlProp.MultiRow ? (controlProp.Width! > this.widthValue) ? (controlProp.Width! - this.widthValue) + 'px' : '0px'
-              : controlProp.TabOrientation === 3 ? (controlProp.Width! - this.widthValue) + 'px' : controlProp.Width! - controlProp.TabFixedWidth! - 15 + 'px'
-            : controlProp.TabFixedWidth! === 0
-              ? controlProp.TabOrientation === 2 || controlProp.TabOrientation === 3
-                ? controlProp.MultiRow ? (controlProp.Width! > this.widthValue) ? (controlProp.Width! - this.widthValue) + 'px' : '0px' : `${controlProp.Width! - this.tempWidth - 13}px`
-                : controlProp.Width! - controlProp.Font!.FontSize! - 20 + 'px'
-              : `${controlProp.Width! - 34}px`,
+      width: a,
       left:
         controlProp.TabOrientation === 2
           ? controlProp.MultiRow ? this.widthValue + 'px' : controlProp.TabFixedWidth! > 0
@@ -622,7 +673,7 @@ export default class FDTabStrip extends FdControlVue {
           ? this.getMouseCursorData
           : 'default',
       padding: '0px',
-      boxShadow: controlProp.TabOrientation === 0 ? '2px 0px gray' : ''
+      boxShadow: controlProp.Style === 0 ? (controlProp.TabOrientation === 0 ? '2px 0px gray' : '') : ''
     }
   }
 
@@ -888,7 +939,6 @@ export default class FDTabStrip extends FdControlVue {
   tabStripClick (event: MouseEvent) {
     if (this.toolBoxSelectControl === 'Select') {
       event.stopPropagation()
-      this.selectedItem(event)
     }
   }
 

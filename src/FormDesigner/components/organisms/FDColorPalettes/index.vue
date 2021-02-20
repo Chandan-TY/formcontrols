@@ -67,7 +67,7 @@
                     class="griditem1"
                     :style="{ backgroundColor: color.value }"
                   ></span
-                  >{{ color.displayName }}
+                  > <span class="grid-name">{{ color.displayName }}</span>
                 </div>
               </div>
             </div>
@@ -251,11 +251,16 @@ export default class FDColorPalettes extends Vue {
   width: 14px;
   height: 14px;
   text-align: center;
+  vertical-align: middle;
   margin: 1px;
   display: inline-block;
   cursor: none;
 }
 .gridcontainerStyle {
   cursor: "context-menu";
+  vertical-align: super;
+}
+.grid-name {
+  padding-top: 10px;
 }
 </style>

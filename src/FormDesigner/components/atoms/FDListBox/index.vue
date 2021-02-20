@@ -652,7 +652,7 @@ export default class FDListBox extends Mixins(FdControlVue) {
           let splitData = data.replace(/\t/g, ' ').split(' ')
 
           targetElement.focus()
-          if (this.properties.Enabled && this.properties.Locked === false) {
+          if (this.isRunMode && (this.properties.Enabled && this.properties.Locked === false)) {
             if (this.properties.MultiSelect === 0) {
               this.clearOptionBGColorAndChecked(e)
               this.setOptionBGColorAndChecked(e)
@@ -671,7 +671,7 @@ export default class FDListBox extends Mixins(FdControlVue) {
                 for (let i = 0; i < tempPath.length; i++) {
                   const ele = tempPath[i] as HTMLDivElement
                   if (ele.className === 'table-body') {
-                    // extend points start and end
+                  // extend points start and end
                     for (let j = 0; j < ele.childNodes.length; j++) {
                       const cd = ele.childNodes[j] as HTMLDivElement
                       if (cd.innerText === this.properties.Value) {
@@ -694,7 +694,73 @@ export default class FDListBox extends Mixins(FdControlVue) {
                         .childNodes[0] as HTMLInputElement
                       node.style.backgroundColor = 'rgb(59, 122, 231)'
                       if (this.properties.ListStyle === 1 && !tempNode.checked) {
-                        // tempNode.checked = !tempNode.checked
+                      // tempNode.checked = !tempNode.checked
+                        tempNode.checked = true
+                      }
+                    }
+                    break
+                  }
+                }
+              }
+
+              if (this.properties.ControlSource !== '') {
+                if (this.properties.TextColumn === -1) {
+                  this.updateDataModel({
+                    propertyName: 'Text',
+                    value: this.selectionData[0]
+                  })
+                }
+                this.updateDataModel({
+                  propertyName: 'Value',
+                  value: this.selectionData[0]
+                })
+              }
+              this.clearOptionBGColorAndChecked(e)
+              this.setOptionBGColorAndChecked(e)
+            }
+          } else {
+            if (this.properties.MultiSelect === 0) {
+              this.clearOptionBGColorAndChecked(e)
+              this.setOptionBGColorAndChecked(e)
+            } else if (this.properties.MultiSelect === 1) {
+              this.setOptionBGColorAndChecked(e)
+            } else if (this.properties.MultiSelect === 2) {
+              if (e.ctrlKey === true) {
+                if (targetElement.tagName === 'INPUT') {
+                  this.setOptionBGColorAndChecked(e)
+                } else {
+                  this.setOptionBGColorAndChecked(e)
+                }
+              } else if (e.shiftKey === true && this.properties.Value !== '') {
+                let startPoint = 0
+                let endPoint = 0
+                for (let i = 0; i < tempPath.length; i++) {
+                  const ele = tempPath[i] as HTMLDivElement
+                  if (ele.className === 'table-body') {
+                  // extend points start and end
+                    for (let j = 0; j < ele.childNodes.length; j++) {
+                      const cd = ele.childNodes[j] as HTMLDivElement
+                      if (cd.innerText === this.properties.Value) {
+                        startPoint = j + 1
+                      }
+                      if (cd.innerText === targetElement.innerText) {
+                        endPoint = j
+                      }
+                    }
+                    // upward selection start and end swap
+                    if (startPoint > endPoint) {
+                      let temp = startPoint
+                      startPoint = endPoint
+                      endPoint = temp
+                    }
+                    // setting selection
+                    for (let k = startPoint; k <= endPoint; k++) {
+                      const node = ele.childNodes[k] as HTMLDivElement
+                      const tempNode = node.childNodes[0]
+                        .childNodes[0] as HTMLInputElement
+                      node.style.backgroundColor = 'rgb(59, 122, 231)'
+                      if (this.properties.ListStyle === 1 && !tempNode.checked) {
+                      // tempNode.checked = !tempNode.checked
                         tempNode.checked = true
                       }
                     }
@@ -955,44 +1021,58 @@ export default class FDListBox extends Mixins(FdControlVue) {
    * @param newVal  new/changed properties data
    */
   @Watch('properties.Value', { deep: true })
-  ValueData (newVal: string, oldVal: string) {
+  ValueData (newVal: string) {
     if (this.properties.RowSource !== '') {
       if (newVal !== '' && this.properties.MultiSelect === 0) {
         if (
-        this.properties.BoundColumn! > 0 &&
+        this.properties.BoundColumn! >= 0 &&
         this.properties.BoundColumn! < this.extraDatas.RowSourceData!.length
         ) {
-          let tempData = [...this.extraDatas.RowSourceData!]
-          let tempBoundColumn = this.properties.BoundColumn! - 1
-          for (let i = 0; i < this.extraDatas.RowSourceData!.length; i++) {
-            if (tempData[i][tempBoundColumn] === newVal) {
+          if (this.properties.BoundColumn! === 0) {
+            for (let i = 0; i < this.extraDatas.RowSourceData!.length; i++) {
               const x = this.listStyleRef[i] as HTMLInputElement
-              x.checked = true
-            } if (tempData[i][tempBoundColumn] !== newVal) {
-              const x = this.listStyleRef[i] as HTMLInputElement
-              x.checked = false
-            }
-            const x = this.listStyleRef[i] as HTMLInputElement
-            if (x.checked) {
-              this.listStyleRef[i].style.backgroundColor = 'rgb(59, 122, 231)'
-            }
-            if (!x.checked) {
-              this.listStyleRef[i].style.backgroundColor = ''
-              if (this.listStyleRef[i] && this.listStyleRef[i].children.length > 0) {
-                const y = this.listStyleRef[i] as HTMLDivElement
-                for (let j = 0; j < y.children.length; j++) {
-                  const z = this.listStyleRef[i].children[j] as HTMLDivElement
-                  z.style.backgroundColor = ''
+              if (this.listStyleRef[i].style.backgroundColor === 'rgb(59, 122, 231)') {
+                this.updateDataModel({ propertyName: 'Value', value: i })
+                if (this.properties.TextColumn === -1) {
+                  this.updateDataModel({ propertyName: 'Text', value: this.extraDatas.RowSourceData![i][0] })
                 }
               }
             }
-          }
-          if (tempData![0][this.properties.BoundColumn! - 1] === newVal) {
-            this.updateDataModel({ propertyName: 'Value', value: newVal })
-            if (this.properties.TextColumn === -1) {
-              this.updateDataModel({ propertyName: 'Text', value: newVal })
+          } else {
+            let tempData = [...this.extraDatas.RowSourceData!]
+            let tempBoundColumn = this.properties.BoundColumn! - 1
+            for (let i = 0; i < this.extraDatas.RowSourceData!.length; i++) {
+              if (tempData[i][tempBoundColumn] === newVal) {
+                const x = this.listStyleRef[i] as HTMLInputElement
+                x.checked = true
+              } if (tempData[i][tempBoundColumn] !== newVal) {
+                const x = this.listStyleRef[i] as HTMLInputElement
+                x.checked = false
+              }
+              const x = this.listStyleRef[i] as HTMLInputElement
+              if (x.checked) {
+                this.listStyleRef[i].style.backgroundColor = 'rgb(59, 122, 231)'
+              }
+              if (!x.checked) {
+                this.listStyleRef[i].style.backgroundColor = ''
+                if (this.listStyleRef[i] && this.listStyleRef[i].children.length > 0) {
+                  const y = this.listStyleRef[i] as HTMLDivElement
+                  for (let j = 0; j < y.children.length; j++) {
+                    const z = this.listStyleRef[i].children[j] as HTMLDivElement
+                    z.style.backgroundColor = ''
+                  }
+                }
+              }
+            }
+            if (tempData![0][this.properties.BoundColumn! - 1] === newVal) {
+              this.updateDataModel({ propertyName: 'Value', value: newVal })
+              if (this.properties.TextColumn === -1) {
+                this.updateDataModel({ propertyName: 'Text', value: newVal })
+              }
             }
           }
+        } else if (this.properties.BoundColumn! > this.extraDatas.RowSourceData!.length) {
+          this.updateDataModel({ propertyName: 'Value', value: '' })
         } else {
           return undefined
         }
@@ -1004,6 +1084,10 @@ export default class FDListBox extends Mixins(FdControlVue) {
     }
   }
 
+  @Watch('properties.BoundColumn')
+  setBoundColumnValues () {
+    this.ValueData(this.properties.Value! as string)
+  }
   /**
    * @description mounted initializes the values which are required for the component
    */
@@ -1125,7 +1209,6 @@ export default class FDListBox extends Mixins(FdControlVue) {
     }
     if (this.toolBoxSelectControl === 'Select') {
       e.stopPropagation()
-      this.selectedItem(e)
       if (!this.isActivated) {
         EventBus.$emit('focusUserForm')
       }

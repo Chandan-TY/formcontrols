@@ -141,7 +141,7 @@ export default class FDScrollBar extends Mixins(FdControlVue) {
   @Watch('properties.ProportionalThumb')
   thumbValidate () {
     if (this.properties.ProportionalThumb) {
-      if (this.properties.Max! > this.properties.LargeChange! && this.properties.LargeChange! > 0) {
+      if (this.properties.Max! >= this.properties.LargeChange! && this.properties.LargeChange! > 0) {
         const z = this.checkOtherOrientations() ? this.properties.Height! - 40 : this.properties.Width! - 40
         this.thumbHeight = ((z / 2) - ((this.properties.Max! - this.properties.LargeChange!) / this.properties.Max!) * (z / 2)) + 'px'
         this.minHeight = '15px'
@@ -152,7 +152,7 @@ export default class FDScrollBar extends Mixins(FdControlVue) {
         this.minHeight = '0px'
       }
     } else {
-      this.thumbHeight = '25px'
+      this.thumbHeight = '15px'
     }
   }
   @Watch('isEditMode')
@@ -216,7 +216,6 @@ export default class FDScrollBar extends Mixins(FdControlVue) {
       left: `${controlProp.Left}px`,
       top: `${controlProp.Top}px`,
       display: display,
-      overflow: 'hidden',
       cursor:
         controlProp.MousePointer !== 0 || controlProp.MouseIcon !== ''
           ? this.getMouseCursorData
@@ -339,7 +338,6 @@ export default class FDScrollBar extends Mixins(FdControlVue) {
   scrollBarClick (event: MouseEvent) {
     if (this.toolBoxSelectControl === 'Select') {
       event.stopPropagation()
-      this.selectedItem(event)
     }
   }
 }

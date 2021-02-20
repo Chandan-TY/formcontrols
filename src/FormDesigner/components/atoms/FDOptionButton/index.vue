@@ -464,13 +464,24 @@ export default class FDOptionButton extends Mixins(FdControlVue) {
   @Watch('setAlignment', { deep: true })
   editableTextVerify () {
     Vue.nextTick(() => {
-      if (this.isEditMode && this.editableTextRef.$el.clientHeight > this.properties.Height!) {
-        this.alignItem = true
+      if (this.editableTextRef) {
+        if (this.editableTextRef.$el.clientHeight > this.properties.Height!) {
+          this.alignItem = true
+        } else {
+          this.alignItem = false
+        }
+      } else if (this.textSpanRef) {
+        if (this.textSpanRef.clientHeight > this.properties.Height!) {
+          this.alignItem = true
+        } else {
+          this.alignItem = false
+        }
       } else {
         this.alignItem = false
       }
     })
   }
+
   /**
    * @description  sets controlSource if present and updates Value property
    * @function controlSource
@@ -479,6 +490,10 @@ export default class FDOptionButton extends Mixins(FdControlVue) {
     this.verifyValue()
     this.$el.focus()
     this.controlSource()
+    if (this.properties.Picture) {
+      this.positionLogo(this.properties.PicturePosition)
+      this.pictureSize()
+    }
   }
   releaseEditMode (event: KeyboardEvent) {
     this.$el.focus()
@@ -487,7 +502,6 @@ export default class FDOptionButton extends Mixins(FdControlVue) {
   optionBtnClick (event: MouseEvent) {
     if (this.toolBoxSelectControl === 'Select') {
       event.stopPropagation()
-      this.selectedItem(event)
       if (this.isEditMode) {
         (this.editableTextRef.$el as HTMLSpanElement).focus()
       }
