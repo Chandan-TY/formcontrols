@@ -173,7 +173,12 @@ export default class FDTable extends Vue {
       } else if (arg.propertyName === 'Index') {
         return this.updatePageIndex(parseInt(arg.value))
       } else if (arg.propertyName === 'Name') {
-        return this.updateName(selected[i], arg.value)
+        if (currentControlData.type !== 'Page') {
+          return this.updateName(selected[i], arg.value)
+        } else {
+          this.updatePropValue(selected[i], arg.propertyName, arg.value)
+          return true
+        }
       } else if (arg.propertyName === 'Value' && (currentControlData.type === 'SpinButton' || currentControlData.type === 'ScrollBar')) {
         return this.updateSpinButtonScrollBarValueProp(selected[i], arg.value)
       } else if (arg.propertyName === 'Value' && (currentControlData.type === 'OptionButton') && arg.value === 'True') {
