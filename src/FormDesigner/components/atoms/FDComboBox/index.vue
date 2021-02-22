@@ -287,6 +287,7 @@ import {
   Ref
 } from 'vue-property-decorator'
 import FdControlVue from '@/api/abstract/FormDesigner/FdControlVue'
+import { EventBus } from '@/FormDesigner/event-bus'
 @Component({
   name: 'FDComboBox'
 })
@@ -1057,6 +1058,14 @@ export default class FDComboBox extends Mixins(FdControlVue) {
   }
 
   handleTextInput (e: Event) {
+    const controlPropData = this.properties
+    if (controlPropData.AutoTab && controlPropData.MaxLength! > 0) {
+      if (e.target instanceof HTMLTextAreaElement) {
+        if (e.target.value.length === controlPropData.MaxLength) {
+          EventBus.$emit('focusNextControlOnAutoTab')
+        }
+      }
+    }
     if (this.properties.AutoSize) {
       this.updateAutoSize()
     }

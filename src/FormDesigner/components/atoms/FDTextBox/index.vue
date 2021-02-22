@@ -68,6 +68,7 @@ import {
 } from 'vue-property-decorator'
 import FdControlVue from '@/api/abstract/FormDesigner/FdControlVue'
 import { DirectiveBinding } from 'vue/types/options'
+import { EventBus } from '@/FormDesigner/event-bus'
 
 @Component({
   name: 'FDTextBox',
@@ -296,6 +297,14 @@ export default class FDTextBox extends Mixins(FdControlVue) {
         propertyName: 'CursorEndPosition',
         value: event.target.selectionEnd
       })
+      const controlPropData = this.properties
+      if (controlPropData.AutoTab && controlPropData.MaxLength! > 0) {
+        if (event.target instanceof HTMLTextAreaElement) {
+          if (event.target.value.length === controlPropData.MaxLength) {
+            EventBus.$emit('focusNextControlOnAutoTab')
+          }
+        }
+      }
     } else {
       throw new Error('Expected HTMLTextAreaElement but found different element')
     }
@@ -402,7 +411,14 @@ export default class FDTextBox extends Mixins(FdControlVue) {
    *
    */
   textAndValueUpdate (event: InputEvent) {
-    const propData = this.properties
+    const controlPropData = this.properties
+    if (controlPropData.AutoTab && controlPropData.MaxLength! > 0) {
+      if (event.target instanceof HTMLTextAreaElement) {
+        if (event.target.value.length === controlPropData.MaxLength) {
+          EventBus.$emit('focusNextControlOnAutoTab')
+        }
+      }
+    }
     if (this.properties.AutoSize) {
       this.updateAutoSize()
     }

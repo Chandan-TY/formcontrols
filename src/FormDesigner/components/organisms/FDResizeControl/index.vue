@@ -279,11 +279,12 @@ export default class ResizeControl extends FdSelectVue {
           } else {
             selectTarget = this.controlId
           }
-
-          this.selectControl({
-            userFormId: this.userFormId,
-            select: { container: this.getContainerList(selectTarget), selected: [selectTarget] }
-          })
+          if (!this.selectedContainer.includes(selectTarget) && !currentSelect.includes(selectTarget)) {
+            this.selectControl({
+              userFormId: this.userFormId,
+              select: { container: this.getContainerList(selectTarget), selected: [selectTarget] }
+            })
+          }
           this.syncCurrentSelectedGroup = currentGroup
         }
       }
@@ -555,7 +556,7 @@ export default class ResizeControl extends FdSelectVue {
     EventBus.$emit('contextMenuDisplay', event, this.containerId, this.controlId, 'control', this.isEditMode)
   }
   containerBorderClick () {
-    if (this.isEditMode) {
+    if (this.isEditMode && this.isMoveWhenMouseDown !== true) {
       if (this.propControlData.type === 'MultiPage' || this.propControlData.type === 'Frame') {
         this.selectControl({
           userFormId: this.userFormId,
@@ -602,6 +603,8 @@ export default class ResizeControl extends FdSelectVue {
 .controlStyle {
   box-sizing: border-box;
   position: absolute;
+  padding-top: 5px;
+  padding-left: 5px;
   cursor: default !important;
 }
 :focus {
