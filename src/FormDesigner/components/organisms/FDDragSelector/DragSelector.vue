@@ -6,6 +6,7 @@
 </template>
 
 <script>
+import { EventBus } from '@/FormDesigner/event-bus'
 import emitter from './mixins/emitter'
 import { throttle } from './utils/utils'
 
@@ -41,6 +42,7 @@ export default {
   data () {
     return {
       dragging: false,
+      getEditMode: false,
       handleMouseMoveThrottled: () => {
       },
       emitChangeThrottled: () => {
@@ -103,7 +105,19 @@ export default {
     },
 
     handleMouseDown (e) {
-      if (this.isEditMode) {
+      let count = 0
+      this.getEditMode = false
+      if (this.$parent.propControlData.type !== 'Userform') {
+        EventBus.$emit('getDragSelectorEdit', e, this.$parent.containerId, (editmode) => {
+          count = count + 1
+          if (count === 1) {
+            this.getEditMode = editmode
+          }
+        })
+      } else {
+        this.getEditMode = true
+      }
+      if (this.getEditMode) {
         this.cancelAllSelect()
         this.$nextTick(() => {
           this.resetPoint(e)

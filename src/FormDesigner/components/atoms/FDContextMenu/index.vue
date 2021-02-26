@@ -738,7 +738,7 @@ export default class ContextMenu extends FDCommonMethod {
 
   @Emit('createGroup')
   createGroup (groupId: string) {
-    return groupId
+    return { groupId: groupId, containerId: this.containerId }
   }
 
   updateControlGroupID (groupName: string, updateGroupId: string) {

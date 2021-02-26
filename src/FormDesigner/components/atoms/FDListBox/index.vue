@@ -9,6 +9,7 @@
     :tabindex="properties.TabIndex"
     @keydown="forMatchEntry"
     v-on="eventStoppers()"
+    @scroll="updateScrollLeft"
     @keydown.esc="setContentEditable($event, false)"
   >
     <div class="table-style" :style="tableStyleObj" ref="listBoxTableRef" v-if="properties.RowSource !== ''">
@@ -864,6 +865,7 @@ export default class FDListBox extends Mixins(FdControlVue) {
       display = controlProp.Width === 0 || controlProp.Height === 0 ? 'none' : 'inline-block'
     }
     return {
+      pointerEvents: this.isEditMode ? 'auto' : 'none',
       backgroundColor: controlProp.BackColor,
       borderColor: controlProp.BorderStyle === 1 ? controlProp.BorderColor : '',
       cursor:
@@ -1211,6 +1213,13 @@ export default class FDListBox extends Mixins(FdControlVue) {
       e.stopPropagation()
       if (!this.isActivated) {
         EventBus.$emit('focusUserForm')
+      }
+    }
+  }
+  updateScrollLeft (event: Event) {
+    if (!this.isEditMode) {
+      if (event.target instanceof HTMLDivElement) {
+        event.target.scrollLeft = 0
       }
     }
   }

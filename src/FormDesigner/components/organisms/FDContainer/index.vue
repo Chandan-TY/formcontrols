@@ -420,7 +420,7 @@ export default class Container extends FDCommonMethod {
                 if (this.grouphandler === 'groupdrag') {
                   for (let k = 0; k < this.selectedGroup.length; k++) {
                     if (this.selectedGroup[k].startsWith('group')) {
-                      this.createGroup(this.selectedGroup[k])
+                      this.createGroup({ groupId: this.selectedGroup[k], containerId: this.containerId })
                     }
                   }
                 }
@@ -464,8 +464,10 @@ export default class Container extends FDCommonMethod {
         : [this.currentSelectedGroup]
     return result
   }
-  createGroup (groupId: string) {
-    this.groupRef.groupStyle(groupId)
+  createGroup (groupObj: any) {
+    if (groupObj.containerId === this.containerId) {
+      this.groupRef.groupStyle(groupObj.groupId)
+    }
   }
   muldragControl (val: IDragResizeGroup) {
     this.groupRef.handleMouseDown(val.event, val.handler)

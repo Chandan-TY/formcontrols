@@ -257,10 +257,19 @@ export default class FDFrame extends Mixins(FdContainerVue) {
   frameMouseDown (e: MouseEvent) {
     if (e.which !== 3) {
       EventBus.$emit('isEditMode', this.isEditMode)
-      this.selectedItem(e)
       const selContainer = this.selectedControls[this.userFormId].container[0]
       if (selContainer === this.controlId) {
-        this.deActiveControl()
+        const previousEditMode: boolean = this.isEditMode
+        const controlType: string = this.userformData[this.userFormId][this.controlId].type
+        if (this.selMultipleCtrl === false && this.activateCtrl === false) {
+          if (previousEditMode) {
+            this.updateEditMode(previousEditMode)
+          }
+          this.selectControl({
+            userFormId: this.userFormId,
+            select: { container: controlType === 'Userform' ? [this.controlId] : this.getContainerList(this.controlId), selected: [this.controlId] }
+          })
+        }
       } else {
         return null
       }
@@ -298,7 +307,7 @@ export default class FDFrame extends Mixins(FdContainerVue) {
   }
   addContainerControl (event: MouseEvent) {
     if (!this.isEditMode && this.selMultipleCtrl === false && this.activateCtrl === false) {
-      this.selectedItem(event)
+      // this.selectedItem(event)
     } else {
       this.addControlObj(event, this.controlId)
     }

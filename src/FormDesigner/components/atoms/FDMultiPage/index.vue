@@ -4,7 +4,7 @@
       class="outer-page"
       :style="pageStyleObj"
       :title="properties.ControlTipText"
-      @mousedown="multiPageMouseDown"
+      @mousedown="pageMouseDown"
       @contextmenu="handleContextMenu"
       @keydown.delete.stop.exact="deleteMultiPage"
       @keyup.stop="selectMultipleCtrl($event, false)"
@@ -1122,11 +1122,9 @@ export default class FDMultiPage extends Mixins(FdContainerVue) {
   multiPageMouseDown (e: MouseEvent) {
     if (e.which !== 3) {
       EventBus.$emit('isEditMode', this.isEditMode)
-      this.selectedItem(e)
-      if (this.selMultipleCtrl === false && this.activateCtrl === false) {
-        const selContainer = this.selectedControls[this.userFormId].container[0]
-        const selected = this.selectedControls[this.userFormId].selected
-        if (this.controls.length > 0 && selected.length === 1) {
+      const selContainer = this.selectedControls[this.userFormId].container[0]
+      if (this.getContainerList(selContainer)[0] === this.controlId) {
+        if (this.selMultipleCtrl === false && this.activateCtrl === false) {
           this.selectControl({
             userFormId: this.userFormId,
             select: {
@@ -1134,17 +1132,6 @@ export default class FDMultiPage extends Mixins(FdContainerVue) {
               selected: [this.selectedPageID]
             }
           })
-        }
-        if (selContainer === this.controlId) {
-          if (this.selMultipleCtrl === false && this.activateCtrl === false) {
-            this.selectControl({
-              userFormId: this.userFormId,
-              select: {
-                container: this.getContainerList(this.selectedPageID),
-                selected: [this.selectedPageID]
-              }
-            })
-          }
         }
       }
     }
@@ -1220,6 +1207,18 @@ export default class FDMultiPage extends Mixins(FdContainerVue) {
     EventBus.$on('focusTabStrip', () => {
       this.focusPage()
     })
+    EventBus.$on('setPage', this.setPageId)
+  }
+  setPageId (controlId: string) {
+    if (controlId === this.controlId) {
+      this.selectControl({
+        userFormId: this.userFormId,
+        select: {
+          container: this.getContainerList(this.selectedPageID),
+          selected: [this.selectedPageID]
+        }
+      })
+    }
   }
   destroyed () {
     EventBus.$off('updateMultiPageValue')
@@ -1333,9 +1332,14 @@ export default class FDMultiPage extends Mixins(FdContainerVue) {
   }
   addContainerControl (event: MouseEvent) {
     if (!this.isEditMode) {
-      this.selectedItem(event)
+      // this.selectedItem(event)
     } else {
       this.addControlObj(event, this.selectedPageID)
+    }
+  }
+  pageMouseDown (event: MouseEvent) {
+    if (this.isEditMode) {
+      event.stopPropagation()
     }
   }
   get getPicture () {

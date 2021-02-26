@@ -1654,7 +1654,7 @@ setHeightWidthVariable () {
   if (this.textSpanRef && this.textSpanRef.offsetWidth) {
     labelWidth = this.textSpanRef.offsetWidth
   } else if ((this.editableTextRef && this.editableTextRef.$el as HTMLSpanElement) && (this.editableTextRef && this.editableTextRef.$el as HTMLSpanElement).offsetWidth) {
-    labelWidth = (this.editableTextRef.$el as HTMLSpanElement).offsetWidth
+    labelWidth = (this.editableTextRef.$el as HTMLSpanElement).scrollWidth
   }
   return { picPosLeftRight, picPosTopBottom, controlWidthIncrease, imgHeight, imgWidth, labelHeight, labelWidth }
 }

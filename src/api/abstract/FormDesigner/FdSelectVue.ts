@@ -32,10 +32,6 @@ export default class FdSelectVue extends FDCommonMethod {
   };
   resizeDiv: string = '';
   isMoving: boolean = false
-  @Emit('createGroup')
-  createGroup (groupId: string) {
-    return groupId
-  }
 
   setEditMode (contentEditable: boolean) {
     if (this.selectedControls[this.userFormId].selected.includes(this.controlId)) {

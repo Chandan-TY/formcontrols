@@ -220,7 +220,7 @@
             </div>
             <div v-else></div>
             <div
-              @click="checkBothEnabledAndLocked() ? (open = false) : (open = true)"
+              @click="checkBothEnabledAndLocked ? (open = false) : (open = true)"
               v-if="properties.RowSource !== ''"
             >
               <div
@@ -236,7 +236,7 @@
                 @blur="clearMatchEntry"
                 @mousedown="
                   isRunMode || isEditMode
-                    ? checkBothEnabledAndLocked()
+                    ? checkBothEnabledAndLocked
                       ? handleMultiSelect($event)
                       : makeOpen()
                     : ''
