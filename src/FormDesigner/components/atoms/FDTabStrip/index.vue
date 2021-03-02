@@ -4,6 +4,7 @@
       v-on="eventStoppers()"
       class="outer-page"
       :style="pageStyleObj"
+      @mouseover="updateMouseCursor"
       @contextmenu="contextMenuVisible($event, -1)"
       @click="tabStripClick"
       @mousedown="controlEditMode"
@@ -16,6 +17,7 @@
       <div
         class="pages"
         :style="styleTabsObj"
+        @mouseover="updateMouseCursor"
         :title="properties.ControlTipText"
       >
         <div class="move" ref="scrolling" :style="styleMoveObj">
@@ -25,6 +27,7 @@
             v-for="(value, key) in extraDatas.Tabs"
             :key="key"
             :style="getTabStyle"
+            @mouseover="updateMouseCursor"
           >
             <FDControlTabs
               @setValue="setValue"
@@ -36,6 +39,7 @@
               @tempStretch="tempStretch"
               :pageValue="value"
               :indexValue="key"
+              :controlCursor="controlCursor"
               :pageData="value"
               :isRunMode="isRunMode"
               :isEditMode="isEditMode"
@@ -51,6 +55,7 @@
             <div
               class="content"
               :style="styleContentObj"
+              @mouseover="updateMouseCursor"
               :title="properties.ControlTipText"
             ></div>
           </div>
@@ -60,11 +65,13 @@
           <button
             class="left-button"
             :style="scrollButtonStyle"
+            @mouseover="updateMouseCursor"
             @click="leftmove"
           ></button>
           <button
             class="right-button"
             :style="scrollButtonStyle"
+            @mouseover="updateMouseCursor"
             @click="rightmove"
           ></button>
         </div>
@@ -257,10 +264,7 @@ export default class FDTabStrip extends FdControlVue {
       width: `${controlProp.Width}px`,
       height: `${controlProp.Height}px`,
       top: `${controlProp.Top}px`,
-      cursor:
-        controlProp.MousePointer !== 0 || controlProp.MouseIcon !== ''
-          ? this.getMouseCursorData
-          : 'default',
+      cursor: this.controlCursor,
       display: display,
       borderLeft: controlProp.Style === 0 ? '2px solid whitesmoke' : ''
     }
@@ -297,6 +301,7 @@ export default class FDTabStrip extends FdControlVue {
     } else if (controlProp.TabOrientation === 0) {
       bottomTopStyle = { [a[1]]: '0px' }
     }
+    this.setScrollLeft()
     return {
       ...bottomTopStyle,
       position: this.setPosition,
@@ -310,7 +315,6 @@ export default class FDTabStrip extends FdControlVue {
           ? `${controlProp.Height! - 35}px`
           : '0px',
       whiteSpace: controlProp.MultiRow === true ? 'break-spaces' : 'nowrap',
-      zIndex: controlProp.MultiRow === true ? '100' : '1',
       height:
         controlProp.TabOrientation === 2 || controlProp.TabOrientation === 3
           ? this.isScrollVisible
@@ -349,6 +353,8 @@ export default class FDTabStrip extends FdControlVue {
         ? this.extraDatas.Tabs!.length * this.properties.TabFixedHeight! +
           10 * this.extraDatas.Tabs!.length
         : this.properties.Font!.FontSize! * 2.3 * this.extraDatas.Tabs!.length
+    this.updateDataModel({ propertyName: 'Width', value: this.properties.Width! + 1 })
+    this.updateDataModel({ propertyName: 'Width', value: this.properties.Width! - 1 })
     return {
       position: 'absolute',
       zIndex: '30001',
@@ -381,10 +387,7 @@ export default class FDTabStrip extends FdControlVue {
   get scrollButtonStyle () {
     const controlProp = this.properties
     return {
-      cursor:
-        controlProp.MousePointer !== 0 || controlProp.MouseIcon !== ''
-          ? this.getMouseCursorData
-          : 'default',
+      cursor: this.controlCursor,
       opacity: this.scrolling ? ((this.scrolling.scrollLeft === (this.scrolling.scrollWidth - this.scrolling.clientWidth)) ? '0.4' : '1') : '1'
     }
   }
@@ -536,10 +539,7 @@ export default class FDTabStrip extends FdControlVue {
     const controlProp = this.properties
     return {
       backgroundColor: controlProp.Style === 2 ? 'rgb(238, 238, 238)' : controlProp.BackColor,
-      cursor:
-        controlProp.MousePointer !== 0 || controlProp.MouseIcon !== ''
-          ? this.getMouseCursorData
-          : 'default',
+      cursor: this.controlCursor,
       display: controlProp.TabOrientation === 1 ? 'flex' : '',
       position: 'absolute',
       width: `${controlProp.Width!}px`,
@@ -561,10 +561,7 @@ export default class FDTabStrip extends FdControlVue {
         controlProp.TabOrientation === 0 || controlProp.TabOrientation === 1
           ? 'inline-block'
           : 'block',
-      cursor:
-        controlProp.MousePointer !== 0 || controlProp.MouseIcon !== ''
-          ? this.getMouseCursorData
-          : 'default'
+      cursor: this.controlCursor
     }
   }
   /**
@@ -621,7 +618,6 @@ export default class FDTabStrip extends FdControlVue {
     }
     return {
       position: 'absolute',
-      zIndex: '10000',
       display:
         controlProp.Style === 1 || controlProp.Style === 2
           ? 'none'
@@ -668,10 +664,7 @@ export default class FDTabStrip extends FdControlVue {
               ? '0px'
               : '0px'
             : '0px',
-      cursor:
-        controlProp.MousePointer !== 0 || controlProp.MouseIcon !== ''
-          ? this.getMouseCursorData
-          : 'default',
+      cursor: this.controlCursor,
       padding: '0px',
       boxShadow: controlProp.Style === 0 ? (controlProp.TabOrientation === 0 ? '2px 0px gray' : '') : ''
     }
@@ -1157,6 +1150,7 @@ export default class FDTabStrip extends FdControlVue {
   left: 0px;
   background: rgb(238, 238, 238);
   height: 100px;
+  z-index: 0 !important;
   right: 0;
   bottom: 0;
   padding: 20px;

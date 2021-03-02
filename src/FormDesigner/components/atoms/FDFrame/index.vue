@@ -3,6 +3,7 @@
   <fieldset
     class="fieldset"
     :style="cssStyleProperty"
+    @mouseover="updateMouseCursor"
     :title="properties.ControlTipText"
     :tabindex="properties.TabIndex"
     @keydown.ctrl.exact.stop="selectMultipleCtrl($event,true)"
@@ -92,6 +93,7 @@ export default class FDFrame extends Mixins(FdContainerVue) {
 
   mounted () {
     // this.scrollLeftTop(this.data)
+    this.scrollTopCalculate()
     if (this.fieldsetRef) {
       this.captionHeight = this.fieldsetRef.offsetHeight!
     }
@@ -99,6 +101,7 @@ export default class FDFrame extends Mixins(FdContainerVue) {
 
   @Watch('properties.Caption')
   captionValidate () {
+    this.scrollTopCalculate()
     Vue.nextTick(() => {
       if (this.properties.Caption === '') {
         this.captionHeight = 0
@@ -110,6 +113,7 @@ export default class FDFrame extends Mixins(FdContainerVue) {
 
   @Watch('properties.Font', { deep: true })
   updateFont () {
+    this.scrollTopCalculate()
     Vue.nextTick(() => {
       this.captionHeight = this.fieldsetRef.offsetHeight!
     })
@@ -170,9 +174,7 @@ export default class FDFrame extends Mixins(FdContainerVue) {
       height: `${controlProp.Height}px`,
       padding: '0px',
       outline: 'none',
-      cursor: controlProp.MousePointer !== 0 || controlProp.MouseIcon !== ''
-        ? `${this.getMouseCursorData} !important`
-        : 'default !important',
+      cursor: this.controlCursor,
       fontFamily: font.FontStyle! !== '' ? this.setFontStyle : font.FontName!,
       fontSize: `${font.FontSize}px`,
       fontStyle: font.FontItalic || this.isItalic ? 'italic' : '',
@@ -230,7 +232,17 @@ export default class FDFrame extends Mixins(FdContainerVue) {
       width: `${controlProp.Width! - 3}px`,
       height: this.fieldsetRef ? (controlProp.Height! - (this.captionHeight / 2) - 2) + 'px' : '100%',
       position: 'relative',
-      top: this.fieldsetRef && this.properties.Caption !== '' ? '-' + ((this.captionHeight / 2) - 1) + 'px' : ''
+      top: this.scrollTopCalculate()
+    }
+  }
+
+  scrollTopCalculate () {
+    if (this.fieldsetRef && this.properties.Caption !== '') {
+      this.updateDataModel({ propertyName: 'Width', value: this.properties.Width! - 1 })
+      this.updateDataModel({ propertyName: 'Width', value: this.properties.Width! + 1 })
+      return '-' + ((this.captionHeight / 2) - 1) + 'px'
+    } else {
+      return ''
     }
   }
   get scrollStyle () {

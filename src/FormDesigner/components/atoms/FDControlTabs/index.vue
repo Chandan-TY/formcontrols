@@ -118,6 +118,7 @@ export default class FDControlTabs extends Vue {
   @Prop() isEditMode: boolean;
   @Prop() isItalic: boolean;
   @Prop() tempStretch: string;
+  @Prop() controlCursor: string;
   @Prop() tempWeight: string;
   @Prop() getMouseCursorData: string;
   @Prop() setFontStyle: string;
@@ -254,11 +255,7 @@ export default class FDControlTabs extends Vue {
           : '',
       direction: 'ltr',
       fontStretch: font.FontStyle !== '' ? this.tempStretch : '',
-      cursor:
-        controlProp.MousePointer !== 0 || controlProp.MouseIcon !== ''
-          ? this.getMouseCursorData
-          : 'default',
-      zIndex: controlProp.MultiRow && controlProp.TabOrientation !== 3 ? '30000' : '',
+      cursor: this.controlCursor,
       backgroundColor:
         this.indexValue === this.data.properties.Value!
           ? controlProp.Style === 1

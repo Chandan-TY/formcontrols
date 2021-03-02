@@ -1,5 +1,5 @@
 <template>
-<div ref="componentRef" :tabindex="properties.TabIndex">
+<div ref="componentRef" :tabindex="properties.TabIndex" @mouseover="updateMouseCursor">
   <button
     class="commandbutton"
     :style="styleObj"
@@ -21,7 +21,7 @@
     <img v-if="properties.Picture" id="img" :src="properties.Picture" draggable="false" :style="[imageProperty,imagePos]" ref="imageRef">
     <div v-if="!syncIsEditMode || isRunMode" :style="labelStyle"  ref="textSpanRef">
       <span :style="spanStyleObj">{{ computedCaption.afterbeginCaption }}</span>
-          <span class="spanClass" :style="spanStyleObj">{{
+          <span class="spanClass" :style="spanClassStyleObj">{{
             computedCaption.acceleratorCaption
           }}</span>
           <span :style="spanStyleObj">{{ computedCaption.beforeendCaption }}</span>
@@ -152,10 +152,7 @@ export default class FDCommandButton extends Mixins(FdControlVue) {
       backgroundColor: controlProp.BackStyle ? controlProp.BackColor : 'transparent',
       color:
         controlProp.Enabled === true ? controlProp.ForeColor : this.getEnabled,
-      cursor:
-        controlProp.MousePointer !== 0 || controlProp.MouseIcon !== ''
-          ? this.getMouseCursorData
-          : 'default',
+      cursor: this.controlCursor,
       fontFamily: (font.FontStyle! !== '') ? this.setFontStyle : font.FontName!,
       fontSize: `${font.FontSize}px`,
       fontStyle: font.FontItalic || this.isItalic ? 'italic' : '',

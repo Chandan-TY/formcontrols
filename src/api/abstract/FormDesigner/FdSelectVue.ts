@@ -3,6 +3,7 @@ import { controlProperties } from '@/FormDesigner/controls-properties'
 import { Action, State } from 'vuex-class'
 import { IdeleteControl, IselectControl, IupdateControl, IupdateControlExtraData } from '@/storeModules/fd/actions'
 import FDCommonMethod from './FDCommonMethod'
+import { EventBus } from '@/FormDesigner/event-bus'
 
 @Component({
   name: 'FdSelectVue'
@@ -159,5 +160,30 @@ export default class FdSelectVue extends FDCommonMethod {
         this.userformData[this.userFormId][container].controls.length
       )
     }
+  }
+  getMouseCursor (controlId: string, callback: Function) {
+    const cursorProp = this.mousePointerToDisplay(controlId)
+    callback(cursorProp)
+  }
+
+  mousePointerToDisplay (controlId: string) {
+    const containerList = this.getContainerList(controlId)
+    let currentCursor = 0
+    let conatinerIndex = 0
+    for (let index = 0; index < containerList.length; index++) {
+      if (this.userformData[this.userFormId][containerList[index]].properties.MousePointer !== 0 && this.userformData[this.userFormId][containerList[index]].properties.MousePointer !== undefined) {
+        currentCursor = this.userformData[this.userFormId][containerList[index]].properties.MousePointer!
+        conatinerIndex = index
+        break
+      }
+    }
+    const cursorValue = controlProperties.mousePointerProp(this.userformData[this.userFormId][containerList[conatinerIndex]])
+    return cursorValue
+  }
+  created () {
+    EventBus.$on('getMouseCursor', this.getMouseCursor)
+  }
+  destroyed () {
+    EventBus.$off('getMouseCursor')
   }
 }

@@ -137,7 +137,7 @@ export default class Resizehandler extends FDCommonMethod {
   startMoveControl (event: MouseEvent, handler: string, containerList: string[]) {
     this.isSelContainerList = containerList
     EventBus.$emit('handleName', 'notDrag')
-    if (this.getIsMoveTarget) {
+    if (this.getIsMoveTarget && this.size) {
       this.resizeDiv = handler
       this.handlerPosition.left = 0
       this.handlerPosition.top = 0
@@ -175,8 +175,11 @@ export default class Resizehandler extends FDCommonMethod {
           }
           this.updateIsMove(true)
           const containerType = this.userformData[this.userFormId][this.controlId].type
-          if (containerType === 'Frame' || containerType === 'MultiPage') {
-            EventBus.$emit('handleName', 'frameDrag')
+          const type = this.userformData[this.userFormId][this.isSelctedControl].type
+          if (type === 'Frame' || type === 'MultiPage') {
+            if (containerType === 'Frame' || containerType === 'MultiPage') {
+              EventBus.$emit('handleName', 'frameDrag')
+            }
           } else {
             EventBus.$emit('handleName', 'drag')
           }
@@ -272,32 +275,32 @@ export default class Resizehandler extends FDCommonMethod {
   }
   get getLStyle () {
     if (this.resizeDiv === 'drag') {
-      return {
+      return this.size ? {
         left: `${-this.positions.movementX}px`,
         top: `${-this.positions.movementY}px`,
         height: this.isGroupControl ? `${this.size.height}px !important` : '100%'
-      }
+      } : null
     } else {
-      return {
+      return this.size ? {
         left: `${-this.handlerPosition.left}px !important`,
         top: `${-this.handlerPosition.top}px !important`,
         height: `${this.handlerPosition.height}px !important`
-      }
+      } : null
     }
   }
   get getTStyle () {
     if (this.resizeDiv === 'drag') {
-      return {
+      return this.size ? {
         left: `${-this.positions.movementX}px`,
         top: `${-this.positions.movementY}px`,
         width: this.isGroupControl ? `${this.size.width}px !important` : '100%'
-      }
+      } : null
     } else {
-      return {
+      return this.size ? {
         left: `${-this.handlerPosition.left}px`,
         top: `${-this.handlerPosition.top}px`,
         width: `${this.handlerPosition.width}px !important`
-      }
+      } : null
     }
   }
   get getRStyle () {
@@ -369,7 +372,7 @@ export default class Resizehandler extends FDCommonMethod {
     this.positions.movementY = this.positions.clientY - event.clientY
     const scale: number = (this.propControlData.properties.Zoom! * 1) / 100
     // const scale1: number = (this.propControlData.properties.Zoom! * 10) / 100
-    const grid: Array<number> = [9, 9]
+    const grid: Array<number> = (controlType === 'ComboBox' || controlType === 'ListBox' || controlType === 'TextBox') ? [9, userData[this.controlId].properties.Font!.FontSize! + 18] : [9, 9]
     const x: number =
       Math.round(this.positions.movementX / scale / grid[0]) * grid[0]
     const y: number =
@@ -386,7 +389,7 @@ export default class Resizehandler extends FDCommonMethod {
       this.currentMouseDownEvent.customCallBack && this.currentMouseDownEvent.customCallBack()
     }
     const selected = this.selectedControls[this.userFormId].selected
-    if (selected.length === 1 && selected[0] === this.controlId) {
+    if (selected.length === 1 && selected[0] === this.controlId && this.size) {
       const top = (this.size.height! + y) > 0 ? y : y - (this.size.height! + y)
       const left = (this.size.width! + x) > 0 ? x : x - (this.size.width! + x)
       let incWidth = (this.size.width! + x) > 0 ? (this.size.width! + x) : -(this.size.width! + x)
@@ -423,7 +426,7 @@ export default class Resizehandler extends FDCommonMethod {
           this.handlerPosition.width = decWidth
         }
       }
-    } else {
+    } else if (this.size) {
       const top = y
       const left = x
       let incWidth = (this.size.width! + x) > 0 ? (this.size.width! + x) : 0

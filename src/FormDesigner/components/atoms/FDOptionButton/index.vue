@@ -4,6 +4,7 @@
     class="outer-check"
     :style="cssStyleProperty"
     ref="componentRef"
+    @mouseover="updateMouseCursor"
     @click="optionBtnClick"
     :tabindex="properties.TabIndex"
     @mousedown="controlEditMode"
@@ -34,7 +35,7 @@
           :style="labelStyle"
         >
           <span :style="spanStyleObj">{{ computedCaption.afterbeginCaption }}</span>
-          <span class="spanClass" :style="spanStyleObj">{{
+          <span class="spanClass" :style="spanClassStyleObj">{{
             computedCaption.acceleratorCaption
           }}</span>
           <span :style="spanStyleObj">{{ computedCaption.beforeendCaption }}</span>
@@ -405,10 +406,7 @@ export default class FDOptionButton extends Mixins(FdControlVue) {
       wordBreak: controlProp.WordWrap ? 'break-all' : 'normal',
       color:
         controlProp.Enabled === true ? controlProp.ForeColor : this.getEnabled,
-      cursor:
-        controlProp.MousePointer !== 0 || controlProp.MouseIcon !== ''
-          ? this.getMouseCursorData
-          : 'default',
+      cursor: this.controlCursor,
       fontFamily: font.FontStyle! !== '' ? this.setFontStyle : font.FontName!,
       fontSize: `${font.FontSize}px`,
       fontStyle: font.FontItalic || this.isItalic ? 'italic' : '',
@@ -448,9 +446,10 @@ export default class FDOptionButton extends Mixins(FdControlVue) {
     const controlProp = this.properties
     return {
       boxShadow:
-        controlProp.SpecialEffect === 0 ? '' : '-1px -1px gray',
+      controlProp.SpecialEffect === 0 ? '' : '-1px -1px gray',
       border: controlProp.SpecialEffect === 0 ? '2px solid gray' : '',
-      height: controlProp.SpecialEffect === 0 ? '6px' : '10px'
+      height: controlProp.SpecialEffect === 0 ? '6px' : '10px',
+      cursor: this.controlCursor
     }
   }
 

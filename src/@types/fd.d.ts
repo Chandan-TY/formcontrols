@@ -313,3 +313,7 @@ interface IErrorRange {
   from : number
   to : number
 }
+interface IemitGroup {
+  groupId: string
+  containerId: string
+}

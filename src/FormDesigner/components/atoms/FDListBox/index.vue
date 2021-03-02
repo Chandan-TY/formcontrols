@@ -1,4 +1,5 @@
 <template>
+<div class="outerListBoxDiv" :style="outerListBoxStyleObj" @mouseover="updateMouseCursor">
   <div
     class="listStyle"
     ref="listStyleOuterRef"
@@ -86,7 +87,7 @@
         </div>
       </div>
     </div>
-    <div v-else>
+    <div v-else :style="{cursor: controlCursor}">
         <div v-if="properties.ColumnHeads === true" class="theadClass">
                 <div
                   v-if="properties.RowSource === '' && properties.ColumnCount !== -1"
@@ -108,6 +109,7 @@
         <div></div>
       </div>
     </div>
+  </div>
   </div>
 </template>
 
@@ -851,6 +853,11 @@ export default class FDListBox extends Mixins(FdControlVue) {
       }
     }
   }
+  get outerListBoxStyleObj () {
+    return {
+      cursor: this.controlCursor
+    }
+  }
   /**
    * @description style object is passed to :style attribute in div tag
    * dynamically changing the styles of the component based on properties
@@ -868,10 +875,6 @@ export default class FDListBox extends Mixins(FdControlVue) {
       pointerEvents: this.isEditMode ? 'auto' : 'none',
       backgroundColor: controlProp.BackColor,
       borderColor: controlProp.BorderStyle === 1 ? controlProp.BorderColor : '',
-      cursor:
-        controlProp.MousePointer !== 0 || controlProp.MouseIcon !== ''
-          ? this.getMouseCursorData
-          : 'default',
       borderLeft:
         controlProp.BorderStyle === 1
           ? '1px solid ' + controlProp.BorderColor
@@ -994,7 +997,8 @@ export default class FDListBox extends Mixins(FdControlVue) {
           ? this.tempWeight
           : '',
       fontStretch: font.FontStyle !== '' ? this.tempStretch : '',
-      width: '100%'
+      width: '100%',
+      cursor: this.controlCursor
       // display: this.properties.ColumnCount === 0 ? 'none' : ''
     }
   }

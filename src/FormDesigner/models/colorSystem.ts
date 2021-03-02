@@ -1,7 +1,7 @@
 export const colorSystem = [
   {
     name: '&H80000000&',
-    value: '#a1a1a1',
+    value: 'rgba(161, 161, 161, 1)',
     displayName: 'Scroll Bars'
   },
   {

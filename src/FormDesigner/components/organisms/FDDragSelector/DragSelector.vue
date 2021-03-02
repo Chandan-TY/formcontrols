@@ -105,14 +105,10 @@ export default {
     },
 
     handleMouseDown (e) {
-      let count = 0
       this.getEditMode = false
       if (this.$parent.propControlData.type !== 'Userform') {
         EventBus.$emit('getDragSelectorEdit', e, this.$parent.containerId, (editmode) => {
-          count = count + 1
-          if (count === 1) {
-            this.getEditMode = editmode
-          }
+          this.getEditMode = editmode
         })
       } else {
         this.getEditMode = true
@@ -177,6 +173,7 @@ export default {
       this.dragging = false
       this.updatePointData(this.point, e)
       this.dragSelectorControl(e)
+      this.addControlObj(e)
       this.resetPoint(e)
       // this.emitChangeThrottled();
       window.removeEventListener('mouseup', this.handleMouseUp)
@@ -278,7 +275,6 @@ export default {
         width: 100%;
         height: 100%;
         position: relative;
-        cursor: crosshair;
         user-select: none;
     }
 
