@@ -378,6 +378,9 @@ export default class FDSpinButton extends Mixins(FdControlVue) {
       this.orientationValues.height = 0
       const newValues:IOrientationvalues = this.orientationValues
       this.checkOrientation(newValues, this.orientationValues)
+    } else {
+      const newValues:IOrientationvalues = this.orientationValues
+      this.checkOrientation(newValues, this.orientationValues)
     }
   }
   eventStoppers () {

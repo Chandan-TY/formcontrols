@@ -868,6 +868,40 @@ topIndexCheck (newVal:number, oldVal:number) {
   }
 }
 
+@Watch('isEditMode', { immediate: false })
+callingImage () {
+  this.pictureSize()
+}
+
+imageView () {
+  const picPosLeftRight = [0, 1, 2, 3, 4, 5]
+  if (this.textSpanRef && this.imageRef && this.imageRef.parentElement) {
+    if (this.properties.Width! <= this.imageRef.naturalWidth! && picPosLeftRight.includes(this.properties.PicturePosition!)) {
+      this.textSpanRef.style.display = 'none'
+      this.imageRef.parentElement!.style.alignSelf = ''
+    } else if (this.properties.Width! > this.imageRef.naturalWidth! && picPosLeftRight.includes(this.properties.PicturePosition!)) {
+      this.imageRef.parentElement!.style.alignSelf = 'center'
+      this.textSpanRef.style.display = 'flex'
+      document.removeEventListener('keypress', this.onKeyPress)
+    }
+  }
+  if (this.editableTextRef && this.imageRef && this.imageRef.parentElement) {
+    const el = this.editableTextRef.$el as HTMLSpanElement
+    if (this.properties.Width! <= this.imageRef.naturalWidth && picPosLeftRight.includes(this.properties.PicturePosition!)) {
+      el.style.display = 'none'
+      this.imageRef.parentElement!.style.alignSelf = ''
+      document.addEventListener('keypress', this.onKeyPress)
+    } else if (this.properties.Width! > this.imageRef.naturalWidth && picPosLeftRight.includes(this.properties.PicturePosition!)) {
+      this.imageRef.parentElement!.style.alignSelf = 'center'
+      el.style.display = 'flex'
+      document.removeEventListener('keypress', this.onKeyPress)
+    }
+  }
+}
+onKeyPress (e: KeyboardEvent) {
+  this.updateCaption(this.properties.Caption + e.key)
+}
+
 /**
  * @description updates the dataModel listBox object properties when user clicks
  * @function handleMultiSelect
@@ -1431,7 +1465,6 @@ get setFontStyle () {
 parentConextMenu (event: MouseEvent) {
   return event
 }
-
 openTextContextMenu (event: MouseEvent) {
   EventBus.$emit('openTextContextMenu', event, this.controlId)
 }
@@ -1572,12 +1605,15 @@ pictureSize () {
   }
   if (this.properties.Picture) {
     Vue.nextTick(() => {
-      imgStyle.width = this.properties.Width! <= this.imageRef!.naturalWidth ? `${this.properties.Width}px` : 'fit-content'
-      imgStyle.height = this.properties.Height! <= this.imageRef!.naturalHeight ? `${this.properties.Height}px` : 'fit-content'
-      if (this.properties.PicturePosition === 9 || this.properties.PicturePosition === 10 || this.properties.PicturePosition === 11) {
-        this.imageRef.scrollIntoView(true)
+      if (this.imageRef) {
+        imgStyle.width = this.properties.Width! <= this.imageRef!.naturalWidth ? `${this.properties.Width}px` : 'fit-content'
+        imgStyle.height = this.properties.Height! <= this.imageRef!.naturalHeight ? `${this.properties.Height}px` : 'fit-content'
+        if (this.properties.PicturePosition === 9 || this.properties.PicturePosition === 10 || this.properties.PicturePosition === 11) {
+          this.imageRef.scrollIntoView(true)
+        }
+        imgStyle.filter = !this.properties.Enabled ? 'sepia(0) grayscale(1) blur(4px)' : ''
+        this.imageView()
       }
-      imgStyle.filter = !this.properties.Enabled ? 'sepia(0) grayscale(1) blur(3px) opacity(0.2)' : ''
     })
   }
   this.imageProperty = imgStyle

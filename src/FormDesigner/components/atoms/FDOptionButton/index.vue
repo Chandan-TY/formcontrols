@@ -317,7 +317,7 @@ export default class FDOptionButton extends Mixins(FdControlVue) {
     this.editableTextVerify()
     if (!this.properties.Enabled) {
       this.spanRef.style.backgroundColor = 'rgba(220, 220, 220, 1)'
-      this.imageProperty.filter = 'sepia(0) grayscale(1) blur(3px) opacity(0.2)'
+      this.imageProperty.filter = 'sepia(0) grayscale(1) blur(4px)'
     } else {
       this.spanRef.style.backgroundColor = 'white'
       this.imageProperty.filter = ''

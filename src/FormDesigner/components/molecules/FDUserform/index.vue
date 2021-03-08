@@ -16,8 +16,8 @@
       :style="innerWindowBodyStyle"
       @contextmenu.stop="showContextMenu($event, userFormId, controlId, 'container')"
       ref="innerUserForm"
-      @scroll="updateScrollingLeftTop"
     >
+      <!-- @scroll="updateScrollingLeftTop" -->
       <Container
         class="container"
         :style="containerStyleObj"
@@ -69,18 +69,18 @@ export default class UserForm extends FdContainerVue {
   innerWindowFocus (value: boolean) {
     this.innerWindowFocused = value
   }
-  mounted () {
-    this.scrollLeftTop(this.data)
-  }
-  @Watch('properties.ScrollLeft', { deep: true })
-  updateScrollLeft () {
-    this.scrollLeftTop(this.data)
-  }
+  // mounted () {
+  //   this.scrollLeftTop(this.data)
+  // }
+  // @Watch('properties.ScrollLeft', { deep: true })
+  // updateScrollLeft () {
+  //   this.scrollLeftTop(this.data)
+  // }
 
-  @Watch('properties.ScrollTop', { deep: true })
-  updateScrollTop () {
-    this.scrollLeftTop(this.data)
-  }
+  // @Watch('properties.ScrollTop', { deep: true })
+  // updateScrollTop () {
+  //   this.scrollLeftTop(this.data)
+  // }
 
   /**
    * @description Returns string value for CSS background style
@@ -141,7 +141,7 @@ export default class UserForm extends FdContainerVue {
   }
 
   protected get containerStyleObj (): Partial<CSSStyleDeclaration> {
-    const scale = (this.properties.Zoom!) / 100
+    const scale = 1
     return {
       width: 'calc(100% - 2px)',
       height: 'calc(100% - 2px)',
@@ -150,8 +150,8 @@ export default class UserForm extends FdContainerVue {
       borderTop: this.data.properties.BorderStyle === 1 ? '1px solid ' + this.data.properties.BorderColor : this.data.properties.SpecialEffect === 2 ? '2px solid gray' : this.data.properties.SpecialEffect === 3 ? '1.5px solid gray' : this.data.properties.SpecialEffect === 4 ? '0.5px solid gray' : '',
       borderBottom: this.data.properties.BorderStyle === 1 ? '1px solid ' + this.data.properties.BorderColor : this.data.properties.SpecialEffect === 1 ? '2px solid gray' : this.data.properties.SpecialEffect === 4 ? '1.5px solid gray' : this.data.properties.SpecialEffect === 3 ? '0.5px solid gray' : '',
       borderColor: this.data.properties.BorderStyle === 1 ? this.data.properties.BorderColor : '',
-      transform: `scale(${scale})`,
-      transformOrigin: `top left`
+      transform: `scale(${scale})`
+      // transformOrigin: `top left`
     }
   }
   protected get innerWindowBodyStyle (): Partial<CSSStyleDeclaration> {
@@ -274,6 +274,7 @@ export default class UserForm extends FdContainerVue {
   flex: 1;
   left: 0px;
   background-position: 9px 9px;
+  height: 100%;
 }
 .inner-window-content:focus {
   outline: none;

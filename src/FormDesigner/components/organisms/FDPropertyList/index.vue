@@ -38,7 +38,9 @@
     <FDTable v-if="selectedSelect.length > 0" :tableData="propertyTableData"
       :userFormId="userFormId"
       :getSelectedControlsDatas="getSelectedControlsDatas"
-      :resultArray="resultArray" />
+      :resultArray="resultArray"
+      :isPropChanged="isPropChanged"
+    />
   </div>
 </template>
 

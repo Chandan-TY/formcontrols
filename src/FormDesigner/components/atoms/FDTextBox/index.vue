@@ -34,7 +34,7 @@
       "
       @keydown="properties.PasswordChar !== '' ? handleDelete($event) : null"
       @blur="handleBlur($event, textareaRef, hideSelectionDiv)"
-      @click="handleClick(hideSelectionDiv)"
+      @click="handleClick(hideSelectionDiv), onClickSelection()"
       class="text-box-design"
       :value="
         properties.Value
@@ -125,6 +125,8 @@ export default class FDTextBox extends Mixins(FdControlVue) {
   originalText: string = ''
   trimmedText: string = ''
   fitToSizeWhenMultiLine: boolean = false
+  lastValue:number
+  prevSelection: number
   dblclick (e: Event) {
     let newSelectionStart = 0
     const eTarget = e.target as HTMLTextAreaElement
@@ -189,6 +191,7 @@ export default class FDTextBox extends Mixins(FdControlVue) {
       width: `${controlProp.Width}px`,
       height: `${controlProp.Height}px`,
       top: `${controlProp.Top}px`,
+      paddingLeft: controlProp.SelectionMargin === true ? '10px' : '1px',
       borderColor: controlProp.BorderStyle === 1 ? controlProp.BorderColor : '',
       textAlign:
         controlProp.TextAlign === 0
@@ -787,6 +790,18 @@ export default class FDTextBox extends Mixins(FdControlVue) {
         this.textareaRef.focus()
       }
     })
+  }
+
+  onClickSelection () {
+    const textarea = this.textareaRef
+    if (typeof textarea.selectionStart === 'undefined') {
+      return false
+    }
+    const selStart = textarea.selectionStart
+    var startPos = (textarea.value.substring(0, selStart).lastIndexOf('\n') >= 0) ? textarea.value.substring(0, selStart).lastIndexOf('\n') + 1 : 0
+    var endPos = (textarea.value.substring(textarea.selectionEnd, textarea.value.length).indexOf('\n') >= 0) ? textarea.selectionEnd + textarea.value.substring(textarea.selectionEnd, textarea.value.length).indexOf('\n') : textarea.value.length
+    textarea.selectionEnd = endPos
+    return true
   }
 }
 </script>

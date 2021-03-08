@@ -243,7 +243,7 @@ export default class FDLabel extends Mixins(FdControlVue) {
   })
   checkEnabled (newVal: boolean, oldVal: boolean) {
     if (!this.properties.Enabled) {
-      this.imageProperty.filter = 'sepia(0) grayscale(1) blur(3px) opacity(0.2)'
+      this.imageProperty.filter = 'sepia(0) grayscale(1) blur(4px)'
     } else {
       this.imageProperty.filter = ''
     }

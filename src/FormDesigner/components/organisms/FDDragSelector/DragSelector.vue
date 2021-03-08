@@ -31,6 +31,12 @@ export default {
         return []
       }
     },
+    isPropChanged: {
+      type: Boolean,
+      default () {
+        return false
+      }
+    },
     isEditMode: {
       type: Boolean,
       default () {
@@ -72,6 +78,11 @@ export default {
 
   created () {
     this.registerEvents()
+    EventBus.$on('dragSelMouseDown', (event, container) => {
+      if (this.$parent.containerId === container) {
+        this.$nextTick(() => { this.handleMouseDown(event) })
+      }
+    })
   },
 
   mounted () {
@@ -105,24 +116,29 @@ export default {
     },
 
     handleMouseDown (e) {
-      this.getEditMode = false
-      if (this.$parent.propControlData.type !== 'Userform') {
-        EventBus.$emit('getDragSelectorEdit', e, this.$parent.containerId, (editmode) => {
-          this.getEditMode = editmode
-        })
-      } else {
-        this.getEditMode = true
+      if (this.isPropChanged === true) {
+        this.$emit('updateMousedownVar', e)
       }
-      if (this.getEditMode) {
-        this.cancelAllSelect()
-        this.$nextTick(() => {
-          this.resetPoint(e)
-          this.updatePointData(this.point, e)
-          window.addEventListener('mouseup', this.handleMouseUp)
-          window.addEventListener('mousemove', this.handleMouseMoveThrottled)
-        })
+      if (this.isPropChanged !== true) {
+        this.getEditMode = false
+        if (this.$parent.propControlData.type !== 'Userform') {
+          EventBus.$emit('getDragSelectorEdit', e, this.$parent.containerId, (editmode) => {
+            this.getEditMode = editmode
+          })
+        } else {
+          this.getEditMode = true
+        }
+        if (this.getEditMode) {
+          this.cancelAllSelect()
+          this.$nextTick(() => {
+            this.resetPoint(e)
+            this.updatePointData(this.point, e)
+            window.addEventListener('mouseup', this.handleMouseUp)
+            window.addEventListener('mousemove', this.handleMouseMoveThrottled)
+          })
+        }
+        this.$emit('deActiveControl', e)
       }
-      this.$emit('deActiveControl', e)
     },
 
     handleMouseMove (e) {

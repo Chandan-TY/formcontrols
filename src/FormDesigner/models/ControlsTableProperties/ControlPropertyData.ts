@@ -457,7 +457,7 @@ export class ControlPropertyData {
           Enabled: true,
           Font: {
             FontName: 'Arial',
-            FontSize: 15,
+            FontSize: 10,
             FontBold: false,
             FontItalic: false,
             FontUnderline: false,
@@ -620,7 +620,7 @@ export class ControlPropertyData {
           Enabled: true,
           Font: {
             FontName: 'Arial',
-            FontSize: 15,
+            FontSize: 10,
             FontBold: false,
             FontItalic: false,
             FontUnderline: false,
@@ -666,7 +666,8 @@ export class ControlPropertyData {
               Accelerator: ''
             }
           ],
-          zIndex: -1
+          zIndex: -1,
+          tabDataLength: 2
         },
         type: 'TabStrip'
       },

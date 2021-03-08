@@ -21,6 +21,9 @@
         @updateAppearance="updateAppearance"
         @emitFont="emitFont"
         @colorPaletteProp="colorPaletteProp"
+        :userFormId="userFormId"
+        :getSelectedControlsDatas="getSelectedControlsDatas"
+        :isPropChanged="isPropChanged"
       />
     </div>
   </div>
@@ -51,6 +54,7 @@ export default class FDTable extends Vue {
   @Prop({ required: true, type: String }) public readonly userFormId! : string
   @Prop({ required: true }) public readonly getSelectedControlsDatas: any
   @Prop() resultArray: boolean[]
+  @Prop({ required: false }) public readonly isPropChanged: boolean
   @Action('fd/updateControl') updateControl!: (payload: IupdateControl) => void;
   @Action('fd/updateControlExtraData') updateControlExtraData!: (
     payload: IupdateControlExtraData

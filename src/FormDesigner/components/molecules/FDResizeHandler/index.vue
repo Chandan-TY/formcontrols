@@ -175,12 +175,12 @@ export default class Resizehandler extends FDCommonMethod {
           }
           this.updateIsMove(true)
           const containerType = this.userformData[this.userFormId][this.controlId].type
-          const type = this.userformData[this.userFormId][this.isSelctedControl].type
+          const type = this.isSelctedControl ? this.userformData[this.userFormId][this.isSelctedControl].type : ''
           if (type === 'Frame' || type === 'MultiPage') {
             if (containerType === 'Frame' || containerType === 'MultiPage') {
               EventBus.$emit('handleName', 'frameDrag')
             }
-          } else {
+          } else if (type !== '') {
             EventBus.$emit('handleName', 'drag')
           }
         }

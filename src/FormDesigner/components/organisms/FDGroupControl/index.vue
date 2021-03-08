@@ -93,6 +93,7 @@ export default class GroupControl extends FDCommonMethod {
     EventBus.$on('getGroupSize', this.getGroupSize)
     EventBus.$on('groupElementDrag', this.elementDrag)
     EventBus.$on('getGroupDisplay', this.getGroupDisplay)
+    EventBus.$on('setGroupSize', this.setGroupSize)
     EventBus.$on('updateGroupStyle', (groupName: string) => {
       this.groupStyle(groupName)
     })
@@ -113,6 +114,7 @@ export default class GroupControl extends FDCommonMethod {
     EventBus.$off('getGroupSize', this.getGroupSize)
     EventBus.$off('groupElementDrag', this.elementDrag)
     EventBus.$off('updateGroupStyle')
+    // EventBus.$off('setGroupSize', this.setGroupSize)
   }
   convertToGridSize (val: number) {
     const gridSize = 9
@@ -181,6 +183,14 @@ export default class GroupControl extends FDCommonMethod {
     if (this.containerId === this.selectedControls[this.userFormId].container[0]) {
       callBack(this.divStyleArray)
     }
+  }
+  setGroupSize (callBack: Function) {
+    for (const group of this.divStyleArray) {
+      if (group.display === 'block') {
+        this.groupStyle(group.groupName!)
+      }
+    }
+    callBack()
   }
   endGroupMoveControl () {
     // if (this.getIsMoveTarget) {
@@ -704,7 +714,7 @@ export default class GroupControl extends FDCommonMethod {
     EventBus.$emit('groupDrag', 'NotDrag')
     EventBus.$emit('endMoveControl', 'groupEndMove')
     EventBus.$emit('endGroupMoveControl')
-    if (handler === 'drag') {
+    if (handler === 'drag' && event.which !== 3) {
       const selected = this.selectedControls[this.userFormId].selected
       for (const grpname in selected) {
         if (selected[grpname].startsWith('group')) {

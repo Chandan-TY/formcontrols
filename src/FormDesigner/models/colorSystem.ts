@@ -11,22 +11,22 @@ export const colorSystem = [
   },
   {
     name: '&H80000002&',
-    value: 'rgba(126, 179, 204, 0.8)',
+    value: 'rgb(144 174 206)',
     displayName: 'Active Title Bar'
   },
   {
     name: '&H80000003&',
-    value: 'rgba(155, 201, 223, 0.8)',
+    value: 'rgb(190 205 220)',
     displayName: 'Inactive Title Bar'
   },
   {
     name: '&H80000004&',
-    value: 'rgba(236, 234, 234, 0.8)',
+    value: 'rgb(239 239 239)',
     displayName: 'Menu Bar'
   },
   {
     name: '&H80000005&',
-    value: 'rgba(255, 255, 255, 0.8)',
+    value: 'rgba(255, 255, 255)',
     displayName: 'Window Background'
   },
   {
@@ -51,42 +51,42 @@ export const colorSystem = [
   },
   {
     name: '&H8000000A&',
-    value: 'rgba(173, 172, 172, 0.8)',
+    value: 'rgb(185 185 185)',
     displayName: 'Active Border'
   },
   {
     name: '&H8000000B&',
-    value: 'rgba(255, 255, 255, 0.8)',
+    value: 'rgb(252 252 253)',
     displayName: 'Inactive Border'
   },
   {
     name: '&H8000000C&',
-    value: 'rgba(161, 160, 160, 0.8)',
+    value: 'rgb(177 177 177)',
     displayName: 'Application Workspace'
   },
   {
     name: '&H8000000D&',
-    value: 'rgba(50, 139, 255, 0.8)',
+    value: 'rgb(18 122 214)',
     displayName: 'Highlight'
   },
   {
     name: '&H8000000E&',
-    value: 'rgba(255, 255, 255, 0.8)',
+    value: 'rgba(255, 255, 255)',
     displayName: 'Highlight Text'
   },
   {
     name: '&H8000000F&',
-    value: 'rgba(235, 235, 235, 0.8)',
+    value: 'rgba(235, 235, 235)',
     displayName: 'Button Face'
   },
   {
     name: '&H80000010&',
-    value: 'rgba(185, 185, 185, 0.8)',
+    value: 'rgb(165 165 165)',
     displayName: 'Button Shadow'
   },
   {
     name: '&H80000011&',
-    value: 'rgba(124, 124, 124, 0.8)',
+    value: 'rgba(124, 124, 124)',
     displayName: 'Disabled Text'
   },
   {
@@ -101,17 +101,17 @@ export const colorSystem = [
   },
   {
     name: '&H80000014&',
-    value: 'rgba(255, 255, 255, 0.8)',
+    value: 'rgba(255, 255, 255)',
     displayName: 'Button Highlight'
   },
   {
     name: '&H80000015&',
-    value: 'rgba(124, 124, 124, 0.8)',
+    value: 'rgba(107, 106, 105)',
     displayName: 'Button Dark Shadow'
   },
   {
     name: '&H80000016&',
-    value: 'rgba(226, 226, 226, 0.8)',
+    value: 'rgba(226, 226, 226)',
     displayName: 'Button Light Shadow'
   },
   {

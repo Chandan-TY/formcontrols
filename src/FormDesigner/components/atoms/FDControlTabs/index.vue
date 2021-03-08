@@ -8,9 +8,7 @@
       "
     />
     <label
-      @mousedown="
-        !getDisableValue(pageData.Enabled) && isChecked(indexValue, pageValue)
-      "
+      @mousedown="!getDisableValue(pageData.Enabled, indexValue, pageValue) && isChecked(indexValue, pageValue)"
       @keydown.delete.exact.stop="deleteMultiPageControl"
       :tabindex="0"
       :class="[
@@ -124,12 +122,17 @@ export default class FDControlTabs extends Vue {
   @Prop() setFontStyle: string;
   @Prop() tempWidth: number;
 
+  @Emit('isMouseDown')
+  isMouseDown (indexValue: number, pageValue: string) {
+    return { indexValue: indexValue, pageValue: pageValue }
+  }
   /**
    * @description getDisableValue checks for the RunMode of the control and then returns after checking for the Enabled
    * and the Locked property
    * @function getDisableValue
    */
-  getDisableValue (enabledValue: boolean) {
+  getDisableValue (enabledValue: boolean, indexValue: number, pageValue: string) {
+    this.isMouseDown(indexValue, pageValue)
     if (this.isRunMode) {
       if (!this.data.properties.Enabled) {
         return true

@@ -86,8 +86,10 @@ export default class FDFrame extends Mixins(FdContainerVue) {
   protected get frameContainerStyleObj (): Partial<CSSStyleDeclaration> {
     const scale = (this.properties.Zoom!) / 100
     return {
-      transform: `scale(${scale})`,
-      transformOrigin: `top left`
+      // transform: `scale(${scale})`,
+      // transformOrigin: `top left`,
+      // height: '100%',
+      // width: '100%'
     }
   }
 
@@ -137,7 +139,7 @@ export default class FDFrame extends Mixins(FdContainerVue) {
     const controlProp = this.data.properties
     return {
       backgroundColor: controlProp.BackColor,
-      width: `${controlProp.Width}px`,
+      width: `${controlProp.Width! - 0.5}px`,
       height: `${controlProp.Height}px`,
       overflow: 'hidden'
     }

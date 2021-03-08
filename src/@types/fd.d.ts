@@ -176,7 +176,8 @@ interface extraDatas {
   RowSourceData?: Array <Array<string>>,
   MatchData? : string,
   zIndex?: number,
-  TabIndex?: number
+  TabIndex?: number,
+  tabDataLength?: number
 }
 
 interface tabsItems {
@@ -193,6 +194,16 @@ interface font {
   FontItalic?: boolean,
   FontUnderline?: boolean,
   FontStrikethrough?: boolean,
+  FontStyle?: string
+}
+
+interface fontString {
+  FontName: string,
+  FontSize?: number,
+  FontBold?: string,
+  FontItalic?: string,
+  FontUnderline?: string,
+  FontStrikethrough?: string,
   FontStyle?: string
 }
 

@@ -7,11 +7,6 @@
     :tabindex="properties.TabIndex"
     :title="properties.ControlTipText"
     :runmode="getDisableValue"
-    @blur="
-      () => {
-        isClicked = false;
-      }
-    "
     @mousedown="controlEditMode"
     @keydown.enter.prevent="setContentEditable($event, true)"
     @click="commandButtonClick"
@@ -141,11 +136,7 @@ export default class FDCommandButton extends Mixins(FdControlVue) {
       borderBottomColor: controlProp.Default ? 'black' : 'lightgray',
       borderLeftColor: controlProp.Default ? 'black' : 'white',
       borderRightColor: controlProp.Default ? 'black' : 'lightgray',
-      outline: controlProp.Enabled
-        ? controlProp.TakeFocusOnClick && this.isClicked
-          ? '1px dotted black'
-          : 'none'
-        : 'none',
+      outline: this.takeFocusOnClickValue(),
       outlineOffset:
         controlProp.TakeFocusOnClick && this.isClicked ? '-5px' : '0px',
       display: display,
@@ -175,6 +166,18 @@ export default class FDCommandButton extends Mixins(FdControlVue) {
     }
   }
 
+  takeFocusOnClickValue () {
+    const controlProp = this.properties
+    if (controlProp.Enabled && this.isEditMode) {
+      if (controlProp.TakeFocusOnClick && this.isClicked) {
+        return '1px dotted black'
+      } else {
+        return 'none'
+      }
+    } else {
+      return 'none'
+    }
+  }
   /**
    * @description watches changes in propControlData to set autoset when true
    * @function autoSize
@@ -266,7 +269,7 @@ export default class FDCommandButton extends Mixins(FdControlVue) {
   })
   checkEnabled (newVal: boolean, oldVal: boolean) {
     if (!this.properties.Enabled) {
-      this.imageProperty.filter = 'sepia(0) grayscale(1) blur(3px) opacity(0.2)'
+      this.imageProperty.filter = 'sepia(0) grayscale(1) blur(4px)'
     } else {
       this.imageProperty.filter = ''
     }
@@ -275,6 +278,9 @@ export default class FDCommandButton extends Mixins(FdControlVue) {
   setCaretPositionInEditMode () {
     if (this.isEditMode) {
       this.setCaretPosition()
+    }
+    if (!this.isEditMode) {
+      this.isClicked = false
     }
   }
   /**

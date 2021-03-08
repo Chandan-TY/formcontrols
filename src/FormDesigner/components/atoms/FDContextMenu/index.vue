@@ -311,6 +311,7 @@ export default class ContextMenu extends FDCommonMethod {
       const tabControlData = JSON.parse(
         JSON.stringify(this.userformData[this.userFormId][this.controlId])
       ).extraDatas.Tabs
+      const tabLength = this.userformData[this.userFormId][this.controlId].extraDatas!.tabDataLength!
       let prevTabId = -1
       const initialTabData: tabsItems = {
         Name: '',
@@ -318,21 +319,8 @@ export default class ContextMenu extends FDCommonMethod {
         ToolTip: '',
         Accelerator: ''
       }
-      if (tabControlData.length > 0) {
-        for (let i = 0; i < tabControlData.length; i++) {
-          const id = tabControlData[i].Name.split('Tab').pop() || '-1'
-          const parseId = parseInt(id, 10)
-          if (!isNaN(parseId) && prevTabId < parseId) {
-            prevTabId = parseId
-          }
-        }
-        prevTabId += 1
-        initialTabData.Name = `Tab${prevTabId}`
-        initialTabData.Caption = `Tab${prevTabId}`
-      } else {
-        initialTabData.Name = `Tab${1}`
-        initialTabData.Caption = `Tab${1}`
-      }
+      initialTabData.Name = `Tab${tabLength + 1}`
+      initialTabData.Caption = `Tab${tabLength + 1}`
       tabControlData.push(initialTabData)
       this.updateControlExtraData({
         userFormId: this.userFormId,
@@ -345,6 +333,12 @@ export default class ContextMenu extends FDCommonMethod {
         controlId: this.controlId,
         propertyName: 'Value',
         value: tabControlData.length - 1
+      })
+      this.updateControlExtraData({
+        userFormId: this.userFormId,
+        controlId: this.controlId,
+        propertyName: 'tabDataLength',
+        value: tabLength! + 1
       })
     } else if (type === 'MultiPage') {
       const parentId = this.controlId.split('MultiPage').pop()
@@ -516,10 +510,10 @@ export default class ContextMenu extends FDCommonMethod {
     for (const selControl of getSelControl) {
       const type = userData[selControl].type
       const tempZIndex = userData[selControl].extraDatas!.zIndex!
-      const controlIndex = Object.keys(userData).findIndex((val: string, index: number) => {
+      const controlIndex = containerControls.findIndex((val: string, index: number) => {
         return 'zIndex' in userData[val].extraDatas! && (userData[val].extraDatas!.zIndex === tempZIndex - 1)
       })
-      const nextSelectedControl = controlIndex !== -1 ? Object.keys(userData)[controlIndex] : ''
+      const nextSelectedControl = controlIndex !== -1 ? containerControls[controlIndex] : ''
       if (nextSelectedControl !== '' && !highProrControl.includes(selControl)) {
         if (getSelControl!.includes(nextSelectedControl)) {
           if (!nextSelctedSeries.includes(selControl)) {
@@ -951,7 +945,7 @@ export default class ContextMenu extends FDCommonMethod {
       addId: ctrlId,
       item: ctrlObj
     })
-    if (isParent) {
+    if (isParent && this.copyControlList.type === 'copy') {
       const newTabIndex = this.userformData[this.userFormId][parentId].controls.length
       this.updateTabIndexValue(ctrlId)
       this.updateZIndexValue(ctrlId)
@@ -1107,7 +1101,7 @@ export default class ContextMenu extends FDCommonMethod {
                 ...controlObj.properties,
                 ID: controlID!,
                 GroupID: groupIdIndex !== -1 ? newGroupId[groupIdIndex] : '',
-                Name: this.generateUniqueName(controlObj.type)
+                Name: controlObj.type === 'Page' ? controlObj.properties.Name : this.generateUniqueName(controlObj.type)
               }
             }
             this.removeChildControl(daTarget, key)
@@ -1137,7 +1131,7 @@ export default class ContextMenu extends FDCommonMethod {
               ...controlObj.properties,
               ID: controlID!,
               GroupID: groupIdIndex !== -1 ? newGroupId[groupIdIndex] : '',
-              Name: this.generateUniqueName(controlObj.type)
+              Name: controlObj.type === 'Page' ? controlObj.properties.Name : this.generateUniqueName(controlObj.type)
             }
           }
           this.updateNewControl(this.containerId, controlID, item, true)
@@ -1162,7 +1156,7 @@ export default class ContextMenu extends FDCommonMethod {
                     ...controlObj.properties,
                     ID: controlID!,
                     GroupID: groupIdIndex !== -1 ? newGroupId[groupIdIndex] : '',
-                    Name: this.generateUniqueName(controlObj.type)
+                    Name: controlObj.type === 'Page' ? controlObj.properties.Name : this.generateUniqueName(controlObj.type)
                   }
                 }
                 this.updateNewControl(this.containerId, controlID, item, true)

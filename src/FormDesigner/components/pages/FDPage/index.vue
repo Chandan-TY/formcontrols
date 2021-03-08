@@ -384,6 +384,7 @@ export default class FDPage extends Vue {
           if (!groupId && selectedGroupArray.length <= 1) {
             val.text = '<u>U</u>ngroup'
             val.id = 'ID_UNGROUP'
+            val.disabled = selected.length > 1
           } else {
             val.text = '<u>G</u>roup'
             val.id = 'ID_GROUP'
@@ -444,7 +445,6 @@ export default class FDPage extends Vue {
   createGroup (groupObj: IemitGroup) {
     EventBus.$emit('createGroup', groupObj)
   }
-
   openTextContextMenu (event: MouseEvent) {
     this.textMenu = true
     event.preventDefault()
@@ -482,7 +482,6 @@ export default class FDPage extends Vue {
         console.error('Failed to read clipboard contents: ', err)
       })
   }
-
   getCursorPos (event: MouseEvent) {
     const controlType = this.userformData[this.userFormId][this.controlId].type
     if (controlType === 'ComboBox' || controlType === 'TextBox') {

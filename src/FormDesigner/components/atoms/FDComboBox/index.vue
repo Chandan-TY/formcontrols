@@ -62,8 +62,9 @@
         :style="selectedStyleObj"
         @mouseover="updateMouseCursor"
       >
-        <div v-if="properties.DropButtonStyle === 1">
+        <div v-if="properties.DropButtonStyle === 1" :style="arrowButtonStyleObj" >
           <svg
+            class="svgStyleObj"
             version="1.0"
             xmlns="http://www.w3.org/2000/svg"
             height="10"
@@ -90,8 +91,9 @@
             </g>
           </svg>
         </div>
-        <div v-else-if="properties.DropButtonStyle === 2">
+        <div v-else-if="properties.DropButtonStyle === 2" :style="ellipsesAndReduceButtonStyleObj">
           <svg
+            class="svgStyleObj"
             version="1.0"
             xmlns="http://www.w3.org/2000/svg"
             width="12"
@@ -131,8 +133,9 @@
             </g>
           </svg>
         </div>
-        <div v-else-if="properties.DropButtonStyle === 3">
+        <div v-else-if="properties.DropButtonStyle === 3" :style="ellipsesAndReduceButtonStyleObj">
           <svg
+            class="svgStyleObj"
             version="1.0"
             xmlns="http://www.w3.org/2000/svg"
             width="12"
@@ -200,17 +203,18 @@
                   v-if="properties.RowSource === '' && properties.ColumnCount !== -1"
                   :style="emptyColHeads"
                 >
-                <div v-if="properties.ListStyle === 1" :style="{display:'inline-block', width:'20px'}">
-                  <span class="bar" :style="{float:'right', color: properties.ForeColor}">|</span>
+                <div v-if="properties.ListStyle === 1" :style="{display:'inline-block', width:'20px',height: (emptyColHeadsHeight - 1) + 'px'}">
                 </div>
-                <div v-for="(a, i) in properties.ColumnCount" :key="i" :style="{display:'inline-block', width:'100px'}">
-                  <span v-if="a>1" class="bar" :key="i" :style="{color: properties.ForeColor}">|</span>
+                <template v-for="(a, i) in properties.ColumnCount">
+                <div :key="i" :style="{display:'inline-block', width:'100px',height: (emptyColHeadsHeight - 1) + 'px', borderLeft: properties.ColumnCount === 1 ? '' : '1px solid ' + properties.ForeColor}">
                 </div>
+                </template>
                 </div>
-                <div v-else-if="properties.ColumnCount === -1 && properties.RowSource === ''">
-                <div v-for="i in 10" :key="i" :style="{display:'inline-block', width:'100px'}">
-                  <span v-if="i < 10" class="bar" :style="{ float: 'right', color: properties.ForeColor}" :key="i">|</span>
+                <div v-else-if="properties.ColumnCount === -1 && properties.RowSource === ''" :style="emptyColHeads">
+                <template v-for="i in 10">
+                <div :key="i" :style="{display:'inline-block', width:'100px',height: (emptyColHeadsHeight - 1) + 'px', borderLeft: '1px solid ' + properties.ForeColor}">
                 </div>
+                </template>
                 </div>
                 <hr v-if="properties.ColumnHeads" class="hrStyle" :style="hrStyleObj"/>
               </div>
@@ -283,7 +287,6 @@
 import {
   Component,
   Vue,
-  Prop,
   Mixins,
   Watch,
   Ref
@@ -300,9 +303,10 @@ export default class FDComboBox extends Mixins(FdControlVue) {
   @Ref('hideSelectionDiv') readonly hideSelectionDiv!: HTMLDivElement;
   @Ref('comboRef') comboRef!: HTMLDivElement;
   @Ref('itemsRef') itemsRef!: HTMLDivElement;
-  @Ref('trRef') trRef!: HTMLDivElement;
+  @Ref('trRef') trRef!: HTMLDivElement[];
 
   private tabindex = 0;
+  emptyColHeadsHeight = 0;
   eTargetValue: string = '';
   tempArray: Array<Array<string>> = [];
   open: boolean = false;
@@ -318,6 +322,18 @@ export default class FDComboBox extends Mixins(FdControlVue) {
   controlZIndex: number = -1;
   newColumnWidthsValue: string = '';
 
+  get arrowButtonStyleObj () {
+    return {
+      width: '10px',
+      height: '12.4px'
+    }
+  }
+  get ellipsesAndReduceButtonStyleObj () {
+    return {
+      width: '12px',
+      height: '14.4px'
+    }
+  }
   get checkBothEnabledAndLocked () {
     if (this.properties.Enabled) {
       if (this.properties.Locked) {
@@ -397,7 +413,8 @@ export default class FDComboBox extends Mixins(FdControlVue) {
       width: '100%',
       textAlign: controlProp.TextAlign === 2 ? 'right' : controlProp.TextAlign === 1 ? 'center' : 'left',
       overflow: 'hidden',
-      paddingBottom: this.data.properties.Font!.FontSize! > 48 ? '10px' : '5px'
+      paddingBottom: this.properties.Font!.FontSize! >= 48 ? '0px' : this.properties.Font!.FontSize! >= 36 ? '4px' : this.properties.Font!.FontSize! >= 18 ? '6px' : this.properties.Font!.FontSize! >= 12 ? '7px' : this.properties.Font!.FontSize! >= 8 ? '9px' : ''
+
     }
   }
 
@@ -412,6 +429,10 @@ export default class FDComboBox extends Mixins(FdControlVue) {
   openValidate () {
     if (this.open) {
       this.updateDataModelExtraData({ propertyName: 'zIndex', value: -1 })
+      this.listHeightValue()
+      if (this.properties.RowSource === '') {
+        this.updateEmptyColumnHeight()
+      }
     } else {
       this.updateDataModelExtraData({ propertyName: 'zIndex', value: this.controlZIndex })
     }
@@ -419,6 +440,105 @@ export default class FDComboBox extends Mixins(FdControlVue) {
       Vue.nextTick(() => {
         this.headWidth = this.comboRef.children[1].children[0].scrollWidth + 'px'
       })
+    }
+  }
+
+  updateEmptyColumnHeight () {
+    Vue.nextTick(() => {
+      if (this.itemsRef) {
+        if (!this.properties.ColumnHeads) {
+          this.itemsRef.style.height = this.emptyColHeadsHeight + 'px'
+        } else {
+          this.itemsRef.style.height = (this.emptyColHeadsHeight * 2) + 'px'
+        }
+      }
+    })
+  }
+
+  listHeightValue () {
+    if (!this.properties.ColumnHeads) {
+      if ((this.trRef && this.trRef[0]) && (this.itemsRef && this.itemsRef.children[0])) {
+        Vue.nextTick(() => {
+          const a = this.trRef[0] as HTMLDivElement
+          const c = this.itemsRef.children[0] as HTMLDivElement
+          if (this.properties.ListRows === 0 || this.properties.ListRows! >= this.extraDatas.RowSourceData!.length) {
+            let b = a.offsetHeight * this.extraDatas.RowSourceData!.length
+            if (c.scrollWidth > c.clientWidth) {
+              if (this.properties.ColumnCount === 1) {
+                c.style.height = b + 'px'
+                c.style.overflowX = 'hidden'
+                c.style.overflowY = 'auto'
+              } else if (this.properties.ListRows! === 0 || this.properties.ListRows! === this.extraDatas.RowSourceData!.length) {
+                c.style.height = b + 15 + 'px'
+                c.style.overflowX = 'scroll'
+                c.style.overflowY = 'hidden'
+              } else {
+                c.style.height = b + 15 + 'px'
+                c.style.overflowX = 'scroll'
+                c.style.overflowY = 'auto'
+              }
+            } else {
+              c.style.height = b + 'px'
+              c.style.overflowX = 'hidden'
+              c.style.overflowY = 'auto'
+            }
+          } else {
+            let b = a.offsetHeight * this.properties.ListRows!
+            if (c.scrollWidth > c.clientWidth) {
+              c.style.height = b + 15 + 'px'
+              c.style.overflowX = 'scroll'
+              c.style.overflowY = 'auto'
+            } else {
+              c.style.height = b + 'px'
+              c.style.overflowX = 'hidden'
+              c.style.overflowY = 'auto'
+            }
+          }
+        })
+      }
+    } else {
+      if (this.itemsRef.children[0].children[0].children[0]) {
+        if ((this.trRef && this.trRef[0]) && (this.itemsRef && this.itemsRef.children[0])) {
+          Vue.nextTick(() => {
+            const a = this.trRef[0] as HTMLDivElement
+            const c = this.itemsRef.children[0] as HTMLDivElement
+            if (this.properties.ListRows === 0 || this.properties.ListRows! >= this.extraDatas.RowSourceData!.length) {
+              let b = a.offsetHeight * this.extraDatas.RowSourceData!.length
+              if (c.scrollWidth > c.clientWidth) {
+                c.style.height = (b + 15) + this.itemsRef.children[0].children[0].children[0].clientHeight + 'px'
+                if (this.properties.ColumnCount === 1) {
+                  c.style.height = b + this.itemsRef.children[0].children[0].children[0].clientHeight + 'px'
+                  c.style.overflowX = 'hidden'
+                  c.style.overflowY = 'auto'
+                } else if (this.properties.ListRows! === 0 || this.properties.ListRows! === this.extraDatas.RowSourceData!.length) {
+                  c.style.height = b + this.itemsRef.children[0].children[0].children[0].clientHeight + 15 + 'px'
+                  c.style.overflowX = 'scroll'
+                  c.style.overflowY = 'hidden'
+                } else {
+                  c.style.height = b + this.itemsRef.children[0].children[0].children[0].clientHeight + 15 + 'px'
+                  c.style.overflowX = 'scroll'
+                  c.style.overflowY = 'auto'
+                }
+              } else {
+                c.style.height = b + this.itemsRef.children[0].children[0].children[0].clientHeight + 'px'
+                c.style.overflowX = 'hidden'
+                c.style.overflowY = 'auto'
+              }
+            } else {
+              let b = a.offsetHeight * this.properties.ListRows!
+              if (c.scrollWidth > c.clientWidth) {
+                c.style.height = (b + 15) + this.itemsRef.children[0].children[0].children[0].clientHeight + 'px'
+                c.style.overflowX = 'scroll'
+                c.style.overflowY = 'auto'
+              } else {
+                c.style.height = b + this.itemsRef.children[0].children[0].children[0].clientHeight + 'px'
+                c.style.overflowX = 'hidden'
+                c.style.overflowY = 'auto'
+              }
+            }
+          })
+        }
+      }
     }
   }
 
@@ -992,8 +1112,10 @@ export default class FDComboBox extends Mixins(FdControlVue) {
   }
 
   get emptyColHeads () {
+    const font = this.properties.Font
+    this.emptyColHeadsHeight = font!.FontSize! + 10
     return {
-      height: '15px'
+      height: (this.emptyColHeadsHeight - 1) + 'px'
     }
   }
   updateColumnValue (index: number) {
@@ -1033,6 +1155,8 @@ export default class FDComboBox extends Mixins(FdControlVue) {
 
   @Watch('properties.Font.FontSize', { deep: true })
   autoSizeValidateOnFontChange () {
+    const font = this.properties.Font
+    this.emptyColHeadsHeight = font!.FontSize! + 10
     if (this.properties.AutoSize) {
       this.updateAutoSize()
     }
@@ -1329,6 +1453,11 @@ export default class FDComboBox extends Mixins(FdControlVue) {
         tempLabel.style.display = 'none'
         this.selectionData[0] = this.eTargetValue
       })
+      if (this.open && this.properties.RowSource !== '') {
+        Vue.nextTick(() => {
+          this.headWidth = this.comboRef.children[1].children[0].scrollWidth + 'px'
+        })
+      }
     } else {
       return undefined
     }
@@ -1337,6 +1466,12 @@ export default class FDComboBox extends Mixins(FdControlVue) {
   protected get listStyleObj () {
     const controlProp = this.properties
     if (this.properties.RowSource !== '') {
+      let overflowX = ''
+      if (this.itemsRef && this.itemsRef.children[0] && ((this.itemsRef.children[0].scrollWidth - this.itemsRef.children[0].clientWidth) <= 15)) {
+        overflowX = 'none'
+      } else {
+        overflowX = 'auto'
+      }
       return {
         height: !controlProp.ColumnHeads
           ? controlProp.ListRows! > 0 &&
@@ -1348,7 +1483,9 @@ export default class FDComboBox extends Mixins(FdControlVue) {
             ? (controlProp.ListRows! + 1) * (controlProp.Font!.FontSize! + 9) +
             'px'
             : '',
-        backgroundColor: controlProp.BackColor
+        backgroundColor: controlProp.BackColor,
+        overflowX: overflowX,
+        overflowY: 'auto'
       }
     } else {
       return {
@@ -1577,6 +1714,8 @@ export default class FDComboBox extends Mixins(FdControlVue) {
         this.updateDataModel({ propertyName: 'TopIndex', value: 0 })
       }
     }
+    const font = this.properties.Font
+    this.emptyColHeadsHeight = font!.FontSize! + 10
   }
 
   @Watch('properties.ControlSource', { deep: true })
@@ -1709,8 +1848,8 @@ export default class FDComboBox extends Mixins(FdControlVue) {
         controlProp.RowSource !== ''
           ? ''
           : controlProp.ColumnHeads
-            ? '30px'
-            : '15px',
+            ? (this.emptyColHeadsHeight * 2) + 'px'
+            : this.emptyColHeadsHeight + 'px',
       border: controlProp.RowSource !== '' ? '1px solid black' : '1px solid black',
       cursor: this.controlCursor,
       position: 'absolute',
@@ -1846,7 +1985,6 @@ export default class FDComboBox extends Mixins(FdControlVue) {
   height: 100%;
   background-color: lightgray;
   border: 1px solid gray;
-  overflow: auto;
 }
 .list-outer {
   border: 0.1px solid lightgray;
@@ -1964,5 +2102,8 @@ export default class FDComboBox extends Mixins(FdControlVue) {
 .bar {
   font-size: 13px;
   color: black;
+}
+.svgStyleObj {
+  position: absolute;
 }
 </style>
