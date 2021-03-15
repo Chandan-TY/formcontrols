@@ -6,7 +6,7 @@ export const colorSystem = [
   },
   {
     name: '&H80000001&',
-    value: '#000000',
+    value: 'rgb(0 0 1)',
     displayName: 'Desktop'
   },
   {
@@ -26,7 +26,7 @@ export const colorSystem = [
   },
   {
     name: '&H80000005&',
-    value: 'rgba(255, 255, 255)',
+    value: 'rgba(255, 255, 254)',
     displayName: 'Window Background'
   },
   {
@@ -36,17 +36,17 @@ export const colorSystem = [
   },
   {
     name: '&H80000007&',
-    value: '#000000',
+    value: 'rgb(0 0 2)',
     displayName: 'Menu Text'
   },
   {
     name: '&H80000008&',
-    value: '#000000',
+    value: 'rgb(0 0 3)',
     displayName: 'Window Text'
   },
   {
     name: '&H80000009&',
-    value: '#000000',
+    value: 'rgb(1 0 0)',
     displayName: 'Active Title Bar Text'
   },
   {
@@ -71,7 +71,7 @@ export const colorSystem = [
   },
   {
     name: '&H8000000E&',
-    value: 'rgba(255, 255, 255)',
+    value: 'rgba(255, 254, 255)',
     displayName: 'Highlight Text'
   },
   {
@@ -91,12 +91,12 @@ export const colorSystem = [
   },
   {
     name: '&H80000012&',
-    value: '#000000',
+    value: 'rgb(2 0 0)',
     displayName: 'Button Text'
   },
   {
     name: '&H80000013&',
-    value: '#000000',
+    value: 'rgb(3 0 0)',
     displayName: 'Active Title Bar Text'
   },
   {
@@ -116,7 +116,7 @@ export const colorSystem = [
   },
   {
     name: '&H80000017&',
-    value: '#000000',
+    value: 'rgb(0 1 0)',
     displayName: 'ToolTip Text'
   },
   {

@@ -311,7 +311,9 @@ export default class FDScrollBar extends Mixins(FdControlVue) {
   }
 
   mounted () {
-    this.$el.focus()
+    this.$el.focus({
+      preventScroll: true
+    })
     this.thumbValidate()
   }
 

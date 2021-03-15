@@ -1,5 +1,5 @@
 <template>
-  <div id="app" tabindex="0" @focus="updatefocus" @contextmenu.stop="preventcontextMenu" @keydown.esc="closeMenu">
+  <div id="app" @blur="closeTextMenu" tabindex="0" @focus="updatefocus" @contextmenu.stop="preventcontextMenu" @keydown.esc="closeMenu">
     <div
       id="right-click-menu"
       :style="contextMenuStyle"
@@ -101,7 +101,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Ref, Vue } from 'vue-property-decorator'
+import { Component, Ref, Vue, Watch } from 'vue-property-decorator'
 import ToolBox from '@/FormDesigner/components/organisms/FDToolBox/index.vue'
 import ResizeUserForm from '@/FormDesigner/components/organisms/FDResizeUserForm/index.vue'
 import PropertiesList from '@/FormDesigner/components/organisms/FDPropertyList/index.vue'
@@ -198,10 +198,20 @@ export default class FDPage extends Vue {
   tabData: controlData
   tabstripContextMenu: boolean = false
 
-  closeMenu (event: MouseEvent) {
-    this.textMenu = false
-    this.viewMenu = false
-    EventBus.$emit('focusUserForm')
+  closeTextMenu () {
+    if (this.textMenu && this.viewMenu) {
+      this.textMenu = false
+      this.viewMenu = false
+      EventBus.$emit('focusUserForm')
+    }
+  }
+
+  closeMenu () {
+    if (this.viewMenu) {
+      this.textMenu = false
+      this.viewMenu = false
+      EventBus.$emit('focusUserForm')
+    }
   }
   onDrag () {
     (this.$el as HTMLDivElement).focus()
@@ -234,6 +244,12 @@ export default class FDPage extends Vue {
       this.containerId = containerId
       this.handleKeyDown(event)
     })
+    EventBus.$on('closeMenu', () => {
+      if (this.viewMenu) {
+        this.viewMenu = false
+        this.textMenu = false
+      }
+    })
   }
   destroyed () {
     EventBus.$off('contextMenuDisplay')
@@ -241,6 +257,7 @@ export default class FDPage extends Vue {
     EventBus.$off('editModeContextMenu')
     EventBus.$off('openTextContextMenu')
     EventBus.$off('handleKeyDown')
+    EventBus.$off('closeMenu')
   }
 
   editModeContextMenu (e: MouseEvent, mode: boolean, data: controlData) {
@@ -473,7 +490,7 @@ export default class FDPage extends Vue {
             val.disabled = true
           }
         }
-        Vue.nextTick(() => this.contextmenu.focus())
+        // Vue.nextTick(() => this.contextmenu.focus())
         this.top = event.y
         this.left = event.x
         this.viewMenu = true
@@ -536,6 +553,17 @@ export default class FDPage extends Vue {
   }
   preventcontextMenu (event: MouseEvent) {
     event.preventDefault()
+  }
+  @Watch('selectedControls', { deep: true })
+  updateContextMenu (newControl: selectedControls, oldControl: selectedControls) {
+    if (oldControl && oldControl.selected) {
+      if (oldControl.selected.length === 1 && newControl.selected[0] !== oldControl.selected[0]) {
+        this.textMenu = false
+      }
+    }
+    if (this.viewMenu && this.textMenu) {
+      this.closeMenu()
+    }
   }
 }
 </script>

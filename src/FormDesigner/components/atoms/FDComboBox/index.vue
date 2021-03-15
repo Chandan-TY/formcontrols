@@ -32,6 +32,7 @@
           data-gramm="false"
           ref="textareaRef"
           :style="cssStyleProperty"
+          @focus="closeTextMenu"
           @mouseover="updateMouseCursor"
           wrap="off"
           @dblclick="dblclick($event)"
@@ -425,6 +426,155 @@ export default class FDComboBox extends Mixins(FdControlVue) {
     }
   }
 
+  @Watch('properties.TextColumn', { deep: true })
+  textColumnChange () {
+    debugger
+    for (let i = 0; i < this.extraDatas.RowSourceData!.length; i++) {
+      for (let j = 0; j < this.trRef[i].children.length; j++) {
+        const a = this.trRef[i].children[j] as HTMLDivElement
+        if (a.innerText === this.properties.Value) {
+          if (this.properties.TextColumn === -1) {
+            const text = this.extraDatas.RowSourceData![i][0]
+            this.updateDataModel({ propertyName: 'Text', value: text })
+          } else if (this.properties.TextColumn === 0) {
+            this.updateDataModel({ propertyName: 'Text', value: i })
+          } else if (this.properties.TextColumn! > 0 && this.properties.TextColumn! <= this.extraDatas.RowSourceData![0].length) {
+            const text = this.extraDatas.RowSourceData![i][this.properties.TextColumn! - 1]
+            this.updateDataModel({ propertyName: 'Text', value: text })
+          }
+          const x = this.extraDatas.RowSourceData![i][this.properties.BoundColumn! - 1]
+          this.updateDataModel({ propertyName: 'Value', value: x })
+        }
+      }
+    }
+  }
+
+  @Watch('properties.Text', { deep: true })
+  valueUpdateProp (newVal:string, oldVal:string) {
+    const propData: controlProperties = this.properties
+    if (this.properties.BoundColumn === this.properties.TextColumn) {
+      this.updateDataModel({ propertyName: 'Value', value: newVal })
+    }
+  }
+
+  handleMultiSelect (e: MouseEvent) {
+    if (e.target instanceof HTMLTableCellElement || e.target instanceof HTMLTableRowElement || e.target instanceof HTMLDivElement) {
+      this.tempListBoxComboBoxEvent = e
+      const targetElement = e.target
+      const tempData = targetElement.parentElement!.children[0] as HTMLDivElement
+      const tempDataOption = targetElement.parentElement!.children[1] as HTMLDivElement
+      const tempPath = e.composedPath()
+      targetElement.focus()
+      let data = targetElement.innerText
+      let splitData = data.replace(/\t/g, ' ').split(' ')
+      if (this.data.properties.ListStyle === 0) {
+        this.selectionData[0] = tempData.innerText
+      } else {
+        this.selectionData[0] = tempDataOption.innerText
+      }
+      if (this.properties.Enabled && this.properties.Locked === false) {
+        if (this.properties.MultiSelect === 0) {
+          if (this.properties.ControlSource !== '') {
+            this.updateDataModel({ propertyName: 'Text', value: this.selectionData[0] })
+            this.updateDataModel({ propertyName: 'Value', value: this.selectionData[0] })
+          }
+          this.clearOptionBGColorAndChecked(e)
+          this.setOptionBGColorAndChecked(e)
+          let isListStyle = 0
+          this.textColumnChange()
+        } else if (this.properties.MultiSelect === 1) {
+          if (targetElement.tagName === 'INPUT') {
+            this.setOptionBGColorAndChecked(e)
+          } else {
+            this.setOptionBGColorAndChecked(e)
+          }
+        } else if (this.properties.MultiSelect === 2) {
+          if (e.ctrlKey === true) {
+            if (targetElement.tagName === 'INPUT') {
+              this.setOptionBGColorAndChecked(e)
+            } else {
+              this.setOptionBGColorAndChecked(e)
+            }
+          } else if (e.shiftKey === true && this.properties.Value !== '') {
+            let startPoint = 0
+            let endPoint = 0
+            for (let i = 0; i < tempPath.length; i++) {
+              const ele = tempPath[i] as HTMLDivElement
+              if (ele.className === 'table-body') {
+                // extend points start and end
+                for (let j = 0; j < ele.childNodes.length; j++) {
+                  const cd = ele.childNodes[j] as HTMLDivElement
+                  if (cd.innerText === this.properties.Value) {
+                    startPoint = j + 1
+                  }
+                  if (cd.innerText === targetElement.innerText) {
+                    endPoint = j
+                  }
+                }
+                // upward selection start and end swap
+                if (startPoint > endPoint) {
+                  let temp = startPoint
+                  startPoint = endPoint
+                  endPoint = temp
+                }
+                // setting selection
+                for (let k = startPoint; k <= endPoint; k++) {
+                  const node = ele.childNodes[k] as HTMLDivElement
+                  const tempNode = node.childNodes[0].childNodes[0] as HTMLInputElement
+                  node.style.backgroundColor = 'rgb(59, 122, 231)'
+                  if (
+                    this.properties.ListStyle === 1 &&
+             !tempNode.checked
+                  ) {
+                    // tempNode.checked = !tempNode.checked
+                    tempNode.checked = true
+                  }
+                }
+                break
+              }
+            }
+          } else {
+            this.clearOptionBGColorAndChecked(e)
+            this.setOptionBGColorAndChecked(e)
+            this.updateDataModel({ propertyName: 'Value', value: targetElement.innerText })
+          }
+        } else {
+          if (this.properties.ControlSource !== '') {
+            this.updateDataModel({ propertyName: 'Text', value: this.selectionData[0] })
+            this.updateDataModel({ propertyName: 'Value', value: this.selectionData[0] })
+          }
+          this.clearOptionBGColorAndChecked(e)
+          this.setOptionBGColorAndChecked(e)
+          let isListStyle = 0
+        }
+      }
+    } else {
+      if (this.properties.MultiSelect !== 1) {
+        this.clearOptionBGColorAndChecked(e)
+      }
+      this.setOptionBGColorAndChecked(e)
+    }
+    const a = e.currentTarget! as HTMLDivElement
+    this.selectionData[0] = a.innerText
+    for (let i = 0; i < this.extraDatas.RowSourceData!.length; i++) {
+      const b = this.trRef[i].children[0] as HTMLDivElement
+      const aInnerText = a.innerText.split('\n')
+      if (aInnerText[0] === b.innerText) {
+        if (this.properties.TextColumn === -1) {
+          const text = this.extraDatas.RowSourceData![i][0]
+          this.updateDataModel({ propertyName: 'Text', value: text })
+        } else if (this.properties.TextColumn === 0) {
+          this.updateDataModel({ propertyName: 'Text', value: i })
+        } else if (this.properties.TextColumn! > 0 && this.properties.TextColumn! <= this.extraDatas.RowSourceData![0].length) {
+          const text = this.extraDatas.RowSourceData![i][this.properties.TextColumn! - 1]
+          this.updateDataModel({ propertyName: 'Text', value: text })
+        }
+        const x = this.extraDatas.RowSourceData![i][this.properties.BoundColumn! - 1]
+        this.updateDataModel({ propertyName: 'Value', value: x })
+      }
+    }
+  }
+
   @Watch('open')
   openValidate () {
     if (this.open) {
@@ -642,7 +792,11 @@ export default class FDComboBox extends Mixins(FdControlVue) {
                       const headWidth = this.comboRef.children[0].children[0].children[j] as HTMLDivElement
                       if (this.properties.ColumnCount !== -1) {
                         if (j === this.comboRef.children[0].children[0].children.length - 1) {
-                          headWidth.style.width = finalWidths[j] - 3 + 'px'
+                          if (finalWidths[j] < 10) {
+                            headWidth.style.width = finalWidths[j] + 'px'
+                          } else {
+                            headWidth.style.width = finalWidths[j] - 3 + 'px'
+                          }
                         } else {
                           headWidth.style.width = '100px'
                         }
@@ -655,7 +809,11 @@ export default class FDComboBox extends Mixins(FdControlVue) {
                 const width = this.comboRef.children[1].children[i].children[j] as HTMLDivElement
                 if (this.properties.ColumnCount! === -1) {
                   if (j >= 0 && j < this.extraDatas.RowSourceData!.length) {
-                    width.style.width = tempWidth - 3 + 'px'
+                    if (tempWidth < 10) {
+                      width.style.width = tempWidth + 'px'
+                    } else {
+                      width.style.width = tempWidth - 3 + 'px'
+                    }
                   }
                 } else if (j + 1 > this.properties.ColumnCount!) {
                   width.style.minWidth = '0px'
@@ -663,7 +821,11 @@ export default class FDComboBox extends Mixins(FdControlVue) {
                 } else {
                   if (j < this.extraDatas.RowSourceData!.length) {
                     width.style.minWidth = '100px'
-                    width.style.width = tempWidth - 3 + 'px'
+                    if (tempWidth < 10) {
+                      width.style.width = tempWidth + 'px'
+                    } else {
+                      width.style.width = tempWidth - 3 + 'px'
+                    }
                   }
                 }
               }
@@ -675,7 +837,11 @@ export default class FDComboBox extends Mixins(FdControlVue) {
                       const headWidth = this.comboRef.children[0].children[0].children[j] as HTMLDivElement
                       if (this.properties.ColumnCount !== -1) {
                         if (j === this.comboRef.children[0].children[0].children.length - 1) {
-                          headWidth.style.width = finalWidths[j] - 3 + 'px'
+                          if (finalWidths[j] < 10) {
+                            headWidth.style.width = finalWidths[j] + 'px'
+                          } else {
+                            headWidth.style.width = finalWidths[j] - 3 + 'px'
+                          }
                         } else {
                           headWidth.style.width = '100px'
                         }
@@ -691,7 +857,11 @@ export default class FDComboBox extends Mixins(FdControlVue) {
                     width.style.width = '100px'
                   }
                 } else if (j === 1 && this.properties.ColumnCount! === 1) {
-                  width.style.width = listWidth - 3 + 'px'
+                  if (listWidth < 10) {
+                    width.style.width = listWidth + 'px'
+                  } else {
+                    width.style.width = listWidth - 3 + 'px'
+                  }
                 } else if (j > this.properties.ColumnCount!) {
                   width.style.minWidth = '0px'
                   width.style.width = '0px'
@@ -714,18 +884,32 @@ export default class FDComboBox extends Mixins(FdControlVue) {
               for (let j = 0; j < this.comboRef.children[1].children[i].children.length; j++) {
                 const width = this.comboRef.children[1].children[i].children[j] as HTMLDivElement
                 if (j >= this.properties.ColumnCount! && this.properties.ColumnCount !== -1) {
-                  width.style.display = 'none'
+                  width.style.width = '0px'
                 } else {
                   width.style.display = 'inline-block'
                   if (this.properties.ColumnCount === 1) {
-                    if (listWidth > finalWidths[0]) {
-                      width.style.width = listWidth - 3 + 'px'
+                    if (finalWidths[0] === 0) {
+                      width.style.width = '0px'
+                    } else if (listWidth > finalWidths[0]) {
+                      if (listWidth < 10) {
+                        width.style.width = listWidth + 'px'
+                      } else {
+                        width.style.width = listWidth - 3 + 'px'
+                      }
                     } else {
-                      width.style.width = finalWidths[0] - 3 + 'px'
+                      if (finalWidths[0] < 10) {
+                        width.style.width = finalWidths[0] + 'px'
+                      } else {
+                        width.style.width = finalWidths[0] - 3 + 'px'
+                      }
                     }
                   } else {
                     width.style.minWidth = '0px'
-                    width.style.width = finalWidths[j] - 3 + 'px'
+                    if (finalWidths[j] < 10) {
+                      width.style.width = finalWidths[j] + 'px'
+                    } else {
+                      width.style.width = finalWidths[j] - 3 + 'px'
+                    }
                   }
                 }
                 if (this.comboRef && this.comboRef.children[0] && this.comboRef.children[0].children[0] && this.comboRef.children[0].children[0].children[j]) {
@@ -733,19 +917,37 @@ export default class FDComboBox extends Mixins(FdControlVue) {
                   if (this.properties.ColumnCount === -1) {
                     headWidth.style.display = 'inline-block'
                     headWidth.style.minWidth = '0px'
-                    headWidth.style.width = finalWidths[j] - 3 + 'px'
+                    if (finalWidths[j] < 10) {
+                      headWidth.style.width = finalWidths[j] + 'px'
+                    } else {
+                      headWidth.style.width = finalWidths[j] - 3 + 'px'
+                    }
                   } else if (j >= this.properties.ColumnCount!) {
-                    headWidth.style.display = 'none'
+                    headWidth.style.width = '0px'
                   } else {
                     headWidth.style.display = 'inline-block'
                     if (this.properties.ColumnCount === 1) {
-                      if (listWidth > finalWidths[0]) {
-                        headWidth.style.width = listWidth - 3 + 'px'
+                      if (finalWidths[0] === 0) {
+                        headWidth.style.width = '0px'
+                      } else if (listWidth > finalWidths[0]) {
+                        if (finalWidths[0] < 10) {
+                          headWidth.style.width = listWidth + 'px'
+                        } else {
+                          headWidth.style.width = listWidth - 3 + 'px'
+                        }
                       } else {
-                        headWidth.style.width = finalWidths[0] - 3 + 'px'
+                        if (finalWidths[0] < 10) {
+                          headWidth.style.width = finalWidths[0] + 'px'
+                        } else {
+                          headWidth.style.width = finalWidths[0] - 3 + 'px'
+                        }
                       }
                     } else {
-                      headWidth.style.width = finalWidths[j] - 3 + 'px'
+                      if (finalWidths[j] < 10) {
+                        headWidth.style.width = finalWidths[j] + 'px'
+                      } else {
+                        headWidth.style.width = finalWidths[j] - 3 + 'px'
+                      }
                     }
                   }
                 }
@@ -755,18 +957,32 @@ export default class FDComboBox extends Mixins(FdControlVue) {
                 const width = this.comboRef.children[1].children[i].children[j] as HTMLDivElement
                 if (j > 0) {
                   if (j > this.properties.ColumnCount! && j > this.extraDatas.RowSourceData!.length - 1) {
-                    width.style.display = 'none'
+                    width.style.width = '0px'
                   } else {
                     width.style.display = 'inline-block'
                     if (this.properties.ColumnCount === 1) {
-                      if (listWidth > finalWidths[0]) {
-                        width.style.width = listWidth - 3 + 'px'
+                      if (finalWidths[0] === 0) {
+                        width.style.width = '0px'
+                      } else if (listWidth > finalWidths[0]) {
+                        if (listWidth < 10) {
+                          width.style.width = listWidth + 'px'
+                        } else {
+                          width.style.width = listWidth - 3 + 'px'
+                        }
                       } else {
-                        width.style.width = finalWidths[0] - 3 + 'px'
+                        if (finalWidths[0] < 10) {
+                          width.style.width = finalWidths[0] + 'px'
+                        } else {
+                          width.style.width = finalWidths[0] - 3 + 'px'
+                        }
                       }
                     } else {
                       width.style.minWidth = '0px'
-                      width.style.width = finalWidths[j - 1] - 3 + 'px'
+                      if (finalWidths[j - 1] < 10) {
+                        width.style.width = finalWidths[j - 1] + 'px'
+                      } else {
+                        width.style.width = finalWidths[j - 1] - 3 + 'px'
+                      }
                     }
                   }
                   if (this.comboRef && this.comboRef.children[0] && this.comboRef.children[0].children[0] && this.comboRef.children[0].children[0].children[j]) {
@@ -774,19 +990,37 @@ export default class FDComboBox extends Mixins(FdControlVue) {
                     if (this.properties.ColumnCount === -1) {
                       headWidth.style.display = 'inline-block'
                       headWidth.style.minWidth = '0px'
-                      headWidth.style.width = finalWidths[j] - 3 + 'px'
+                      if (finalWidths[j] < 10) {
+                        headWidth.style.width = finalWidths[j] + 'px'
+                      } else {
+                        headWidth.style.width = finalWidths[j] - 3 + 'px'
+                      }
                     } else if (j >= this.properties.ColumnCount!) {
-                      headWidth.style.display = 'none'
+                      headWidth.style.width = '0px'
                     } else {
                       headWidth.style.display = 'inline-block'
                       if (this.properties.ColumnCount === 1) {
-                        if (listWidth > finalWidths[0]) {
-                          headWidth.style.width = listWidth - 3 + 'px'
+                        if (finalWidths[0] === 0) {
+                          headWidth.style.width = '0px'
+                        } else if (listWidth > finalWidths[0]) {
+                          if (listWidth < 10) {
+                            headWidth.style.width = listWidth + 'px'
+                          } else {
+                            headWidth.style.width = listWidth - 3 + 'px'
+                          }
                         } else {
-                          headWidth.style.width = finalWidths[0] - 3 + 'px'
+                          if (finalWidths[0] < 10) {
+                            headWidth.style.width = finalWidths[0] + 'px'
+                          } else {
+                            headWidth.style.width = finalWidths[0] - 3 + 'px'
+                          }
                         }
                       } else {
-                        headWidth.style.width = finalWidths[j] - 3 + 'px'
+                        if (finalWidths[j] < 10) {
+                          headWidth.style.width = finalWidths[j] + 'px'
+                        } else {
+                          headWidth.style.width = finalWidths[j] - 3 + 'px'
+                        }
                       }
                     }
                   }
@@ -824,7 +1058,11 @@ export default class FDComboBox extends Mixins(FdControlVue) {
                       const headWidth = this.comboRef.children[0].children[0].children[j] as HTMLDivElement
                       if (this.properties.ColumnCount !== -1) {
                         if (j === this.comboRef.children[0].children[0].children.length - 1) {
-                          headWidth.style.width = finalWidths[j] - 3 + 'px'
+                          if (finalWidths[j] < 10) {
+                            headWidth.style.width = finalWidths[j] + 'px'
+                          } else {
+                            headWidth.style.width = finalWidths[j] - 3 + 'px'
+                          }
                         } else {
                           headWidth.style.width = '100px'
                         }
@@ -837,7 +1075,11 @@ export default class FDComboBox extends Mixins(FdControlVue) {
                 const width = this.comboRef.children[1].children[i].children[j] as HTMLDivElement
                 if (this.properties.ColumnCount! === -1) {
                   if (j >= 0 && j < this.extraDatas.RowSourceData!.length) {
-                    width.style.width = tempWidth - 3 + 'px'
+                    if (tempWidth < 10) {
+                      width.style.width = tempWidth + 'px'
+                    } else {
+                      width.style.width = tempWidth - 3 + 'px'
+                    }
                   }
                 } else if (j + 1 > this.properties.ColumnCount!) {
                   width.style.minWidth = '0px'
@@ -845,7 +1087,11 @@ export default class FDComboBox extends Mixins(FdControlVue) {
                 } else {
                   if (j < this.extraDatas.RowSourceData!.length) {
                     width.style.minWidth = '100px'
-                    width.style.width = tempWidth - 3 + 'px'
+                    if (tempWidth < 10) {
+                      width.style.width = tempWidth + 'px'
+                    } else {
+                      width.style.width = tempWidth - 3 + 'px'
+                    }
                   }
                 }
               }
@@ -857,7 +1103,11 @@ export default class FDComboBox extends Mixins(FdControlVue) {
                       const headWidth = this.comboRef.children[0].children[0].children[j] as HTMLDivElement
                       if (this.properties.ColumnCount !== -1) {
                         if (j === this.comboRef.children[0].children[0].children.length - 1) {
-                          headWidth.style.width = finalWidths[j] - 3 + 'px'
+                          if (finalWidths[j] < 10) {
+                            headWidth.style.width = finalWidths[j] + 'px'
+                          } else {
+                            headWidth.style.width = finalWidths[j] - 3 + 'px'
+                          }
                         } else {
                           headWidth.style.width = '100px'
                         }
@@ -873,7 +1123,11 @@ export default class FDComboBox extends Mixins(FdControlVue) {
                     width.style.width = '100px'
                   }
                 } else if (j === 1 && this.properties.ColumnCount! === 1) {
-                  width.style.width = this.properties.Width! - 3 + 'px'
+                  if (this.properties.Width! < 10) {
+                    width.style.width = this.properties.Width! + 'px'
+                  } else {
+                    width.style.width = this.properties.Width! - 3 + 'px'
+                  }
                 } else if (j > this.properties.ColumnCount!) {
                   width.style.minWidth = '0px'
                   width.style.width = '0px'
@@ -895,18 +1149,32 @@ export default class FDComboBox extends Mixins(FdControlVue) {
               for (let j = 0; j < this.comboRef.children[1].children[i].children.length; j++) {
                 const width = this.comboRef.children[1].children[i].children[j] as HTMLDivElement
                 if (j >= this.properties.ColumnCount! && this.properties.ColumnCount !== -1) {
-                  width.style.display = 'none'
+                  width.style.width = '0px'
                 } else {
                   width.style.display = 'inline-block'
                   if (this.properties.ColumnCount === 1) {
-                    if (this.properties.Width! > finalWidths[0]) {
-                      width.style.width = this.properties.Width! - 3 + 'px'
+                    if (finalWidths[0] === 0) {
+                      width.style.width = '0px'
+                    } else if (this.properties.Width! > finalWidths[0]) {
+                      if (this.properties.Width! < 10) {
+                        width.style.width = this.properties.Width! + 'px'
+                      } else {
+                        width.style.width = this.properties.Width! - 3 + 'px'
+                      }
                     } else {
-                      width.style.width = finalWidths[0] - 3 + 'px'
+                      if (finalWidths[0] < 10) {
+                        width.style.width = finalWidths[0] + 'px'
+                      } else {
+                        width.style.width = finalWidths[0] - 3 + 'px'
+                      }
                     }
                   } else {
                     width.style.minWidth = '0px'
-                    width.style.width = finalWidths[j] - 3 + 'px'
+                    if (finalWidths[j] < 10) {
+                      width.style.width = finalWidths[j] + 'px'
+                    } else {
+                      width.style.width = finalWidths[j] - 3 + 'px'
+                    }
                   }
                 }
                 if (this.comboRef && this.comboRef.children[0] && this.comboRef.children[0].children[0] && this.comboRef.children[0].children[0].children[j]) {
@@ -914,19 +1182,37 @@ export default class FDComboBox extends Mixins(FdControlVue) {
                   if (this.properties.ColumnCount === -1) {
                     headWidth.style.display = 'inline-block'
                     headWidth.style.minWidth = '0px'
-                    headWidth.style.width = finalWidths[j] - 3 + 'px'
+                    if (finalWidths[j] < 10) {
+                      headWidth.style.width = finalWidths[j] + 'px'
+                    } else {
+                      headWidth.style.width = finalWidths[j] - 3 + 'px'
+                    }
                   } else if (j >= this.properties.ColumnCount!) {
-                    headWidth.style.display = 'none'
+                    headWidth.style.width = '0px'
                   } else {
                     headWidth.style.display = 'inline-block'
                     if (this.properties.ColumnCount === 1) {
-                      if (this.properties.Width! > finalWidths[0]) {
-                        headWidth.style.width = this.properties.Width! - 3 + 'px'
+                      if (finalWidths[0] === 0) {
+                        headWidth.style.width = '0px'
+                      } else if (this.properties.Width! > finalWidths[0]) {
+                        if (this.properties.Width! < 10) {
+                          headWidth.style.width = this.properties.Width! + 'px'
+                        } else {
+                          headWidth.style.width = this.properties.Width! - 3 + 'px'
+                        }
                       } else {
-                        headWidth.style.width = finalWidths[0] - 3 + 'px'
+                        if (finalWidths[0] < 10) {
+                          headWidth.style.width = finalWidths[0] + 'px'
+                        } else {
+                          headWidth.style.width = finalWidths[0] - 3 + 'px'
+                        }
                       }
                     } else {
-                      headWidth.style.width = finalWidths[j] - 3 + 'px'
+                      if (finalWidths[j] < 10) {
+                        headWidth.style.width = finalWidths[j] + 'px'
+                      } else {
+                        headWidth.style.width = finalWidths[j] - 3 + 'px'
+                      }
                     }
                   }
                 }
@@ -936,18 +1222,32 @@ export default class FDComboBox extends Mixins(FdControlVue) {
                 const width = this.comboRef.children[1].children[i].children[j] as HTMLDivElement
                 if (j > 0) {
                   if (j > this.properties.ColumnCount! && j > this.extraDatas.RowSourceData!.length - 1) {
-                    width.style.display = 'none'
+                    width.style.width = '0px'
                   } else {
                     width.style.display = 'inline-block'
                     if (this.properties.ColumnCount === 1) {
-                      if (this.properties.Width! > finalWidths[0]) {
-                        width.style.width = this.properties.Width! - 3 + 'px'
+                      if (finalWidths[0] === 0) {
+                        width.style.width = '0px'
+                      } else if (this.properties.Width! > finalWidths[0]) {
+                        if (this.properties.Width! < 10) {
+                          width.style.width = this.properties.Width! + 'px'
+                        } else {
+                          width.style.width = this.properties.Width! - 3 + 'px'
+                        }
                       } else {
-                        width.style.width = finalWidths[0] - 3 + 'px'
+                        if (finalWidths[0] < 10) {
+                          width.style.width = finalWidths[0] + 'px'
+                        } else {
+                          width.style.width = finalWidths[0] - 3 + 'px'
+                        }
                       }
                     } else {
                       width.style.minWidth = '0px'
-                      width.style.width = finalWidths[j - 1] - 3 + 'px'
+                      if (finalWidths[j - 1] < 10) {
+                        width.style.width = finalWidths[j - 1] + 'px'
+                      } else {
+                        width.style.width = finalWidths[j - 1] - 3 + 'px'
+                      }
                     }
                   }
                   if (this.comboRef && this.comboRef.children[0] && this.comboRef.children[0].children[0] && this.comboRef.children[0].children[0].children[j]) {
@@ -955,19 +1255,37 @@ export default class FDComboBox extends Mixins(FdControlVue) {
                     if (this.properties.ColumnCount === -1) {
                       headWidth.style.display = 'inline-block'
                       headWidth.style.minWidth = '0px'
-                      headWidth.style.width = finalWidths[j] - 3 + 'px'
+                      if (finalWidths[j] < 10) {
+                        headWidth.style.width = finalWidths[j] + 'px'
+                      } else {
+                        headWidth.style.width = finalWidths[j] - 3 + 'px'
+                      }
                     } else if (j >= this.properties.ColumnCount!) {
-                      headWidth.style.display = 'none'
+                      headWidth.style.width = '0px'
                     } else {
                       headWidth.style.display = 'inline-block'
                       if (this.properties.ColumnCount === 1) {
-                        if (this.properties.Width! > finalWidths[0]) {
-                          headWidth.style.width = this.properties.Width! - 3 + 'px'
+                        if (finalWidths[0] === 0) {
+                          headWidth.style.width = '0px'
+                        } else if (this.properties.Width! > finalWidths[0]) {
+                          if (this.properties.Width! < 10) {
+                            headWidth.style.width = this.properties.Width! + 'px'
+                          } else {
+                            headWidth.style.width = this.properties.Width! - 3 + 'px'
+                          }
                         } else {
-                          headWidth.style.width = finalWidths[0] - 3 + 'px'
+                          if (finalWidths[0] < 10) {
+                            headWidth.style.width = finalWidths[0] + 'px'
+                          } else {
+                            headWidth.style.width = finalWidths[0] - 3 + 'px'
+                          }
                         }
                       } else {
-                        headWidth.style.width = finalWidths[j] - 3 + 'px'
+                        if (finalWidths[j] < 10) {
+                          headWidth.style.width = finalWidths[j] + 'px'
+                        } else {
+                          headWidth.style.width = finalWidths[j] - 3 + 'px'
+                        }
                       }
                     }
                   }
@@ -1079,6 +1397,8 @@ export default class FDComboBox extends Mixins(FdControlVue) {
             lastColumWidth = totalWidth - widths[i]!
             finalWidths.push(widths[i])
             totalWidth = lastColumWidth
+          } else if (widths.length === 1) {
+            finalWidths.push(totalColumnWidths)
           } else {
             finalWidths.push(lastColumWidth)
           }
@@ -1618,9 +1938,9 @@ export default class FDComboBox extends Mixins(FdControlVue) {
     const controlProp = this.properties
     let display = ''
     if (this.isRunMode) {
-      display = controlProp.Visible ? controlProp.Width === 0 || controlProp.Height === 0 ? 'none' : 'inline-block' : 'none'
+      display = controlProp.Visible ? controlProp.Width === 0 || controlProp.Height === 0 ? 'none' : 'block' : 'none'
     } else {
-      display = controlProp.Width === 0 || controlProp.Height === 0 ? 'none' : 'inline-block'
+      display = controlProp.Width === 0 || controlProp.Height === 0 ? 'none' : 'block'
     }
     return {
       display: display
@@ -1643,7 +1963,7 @@ export default class FDComboBox extends Mixins(FdControlVue) {
     this.tempWidth = `${this.properties.Width! + 20}px`
     return this.tempWidth
   }
-  @Watch('properties.Value', { deep: true })
+  @Watch('properties.Value')
   textAndValueUpdateProp (newVal: string, oldVal: string) {
     if (this.properties.AutoSize) {
       this.updateAutoSize()
@@ -1662,14 +1982,14 @@ export default class FDComboBox extends Mixins(FdControlVue) {
             this.updateDataModel({ propertyName: 'Value', value: tempData![i][this.properties.BoundColumn! - 1] })
             break
           } else {
-            if (this.properties.BoundColumn! === 1) {
+            if (this.properties.BoundColumn! === 1 && (this.properties.TextColumn === -1 || this.properties.TextColumn === 1)) {
               this.updateDataModel({ propertyName: 'Text', value: newVal })
             }
           }
         }
       }
       this.selectionData[0] = newVal
-      if (this.properties.BoundColumn! === 1) {
+      if (this.properties.BoundColumn! === 1 && (this.properties.TextColumn === -1 || this.properties.TextColumn === 1)) {
         this.updateDataModel({ propertyName: 'Text', value: newVal })
       } else if (this.properties.BoundColumn! > this.extraDatas.RowSourceData![0].length) {
         this.updateDataModel({ propertyName: 'Value', value: '' })
@@ -1684,7 +2004,9 @@ export default class FDComboBox extends Mixins(FdControlVue) {
     this.selectionData[0] = this.eTargetValue
   }
   releaseEditMode (event: KeyboardEvent) {
-    this.$el.focus()
+    this.$el.focus({
+      preventScroll: true
+    })
     this.setContentEditable(event, false)
   }
 
@@ -1700,7 +2022,9 @@ export default class FDComboBox extends Mixins(FdControlVue) {
 
   mounted () {
     this.controlZIndex = this.data.extraDatas!.zIndex!
-    this.$el.focus()
+    this.$el.focus({
+      preventScroll: true
+    })
     this.updateColumns()
     if (this.properties.RowSource !== '') {
       const initialRowSourceData = this.extraDatas.RowSourceData!
@@ -1746,6 +2070,10 @@ export default class FDComboBox extends Mixins(FdControlVue) {
         return 'hidden'
       }
     }
+  }
+
+  closeTextMenu () {
+    EventBus.$emit('closeMenu')
   }
 
   protected get labelStyleObj (): Partial<CSSStyleDeclaration> {
@@ -1889,7 +2217,7 @@ export default class FDComboBox extends Mixins(FdControlVue) {
     }
   }
   enabledCheck (e: MouseEvent) {
-    if (this.isRunMode || this.isActivated || this.isEditMode) {
+    if (this.isRunMode || this.isEditMode) {
       if (this.open) {
         this.open = false
         this.textareaRef.focus()
@@ -1915,6 +2243,12 @@ export default class FDComboBox extends Mixins(FdControlVue) {
     if (this.toolBoxSelectControl === 'Select') {
       event.stopPropagation()
     }
+    Vue.nextTick(() => {
+      if (this.isEditMode) {
+        this.textareaRef.blur()
+        this.textareaRef.focus()
+      }
+    })
   }
 }
 </script>

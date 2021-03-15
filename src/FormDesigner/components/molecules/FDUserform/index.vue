@@ -4,7 +4,7 @@
       <div class="innerWindowHeaderStyle" :style="innerWindowHeaderStyle">
           {{ properties.Caption }}
       </div>
-      <div>
+      <div :style="closeButtonStyle">
         <button class="ui-btn close closeButton">
           <FDSVGImage name="close-button.svg" />
         </button>
@@ -17,7 +17,6 @@
       @contextmenu.stop="showContextMenu($event, userFormId, controlId, 'container')"
       ref="innerUserForm"
     >
-      <!-- @scroll="updateScrollingLeftTop" -->
       <Container
         class="container"
         :style="containerStyleObj"
@@ -69,18 +68,6 @@ export default class UserForm extends FdContainerVue {
   innerWindowFocus (value: boolean) {
     this.innerWindowFocused = value
   }
-  // mounted () {
-  //   this.scrollLeftTop(this.data)
-  // }
-  // @Watch('properties.ScrollLeft', { deep: true })
-  // updateScrollLeft () {
-  //   this.scrollLeftTop(this.data)
-  // }
-
-  // @Watch('properties.ScrollTop', { deep: true })
-  // updateScrollTop () {
-  //   this.scrollLeftTop(this.data)
-  // }
 
   /**
    * @description Returns string value for CSS background style
@@ -223,7 +210,17 @@ export default class UserForm extends FdContainerVue {
   get innerWindowHeaderStyle () {
     return {
       textAlign: this.properties.RightToLeft ? 'right' : 'left',
-      direction: this.properties.RightToLeft ? 'rtl' : 'ltr'
+      direction: this.properties.RightToLeft ? 'rtl' : 'ltr',
+      position: 'relative',
+      top: '8px',
+      height: 'calc(100% - 8px)'
+    }
+  }
+  get closeButtonStyle () {
+    return {
+      position: 'relative',
+      top: '7px',
+      height: 'calc(100% - 7px)'
     }
   }
   deActControl () {

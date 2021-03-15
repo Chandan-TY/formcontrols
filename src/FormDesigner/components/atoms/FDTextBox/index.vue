@@ -18,6 +18,7 @@
       :disabled="getDisableValue"
       :title="properties.ControlTipText"
       @dblclick="dblclick($event)"
+      @focus="closeTextMenu"
       :readonly="properties.Locked"
       @keydown.escape.exact="releaseEditMode"
       v-cursorDirective="{
@@ -34,7 +35,7 @@
       "
       @keydown="properties.PasswordChar !== '' ? handleDelete($event) : null"
       @blur="handleBlur($event, textareaRef, hideSelectionDiv)"
-      @click="handleClick(hideSelectionDiv), onClickSelection()"
+      @click="handleClick(hideSelectionDiv)"
       class="text-box-design"
       :value="
         properties.Value
@@ -125,8 +126,6 @@ export default class FDTextBox extends Mixins(FdControlVue) {
   originalText: string = ''
   trimmedText: string = ''
   fitToSizeWhenMultiLine: boolean = false
-  lastValue:number
-  prevSelection: number
   dblclick (e: Event) {
     let newSelectionStart = 0
     const eTarget = e.target as HTMLTextAreaElement
@@ -151,16 +150,16 @@ export default class FDTextBox extends Mixins(FdControlVue) {
       return true
     }
   }
-  @Watch('properties.HideSelection')
-  updateIsTextBoxDisabledPropWhenHideSelection () {
-    if (this.properties.HideSelection) {
-      this.textareaRef.style.display = 'block'
-      this.hideSelectionDiv.style.display = 'none'
-    } else {
-      this.textareaRef.style.display = 'none'
-      this.hideSelectionDiv.style.display = 'block'
-    }
-  }
+  // @Watch('properties.HideSelection')
+  // updateIsTextBoxDisabledPropWhenHideSelection () {
+  //   if (this.properties.HideSelection) {
+  //     this.textareaRef.style.display = 'block'
+  //     this.hideSelectionDiv.style.display = 'none'
+  //   } else {
+  //     this.textareaRef.style.display = 'none'
+  //     this.hideSelectionDiv.style.display = 'block'
+  //   }
+  // }
   /**
    * @description style object is passed to :style attribute in Textarea tag
    * dynamically changing the styles of the component based on properties
@@ -191,7 +190,6 @@ export default class FDTextBox extends Mixins(FdControlVue) {
       width: `${controlProp.Width}px`,
       height: `${controlProp.Height}px`,
       top: `${controlProp.Top}px`,
-      paddingLeft: controlProp.SelectionMargin === true ? '10px' : '1px',
       borderColor: controlProp.BorderStyle === 1 ? controlProp.BorderColor : '',
       textAlign:
         controlProp.TextAlign === 0
@@ -271,14 +269,6 @@ export default class FDTextBox extends Mixins(FdControlVue) {
           event.target.value = event.target.value.replace(event.target.value[i], this.properties.PasswordChar!)
         }
       }
-      this.updateDataModel({
-        propertyName: 'Value',
-        value: (event.target).value
-      })
-      this.updateDataModel({
-        propertyName: 'Text',
-        value: (event.target).value
-      })
     }
     let newData
     let text = this.properties.Text!
@@ -375,9 +365,9 @@ export default class FDTextBox extends Mixins(FdControlVue) {
   enterKeyBehavior (event: KeyboardEvent): boolean {
     if (this.properties.MultiLine) {
       if (event.ctrlKey) {
-        this.handleCtrlEnter(this.textareaRef, '\n')
-        const eTarget = event.target as HTMLTextAreaElement
-        this.updateDataModel({ propertyName: 'Value', value: eTarget.value })
+        // // this.handleCtrlEnter(this.textareaRef, '\n')
+        // // const eTarget = event.target as HTMLTextAreaElement
+        // this.updateDataModel({ propertyName: 'Value', value: eTarget.value })
         return true
       } else if (this.properties.EnterKeyBehavior && this.properties.MultiLine) {
         return true
@@ -680,29 +670,29 @@ export default class FDTextBox extends Mixins(FdControlVue) {
   ) {
     this.getSelectionStart = this.textareaRef.selectionStart
     this.getSelectionEnd = this.textareaRef.selectionEnd
-    if (!this.properties.HideSelection) {
-      if (event.target instanceof HTMLTextAreaElement) {
-        const eventTarget = event.target
-        hideSelectionDiv.style.display = 'block'
-        hideSelectionDiv.style.height = this.properties.Height! + 'px'
-        hideSelectionDiv.style.width = this.properties.Width! + 'px'
-        textareaRef.style.display = 'none'
-        let textarea = eventTarget.value
-        let firstPart =
-        textarea.slice(0, eventTarget.selectionEnd) +
-        '</span>' +
-        textarea.slice(eventTarget.selectionEnd + Math.abs(0))
-        let text =
-        firstPart.slice(0, eventTarget.selectionStart) +
-        "<span style='background-color:lightblue'>" +
-        firstPart.slice(eventTarget.selectionStart + Math.abs(0))
-        hideSelectionDiv.innerHTML = text
-      } else {
-        throw new Error('Expected HTMLTextAreaElement but found different element')
-      }
-    } else {
-      return undefined
-    }
+    // if (!this.properties.HideSelection) {
+    //   if (event.target instanceof HTMLTextAreaElement) {
+    //     const eventTarget = event.target
+    //     hideSelectionDiv.style.display = 'block'
+    //     hideSelectionDiv.style.height = this.properties.Height! + 'px'
+    //     hideSelectionDiv.style.width = this.properties.Width! + 'px'
+    //     textareaRef.style.display = 'none'
+    //     let textarea = eventTarget.value
+    //     let firstPart =
+    //     textarea.slice(0, eventTarget.selectionEnd) +
+    //     '</span>' +
+    //     textarea.slice(eventTarget.selectionEnd + Math.abs(0))
+    //     let text =
+    //     firstPart.slice(0, eventTarget.selectionStart) +
+    //     "<span style='background-color:lightblue'>" +
+    //     firstPart.slice(eventTarget.selectionStart + Math.abs(0))
+    //     hideSelectionDiv.innerHTML = text
+    //   } else {
+    //     throw new Error('Expected HTMLTextAreaElement but found different element')
+    //   }
+    // } else {
+    //   return undefined
+    // }
   }
   /**
    *@description hides the div when focus comes to textarea when hideSelection
@@ -712,11 +702,11 @@ export default class FDTextBox extends Mixins(FdControlVue) {
    * @event click
    */
   handleClick (hideSelectionDiv: HTMLDivElement) {
-    if (!this.properties.HideSelection) {
-      hideSelectionDiv.style.display = 'none'
-    } else {
-      return undefined
-    }
+    // if (!this.properties.HideSelection) {
+    //   hideSelectionDiv.style.display = 'none'
+    // } else {
+    //   return undefined
+    // }
   }
   /**
    * @description hides div instead of textarea when hideSelection is false
@@ -745,10 +735,14 @@ export default class FDTextBox extends Mixins(FdControlVue) {
   }
 
   mounted () {
-    this.$el.focus()
+    this.$el.focus({
+      preventScroll: true
+    })
   }
   releaseEditMode (event: KeyboardEvent) {
-    this.$el.focus()
+    this.$el.focus({
+      preventScroll: true
+    })
     this.setContentEditable(event, false)
   }
   eventStoppers () {
@@ -787,21 +781,13 @@ export default class FDTextBox extends Mixins(FdControlVue) {
     }
     Vue.nextTick(() => {
       if (this.isEditMode) {
+        this.textareaRef.blur()
         this.textareaRef.focus()
       }
     })
   }
-
-  onClickSelection () {
-    const textarea = this.textareaRef
-    if (typeof textarea.selectionStart === 'undefined') {
-      return false
-    }
-    const selStart = textarea.selectionStart
-    var startPos = (textarea.value.substring(0, selStart).lastIndexOf('\n') >= 0) ? textarea.value.substring(0, selStart).lastIndexOf('\n') + 1 : 0
-    var endPos = (textarea.value.substring(textarea.selectionEnd, textarea.value.length).indexOf('\n') >= 0) ? textarea.selectionEnd + textarea.value.substring(textarea.selectionEnd, textarea.value.length).indexOf('\n') : textarea.value.length
-    textarea.selectionEnd = endPos
-    return true
+  closeTextMenu () {
+    EventBus.$emit('closeMenu')
   }
 }
 </script>
