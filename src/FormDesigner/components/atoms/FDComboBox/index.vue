@@ -2243,12 +2243,9 @@ export default class FDComboBox extends Mixins(FdControlVue) {
     if (this.toolBoxSelectControl === 'Select') {
       event.stopPropagation()
     }
-    Vue.nextTick(() => {
-      if (this.isEditMode) {
-        this.textareaRef.blur()
-        this.textareaRef.focus()
-      }
-    })
+    if (this.isEditMode) {
+      this.closeTextMenu()
+    }
   }
 }
 </script>

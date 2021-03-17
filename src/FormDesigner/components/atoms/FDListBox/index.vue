@@ -530,6 +530,10 @@ export default class FDListBox extends Mixins(FdControlVue) {
           finalWidths = this.calculateColumnWidths()
           if (this.listBoxTableRef.children[0].children[0]) {
             for (let i = 0; i < this.listBoxTableRef.children[0].children.length; i++) {
+              for (let j = 0; j < this.listBoxTableRef.children[0].children[i].children.length; j++) {
+                const width = this.listBoxTableRef.children[0].children[i].children[j] as HTMLDivElement
+                width.style.minWidth = '0px'
+              }
               if (this.properties.ListStyle === 0) {
                 for (let j = 0; j < this.listBoxTableRef.children[0].children[i].children.length; j++) {
                   const width = this.listBoxTableRef.children[0].children[i].children[j] as HTMLDivElement
@@ -559,6 +563,19 @@ export default class FDListBox extends Mixins(FdControlVue) {
                         width.style.width = finalWidths[j] + 'px'
                       } else {
                         width.style.width = finalWidths[j] - 4 + 'px'
+                      }
+                    }
+                  }
+                }
+                for (let j = 0; j < this.listBoxTableRef.children[0].children[i].children.length; j++) {
+                  let colWidths = this.properties.ColumnWidths!
+                  let columnWidthCount = colWidths.split(';').length
+                  let totalColumnCount = this.properties.ColumnCount! < this.extraDatas.RowSourceData![0].length ? this.properties.ColumnCount! : this.extraDatas.RowSourceData![0].length
+                  if (columnWidthCount > 0) {
+                    if (columnWidthCount < totalColumnCount) {
+                      for (let k = columnWidthCount; k < totalColumnCount!; k++) {
+                        const width = this.listBoxTableRef.children[0].children[i].children[k] as HTMLDivElement
+                        width.style.minWidth = '100px'
                       }
                     }
                   }

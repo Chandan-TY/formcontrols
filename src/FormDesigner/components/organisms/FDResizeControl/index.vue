@@ -138,6 +138,7 @@ export default class ResizeControl extends FdSelectVue {
 
   controlDragResizeMoueDown (event: MouseEvent) {
     if (this.isPropChanged) {
+      event.stopPropagation()
       this.mouseDownEvent = event
       this.isControlMouseDown = true
       this.mouseDownContainer = this.controlId

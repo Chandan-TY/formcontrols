@@ -1,5 +1,5 @@
 <template>
-  <div id="app" @blur="closeTextMenu" tabindex="0" @focus="updatefocus" @contextmenu.stop="preventcontextMenu" @keydown.esc="closeMenu">
+  <div id="app" @mousedown="closeTextMenu" @blur="closeTextMenu" tabindex="0" @focus="updatefocus" @contextmenu.stop="preventcontextMenu" @keydown.esc="closeMenu">
     <div
       id="right-click-menu"
       :style="contextMenuStyle"
@@ -165,6 +165,7 @@ export default class FDPage extends Vue {
   copiedText = ''
   labelArea: any = {}
   textMenu: boolean = false
+  controlTextMenu: string = ''
 
   vertical: string = 'vertical';
   renameDialog: boolean = false
@@ -466,6 +467,7 @@ export default class FDPage extends Vue {
     this.textMenu = true
     event.preventDefault()
     event.stopPropagation()
+    this.controlTextMenu = this.selectedControls[this.userFormId].selected[0]
     navigator.clipboard.readText()
       .then(text => {
         this.copiedText = text
@@ -555,14 +557,17 @@ export default class FDPage extends Vue {
     event.preventDefault()
   }
   @Watch('selectedControls', { deep: true })
-  updateContextMenu (newControl: selectedControls, oldControl: selectedControls) {
-    if (oldControl && oldControl.selected) {
-      if (oldControl.selected.length === 1 && newControl.selected[0] !== oldControl.selected[0]) {
+  updateContextMenu () {
+    const selected = this.selectedControls[this.userFormId].selected
+    const userData = this.userformData[this.userFormId]
+    if (selected[0].startsWith('group') || (userData[selected[0]].type !== 'Userform')) {
+      if (selected.length === 1 && selected[0] !== this.controlTextMenu) {
         this.textMenu = false
       }
     }
     if (this.viewMenu && this.textMenu) {
       this.closeMenu()
+      this.controlTextMenu = ''
     }
   }
 }
