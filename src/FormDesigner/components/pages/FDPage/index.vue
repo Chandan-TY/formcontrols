@@ -155,11 +155,11 @@ interface IDialog
 export default class FDPage extends Vue {
   @State((state) => state.fd.userformData) userformData!: userformData;
   @State((state) => state.fd.copiedControl) copiedControl!: userformData;
-  @Ref('contextmenu') contextmenu: HTMLDivElement
-  @Ref('mainConextMenu') mainConextMenu: ContextMenu
-  @Ref('renameDialogRef') renameDialogRef: RenameMultiPageDialog
-  @Ref('userformTabOrderRef') userformTabOrderRef: UserformTabOrder
-  @Ref('tabstripTabOrderRef') tabstripTabOrderRef: TabStripTabOrder
+  @Ref('contextmenu') contextmenu!: HTMLDivElement
+  @Ref('mainConextMenu') mainConextMenu!: ContextMenu
+  @Ref('renameDialogRef') renameDialogRef!: RenameMultiPageDialog
+  @Ref('userformTabOrderRef') userformTabOrderRef!: UserformTabOrder
+  @Ref('tabstripTabOrderRef') tabstripTabOrderRef!: TabStripTabOrder
   containerId: string = ''
   controlId: string = ''
   copiedText = ''
@@ -196,7 +196,7 @@ export default class FDPage extends Vue {
   contextMenuHeight: number = 84
   groupStyleArray: Array<IGroupStyle> = []
   updatedValue: number = 0
-  tabData: controlData
+  tabData!: controlData
   tabstripContextMenu: boolean = false
 
   closeTextMenu () {

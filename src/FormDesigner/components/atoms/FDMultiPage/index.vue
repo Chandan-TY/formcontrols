@@ -100,8 +100,8 @@
         </div>
         <div></div>
         <div :style="getScrollButtonStyleObj" ref="buttonStyleRef">
-          <button class="left-button" :style="scrollButtonStyle" @mousedown.stop @click="leftmove" @mouseover="updateMouseCursor"></button>
-          <button class="right-button" :style="scrollButtonStyle" @mousedown.stop @click="rightmove" @mouseover="updateMouseCursor"></button>
+          <button class="left-button" :style="scrollButtonStyle" @mousedown="mouseDownstop($event)" @click="isEditMode&&leftmove()" @mouseover="updateMouseCursor"></button>
+          <button class="right-button" :style="scrollButtonStyle" @mousedown="mouseDownstop($event)" @click="isEditMode&&rightmove()" @mouseover="updateMouseCursor"></button>
         </div>
       </div>
     </div>
@@ -132,13 +132,13 @@ import { EventBus } from '@/FormDesigner/event-bus'
 export default class FDMultiPage extends Mixins(FdContainerVue) {
   @State((state) => state.fd.userformData) userformData!: userformData;
   @Prop({ required: true, type: String }) public userFormId!: string;
-  @Ref('scrolling') scrolling: HTMLDivElement;
-  @Ref('contentRef') contentRef: HTMLDivElement;
+  @Ref('scrolling') scrolling!: HTMLDivElement;
+  @Ref('contentRef') contentRef!: HTMLDivElement;
   @Ref('containerRef') readonly containerRef!: Container;
-  @Ref('multipage') multipage: HTMLDivElement;
-  @Ref('controlTabsRef') controlTabsRef: HTMLDivElement[];
-  @Ref('controlTab') controlTab: FDControlTabs[];
-  @Ref('buttonStyleRef') buttonStyleRef: HTMLDivElement;
+  @Ref('multipage') multipage!: HTMLDivElement;
+  @Ref('controlTabsRef') controlTabsRef!: HTMLDivElement[];
+  @Ref('controlTab') controlTab!: FDControlTabs[];
+  @Ref('buttonStyleRef') buttonStyleRef!: HTMLDivElement;
 
   viewMenu: boolean = false;
   top: string = '0px';
@@ -156,10 +156,16 @@ export default class FDMultiPage extends Mixins(FdContainerVue) {
   rowsCount: string = '';
   scrollButtonHeight: number = 0;
   scrollButtonWidth: number = 0;
-  pageValueIndex: selectedTab;
+  pageValueIndex!: selectedTab;
   lastChangedInRightMove: boolean = false;
   tabsIndex: number = 0;
 
+  mouseDownstop (e: MouseEvent) {
+    debugger
+    if (this.isEditMode) {
+      e.stopPropagation()
+    }
+  }
   updateTabsWidth () {
     if (this.properties.MultiRow) {
       if (this.properties.TabOrientation === 0 || this.properties.TabOrientation === 1) {

@@ -14,10 +14,20 @@
         @mousedown.stop="handleMouseDown($event, handlerName, controlType, userFormId)"
       ></div>
     </div>
-    <div v-show="isMove" class="m-top-b move-border" :style="getTStyle" />
-    <div v-show="isMove" class="m-right-b move-border" :style="getRStyle"/>
-    <div v-show="isMove" class="m-bottom-b move-border" :style="getBStyle"/>
-    <div v-show="isMove" class="m-left-b move-border" :style="getLStyle"/>
+    <div class="moveBorderClass">
+    <div v-show="isMove" :style="{position: 'relative', ...getTStyle}">
+    <div v-show="isMove" class="m-top-b move-border" :style="getTStyleChild"/>
+    </div>
+    <div v-show="isMove" :style="{position: 'relative', ...getRStyle}">
+    <div v-show="isMove" class="m-right-b move-border" :style="getRStyleChild"/>
+    </div>
+    <div v-show="isMove" :style="{position: 'relative', ...getBStyle}">
+    <div v-show="isMove" class="m-bottom-b move-border" :style="getBStyleChild"/>
+    </div>
+    <div v-show="isMove" :style="{position: 'relative', ...getLStyle}">
+    <div v-show="isMove" class="m-left-b move-border" :style="getLStyleChild"/>
+    </div>
+    </div>
   </div>
 </template>
 
@@ -31,14 +41,14 @@ import FDCommonMethod from '@/api/abstract/FormDesigner/FDCommonMethod'
   components: {}
 })
 export default class Resizehandler extends FDCommonMethod {
-  $el: HTMLDivElement
+  $el!: HTMLDivElement
   @State((state) => state.fd.selectedControls) selectedControls!: fdState['selectedControls'];
   @State((state) => state.fd.userformData) userformData!: userformData;
 
   @Prop({ required: true, type: String }) public controlId!: string;
-  @Prop({ required: true, type: String }) public userFormId: string;
-  @Prop({ required: true, type: String }) public controlType: string;
-  @Prop() public size: {width: number, height: number, left: number, top: number}
+  @Prop({ required: true, type: String }) public userFormId!: string;
+  @Prop({ required: true, type: String }) public controlType!: string;
+  @Prop() public size!: {width: number, height: number, left: number, top: number}
   isGroupControl: boolean = false
 
   positions: IMousePosition = {
@@ -69,8 +79,8 @@ export default class Resizehandler extends FDCommonMethod {
     return value
   }
   @Emit('muldragControl')
-  private muldragControl (event: MouseEvent, handler: string) {
-    return { event: event, handler: handler }
+  private muldragControl (event: MouseEvent, handler: string, control: string) {
+    return { event: event, handler: handler, control: control }
   }
   @Emit('updateModel')
   updateDataModel (updateData: IupdateDataModel) {
@@ -238,7 +248,6 @@ export default class Resizehandler extends FDCommonMethod {
             this.positions.offsetX = event.offsetX
             this.positions.offsetY = event.offsetY
           }
-
           this.isMainSelect = true
           EventBus.$emit('startMoveControl', event, handler, this.getContainerList(this.isSelctedControl))
           document.onmousemove = (event: MouseEvent) => { EventBus.$emit('moveControl', event) }
@@ -248,7 +257,7 @@ export default class Resizehandler extends FDCommonMethod {
       }
       document.onmouseup = this.closeDragElement
     } else {
-      this.muldragControl(event, handler)
+      this.muldragControl(event, handler, this.controlId)
     }
   }
 
@@ -282,47 +291,61 @@ export default class Resizehandler extends FDCommonMethod {
     this.positions.movementX = x
     this.positions.movementY = y
   }
+  getScrollLeftValue () {
+    let scrollLeftValue:number = 0
+    const userData = this.userformData[this.userFormId]
+    for (let i = 0; i < this.getContainerList(this.isSelctedControl).length; i++) {
+      if ('ScrollLeft' in userData[this.getContainerList(this.controlId)[i]].properties) {
+        scrollLeftValue += userData[this.getContainerList(this.controlId)[i]].properties.ScrollLeft!
+      }
+    }
+    return scrollLeftValue
+  }
+  getScrollTopValue () {
+    const userData = this.userformData[this.userFormId]
+    let scrollTopValue:number = 0
+    for (let i = 0; i < this.getContainerList(this.isSelctedControl).length; i++) {
+      if ('ScrollTop' in userData[this.getContainerList(this.controlId)[i]].properties) {
+        scrollTopValue += this.userformData[this.userFormId][this.getContainerList(this.controlId)[i]].properties.ScrollTop!
+      }
+    }
+    return scrollTopValue
+  }
   get getLStyle () {
     if (this.resizeDiv === 'drag') {
       return this.size ? {
-        left: `${-this.positions.movementX}px`,
-        top: `${-this.positions.movementY}px`,
-        height: `${this.size.height}px !important`
+        left: `${-this.positions.movementX - this.getScrollLeftValue()}px`,
+        top: `${-this.positions.movementY - this.getScrollTopValue()}px`
       } : null
     } else {
       return this.size ? {
         left: `${-this.handlerPosition.left}px !important`,
-        top: `${-this.handlerPosition.top}px !important`,
-        height: `${this.handlerPosition.height}px !important`
+        top: `${-this.handlerPosition.top}px !important`
       } : null
     }
   }
   get getTStyle () {
     if (this.resizeDiv === 'drag') {
       return this.size ? {
-        left: `${-this.positions.movementX}px`,
-        top: `${-this.positions.movementY}px`,
-        width: `${this.size.width}px !important`
+        left: `${-this.positions.movementX - this.getScrollLeftValue()}px`,
+        top: `${-this.positions.movementY - this.getScrollTopValue()}px`
       } : null
     } else {
       return this.size ? {
         left: `${-this.handlerPosition.left}px`,
-        top: `${-this.handlerPosition.top}px`,
-        width: `${this.handlerPosition.width}px !important`
+        top: `${-this.handlerPosition.top}px`
       } : null
     }
   }
   get getRStyle () {
     if (this.resizeDiv === 'drag') {
       return this.size ? {
-        left: `${this.size.width - this.positions.movementX}px`,
-        top: `${-this.positions.movementY}px`,
-        height: `${this.size.height}px !important`
+        left: `${this.size.width - this.positions.movementX - this.getScrollLeftValue()}px`,
+        top: `${-this.positions.movementY - this.getScrollTopValue()}px`
       } : null
     } else {
       return this.size ? {
         left: `${this.handlerPosition.width - this.handlerPosition.left}px`,
-        height: `${this.handlerPosition.height}px !important`,
         top: `${-this.handlerPosition.top}px !important`
       } : null
     }
@@ -330,15 +353,57 @@ export default class Resizehandler extends FDCommonMethod {
   get getBStyle () {
     if (this.resizeDiv === 'drag') {
       return this.size ? {
-        left: `${-this.positions.movementX}px`,
-        top: `${this.size.height - this.positions.movementY}px`,
-        width: `${this.size.width}px !important`
+        left: `${-this.positions.movementX - this.getScrollLeftValue()}px`,
+        top: `${this.size.height - this.positions.movementY - this.getScrollTopValue()}px`
       } : null
     } else {
       return this.size ? {
         top: `${this.handlerPosition.height - this.handlerPosition.top}px`,
-        width: `${this.handlerPosition.width}px !important`,
         left: `${-this.handlerPosition.left}px`
+      } : null
+    }
+  }
+  get getLStyleChild () {
+    if (this.resizeDiv === 'drag') {
+      return this.size ? {
+        height: `${this.size.height}px !important`
+      } : null
+    } else {
+      return this.size ? {
+        height: `${this.handlerPosition.height}px !important`
+      } : null
+    }
+  }
+  get getTStyleChild () {
+    if (this.resizeDiv === 'drag') {
+      return this.size ? {
+        width: `${this.size.width}px !important`
+      } : null
+    } else {
+      return this.size ? {
+        width: `${this.handlerPosition.width}px !important`
+      } : null
+    }
+  }
+  get getRStyleChild () {
+    if (this.resizeDiv === 'drag') {
+      return this.size ? {
+        height: `${this.size.height}px !important`
+      } : null
+    } else {
+      return this.size ? {
+        height: `${this.handlerPosition.height}px !important`
+      } : null
+    }
+  }
+  get getBStyleChild () {
+    if (this.resizeDiv === 'drag') {
+      return this.size ? {
+        width: `${this.size.width}px !important`
+      } : null
+    } else {
+      return this.size ? {
+        width: `${this.handlerPosition.width}px !important`
       } : null
     }
   }
@@ -626,7 +691,7 @@ export default class Resizehandler extends FDCommonMethod {
 <style  scoped>
 .move-border {
   z-index: 9999;
-  position: absolute;
+  position: fixed;
   border: 0.5px rgb(59, 58, 58) dashed;
   margin: -4px
 }
@@ -768,5 +833,8 @@ export default class Resizehandler extends FDCommonMethod {
   bottom: -8px;
   right: -8px;
   cursor: se-resize;
+}
+.moveBorderClass {
+  pointer-events: none
 }
 </style>

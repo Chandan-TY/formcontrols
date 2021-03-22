@@ -38,6 +38,7 @@
         <div
           :tabindex="index"
           class="tr"
+          :style="trStyleObj"
           ref="listStyleRef"
           v-for="(item, index) of extraDatas.RowSourceData"
           :key="index"
@@ -126,14 +127,26 @@ import { EventBus } from '@/FormDesigner/event-bus'
   name: 'FDListBox'
 })
 export default class FDListBox extends Mixins(FdControlVue) {
-  @Ref('listStyleRef') listStyleRef: HTMLDivElement[];
+  @Ref('listStyleRef') listStyleRef!: HTMLDivElement[];
   @Ref('listBoxTableRef') listBoxTableRef!: HTMLDivElement;
   @Ref('listStyleOuterRef') listStyleOuterRef!: HTMLDivElement;
-  @Prop() isActivated: boolean;
-  @Prop() toolBoxSelectControl: string
-  checkedvalue: boolean;
-  $el: HTMLDivElement;
+  @Prop() isActivated: boolean = false;
+  @Prop() toolBoxSelectControl!: string
+  checkedvalue: boolean = false;
+  $el!: HTMLDivElement;
 
+  get trStyleObj () {
+    let width:string = '0px'
+    let height: string = '0px'
+    if (this.listStyleOuterRef && (this.listStyleOuterRef.scrollHeight > this.listStyleOuterRef.clientHeight)) {
+      width = 'calc(100% - 20px)'
+    } else {
+      width = 'calc(100% - 3px)'
+    }
+    return {
+      width: width
+    }
+  }
   get emptyColHeads () {
     return {
       height: '15px'
@@ -1422,7 +1435,7 @@ export default class FDListBox extends Mixins(FdControlVue) {
 }
 .tdClassIn {
   width: fit-content !important;
-  min-width: 0px !important;
+  min-width: 14px !important;
 }
 .inputClass {
   margin: 0;

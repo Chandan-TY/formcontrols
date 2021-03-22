@@ -26,8 +26,8 @@
         end: textareaRef ? end : data.properties.CursorEndPosition,
         pwdCharType: properties.PasswordChar,
       }"
-      @keydown.ctrl.exact="handleCtrl"
-      @keydown.shift.exact="handleShiftEnter"
+      @keydown.ctrl="handleCtrl"
+      @keydown.shift="handleShiftEnter"
       @keydown.tab.exact="tabKeyBehavior"
       @keydown.enter.exact="enterKeyBehavior"
       @input="
@@ -122,24 +122,26 @@ import { EventBus } from '@/FormDesigner/event-bus'
 export default class FDTextBox extends Mixins(FdControlVue) {
   @Ref('hideSelectionDiv') readonly hideSelectionDiv!: HTMLDivElement;
   @Ref('autoSizeTextarea') readonly autoSizeTextarea!: HTMLLabelElement;
-  @Ref('textareaRef') textareaRef: HTMLTextAreaElement;
+  @Ref('textareaRef') textareaRef!: HTMLTextAreaElement;
 
-  $el: HTMLDivElement
+  $el!: HTMLDivElement
   originalText: string = ''
   trimmedText: string = ''
   fitToSizeWhenMultiLine: boolean = false
   start: number = 0
   end: number = 0
   dblclick (e: Event) {
-    let newSelectionStart = 0
-    const eTarget = e.target as HTMLTextAreaElement
-    for (let i = eTarget.selectionStart; i > 0; i--) {
-      if (eTarget.value[i - 1] === ' ' || eTarget.value[i - 1] === undefined) {
-        newSelectionStart = i
-        break
+    if (this.isEditMode) {
+      let newSelectionStart = 0
+      const eTarget = e.target as HTMLTextAreaElement
+      for (let i = eTarget.selectionStart; i > 0; i--) {
+        if (eTarget.value[i - 1] === ' ' || eTarget.value[i - 1] === undefined) {
+          newSelectionStart = i
+          break
+        }
       }
+      this.textareaRef.setSelectionRange(newSelectionStart, eTarget.selectionEnd)
     }
-    this.textareaRef.setSelectionRange(newSelectionStart, eTarget.selectionEnd)
   }
   get getDisableValue () {
     if (this.isRunMode) {
@@ -282,18 +284,18 @@ export default class FDTextBox extends Mixins(FdControlVue) {
       (this.data.properties!.CursorStartPosition as number) !==
       (this.data.properties!.CursorEndPosition as number)
     if (event.target instanceof HTMLTextAreaElement) {
-      if (selectionDiff && (event as InputEvent).data) {
+      if (selectionDiff && (event instanceof InputEvent)) {
         // selection
         newData =
-        text.substring(0, this.data.properties!.CursorStartPosition as number) + (event as InputEvent).data
+        text.substring(0, this.data.properties!.CursorStartPosition as number) + event.data
         text.substring(this.data.properties!.CursorEndPosition as number)
         this.updateDataModel({ propertyName: 'Text', value: newData })
         this.updateDataModel({ propertyName: 'Value', value: newData })
-      } else if (text.length < event.target.value.length) {
+      } else if (text.length < event.target.value.length && (event instanceof InputEvent)) {
         // insertion
         newData = [
           text.slice(0, event.target.selectionStart - 1),
-          (event as InputEvent).data,
+          event.data,
           text.slice(event.target.selectionStart - 1)
         ].join('')
         this.updateDataModel({ propertyName: 'Text', value: newData })
@@ -384,18 +386,18 @@ export default class FDTextBox extends Mixins(FdControlVue) {
    * @param event its of type KeyboardEvent
    * @event keydown.enter
    */
-  enterKeyBehavior (event: KeyboardEvent): boolean {
+  enterKeyBehavior (event: KeyboardEvent) {
     if (this.properties.MultiLine) {
       if (event.ctrlKey) {
         event.preventDefault()
         this.handleCtrlAndShiftEnter(this.textareaRef, '\n')
-        // // const eTarget = event.target as HTMLTextAreaElement
-        // this.updateDataModel({ propertyName: 'Value', value: this.textareaRef.value })
-        return true
-      } else if (this.properties.EnterKeyBehavior && this.properties.MultiLine) {
         return true
       } else if (event.shiftKey) {
         return true
+      } else if (this.properties.EnterKeyBehavior && this.properties.MultiLine) {
+        this.handleCtrlAndShiftEnter(this.textareaRef, '\n')
+        event.preventDefault()
+        return false
       }
     }
     event.preventDefault()

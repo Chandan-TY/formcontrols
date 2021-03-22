@@ -66,13 +66,13 @@
             class="left-button"
             :style="scrollButtonStyle"
             @mouseover="updateMouseCursor"
-            @click="leftmove"
+            @click="isEditMode&&leftmove()"
           ></button>
           <button
             class="right-button"
             :style="scrollButtonStyle"
             @mouseover="updateMouseCursor"
-            @click="rightmove"
+            @click="isEditMode&&rightmove()"
           ></button>
         </div>
       </div>
@@ -99,22 +99,21 @@ import { EventBus } from '@/FormDesigner/event-bus'
 })
 export default class FDTabStrip extends FdControlVue {
   @State((state) => state.fd.userformData) userformData!: userformData;
-  @Prop() isEditMode: boolean;
+  @Prop() isEditMode!: boolean
   @Prop({ required: true, type: String }) public userFormId!: string;
-  @Ref('tabstripContextMenu') tabstripContextMenu: HTMLDivElement;
-  @Ref('scrolling') scrolling: HTMLDivElement;
-  @Ref('controlTabsRef') controlTabsRef: HTMLDivElement[];
-  @Ref('buttonStyleRef') buttonStyleRef: HTMLDivElement;
-  $el: HTMLDivElement;
+  @Ref('tabstripContextMenu') tabstripContextMenu!: HTMLDivElement;
+  @Ref('scrolling') scrolling!: HTMLDivElement;
+  @Ref('controlTabsRef') controlTabsRef!: HTMLDivElement[];
+  @Ref('buttonStyleRef') buttonStyleRef!: HTMLDivElement;
+  $el!: HTMLDivElement;
 
-  // isScroll = true;
   scrollButtonHeight: number = 0
   scrollButtonWidth: number = 0
   viewMenu: boolean = false;
   top: string = '0px';
   left: string = '0px';
   contextMenuValue: Array<IcontextMenu> = tabsContextMenu;
-  tempScrollWidth: number;
+  tempScrollWidth!: number;
   updatedValue: number = 0;
   tempWidth: number = 0;
   tempHeight: number = 0;
